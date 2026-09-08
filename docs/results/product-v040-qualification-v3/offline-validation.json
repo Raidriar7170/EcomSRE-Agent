@@ -1,0 +1,19 @@
+{
+  "implementation_candidate_head": "4895ed7336565b43d5d208019a5ed8a1061fa53c",
+  "review_receipt_head": "1fe68b22a1cbc22818c99b5c418569aca175bcf3",
+  "implementation_changed_between_heads": false,
+  "full_tests": {
+    "command": ".venv/bin/python -m pytest -q",
+    "passed": 6996,
+    "skipped": 21,
+    "warnings": 16,
+    "seconds": 621.86,
+    "log_sha256": "bfa53d7f773f8864a9b6def017776e513308911dfeaf51a954f2a9144374b275"
+  },
+  "targeted_v3_tests": 56,
+  "ruff_repository": "PASS",
+  "mypy_mainline_files": 702,
+  "mypy_v3_files": 10,
+  "runtime_started": false,
+  "formal_authority": false
+}

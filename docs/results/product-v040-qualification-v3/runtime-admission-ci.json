@@ -1,0 +1,557 @@
+{
+  "conclusion": "success",
+  "event": "workflow_dispatch",
+  "headSha": "1fe68b22a1cbc22818c99b5c418569aca175bcf3",
+  "jobs": [
+    {
+      "completedAt": "2026-09-08T09:34:12Z",
+      "conclusion": "success",
+      "databaseId": 102001992438,
+      "name": "Offline replay and verification",
+      "startedAt": "2026-09-08T09:04:54Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-09-08T09:04:56Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-09-08T09:04:54Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:05:03Z",
+          "conclusion": "success",
+          "name": "Check out repository",
+          "number": 2,
+          "startedAt": "2026-09-08T09:04:56Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:05:03Z",
+          "conclusion": "success",
+          "name": "Fetch pinned upstream tag metadata",
+          "number": 3,
+          "startedAt": "2026-09-08T09:05:03Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:05:04Z",
+          "conclusion": "success",
+          "name": "Fetch immutable pull-request heads for successor attestations",
+          "number": 4,
+          "startedAt": "2026-09-08T09:05:03Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:05:04Z",
+          "conclusion": "success",
+          "name": "Install Python",
+          "number": 5,
+          "startedAt": "2026-09-08T09:05:04Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:05:07Z",
+          "conclusion": "success",
+          "name": "Install uv",
+          "number": 6,
+          "startedAt": "2026-09-08T09:05:04Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:05:08Z",
+          "conclusion": "success",
+          "name": "Sync frozen dependencies",
+          "number": 7,
+          "startedAt": "2026-09-08T09:05:07Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:05:09Z",
+          "conclusion": "success",
+          "name": "Install frozen RCA100 dependencies",
+          "number": 8,
+          "startedAt": "2026-09-08T09:05:08Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:05:48Z",
+          "conclusion": "success",
+          "name": "Phase 1 tests",
+          "number": 9,
+          "startedAt": "2026-09-08T09:05:09Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:08:24Z",
+          "conclusion": "success",
+          "name": "Phase 2 tests",
+          "number": 10,
+          "startedAt": "2026-09-08T09:05:48Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:08:45Z",
+          "conclusion": "success",
+          "name": "Phase 2 comparison",
+          "number": 11,
+          "startedAt": "2026-09-08T09:08:24Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:09:09Z",
+          "conclusion": "success",
+          "name": "Verify Phase 2 comparison",
+          "number": 12,
+          "startedAt": "2026-09-08T09:08:45Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:09:12Z",
+          "conclusion": "success",
+          "name": "Phase 3 tests",
+          "number": 13,
+          "startedAt": "2026-09-08T09:09:09Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:09:12Z",
+          "conclusion": "success",
+          "name": "Phase 3 replay",
+          "number": 14,
+          "startedAt": "2026-09-08T09:09:12Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:09:13Z",
+          "conclusion": "success",
+          "name": "Verify Phase 3 replay",
+          "number": 15,
+          "startedAt": "2026-09-08T09:09:12Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:10:13Z",
+          "conclusion": "success",
+          "name": "Phase 4 tests",
+          "number": 16,
+          "startedAt": "2026-09-08T09:09:13Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:10:26Z",
+          "conclusion": "success",
+          "name": "Phase 4 domain comparison",
+          "number": 17,
+          "startedAt": "2026-09-08T09:10:13Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:10:39Z",
+          "conclusion": "success",
+          "name": "Verify Phase 4 domain comparison",
+          "number": 18,
+          "startedAt": "2026-09-08T09:10:26Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:10:40Z",
+          "conclusion": "success",
+          "name": "Phase 4 domain demo",
+          "number": 19,
+          "startedAt": "2026-09-08T09:10:39Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:12:05Z",
+          "conclusion": "success",
+          "name": "Phase 5A tests",
+          "number": 20,
+          "startedAt": "2026-09-08T09:10:40Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:12:24Z",
+          "conclusion": "success",
+          "name": "Phase 5A capability-parity comparison",
+          "number": 21,
+          "startedAt": "2026-09-08T09:12:05Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:12:44Z",
+          "conclusion": "success",
+          "name": "Verify Phase 5A capability-parity comparison",
+          "number": 22,
+          "startedAt": "2026-09-08T09:12:24Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:12:44Z",
+          "conclusion": "success",
+          "name": "Phase 5A missing-source demo",
+          "number": 23,
+          "startedAt": "2026-09-08T09:12:44Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:12:48Z",
+          "conclusion": "success",
+          "name": "Phase 5B protocol tests",
+          "number": 24,
+          "startedAt": "2026-09-08T09:12:44Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:12:48Z",
+          "conclusion": "success",
+          "name": "Phase 5B historical bindings",
+          "number": 25,
+          "startedAt": "2026-09-08T09:12:48Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:12:48Z",
+          "conclusion": "success",
+          "name": "DTA v2 historical bindings for v2.1",
+          "number": 26,
+          "startedAt": "2026-09-08T09:12:48Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:13:21Z",
+          "conclusion": "success",
+          "name": "DTA v2.1 focused tests",
+          "number": 27,
+          "startedAt": "2026-09-08T09:12:48Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:13:22Z",
+          "conclusion": "success",
+          "name": "DTA v2.1 deterministic replay verification",
+          "number": 28,
+          "startedAt": "2026-09-08T09:13:21Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:13:23Z",
+          "conclusion": "success",
+          "name": "DTA v2.1 public development evaluation verification",
+          "number": 29,
+          "startedAt": "2026-09-08T09:13:22Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:13:23Z",
+          "conclusion": "success",
+          "name": "DTA v2.1 public held-out evaluation verification",
+          "number": 30,
+          "startedAt": "2026-09-08T09:13:23Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:13:23Z",
+          "conclusion": "success",
+          "name": "DTA v2.2 PR-A protocol and historical verification",
+          "number": 31,
+          "startedAt": "2026-09-08T09:13:23Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:13:25Z",
+          "conclusion": "success",
+          "name": "DTA v2.2 PR-B action catalog and query verification",
+          "number": 32,
+          "startedAt": "2026-09-08T09:13:23Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:13:28Z",
+          "conclusion": "success",
+          "name": "DTA v2.2 PR-C memory, predicates, and diagnosis verification",
+          "number": 33,
+          "startedAt": "2026-09-08T09:13:25Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:13:29Z",
+          "conclusion": "success",
+          "name": "DTA v2.2.1 merged Practical result byte verification",
+          "number": 34,
+          "startedAt": "2026-09-08T09:13:28Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:13:29Z",
+          "conclusion": "success",
+          "name": "DTA v2.2.1 evidence-acquisition study manifest verification",
+          "number": 35,
+          "startedAt": "2026-09-08T09:13:29Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:13:30Z",
+          "conclusion": "success",
+          "name": "DTA v2.2.1 evidence-acquisition study result verification",
+          "number": 36,
+          "startedAt": "2026-09-08T09:13:29Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:15:49Z",
+          "conclusion": "success",
+          "name": "DTA v2.2 focused tests",
+          "number": 37,
+          "startedAt": "2026-09-08T09:13:30Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:15:50Z",
+          "conclusion": "success",
+          "name": "DTA v2.2.6 real-fault result verification",
+          "number": 38,
+          "startedAt": "2026-09-08T09:15:49Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:15:50Z",
+          "conclusion": "success",
+          "name": "Phase 5B execution historical bindings for successors",
+          "number": 39,
+          "startedAt": "2026-09-08T09:15:50Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:15:50Z",
+          "conclusion": "success",
+          "name": "Product v0.2 historical Product v0.1 bindings",
+          "number": 40,
+          "startedAt": "2026-09-08T09:15:50Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:15:51Z",
+          "conclusion": "success",
+          "name": "Product v0.2 frozen blocked result",
+          "number": 41,
+          "startedAt": "2026-09-08T09:15:50Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:15:52Z",
+          "conclusion": "success",
+          "name": "Product v0.2.1 predecessor and baseline-audit verification",
+          "number": 42,
+          "startedAt": "2026-09-08T09:15:51Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:15:54Z",
+          "conclusion": "success",
+          "name": "Product v0.2.2 predecessor and schema instrumentation verification",
+          "number": 43,
+          "startedAt": "2026-09-08T09:15:52Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:15:55Z",
+          "conclusion": "success",
+          "name": "Product v0.2.2 consumed schema-probe blocker verification",
+          "number": 44,
+          "startedAt": "2026-09-08T09:15:54Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:16:04Z",
+          "conclusion": "success",
+          "name": "Product v0.2.2 focused fixture tests",
+          "number": 45,
+          "startedAt": "2026-09-08T09:15:55Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:16:06Z",
+          "conclusion": "success",
+          "name": "Product v0.2.2.1 schema-session verification",
+          "number": 46,
+          "startedAt": "2026-09-08T09:16:04Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:16:14Z",
+          "conclusion": "success",
+          "name": "Product v0.2.2.1 focused offline tests",
+          "number": 47,
+          "startedAt": "2026-09-08T09:16:06Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:16:15Z",
+          "conclusion": "success",
+          "name": "Product v0.2.2.2 capture-first operator-profile verification",
+          "number": 48,
+          "startedAt": "2026-09-08T09:16:14Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:16:27Z",
+          "conclusion": "success",
+          "name": "Product v0.2.2.2 focused offline tests",
+          "number": 49,
+          "startedAt": "2026-09-08T09:16:15Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:16:29Z",
+          "conclusion": "success",
+          "name": "Product v0.2.3.1 frozen No-Fault result verification",
+          "number": 50,
+          "startedAt": "2026-09-08T09:16:27Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:16:46Z",
+          "conclusion": "success",
+          "name": "Product v0.2.3.1 focused offline tests",
+          "number": 51,
+          "startedAt": "2026-09-08T09:16:29Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:16:52Z",
+          "conclusion": "success",
+          "name": "Product v0.2.3.2.3 repository acceptance verification",
+          "number": 52,
+          "startedAt": "2026-09-08T09:16:46Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:16:54Z",
+          "conclusion": "success",
+          "name": "Product v0.2.3.3 formal attempt terminal verification",
+          "number": 53,
+          "startedAt": "2026-09-08T09:16:52Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:18:43Z",
+          "conclusion": "success",
+          "name": "Product v0.2.3.2 through v0.2.3.2.3 focused offline tests",
+          "number": 54,
+          "startedAt": "2026-09-08T09:16:54Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:18:43Z",
+          "conclusion": "success",
+          "name": "Verify Phase 5B protocol",
+          "number": 55,
+          "startedAt": "2026-09-08T09:18:43Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:18:44Z",
+          "conclusion": "success",
+          "name": "Verify Phase 5B execution schedule",
+          "number": 56,
+          "startedAt": "2026-09-08T09:18:43Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:18:44Z",
+          "conclusion": "success",
+          "name": "Phase 5B mock-only dry run",
+          "number": 57,
+          "startedAt": "2026-09-08T09:18:44Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:18:44Z",
+          "conclusion": "success",
+          "name": "Verify Phase 5B mock-only dry run",
+          "number": 58,
+          "startedAt": "2026-09-08T09:18:44Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:18:46Z",
+          "conclusion": "success",
+          "name": "Agent mainline demo",
+          "number": 59,
+          "startedAt": "2026-09-08T09:18:44Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:18:50Z",
+          "conclusion": "success",
+          "name": "Product v0.4 offline remediation development verification",
+          "number": 60,
+          "startedAt": "2026-09-08T09:18:46Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:33:52Z",
+          "conclusion": "success",
+          "name": "Full repository tests",
+          "number": 61,
+          "startedAt": "2026-09-08T09:18:50Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:33:52Z",
+          "conclusion": "success",
+          "name": "Ruff",
+          "number": 62,
+          "startedAt": "2026-09-08T09:33:52Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:34:07Z",
+          "conclusion": "success",
+          "name": "mypy (Agent mainline scope)",
+          "number": 63,
+          "startedAt": "2026-09-08T09:33:52Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:34:07Z",
+          "conclusion": "success",
+          "name": "Post Install uv",
+          "number": 124,
+          "startedAt": "2026-09-08T09:34:07Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:34:08Z",
+          "conclusion": "success",
+          "name": "Post Install Python",
+          "number": 125,
+          "startedAt": "2026-09-08T09:34:07Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:34:08Z",
+          "conclusion": "success",
+          "name": "Post Check out repository",
+          "number": 126,
+          "startedAt": "2026-09-08T09:34:08Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T09:34:09Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 127,
+          "startedAt": "2026-09-08T09:34:08Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/Raidriar7170/EcomSRE-Agent/actions/runs/34207995089/job/102001992438"
+    }
+  ],
+  "status": "completed",
+  "url": "https://github.com/Raidriar7170/EcomSRE-Agent/actions/runs/34207995089",
+  "workflowName": "Agent mainline"
+}

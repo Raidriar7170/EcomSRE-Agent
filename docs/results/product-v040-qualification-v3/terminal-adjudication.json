@@ -1,0 +1,34 @@
+{
+  "blocker": {
+    "code": "SANDBOX_UNHEALTHY",
+    "error_type": "QualificationBlocked"
+  },
+  "cleanup_observation": {
+    "actual_entrypoint": [
+      "./build/install/opentelemetry-demo-ad/bin/Ad"
+    ],
+    "cause": "Plan omitted image-inherited command defaults; all 28 sandbox roles have command/entrypoint differences against their planned None values. Birth admission was not completed after the earlier terminal.",
+    "expected_entrypoint": null,
+    "first_reproduced_role": "sandbox/container/ad",
+    "source": "scripts/product/qualification_v040_v3/guard.py:241"
+  },
+  "completed_stage_count": 32,
+  "expected_stage_count": 63,
+  "formal_allowance_consumed": false,
+  "formal_campaign_count": 0,
+  "future_formal_campaign": "WITHHOLD",
+  "health_blocker_inference": {
+    "expected_service_count": 28,
+    "extra_owned_role": "stopped probe",
+    "limit": "No contemporaneous service-health return value was sealed; no unhealthy Kafka-service claim is made.",
+    "observed_owned_container_count": 29,
+    "source": "src/ecomsre_live_sandbox/environment.py:603"
+  },
+  "legacy_field_interpretation": "Raw one_shot_allowance_consumed:false refers to the formal allowance; no_fault_qualification_consumption.no_fault_qualification_count:1 records the consumed v3 no-fault allowance. Raw bytes are unchanged.",
+  "qualification_count": 1,
+  "raw_result_preserved": true,
+  "same_authorization_retry_allowed": false,
+  "schema_version": "ecomsre.v040.v3.terminal-adjudication.v1",
+  "stage": "AFTER_SANDBOX_START",
+  "status": "BLOCKED_PRE_EXECUTION"
+}

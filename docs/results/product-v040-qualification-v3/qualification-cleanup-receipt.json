@@ -1,0 +1,21 @@
+{
+  "basis": "Saved targets() inventory and traceback; validation rejected before creating any cleanup mutation intent",
+  "cleanup_container_remove_count": 0,
+  "cleanup_network_remove_count": 0,
+  "cleanup_stop_count": 0,
+  "cleanup_volume_remove_count": 0,
+  "code": "COMMAND_DRIFT",
+  "formal_authority": false,
+  "inventory": "retained-resources.json",
+  "qualification_id": "c6a70e54d58b4df5a1325886304b4844",
+  "qualification_probe_stop_count_before_cleanup": 1,
+  "raw_qualification_result_sha256": "0110044c5dc315d60956a214ee245ba373203ac6cca0cdc5b6b380287c50b776",
+  "retained_counts": {
+    "containers": 29,
+    "networks": 3,
+    "volumes": 6
+  },
+  "retry_allowed": false,
+  "schema_version": "ecomsre.v040.v3.qualification-cleanup-receipt.v1",
+  "status": "MANUAL_INTERVENTION_REQUIRED"
+}

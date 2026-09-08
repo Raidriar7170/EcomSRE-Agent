@@ -1,0 +1,27 @@
+{
+  "actual_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+  "code": "SANDBOX_UNHEALTHY",
+  "counter_evidence": null,
+  "detail": "QualificationBlocked",
+  "formal_authority": false,
+  "monotonic_ns": 706560980651125,
+  "observed_counters": null,
+  "plan_sha256": "556c68d4f91547b9a7cbba695bc2eb69b87f4a3a278525f64b87d01bd7209982",
+  "previous_record_sha256": "6c25ca98d4e0a23839f98f3c3e32f69a7cc7111c76ed790f02ac99615610bfae",
+  "prohibited_action_budget": {
+    "approvals": 0,
+    "attempt_authorizations": 0,
+    "executor_invocations": 0,
+    "formal_campaign_executions": 0,
+    "formal_candidates": 0,
+    "formal_faults": 0,
+    "formal_recovery_windows": 0,
+    "provider_calls": 0,
+    "remediation_writes": 0,
+    "step_receipts": 0,
+    "write_intents": 0
+  },
+  "schema_version": "ecomsre.v040.qualification.first-divergence.v1",
+  "stage": "AFTER_SANDBOX_START",
+  "utc": "2026-09-08T09:39:01.396923+00:00"
+}

@@ -1,0 +1,2656 @@
+{
+  "cleanup_authorized_by_this_record": false,
+  "counts": {
+    "containers": 29,
+    "networks": 3,
+    "running_sandbox_containers": 28,
+    "stopped_probe_containers": 1,
+    "volumes": 6
+  },
+  "observation": "Immutable terminal cleanup capture; no claim of a later live inventory",
+  "qualification_id": "c6a70e54d58b4df5a1325886304b4844",
+  "raw_capture": "host/cleanup/000-inventory.json",
+  "raw_capture_file_sha256": "263b43e61d6e6e736065701cf7b23e367da19cbd126811f831d990bb2fe4a168",
+  "resources": {
+    "containers": [
+      {
+        "Created": "2026-09-08T09:38:26.81032151Z",
+        "Id": "013dfa0857bf40489198a1cbbd5eea69f3b5b365c85fd5edfcb9a39b8ec83a92",
+        "Image": "sha256:e6c593fe75eb0309392951d35c7ac85fcd15c0b80430500921b7d2e9c332a6db",
+        "ImageManifestDescriptor": {
+          "digest": "sha256:3f1965d23056bf68614e34d407faa6a9c730ab37a0d8ef698709ebf7d9fe1e91",
+          "mediaType": "application/vnd.oci.image.manifest.v1+json",
+          "platform": {
+            "architecture": "arm64",
+            "os": "linux"
+          },
+          "size": 1818
+        },
+        "Mounts": [],
+        "Name": "/ecomsre-live-sandbox-v1-ad",
+        "host_config_sha256": "09f7e91a833df05ba4d15be306ecfe5ef31f7ca6a4935de59103a13122aba4bb",
+        "image_reference": "ghcr.io/open-telemetry/demo@sha256:e6c593fe75eb0309392951d35c7ac85fcd15c0b80430500921b7d2e9c332a6db",
+        "labels": {
+          "com.docker.compose.config-hash": "08ea9ab6890002494242755cb0ae7d0ff1e6091fde955beb98c42b4e133b1928",
+          "com.docker.compose.container-number": "1",
+          "com.docker.compose.depends_on": "flagd:service_started:false,otel-collector:service_started:false",
+          "com.docker.compose.image": "sha256:e6c593fe75eb0309392951d35c7ac85fcd15c0b80430500921b7d2e9c332a6db",
+          "com.docker.compose.oneoff": "False",
+          "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+          "com.docker.compose.project.config_files": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host/sandbox-compose.json",
+          "com.docker.compose.project.working_dir": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host",
+          "com.docker.compose.service": "ad",
+          "com.docker.compose.version": "5.3.0",
+          "io.ecomsre.product.v040.qualification": "c6a70e54d58b4df5a1325886304b4844",
+          "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000",
+          "org.opencontainers.image.ref.name": "ubuntu",
+          "org.opencontainers.image.version": "24.04"
+        },
+        "network_endpoints": {
+          "ecomsre-live-sandbox-v1-default": {
+            "Aliases": [
+              "ecomsre-live-sandbox-v1-ad",
+              "ad"
+            ],
+            "DNSNames": [
+              "ecomsre-live-sandbox-v1-ad",
+              "ad",
+              "013dfa0857bf"
+            ],
+            "DriverOpts": null,
+            "EndpointID": "70b14ffe3a134ee6eca1dadf0774616997f32e5c4d8e6f4579abd96f746edcec",
+            "Gateway": "172.18.0.1",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "GwPriority": 0,
+            "IPAMConfig": null,
+            "IPAddress": "172.18.0.17",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "Links": null,
+            "MacAddress": "e6:c3:b3:b1:9d:8e",
+            "NetworkID": "8268f64f2d2fc1b64dbff0ec081c7aa0cec354169e39c4b4756ebd68489b179f"
+          }
+        },
+        "raw_inspect_sha256": "92fe5506bf4e42882c137728e9dc48c657a1bdbfdb4c07473ebe1f90173bd5de",
+        "state": {
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Pid": 3915,
+          "Running": true,
+          "StartedAt": "2026-09-08T09:38:38.263419751Z",
+          "Status": "running"
+        }
+      },
+      {
+        "Created": "2026-09-08T09:38:26.774932468Z",
+        "Id": "16ee82958c618417c2f762b4cd85bcf17727e96fab09b613c5218064ad82f394",
+        "Image": "sha256:0601750a3ca4db7d27f746dc73f4180fda162e7a92a1a4847f5b6ae9ac51d477",
+        "ImageManifestDescriptor": {
+          "digest": "sha256:80478d79c95aba98f487dc8df11b10a1db1ddf537b739d32eac9e6ad1b887f9a",
+          "mediaType": "application/vnd.oci.image.manifest.v1+json",
+          "platform": {
+            "architecture": "arm64",
+            "os": "linux"
+          },
+          "size": 2771
+        },
+        "Mounts": [
+          {
+            "Destination": "/etc/kafka/secrets",
+            "Driver": "local",
+            "Mode": "rw",
+            "Name": "ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-qualification-kafka-secrets",
+            "Propagation": "",
+            "RW": true,
+            "Source": "/var/lib/docker/volumes/ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-qualification-kafka-secrets/_data",
+            "Type": "volume"
+          },
+          {
+            "Destination": "/mnt/shared/config",
+            "Driver": "local",
+            "Mode": "rw",
+            "Name": "ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-qualification-kafka-config",
+            "Propagation": "",
+            "RW": true,
+            "Source": "/var/lib/docker/volumes/ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-qualification-kafka-config/_data",
+            "Type": "volume"
+          },
+          {
+            "Destination": "/var/lib/kafka/data",
+            "Driver": "local",
+            "Mode": "rw",
+            "Name": "ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-qualification-kafka-data",
+            "Propagation": "",
+            "RW": true,
+            "Source": "/var/lib/docker/volumes/ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-qualification-kafka-data/_data",
+            "Type": "volume"
+          },
+          {
+            "Destination": "/etc/ecomsre/kafka-jmx.yml",
+            "Mode": "",
+            "Propagation": "rprivate",
+            "RW": false,
+            "Source": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/config/product-v030/kafka-jmx.yml",
+            "Type": "bind"
+          }
+        ],
+        "Name": "/ecomsre-live-sandbox-v1-kafka",
+        "host_config_sha256": "9e90d6cf9d097aa62c749f421a25caa0f6c5e4b1232a5c1b92a51f5f8dc5d788",
+        "image_reference": "ghcr.io/open-telemetry/demo@sha256:0601750a3ca4db7d27f746dc73f4180fda162e7a92a1a4847f5b6ae9ac51d477",
+        "labels": {
+          "com.docker.compose.config-hash": "214ecd6207d6ad265a9232ce22db1b8f9de100d9470d5fc713a15745b28f4759",
+          "com.docker.compose.container-number": "1",
+          "com.docker.compose.depends_on": "",
+          "com.docker.compose.image": "sha256:0601750a3ca4db7d27f746dc73f4180fda162e7a92a1a4847f5b6ae9ac51d477",
+          "com.docker.compose.oneoff": "False",
+          "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+          "com.docker.compose.project.config_files": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host/sandbox-compose.json",
+          "com.docker.compose.project.working_dir": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host",
+          "com.docker.compose.service": "kafka",
+          "com.docker.compose.version": "5.3.0",
+          "io.ecomsre.product.v040.qualification": "c6a70e54d58b4df5a1325886304b4844",
+          "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000",
+          "io.ecomsre.telemetry.jmx.sha256": "869ae5cfdcb2b06d5df4aa3d49ce50a671c8301367e378a31c2d6c54fec09055",
+          "org.label-schema.build-date": "2026-06-17",
+          "org.label-schema.description": "Apache Kafka",
+          "org.label-schema.name": "kafka",
+          "org.label-schema.vcs-url": "https://github.com/apache/kafka",
+          "org.opencontainers.image.authors": "Apache Kafka"
+        },
+        "network_endpoints": {
+          "ecomsre-live-sandbox-v1-default": {
+            "Aliases": [
+              "ecomsre-live-sandbox-v1-kafka",
+              "kafka"
+            ],
+            "DNSNames": [
+              "ecomsre-live-sandbox-v1-kafka",
+              "kafka",
+              "16ee82958c61"
+            ],
+            "DriverOpts": null,
+            "EndpointID": "f60a7a5141c497490e02f16d00c16603d4e6abef9c1a3f31d91e62c728dfcb0f",
+            "Gateway": "172.18.0.1",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "GwPriority": 0,
+            "IPAMConfig": null,
+            "IPAddress": "172.18.0.10",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "Links": null,
+            "MacAddress": "e2:11:4e:0b:b0:67",
+            "NetworkID": "8268f64f2d2fc1b64dbff0ec081c7aa0cec354169e39c4b4756ebd68489b179f"
+          }
+        },
+        "raw_inspect_sha256": "71566161b4b743de2b943a025c9a1379f9fd5325f0666dd4d0e3be41c28369f0",
+        "state": {
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Pid": 2028,
+          "Running": true,
+          "StartedAt": "2026-09-08T09:38:27.352259802Z",
+          "Status": "running"
+        }
+      },
+      {
+        "Created": "2026-09-08T09:38:25.916742343Z",
+        "Id": "2f33fa2a26959a03627503bafcb98f7cbf41f3c73b850792aa88903bb120533a",
+        "Image": "sha256:107b203169a20ef7c87548c157f4e4a833dbbbd20fefd3a26740b7f98ac80216",
+        "ImageManifestDescriptor": {
+          "digest": "sha256:bb8b48198974cb792b8bfc09d7e3c5f0d6e07508cb33e06817e2f24805778be5",
+          "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+          "platform": {
+            "architecture": "arm64",
+            "os": "linux"
+          },
+          "size": 1674
+        },
+        "Mounts": [],
+        "Name": "/ecomsre-live-sandbox-v1-valkey-cart",
+        "host_config_sha256": "10740fdf1ecde9f68016fa4dd867cba41d60b36252dd56393af888eddfebaf14",
+        "image_reference": "ghcr.io/valkey-io/valkey@sha256:107b203169a20ef7c87548c157f4e4a833dbbbd20fefd3a26740b7f98ac80216",
+        "labels": {
+          "com.docker.compose.config-hash": "9b508cdb4ed5b81e5ba2b522f473c5fb333a49de2c0561878de811d20ac1abe6",
+          "com.docker.compose.container-number": "1",
+          "com.docker.compose.depends_on": "",
+          "com.docker.compose.image": "sha256:107b203169a20ef7c87548c157f4e4a833dbbbd20fefd3a26740b7f98ac80216",
+          "com.docker.compose.oneoff": "False",
+          "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+          "com.docker.compose.project.config_files": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host/sandbox-compose.json",
+          "com.docker.compose.project.working_dir": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host",
+          "com.docker.compose.service": "valkey-cart",
+          "com.docker.compose.version": "5.3.0",
+          "io.ecomsre.product.v040.qualification": "c6a70e54d58b4df5a1325886304b4844",
+          "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000",
+          "org.opencontainers.image.source": "https://github.com/valkey-io/valkey"
+        },
+        "network_endpoints": {
+          "ecomsre-live-sandbox-v1-default": {
+            "Aliases": [
+              "ecomsre-live-sandbox-v1-valkey-cart",
+              "valkey-cart"
+            ],
+            "DNSNames": [
+              "ecomsre-live-sandbox-v1-valkey-cart",
+              "valkey-cart",
+              "2f33fa2a2695"
+            ],
+            "DriverOpts": null,
+            "EndpointID": "c1adfaef308eddcee4eebf1de42e9993d20c5100d12380fab95d2f114ebce530",
+            "Gateway": "172.18.0.1",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "GwPriority": 0,
+            "IPAMConfig": null,
+            "IPAddress": "172.18.0.3",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "Links": null,
+            "MacAddress": "b6:27:c8:bc:34:58",
+            "NetworkID": "8268f64f2d2fc1b64dbff0ec081c7aa0cec354169e39c4b4756ebd68489b179f"
+          }
+        },
+        "raw_inspect_sha256": "e9c472a67407d9a57a50a3b9905f89ba4c7b132c535f2329efce1c9f2f750889",
+        "state": {
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Pid": 1777,
+          "Running": true,
+          "StartedAt": "2026-09-08T09:38:27.316114052Z",
+          "Status": "running"
+        }
+      },
+      {
+        "Created": "2026-09-08T09:38:25.927481051Z",
+        "Id": "3056bd649e7ce2379a979b3d951773ccc7e8886edc1e36b9158c0a330468c4e0",
+        "Image": "sha256:3a82e1f56c8f0f5616a11103ac3d47e632c3938698946a7ad26da0df1334744a",
+        "ImageManifestDescriptor": {
+          "annotations": {
+            "com.docker.official-images.bashbrew.arch": "arm64v8",
+            "org.opencontainers.image.base.digest": "sha256:8b5033c95ca60cdffb0e0f4c446e5f714e82d8960a9ef4153c0eaf13e988b0ea",
+            "org.opencontainers.image.base.name": "debian:trixie-slim",
+            "org.opencontainers.image.created": "2026-07-16T22:04:56Z",
+            "org.opencontainers.image.revision": "d71f5241e97ebf5c6e6e37e3043ab542132550f2",
+            "org.opencontainers.image.source": "https://github.com/docker-library/postgres.git#d71f5241e97ebf5c6e6e37e3043ab542132550f2:18/trixie",
+            "org.opencontainers.image.url": "https://hub.docker.com/_/postgres",
+            "org.opencontainers.image.version": "18.4"
+          },
+          "digest": "sha256:f1dd3522a7fde8bf8e505f42583ecdc00b4967a4b94d32ba1f890d118fe17335",
+          "mediaType": "application/vnd.oci.image.manifest.v1+json",
+          "platform": {
+            "architecture": "arm64",
+            "os": "linux",
+            "variant": "v8"
+          },
+          "size": 3441
+        },
+        "Mounts": [
+          {
+            "Destination": "/docker-entrypoint-initdb.d/init.sql",
+            "Mode": "ro",
+            "Propagation": "rprivate",
+            "RW": false,
+            "Source": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/third_party/opentelemetry-demo/src/postgresql/init.sql",
+            "Type": "bind"
+          },
+          {
+            "Destination": "/var/lib/postgresql",
+            "Driver": "local",
+            "Mode": "rw",
+            "Name": "ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-astronomy-db-data",
+            "Propagation": "",
+            "RW": true,
+            "Source": "/var/lib/docker/volumes/ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-astronomy-db-data/_data",
+            "Type": "volume"
+          }
+        ],
+        "Name": "/ecomsre-live-sandbox-v1-astronomy-db",
+        "host_config_sha256": "963a2996d4f318dfde46d8faa1a04ff4d10ac6b8c98b87b859614468294fe12c",
+        "image_reference": "postgres@sha256:3a82e1f56c8f0f5616a11103ac3d47e632c3938698946a7ad26da0df1334744a",
+        "labels": {
+          "com.docker.compose.config-hash": "dbe6246d38656a2ca873297c2d4a66e69e362fddb4d6c92c39abda593af3504b",
+          "com.docker.compose.container-number": "1",
+          "com.docker.compose.depends_on": "",
+          "com.docker.compose.image": "sha256:3a82e1f56c8f0f5616a11103ac3d47e632c3938698946a7ad26da0df1334744a",
+          "com.docker.compose.oneoff": "False",
+          "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+          "com.docker.compose.project.config_files": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host/sandbox-compose.json",
+          "com.docker.compose.project.working_dir": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host",
+          "com.docker.compose.service": "astronomy-db",
+          "com.docker.compose.version": "5.3.0",
+          "io.ecomsre.product.v040.qualification": "c6a70e54d58b4df5a1325886304b4844",
+          "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+        },
+        "network_endpoints": {
+          "ecomsre-live-sandbox-v1-default": {
+            "Aliases": [
+              "ecomsre-live-sandbox-v1-astronomy-db",
+              "astronomy-db"
+            ],
+            "DNSNames": [
+              "ecomsre-live-sandbox-v1-astronomy-db",
+              "astronomy-db",
+              "3056bd649e7c"
+            ],
+            "DriverOpts": null,
+            "EndpointID": "d287171b5f4e5cb38056967618e6067d563ffc907880ac6df340c5a878aa4fd3",
+            "Gateway": "172.18.0.1",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "GwPriority": 0,
+            "IPAMConfig": null,
+            "IPAddress": "172.18.0.6",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "Links": null,
+            "MacAddress": "4e:9b:7b:d8:d0:c4",
+            "NetworkID": "8268f64f2d2fc1b64dbff0ec081c7aa0cec354169e39c4b4756ebd68489b179f"
+          }
+        },
+        "raw_inspect_sha256": "8fd8b3b8eed94e29584bd50325f441577d37b320ec5d7dfa5b2143865bdc4dba",
+        "state": {
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Pid": 1796,
+          "Running": true,
+          "StartedAt": "2026-09-08T09:38:27.321616218Z",
+          "Status": "running"
+        }
+      },
+      {
+        "Created": "2026-09-08T09:38:26.763872301Z",
+        "Id": "422f5cb1e204ca41b695e104df3230a4ef0d10e991077b434e7bf7e56054abb6",
+        "Image": "sha256:f2f01157055a9b2aab9df7118e1f1c9abf345e99b23bc7a2bc791db374a7d0f6",
+        "ImageManifestDescriptor": {
+          "digest": "sha256:1fef9f07f04eb6775b4076ea4f817d6b7b9050e23e52941f0756ba08df798ea6",
+          "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+          "platform": {
+            "architecture": "arm64",
+            "os": "linux"
+          },
+          "size": 947
+        },
+        "Mounts": [
+          {
+            "Destination": "/etc/otelcol-config.yml",
+            "Mode": "ro",
+            "Propagation": "rprivate",
+            "RW": false,
+            "Source": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/third_party/opentelemetry-demo/src/otel-collector/otelcol-config.yml",
+            "Type": "bind"
+          },
+          {
+            "Destination": "/etc/otelcol-config-full.yml",
+            "Mode": "ro",
+            "Propagation": "rprivate",
+            "RW": false,
+            "Source": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/third_party/opentelemetry-demo/src/otel-collector/otelcol-config-full.yml",
+            "Type": "bind"
+          },
+          {
+            "Destination": "/etc/otelcol-config-observability.yml",
+            "Mode": "ro",
+            "Propagation": "rprivate",
+            "RW": false,
+            "Source": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/third_party/opentelemetry-demo/src/otel-collector/otelcol-config-observability.yml",
+            "Type": "bind"
+          },
+          {
+            "Destination": "/etc/otelcol-config-extras.yml",
+            "Mode": "ro",
+            "Propagation": "rprivate",
+            "RW": false,
+            "Source": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/third_party/opentelemetry-demo/src/otel-collector/otelcol-config-extras.yml",
+            "Type": "bind"
+          },
+          {
+            "Destination": "/etc/otelcol-config-sandbox.yml",
+            "Mode": "ro",
+            "Propagation": "rprivate",
+            "RW": false,
+            "Source": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/config/product-v030/otelcol-sandbox.yml",
+            "Type": "bind"
+          },
+          {
+            "Destination": "/var/run/docker.sock",
+            "Mode": "ro",
+            "Propagation": "rprivate",
+            "RW": false,
+            "Source": "/var/run/docker.sock",
+            "Type": "bind"
+          }
+        ],
+        "Name": "/ecomsre-live-sandbox-v1-otel-collector",
+        "host_config_sha256": "16ab07d209c6d15a25d3a20c1d384566114a51a0b912221ad276341c57abd9f1",
+        "image_reference": "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib@sha256:f2f01157055a9b2aab9df7118e1f1c9abf345e99b23bc7a2bc791db374a7d0f6",
+        "labels": {
+          "com.docker.compose.config-hash": "cfe51918c8a46bed27cfff72e175e42f209122b31525361edf038870531b3f81",
+          "com.docker.compose.container-number": "1",
+          "com.docker.compose.depends_on": "opensearch:service_healthy:false,jaeger:service_started:false,opamp-server:service_healthy:false",
+          "com.docker.compose.image": "sha256:f2f01157055a9b2aab9df7118e1f1c9abf345e99b23bc7a2bc791db374a7d0f6",
+          "com.docker.compose.oneoff": "False",
+          "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+          "com.docker.compose.project.config_files": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host/sandbox-compose.json",
+          "com.docker.compose.project.working_dir": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host",
+          "com.docker.compose.service": "otel-collector",
+          "com.docker.compose.version": "5.3.0",
+          "io.ecomsre.product.v040.qualification": "c6a70e54d58b4df5a1325886304b4844",
+          "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000",
+          "org.opencontainers.image.created": "2026-07-22T10:00:18Z",
+          "org.opencontainers.image.licenses": "Apache-2.0",
+          "org.opencontainers.image.name": "opentelemetry-collector-releases",
+          "org.opencontainers.image.revision": "145e73e8663aff5ce978ea38cf0cbd4a97017141",
+          "org.opencontainers.image.source": "https://github.com/open-telemetry/opentelemetry-collector-releases",
+          "org.opencontainers.image.version": "0.157.0"
+        },
+        "network_endpoints": {
+          "ecomsre-live-sandbox-v1-default": {
+            "Aliases": [
+              "ecomsre-live-sandbox-v1-otel-collector",
+              "otel-collector"
+            ],
+            "DNSNames": [
+              "ecomsre-live-sandbox-v1-otel-collector",
+              "otel-collector",
+              "422f5cb1e204"
+            ],
+            "DriverOpts": null,
+            "EndpointID": "fc23bad29fdb80bdf715dacebbaa1bf840f38aca9e2e80f5e10ff0dc56e00f23",
+            "Gateway": "172.18.0.1",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "GwPriority": 0,
+            "IPAMConfig": null,
+            "IPAddress": "172.18.0.12",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "Links": null,
+            "MacAddress": "fa:59:46:e6:72:dc",
+            "NetworkID": "8268f64f2d2fc1b64dbff0ec081c7aa0cec354169e39c4b4756ebd68489b179f"
+          }
+        },
+        "raw_inspect_sha256": "de1138109cb672ea8b9f6059ce141e33bcdbc729b6b5802e85706f5befbd7c3a",
+        "state": {
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Pid": 3596,
+          "Running": true,
+          "StartedAt": "2026-09-08T09:38:38.109318418Z",
+          "Status": "running"
+        }
+      },
+      {
+        "Created": "2026-09-08T09:38:26.989315343Z",
+        "Id": "43ad8a9aa246367e55ade06a23a8888d4a21fbf903b0790e32ef5f07299cc03c",
+        "Image": "sha256:3d18cb304a6af6a512c5e488bb19ee42be7d71bdf75a9786aa7296b8fb0a5036",
+        "ImageManifestDescriptor": {
+          "digest": "sha256:07eae46624d18e21cf2c19c055f58133d5cc008b31a74f4765b20e294a9ae5f0",
+          "mediaType": "application/vnd.oci.image.manifest.v1+json",
+          "platform": {
+            "architecture": "arm64",
+            "os": "linux"
+          },
+          "size": 3127
+        },
+        "Mounts": [],
+        "Name": "/ecomsre-live-sandbox-v1-checkout",
+        "host_config_sha256": "36ebe2d688e35a5e9585a7b15aff1844043b95bce5c0d2b0840739248efdadc2",
+        "image_reference": "ghcr.io/open-telemetry/demo@sha256:3d18cb304a6af6a512c5e488bb19ee42be7d71bdf75a9786aa7296b8fb0a5036",
+        "labels": {
+          "com.docker.compose.config-hash": "cad5b3c6691b3c5f737a7fd35dfc881c82fea8e080377d8e749f79bc94ccf935",
+          "com.docker.compose.container-number": "1",
+          "com.docker.compose.depends_on": "otel-collector:service_started:false,currency:service_healthy:false,email:service_healthy:false,kafka:service_healthy:false,cart:service_started:false,payment:service_healthy:false,product-catalog:service_started:false,flagd:service_started:false,shipping:service_started:false",
+          "com.docker.compose.image": "sha256:3d18cb304a6af6a512c5e488bb19ee42be7d71bdf75a9786aa7296b8fb0a5036",
+          "com.docker.compose.oneoff": "False",
+          "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+          "com.docker.compose.project.config_files": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host/sandbox-compose.json",
+          "com.docker.compose.project.working_dir": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host",
+          "com.docker.compose.service": "checkout",
+          "com.docker.compose.version": "5.3.0",
+          "io.ecomsre.product.v040.qualification": "c6a70e54d58b4df5a1325886304b4844",
+          "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+        },
+        "network_endpoints": {
+          "ecomsre-live-sandbox-v1-default": {
+            "Aliases": [
+              "ecomsre-live-sandbox-v1-checkout",
+              "checkout"
+            ],
+            "DNSNames": [
+              "ecomsre-live-sandbox-v1-checkout",
+              "checkout",
+              "43ad8a9aa246"
+            ],
+            "DriverOpts": null,
+            "EndpointID": "a4b13a051721d746d4ad00f5363060e52171a11c583d3ce919b279e7f5aacbf1",
+            "Gateway": "172.18.0.1",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "GwPriority": 0,
+            "IPAMConfig": null,
+            "IPAddress": "172.18.0.26",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "Links": null,
+            "MacAddress": "42:63:6c:8a:6a:87",
+            "NetworkID": "8268f64f2d2fc1b64dbff0ec081c7aa0cec354169e39c4b4756ebd68489b179f"
+          }
+        },
+        "raw_inspect_sha256": "6f8216f58fdb7306cf859a1a02f7b5ba95b60fb8175615cf1604a1a90ec85935",
+        "state": {
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Pid": 5165,
+          "Running": true,
+          "StartedAt": "2026-09-08T09:38:43.885328087Z",
+          "Status": "running"
+        }
+      },
+      {
+        "Created": "2026-09-08T09:38:26.958334302Z",
+        "Id": "488ce97891b6df261382179ead7ed2eb6936cc088e59a1f00c34efcf56180f0b",
+        "Image": "sha256:6510027907f925b1d76d0c645c9c757427c8735577ea9a422291c7b4b770bfd5",
+        "ImageManifestDescriptor": {
+          "digest": "sha256:0b8524ba9dd99a12f4223b82816d80751fbc3c06b39ccee4b08669040ac0ad6b",
+          "mediaType": "application/vnd.oci.image.manifest.v1+json",
+          "platform": {
+            "architecture": "arm64",
+            "os": "linux"
+          },
+          "size": 2376
+        },
+        "Mounts": [],
+        "Name": "/ecomsre-live-sandbox-v1-recommendation",
+        "host_config_sha256": "20c00bcb523add5a5ac29e39b37ff27d1870c0dd87c5e9233e80b4f3237991f9",
+        "image_reference": "ghcr.io/open-telemetry/demo@sha256:6510027907f925b1d76d0c645c9c757427c8735577ea9a422291c7b4b770bfd5",
+        "labels": {
+          "com.docker.compose.config-hash": "f7709a053dfb4fd0b5faef5d5a3f5258ebfdff97edb5d119639e9c24ab60308f",
+          "com.docker.compose.container-number": "1",
+          "com.docker.compose.depends_on": "flagd:service_started:false,otel-collector:service_started:false,product-catalog:service_started:false",
+          "com.docker.compose.image": "sha256:6510027907f925b1d76d0c645c9c757427c8735577ea9a422291c7b4b770bfd5",
+          "com.docker.compose.oneoff": "False",
+          "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+          "com.docker.compose.project.config_files": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host/sandbox-compose.json",
+          "com.docker.compose.project.working_dir": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host",
+          "com.docker.compose.service": "recommendation",
+          "com.docker.compose.version": "5.3.0",
+          "io.ecomsre.product.v040.qualification": "c6a70e54d58b4df5a1325886304b4844",
+          "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+        },
+        "network_endpoints": {
+          "ecomsre-live-sandbox-v1-default": {
+            "Aliases": [
+              "ecomsre-live-sandbox-v1-recommendation",
+              "recommendation"
+            ],
+            "DNSNames": [
+              "ecomsre-live-sandbox-v1-recommendation",
+              "recommendation",
+              "488ce97891b6"
+            ],
+            "DriverOpts": null,
+            "EndpointID": "769d24bfe76c38d3fc90285bb8e0e462443bcc5f1316d954b4c6687b10129223",
+            "Gateway": "172.18.0.1",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "GwPriority": 0,
+            "IPAMConfig": null,
+            "IPAddress": "172.18.0.23",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "Links": null,
+            "MacAddress": "e6:b0:5e:6d:32:05",
+            "NetworkID": "8268f64f2d2fc1b64dbff0ec081c7aa0cec354169e39c4b4756ebd68489b179f"
+          }
+        },
+        "raw_inspect_sha256": "5a63f69a3ad4eb208f26a4dfe87423b387bbb5d56e208a9218995e05446995f0",
+        "state": {
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Pid": 4420,
+          "Running": true,
+          "StartedAt": "2026-09-08T09:38:38.90097196Z",
+          "Status": "running"
+        }
+      },
+      {
+        "Created": "2026-09-08T09:38:26.817874426Z",
+        "Id": "4c36cc7e34f7052bed17b64383b529c878421aa79f7c2d9c54c369dcb3eacfd2",
+        "Image": "sha256:d498c7434d22ff7a82ec86843efd22c93c52cb8c6df4961a7110617b1e08c15f",
+        "ImageManifestDescriptor": {
+          "digest": "sha256:c9bbe72133e9b6569f8e490441e7a1472f8767d12759b0eaf0af14e91e4a9d45",
+          "mediaType": "application/vnd.oci.image.manifest.v1+json",
+          "platform": {
+            "architecture": "arm64",
+            "os": "linux"
+          },
+          "size": 5030
+        },
+        "Mounts": [],
+        "Name": "/ecomsre-live-sandbox-v1-payment",
+        "host_config_sha256": "442379da9bc668181f00e4824fe6276b2eb0f81e237acaeb530fbdf2b88d7c5a",
+        "image_reference": "ghcr.io/open-telemetry/demo@sha256:d498c7434d22ff7a82ec86843efd22c93c52cb8c6df4961a7110617b1e08c15f",
+        "labels": {
+          "com.docker.compose.config-hash": "199c143074ab08467e13cd4bf6bd8c1f0204311a3896604a00f81425be9dd77e",
+          "com.docker.compose.container-number": "1",
+          "com.docker.compose.depends_on": "flagd:service_started:false,otel-collector:service_started:false",
+          "com.docker.compose.image": "sha256:d498c7434d22ff7a82ec86843efd22c93c52cb8c6df4961a7110617b1e08c15f",
+          "com.docker.compose.oneoff": "False",
+          "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+          "com.docker.compose.project.config_files": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host/sandbox-compose.json",
+          "com.docker.compose.project.working_dir": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host",
+          "com.docker.compose.service": "payment",
+          "com.docker.compose.version": "5.3.0",
+          "io.ecomsre.product.v040.qualification": "c6a70e54d58b4df5a1325886304b4844",
+          "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+        },
+        "network_endpoints": {
+          "ecomsre-live-sandbox-v1-default": {
+            "Aliases": [
+              "ecomsre-live-sandbox-v1-payment",
+              "payment"
+            ],
+            "DNSNames": [
+              "ecomsre-live-sandbox-v1-payment",
+              "payment",
+              "4c36cc7e34f7"
+            ],
+            "DriverOpts": null,
+            "EndpointID": "a16480dae8d01aab3077be9ec8759882e59b9303e537f9ae2103a21e8981713f",
+            "Gateway": "172.18.0.1",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "GwPriority": 0,
+            "IPAMConfig": null,
+            "IPAddress": "172.18.0.14",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "Links": null,
+            "MacAddress": "ca:35:fb:26:cd:d3",
+            "NetworkID": "8268f64f2d2fc1b64dbff0ec081c7aa0cec354169e39c4b4756ebd68489b179f"
+          }
+        },
+        "raw_inspect_sha256": "d9eaa37322366e9f43052ff8be8fcc266e496ec967dc90c4e5d74507496b7bcf",
+        "state": {
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Pid": 3816,
+          "Running": true,
+          "StartedAt": "2026-09-08T09:38:38.249202626Z",
+          "Status": "running"
+        }
+      },
+      {
+        "Created": "2026-09-08T09:38:25.917276634Z",
+        "Id": "4e7a2733141e36a3fce6946ef9d72e7623f0c547ec1125b5359801f98dad5a9f",
+        "Image": "sha256:62cfae32adb1f51904d5772727a846eb90c8304170c01c2e6ca09925cc49a693",
+        "ImageManifestDescriptor": {
+          "digest": "sha256:f8459b4e3e6a5153acc4571f99de64be8658621f6fc1d06f7715644b9a1259d6",
+          "mediaType": "application/vnd.oci.image.manifest.v1+json",
+          "platform": {
+            "architecture": "arm64",
+            "os": "linux"
+          },
+          "size": 864
+        },
+        "Mounts": [],
+        "Name": "/ecomsre-live-sandbox-v1-opamp-server",
+        "host_config_sha256": "e6c950e81ce283cc4eb1e3d8aa43cda3c5a87a120ec3b473a2862db8f31cf55d",
+        "image_reference": "ghcr.io/open-telemetry/demo@sha256:62cfae32adb1f51904d5772727a846eb90c8304170c01c2e6ca09925cc49a693",
+        "labels": {
+          "com.docker.compose.config-hash": "b9a4d5719cfbf1dbb5592ce45ad59156c089aa9ba1979a81222546d9925b0434",
+          "com.docker.compose.container-number": "1",
+          "com.docker.compose.depends_on": "",
+          "com.docker.compose.image": "sha256:62cfae32adb1f51904d5772727a846eb90c8304170c01c2e6ca09925cc49a693",
+          "com.docker.compose.oneoff": "False",
+          "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+          "com.docker.compose.project.config_files": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host/sandbox-compose.json",
+          "com.docker.compose.project.working_dir": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host",
+          "com.docker.compose.service": "opamp-server",
+          "com.docker.compose.version": "5.3.0",
+          "io.ecomsre.product.v040.qualification": "c6a70e54d58b4df5a1325886304b4844",
+          "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+        },
+        "network_endpoints": {
+          "ecomsre-live-sandbox-v1-default": {
+            "Aliases": [
+              "ecomsre-live-sandbox-v1-opamp-server",
+              "opamp-server"
+            ],
+            "DNSNames": [
+              "ecomsre-live-sandbox-v1-opamp-server",
+              "opamp-server",
+              "4e7a2733141e"
+            ],
+            "DriverOpts": null,
+            "EndpointID": "bc0df98e798d81f94bee54879db6caf206666a5bb01dc0ab23e9ba5cb2daaac8",
+            "Gateway": "172.18.0.1",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "GwPriority": 0,
+            "IPAMConfig": null,
+            "IPAddress": "172.18.0.4",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "Links": null,
+            "MacAddress": "b6:40:8c:d1:89:84",
+            "NetworkID": "8268f64f2d2fc1b64dbff0ec081c7aa0cec354169e39c4b4756ebd68489b179f"
+          }
+        },
+        "raw_inspect_sha256": "6510e67aba8a653b18b7fcfada46591b42925071c3e2f97a1e8c7eac1d3cd96e",
+        "state": {
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Pid": 1760,
+          "Running": true,
+          "StartedAt": "2026-09-08T09:38:27.30922101Z",
+          "Status": "running"
+        }
+      },
+      {
+        "Created": "2026-09-08T09:38:27.112386677Z",
+        "Id": "52964f9f611ebb0d81085e2482ca888688866029bd5bfcf3d6276694c5db0175",
+        "Image": "sha256:1c53bfb596970a014682925f804c686762c0c593949ce58a90ac38563f317841",
+        "ImageManifestDescriptor": {
+          "digest": "sha256:5dca3e6fe127f12a78765428bb86e9aad3ec8ee5b6498095e9d9b258cf8d64d3",
+          "mediaType": "application/vnd.oci.image.manifest.v1+json",
+          "platform": {
+            "architecture": "arm64",
+            "os": "linux"
+          },
+          "size": 2563
+        },
+        "Mounts": [],
+        "Name": "/ecomsre-live-sandbox-v1-frontend-proxy",
+        "host_config_sha256": "b1cea7f7fb6383ad92e4bbbde96b156bdb81b9e0f06f40054eb95042f622b9af",
+        "image_reference": "ghcr.io/open-telemetry/demo@sha256:1c53bfb596970a014682925f804c686762c0c593949ce58a90ac38563f317841",
+        "labels": {
+          "com.docker.compose.config-hash": "2cad114e4ea8fcb69a36bd231c2a8ae5cbe8a60c5abe126c177b43b102431c2c",
+          "com.docker.compose.container-number": "1",
+          "com.docker.compose.depends_on": "grafana:service_started:false,jaeger:service_started:false,opamp-server:service_healthy:false,telemetry-docs:service_healthy:false,flagd-ui:service_healthy:false,frontend:service_healthy:false",
+          "com.docker.compose.image": "sha256:1c53bfb596970a014682925f804c686762c0c593949ce58a90ac38563f317841",
+          "com.docker.compose.oneoff": "False",
+          "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+          "com.docker.compose.project.config_files": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host/sandbox-compose.json",
+          "com.docker.compose.project.working_dir": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host",
+          "com.docker.compose.service": "frontend-proxy",
+          "com.docker.compose.version": "5.3.0",
+          "io.ecomsre.product.v040.qualification": "c6a70e54d58b4df5a1325886304b4844",
+          "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000",
+          "org.opencontainers.image.version": "22.04"
+        },
+        "network_endpoints": {
+          "ecomsre-live-sandbox-v1-default": {
+            "Aliases": [
+              "ecomsre-live-sandbox-v1-frontend-proxy",
+              "frontend-proxy"
+            ],
+            "DNSNames": [
+              "ecomsre-live-sandbox-v1-frontend-proxy",
+              "frontend-proxy",
+              "52964f9f611e"
+            ],
+            "DriverOpts": null,
+            "EndpointID": "c1dcf4d293d8665f61a727c4bd57aeecde3ae922a4568413639194e0587e5739",
+            "Gateway": "172.18.0.1",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "GwPriority": 0,
+            "IPAMConfig": null,
+            "IPAddress": "172.18.0.28",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "Links": null,
+            "MacAddress": "8a:cf:49:39:32:02",
+            "NetworkID": "8268f64f2d2fc1b64dbff0ec081c7aa0cec354169e39c4b4756ebd68489b179f"
+          }
+        },
+        "raw_inspect_sha256": "f5a17cadb30ff2f9358dd15ed533daca9d168effd93db476122ced4d24f8472f",
+        "state": {
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Pid": 5743,
+          "Running": true,
+          "StartedAt": "2026-09-08T09:38:50.139480673Z",
+          "Status": "running"
+        }
+      },
+      {
+        "Created": "2026-09-08T09:38:26.833847385Z",
+        "Id": "57d5c97453801b87ecb493293a7e73ea7415c5ad5e5bd592be00eb280ec2372d",
+        "Image": "sha256:1cdfd1bcf476914c39afff9d91144fe7a6bffd6b897b4e29b20485791c8ec6a5",
+        "ImageManifestDescriptor": {
+          "digest": "sha256:fdf464e80f1a6c536cad86e3b429fda48b87c2bb8dafe1f25507322ff73d8859",
+          "mediaType": "application/vnd.oci.image.manifest.v1+json",
+          "platform": {
+            "architecture": "arm64",
+            "os": "linux"
+          },
+          "size": 7522
+        },
+        "Mounts": [],
+        "Name": "/ecomsre-live-sandbox-v1-fraud-detection",
+        "host_config_sha256": "09f7e91a833df05ba4d15be306ecfe5ef31f7ca6a4935de59103a13122aba4bb",
+        "image_reference": "ghcr.io/open-telemetry/demo@sha256:1cdfd1bcf476914c39afff9d91144fe7a6bffd6b897b4e29b20485791c8ec6a5",
+        "labels": {
+          "com.docker.compose.config-hash": "aba6951241edb0bd8aa5e08650bc43cef2a9bcc36e0c38a5adef38c456f27374",
+          "com.docker.compose.container-number": "1",
+          "com.docker.compose.depends_on": "kafka:service_healthy:false,otel-collector:service_started:false",
+          "com.docker.compose.image": "sha256:1cdfd1bcf476914c39afff9d91144fe7a6bffd6b897b4e29b20485791c8ec6a5",
+          "com.docker.compose.oneoff": "False",
+          "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+          "com.docker.compose.project.config_files": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host/sandbox-compose.json",
+          "com.docker.compose.project.working_dir": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host",
+          "com.docker.compose.service": "fraud-detection",
+          "com.docker.compose.version": "5.3.0",
+          "io.ecomsre.product.v040.qualification": "c6a70e54d58b4df5a1325886304b4844",
+          "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+        },
+        "network_endpoints": {
+          "ecomsre-live-sandbox-v1-default": {
+            "Aliases": [
+              "ecomsre-live-sandbox-v1-fraud-detection",
+              "fraud-detection"
+            ],
+            "DNSNames": [
+              "ecomsre-live-sandbox-v1-fraud-detection",
+              "fraud-detection",
+              "57d5c9745380"
+            ],
+            "DriverOpts": null,
+            "EndpointID": "60ea21c0ede5f6a77c50e99e6e84090083e4d79b65fa316ea036efa3a1acbbe0",
+            "Gateway": "172.18.0.1",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "GwPriority": 0,
+            "IPAMConfig": null,
+            "IPAddress": "172.18.0.25",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "Links": null,
+            "MacAddress": "66:c3:d9:a5:fa:d9",
+            "NetworkID": "8268f64f2d2fc1b64dbff0ec081c7aa0cec354169e39c4b4756ebd68489b179f"
+          }
+        },
+        "raw_inspect_sha256": "6dc33d7cdec675016dc4b12cbffe4890c96644e0c9530e588af36030b10ddc2e",
+        "state": {
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Pid": 4877,
+          "Running": true,
+          "StartedAt": "2026-09-08T09:38:43.215813795Z",
+          "Status": "running"
+        }
+      },
+      {
+        "Created": "2026-09-08T09:38:25.923869301Z",
+        "Id": "6e638dc868913e07bcd394d91b09d92170e85c513426393fb209ae49fea19e12",
+        "Image": "sha256:ede4864215be4cd85bd8c3129a2fea6c5713c5653c7282c429dba123014bc68b",
+        "ImageManifestDescriptor": {
+          "digest": "sha256:476f9d88b6660cf93b47aac9b50de842855cb5cb50a35eef0108e7bde58a6985",
+          "mediaType": "application/vnd.oci.image.manifest.v1+json",
+          "platform": {
+            "architecture": "arm64",
+            "os": "linux"
+          },
+          "size": 1243
+        },
+        "Mounts": [
+          {
+            "Destination": "/etc/jaeger/config.yml",
+            "Mode": "ro",
+            "Propagation": "rprivate",
+            "RW": false,
+            "Source": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/third_party/opentelemetry-demo/src/jaeger/config.yml",
+            "Type": "bind"
+          },
+          {
+            "Destination": "/etc/jaeger/ui-config.json",
+            "Mode": "ro",
+            "Propagation": "rprivate",
+            "RW": false,
+            "Source": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/third_party/opentelemetry-demo/src/jaeger/ui-config.json",
+            "Type": "bind"
+          },
+          {
+            "Destination": "/tmp",
+            "Driver": "local",
+            "Mode": "rw",
+            "Name": "ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-jaeger-data",
+            "Propagation": "",
+            "RW": true,
+            "Source": "/var/lib/docker/volumes/ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-jaeger-data/_data",
+            "Type": "volume"
+          }
+        ],
+        "Name": "/ecomsre-live-sandbox-v1-jaeger",
+        "host_config_sha256": "8011ebad5daee611724df03f2e91cbb8decfeb661d30f25e22f7143844ed6a54",
+        "image_reference": "quay.io/jaegertracing/jaeger@sha256:ede4864215be4cd85bd8c3129a2fea6c5713c5653c7282c429dba123014bc68b",
+        "labels": {
+          "com.docker.compose.config-hash": "0ac69e75bd9ca31af2a6a6e4152dbfd2f4b7f5ffd509cba0a5801f886a9519c3",
+          "com.docker.compose.container-number": "1",
+          "com.docker.compose.depends_on": "",
+          "com.docker.compose.image": "sha256:ede4864215be4cd85bd8c3129a2fea6c5713c5653c7282c429dba123014bc68b",
+          "com.docker.compose.oneoff": "False",
+          "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+          "com.docker.compose.project.config_files": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host/sandbox-compose.json",
+          "com.docker.compose.project.working_dir": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host",
+          "com.docker.compose.service": "jaeger",
+          "com.docker.compose.version": "5.3.0",
+          "io.ecomsre.product.v040.qualification": "c6a70e54d58b4df5a1325886304b4844",
+          "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+        },
+        "network_endpoints": {
+          "ecomsre-live-sandbox-v1-default": {
+            "Aliases": [
+              "ecomsre-live-sandbox-v1-jaeger",
+              "jaeger"
+            ],
+            "DNSNames": [
+              "ecomsre-live-sandbox-v1-jaeger",
+              "jaeger",
+              "6e638dc86891"
+            ],
+            "DriverOpts": null,
+            "EndpointID": "cba72ff0083fb55c1a64b6f7fe7779fb31a9751e7635ddc251e036a0a5055735",
+            "Gateway": "172.18.0.1",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "GwPriority": 0,
+            "IPAMConfig": null,
+            "IPAddress": "172.18.0.9",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "Links": null,
+            "MacAddress": "ea:40:a1:ed:58:ed",
+            "NetworkID": "8268f64f2d2fc1b64dbff0ec081c7aa0cec354169e39c4b4756ebd68489b179f"
+          }
+        },
+        "raw_inspect_sha256": "c21e7bd39d9a70c0504e9abe07115b274251d0f9553a493c3c106df905f2789f",
+        "state": {
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Pid": 1993,
+          "Running": true,
+          "StartedAt": "2026-09-08T09:38:27.351199135Z",
+          "Status": "running"
+        }
+      },
+      {
+        "Created": "2026-09-08T09:38:26.807437551Z",
+        "Id": "7310f8f65a8211296e66fb8ce9ca81aacc59e03aea2bed30d494337fbc4b76a4",
+        "Image": "sha256:92873a8e277d4db925f61b680708f4043e3aa08d8073c8e9000b83731f288bb7",
+        "ImageManifestDescriptor": {
+          "digest": "sha256:bb6e142378a01f94d4f2cf322b8a145f2e33b20a2c41ba1643320b5039fe6b0e",
+          "mediaType": "application/vnd.oci.image.manifest.v1+json",
+          "platform": {
+            "architecture": "arm64",
+            "os": "linux"
+          },
+          "size": 1433
+        },
+        "Mounts": [
+          {
+            "Destination": "/app/data",
+            "Mode": "rw",
+            "Propagation": "rprivate",
+            "RW": true,
+            "Source": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/sandbox/runtime/flagd",
+            "Type": "bind"
+          }
+        ],
+        "Name": "/ecomsre-live-sandbox-v1-flagd-ui",
+        "host_config_sha256": "8ab5562614fd24c0aca93b5e1071ca4fbcbdc92272938d7e2c67e6a1fb7c3421",
+        "image_reference": "ghcr.io/open-telemetry/demo@sha256:92873a8e277d4db925f61b680708f4043e3aa08d8073c8e9000b83731f288bb7",
+        "labels": {
+          "com.docker.compose.config-hash": "1374fca37ff123af83d612e5c0205f96471c1a5cb5d6429f2649d0c1bd95bb2d",
+          "com.docker.compose.container-number": "1",
+          "com.docker.compose.depends_on": "otel-collector:service_started:false,flagd:service_started:false",
+          "com.docker.compose.image": "sha256:92873a8e277d4db925f61b680708f4043e3aa08d8073c8e9000b83731f288bb7",
+          "com.docker.compose.oneoff": "False",
+          "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+          "com.docker.compose.project.config_files": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host/sandbox-compose.json",
+          "com.docker.compose.project.working_dir": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host",
+          "com.docker.compose.service": "flagd-ui",
+          "com.docker.compose.version": "5.3.0",
+          "io.ecomsre.product.v040.qualification": "c6a70e54d58b4df5a1325886304b4844",
+          "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+        },
+        "network_endpoints": {
+          "ecomsre-live-sandbox-v1-default": {
+            "Aliases": [
+              "ecomsre-live-sandbox-v1-flagd-ui",
+              "flagd-ui"
+            ],
+            "DNSNames": [
+              "ecomsre-live-sandbox-v1-flagd-ui",
+              "flagd-ui",
+              "7310f8f65a82"
+            ],
+            "DriverOpts": null,
+            "EndpointID": "6bfde70cffd282622d77e8a8807485f4393cf531f2a9180112a66a97edc85d04",
+            "Gateway": "172.18.0.1",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "GwPriority": 0,
+            "IPAMConfig": null,
+            "IPAddress": "172.18.0.16",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "Links": null,
+            "MacAddress": "12:0a:48:9d:7b:84",
+            "NetworkID": "8268f64f2d2fc1b64dbff0ec081c7aa0cec354169e39c4b4756ebd68489b179f"
+          }
+        },
+        "raw_inspect_sha256": "f1bd8d48667933ab309e9c5e137d5d41cddabd9dcfe6d4ff227283ee37ccc130",
+        "state": {
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Pid": 3829,
+          "Running": true,
+          "StartedAt": "2026-09-08T09:38:38.251984168Z",
+          "Status": "running"
+        }
+      },
+      {
+        "Created": "2026-09-08T09:38:26.81402351Z",
+        "Id": "89763e46e0e1c4f4cda6dbe915f91c03f0e9a0e51eb4630eb13d99dfab67170b",
+        "Image": "sha256:278aff685646443b88cf1ab7d83812d82204fbb16ea279296161d05bf1329080",
+        "ImageManifestDescriptor": {
+          "digest": "sha256:7471d710ccf34ae074f15c7dfe5943fb731f8f21759bcfee2c81f670bf4d9363",
+          "mediaType": "application/vnd.oci.image.manifest.v1+json",
+          "platform": {
+            "architecture": "arm64",
+            "os": "linux"
+          },
+          "size": 3127
+        },
+        "Mounts": [
+          {
+            "Destination": "/otel-config.yml",
+            "Mode": "ro",
+            "Propagation": "rprivate",
+            "RW": false,
+            "Source": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/third_party/opentelemetry-demo/otel-config.yml",
+            "Type": "bind"
+          }
+        ],
+        "Name": "/ecomsre-live-sandbox-v1-product-catalog",
+        "host_config_sha256": "c5e27b7e624e311f355c0442affe28d543319ff69f67d3cf386c1459e6e06c39",
+        "image_reference": "ghcr.io/open-telemetry/demo@sha256:278aff685646443b88cf1ab7d83812d82204fbb16ea279296161d05bf1329080",
+        "labels": {
+          "com.docker.compose.config-hash": "c2f8a16f1278ccfc8e01904ba3fbfaaa75525372ad84627f252a07d4ba14eb67",
+          "com.docker.compose.container-number": "1",
+          "com.docker.compose.depends_on": "astronomy-db:service_healthy:false,flagd:service_started:false,otel-collector:service_started:false",
+          "com.docker.compose.image": "sha256:278aff685646443b88cf1ab7d83812d82204fbb16ea279296161d05bf1329080",
+          "com.docker.compose.oneoff": "False",
+          "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+          "com.docker.compose.project.config_files": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host/sandbox-compose.json",
+          "com.docker.compose.project.working_dir": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host",
+          "com.docker.compose.service": "product-catalog",
+          "com.docker.compose.version": "5.3.0",
+          "io.ecomsre.product.v040.qualification": "c6a70e54d58b4df5a1325886304b4844",
+          "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+        },
+        "network_endpoints": {
+          "ecomsre-live-sandbox-v1-default": {
+            "Aliases": [
+              "ecomsre-live-sandbox-v1-product-catalog",
+              "product-catalog"
+            ],
+            "DNSNames": [
+              "ecomsre-live-sandbox-v1-product-catalog",
+              "product-catalog",
+              "89763e46e0e1"
+            ],
+            "DriverOpts": null,
+            "EndpointID": "16fe76d7e4ea73877842a373ceb8f750f7e72cb840d2221e29e75780b7e62c36",
+            "Gateway": "172.18.0.1",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "GwPriority": 0,
+            "IPAMConfig": null,
+            "IPAddress": "172.18.0.22",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "Links": null,
+            "MacAddress": "de:a3:04:45:99:d3",
+            "NetworkID": "8268f64f2d2fc1b64dbff0ec081c7aa0cec354169e39c4b4756ebd68489b179f"
+          }
+        },
+        "raw_inspect_sha256": "716ce8ce789299c71fb395eb60af15dd08ccc025d0def785565b06868eb9c21b",
+        "state": {
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Pid": 4337,
+          "Running": true,
+          "StartedAt": "2026-09-08T09:38:38.752769293Z",
+          "Status": "running"
+        }
+      },
+      {
+        "Created": "2026-09-08T09:38:25.923903843Z",
+        "Id": "9adca9a38c4ba24986b67f1cd94de9da42353c4dd93a9a38b61de1d59e618b98",
+        "Image": "sha256:121a7a9ece6dc10b969f1f96eed64b4f07dfac0d0b8abc070f7cb83bbde86f63",
+        "ImageManifestDescriptor": {
+          "digest": "sha256:55f41cacf3e8334ea89d76ada9cc546c09473650ab48a7861743bcbd83f5ef38",
+          "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+          "platform": {
+            "architecture": "arm64",
+            "os": "linux"
+          },
+          "size": 2616
+        },
+        "Mounts": [
+          {
+            "Destination": "/etc/grafana/provisioning",
+            "Mode": "ro",
+            "Propagation": "rprivate",
+            "RW": false,
+            "Source": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/third_party/opentelemetry-demo/src/grafana/provisioning",
+            "Type": "bind"
+          },
+          {
+            "Destination": "/etc/grafana/grafana.ini",
+            "Mode": "ro",
+            "Propagation": "rprivate",
+            "RW": false,
+            "Source": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/third_party/opentelemetry-demo/src/grafana/grafana.ini",
+            "Type": "bind"
+          }
+        ],
+        "Name": "/ecomsre-live-sandbox-v1-grafana",
+        "host_config_sha256": "cfabc41a4d89fa120c45c3406c33813cb8a1ad2be74271dbd0075aeeaed22063",
+        "image_reference": "grafana/grafana@sha256:121a7a9ece6dc10b969f1f96eed64b4f07dfac0d0b8abc070f7cb83bbde86f63",
+        "labels": {
+          "com.docker.compose.config-hash": "8ad3553743ddf7d1844e8c5c0ea537828f16d2439477c122bdc0b4a340324a10",
+          "com.docker.compose.container-number": "1",
+          "com.docker.compose.depends_on": "",
+          "com.docker.compose.image": "sha256:121a7a9ece6dc10b969f1f96eed64b4f07dfac0d0b8abc070f7cb83bbde86f63",
+          "com.docker.compose.oneoff": "False",
+          "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+          "com.docker.compose.project.config_files": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host/sandbox-compose.json",
+          "com.docker.compose.project.working_dir": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host",
+          "com.docker.compose.service": "grafana",
+          "com.docker.compose.version": "5.3.0",
+          "io.ecomsre.product.v040.qualification": "c6a70e54d58b4df5a1325886304b4844",
+          "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000",
+          "maintainer": "Grafana Labs <hello@grafana.com>",
+          "org.opencontainers.image.source": "https://github.com/grafana/grafana"
+        },
+        "network_endpoints": {
+          "ecomsre-live-sandbox-v1-default": {
+            "Aliases": [
+              "ecomsre-live-sandbox-v1-grafana",
+              "grafana"
+            ],
+            "DNSNames": [
+              "ecomsre-live-sandbox-v1-grafana",
+              "grafana",
+              "9adca9a38c4b"
+            ],
+            "DriverOpts": null,
+            "EndpointID": "25587930c6a1a0adc95ce1efa12e8f8d859d32501cfc87ec2a38b778d5920d2b",
+            "Gateway": "172.18.0.1",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "GwPriority": 0,
+            "IPAMConfig": null,
+            "IPAddress": "172.18.0.8",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "Links": null,
+            "MacAddress": "da:c1:b5:8c:1b:6a",
+            "NetworkID": "8268f64f2d2fc1b64dbff0ec081c7aa0cec354169e39c4b4756ebd68489b179f"
+          }
+        },
+        "raw_inspect_sha256": "53b2272ba3eb94ad2edb24bd56d6caeee34ef8423c56d1003a37763d71d7d286",
+        "state": {
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Pid": 1949,
+          "Running": true,
+          "StartedAt": "2026-09-08T09:38:27.348134843Z",
+          "Status": "running"
+        }
+      },
+      {
+        "Created": "2026-09-08T09:38:25.923921009Z",
+        "Id": "9c09119dd7931cd681220f9decb5fef081645d64d294fb209affb073390fe0a8",
+        "Image": "sha256:3519858704e72fe6ef8ce8c41e70dbd41410e79bdc1eea9608658e9eade06d05",
+        "ImageManifestDescriptor": {
+          "digest": "sha256:51c253309603d438fa5e7d529c3f568fdd2c07b6907ca4d28d48b29107079be9",
+          "mediaType": "application/vnd.oci.image.manifest.v1+json",
+          "platform": {
+            "architecture": "arm64",
+            "os": "linux"
+          },
+          "size": 2570
+        },
+        "Mounts": [],
+        "Name": "/ecomsre-live-sandbox-v1-telemetry-docs",
+        "host_config_sha256": "b0c72b86ab558fe846d56b8f7b27cfff97ab0fc71f3c36f79a3d30eef5a8df5e",
+        "image_reference": "ghcr.io/open-telemetry/demo@sha256:3519858704e72fe6ef8ce8c41e70dbd41410e79bdc1eea9608658e9eade06d05",
+        "labels": {
+          "com.docker.compose.config-hash": "e8ee13c30ae59aafed9a3aa60b512d3c5cc790b2d192d76254352286fed27ea1",
+          "com.docker.compose.container-number": "1",
+          "com.docker.compose.depends_on": "",
+          "com.docker.compose.image": "sha256:3519858704e72fe6ef8ce8c41e70dbd41410e79bdc1eea9608658e9eade06d05",
+          "com.docker.compose.oneoff": "False",
+          "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+          "com.docker.compose.project.config_files": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host/sandbox-compose.json",
+          "com.docker.compose.project.working_dir": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host",
+          "com.docker.compose.service": "telemetry-docs",
+          "com.docker.compose.version": "5.3.0",
+          "io.ecomsre.product.v040.qualification": "c6a70e54d58b4df5a1325886304b4844",
+          "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000",
+          "maintainer": "NGINX Docker Maintainers <docker-maint@nginx.com>",
+          "org.opencontainers.image.created": "2026-07-13T04:33:13.239Z",
+          "org.opencontainers.image.description": "Unprivileged NGINX Dockerfiles",
+          "org.opencontainers.image.licenses": "Apache-2.0",
+          "org.opencontainers.image.revision": "7aa47c1f70f442c9e60dfda36dfefa1a00c5f7b5",
+          "org.opencontainers.image.source": "https://github.com/nginx/docker-nginx-unprivileged",
+          "org.opencontainers.image.title": "docker-nginx-unprivileged",
+          "org.opencontainers.image.url": "https://github.com/nginx/docker-nginx-unprivileged",
+          "org.opencontainers.image.version": "1.31.2-alpine-otel"
+        },
+        "network_endpoints": {
+          "ecomsre-live-sandbox-v1-default": {
+            "Aliases": [
+              "ecomsre-live-sandbox-v1-telemetry-docs",
+              "telemetry-docs"
+            ],
+            "DNSNames": [
+              "ecomsre-live-sandbox-v1-telemetry-docs",
+              "telemetry-docs",
+              "9c09119dd793"
+            ],
+            "DriverOpts": null,
+            "EndpointID": "326e2269ee6f5c504720aad8b28cc9e44019666675b4d47a3160f10b67233c48",
+            "Gateway": "172.18.0.1",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "GwPriority": 0,
+            "IPAMConfig": null,
+            "IPAddress": "172.18.0.2",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "Links": null,
+            "MacAddress": "ce:55:8c:55:17:70",
+            "NetworkID": "8268f64f2d2fc1b64dbff0ec081c7aa0cec354169e39c4b4756ebd68489b179f"
+          }
+        },
+        "raw_inspect_sha256": "18f647be73687824f13dae36954463100394702ef41f5dad3c1532bbcb9b4007",
+        "state": {
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Pid": 1769,
+          "Running": true,
+          "StartedAt": "2026-09-08T09:38:27.319437677Z",
+          "Status": "running"
+        }
+      },
+      {
+        "Created": "2026-09-08T09:38:26.808991635Z",
+        "Id": "a5fbff6a08b53e6d22b14ff222d815409db8130dcc894470795e92686dbaa9b2",
+        "Image": "sha256:3f89a444250a8a56050ba59756be3ca269af500bf44e33579e79ba9c74cab8c1",
+        "ImageManifestDescriptor": {
+          "digest": "sha256:2dd680b26be9a124424c0e1237e37060c30edf91f31c25d2c4e4775653f3a2a9",
+          "mediaType": "application/vnd.oci.image.manifest.v1+json",
+          "platform": {
+            "architecture": "arm64",
+            "os": "linux"
+          },
+          "size": 1434
+        },
+        "Mounts": [],
+        "Name": "/ecomsre-live-sandbox-v1-cart",
+        "host_config_sha256": "b5bc4a238c9b46b58cdefb24d5186fedb32ecd5f49fde8f33dede529393f2fee",
+        "image_reference": "ghcr.io/open-telemetry/demo@sha256:3f89a444250a8a56050ba59756be3ca269af500bf44e33579e79ba9c74cab8c1",
+        "labels": {
+          "com.docker.compose.config-hash": "d1ee53f0cb87f334bc4896003d2d6ebb556bf63569575430fa299c50bebdc5e7",
+          "com.docker.compose.container-number": "1",
+          "com.docker.compose.depends_on": "otel-collector:service_started:false,valkey-cart:service_healthy:false,flagd:service_started:false",
+          "com.docker.compose.image": "sha256:3f89a444250a8a56050ba59756be3ca269af500bf44e33579e79ba9c74cab8c1",
+          "com.docker.compose.oneoff": "False",
+          "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+          "com.docker.compose.project.config_files": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host/sandbox-compose.json",
+          "com.docker.compose.project.working_dir": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host",
+          "com.docker.compose.service": "cart",
+          "com.docker.compose.version": "5.3.0",
+          "io.ecomsre.product.v040.qualification": "c6a70e54d58b4df5a1325886304b4844",
+          "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+        },
+        "network_endpoints": {
+          "ecomsre-live-sandbox-v1-default": {
+            "Aliases": [
+              "ecomsre-live-sandbox-v1-cart",
+              "cart"
+            ],
+            "DNSNames": [
+              "ecomsre-live-sandbox-v1-cart",
+              "cart",
+              "a5fbff6a08b5"
+            ],
+            "DriverOpts": null,
+            "EndpointID": "6239f56d185e4dc4c8658884263ee21bd4cf3c1c77aa0ee548cd4ccde6ed9794",
+            "Gateway": "172.18.0.1",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "GwPriority": 0,
+            "IPAMConfig": null,
+            "IPAddress": "172.18.0.21",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "Links": null,
+            "MacAddress": "be:b7:a5:c1:f7:cc",
+            "NetworkID": "8268f64f2d2fc1b64dbff0ec081c7aa0cec354169e39c4b4756ebd68489b179f"
+          }
+        },
+        "raw_inspect_sha256": "446151424d6572fe79e75af4683781af21889da5c14f9c590f102fb25d678ad4",
+        "state": {
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Pid": 4289,
+          "Running": true,
+          "StartedAt": "2026-09-08T09:38:38.727945043Z",
+          "Status": "running"
+        }
+      },
+      {
+        "Created": "2026-09-08T09:38:26.729362801Z",
+        "Id": "bb06c5b1652cb0c8291ef1db5cffa0445a76c4ec8dae0d0f443c0a60d0b6944d",
+        "Image": "sha256:8950f637638476318a9f8eaf8fd608e4d3a164fbd3f429612f65009ee31677f5",
+        "ImageManifestDescriptor": {
+          "digest": "sha256:e2d67dae0dc224f4f2f5c64adb17a2d6e41aac9f2bd18bb59ac2a896d20b0fde",
+          "mediaType": "application/vnd.oci.image.manifest.v1+json",
+          "platform": {
+            "architecture": "arm64",
+            "os": "linux"
+          },
+          "size": 1809
+        },
+        "Mounts": [],
+        "Name": "/ecomsre-live-sandbox-v1-opensearch",
+        "host_config_sha256": "ab0192339a39d78e137644e4169e5122e4eda30e9ca72bedb4a49589a5575984",
+        "image_reference": "ghcr.io/open-telemetry/demo@sha256:8950f637638476318a9f8eaf8fd608e4d3a164fbd3f429612f65009ee31677f5",
+        "labels": {
+          "DOCKERFILE": "https://github.com/opensearch-project/opensearch-build/blob/main/docker/release/dockerfiles/opensearch.al2.dockerfile",
+          "com.docker.compose.config-hash": "e473663b43d870a73aaf965a830e0f65676c9e9495bf371807673d9b3c845440",
+          "com.docker.compose.container-number": "1",
+          "com.docker.compose.depends_on": "",
+          "com.docker.compose.image": "sha256:8950f637638476318a9f8eaf8fd608e4d3a164fbd3f429612f65009ee31677f5",
+          "com.docker.compose.oneoff": "False",
+          "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+          "com.docker.compose.project.config_files": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host/sandbox-compose.json",
+          "com.docker.compose.project.working_dir": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host",
+          "com.docker.compose.service": "opensearch",
+          "com.docker.compose.version": "5.3.0",
+          "io.ecomsre.product.v040.qualification": "c6a70e54d58b4df5a1325886304b4844",
+          "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000",
+          "org.label-schema.build-date": "2026-06-04T00:45:22Z",
+          "org.label-schema.description": "11986",
+          "org.label-schema.license": "Apache-2.0",
+          "org.label-schema.name": "opensearch",
+          "org.label-schema.schema-version": "1.0",
+          "org.label-schema.url": "https://opensearch.org",
+          "org.label-schema.vcs-url": "https://github.com/opensearch-project/OpenSearch",
+          "org.label-schema.vendor": "OpenSearch",
+          "org.label-schema.version": "3.7.0"
+        },
+        "network_endpoints": {
+          "ecomsre-live-sandbox-v1-default": {
+            "Aliases": [
+              "ecomsre-live-sandbox-v1-opensearch",
+              "opensearch"
+            ],
+            "DNSNames": [
+              "ecomsre-live-sandbox-v1-opensearch",
+              "opensearch",
+              "bb06c5b1652c"
+            ],
+            "DriverOpts": null,
+            "EndpointID": "ca4bbb6dc96c6a2599f08b525dc091e9986e61a8e82ec689ca5259225bfa1234",
+            "Gateway": "172.18.0.1",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "GwPriority": 0,
+            "IPAMConfig": null,
+            "IPAddress": "172.18.0.5",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "Links": null,
+            "MacAddress": "be:0c:84:58:02:e8",
+            "NetworkID": "8268f64f2d2fc1b64dbff0ec081c7aa0cec354169e39c4b4756ebd68489b179f"
+          }
+        },
+        "raw_inspect_sha256": "5dd48b25ff97c22431aa44d41cc6a46611dcdcbb9cc165c141a6014f256d7377",
+        "state": {
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Pid": 1761,
+          "Running": true,
+          "StartedAt": "2026-09-08T09:38:27.317798052Z",
+          "Status": "running"
+        }
+      },
+      {
+        "Created": "2026-09-08T09:38:26.802782218Z",
+        "Id": "c48df28ffbf12abb303fb7373af8369ee5814259a405d0dc92fed1048676de34",
+        "Image": "sha256:f82a7805e7ba635b62c08f8fe67a5deccb06c91dc51cb56ae88767f582ad7f75",
+        "ImageManifestDescriptor": {
+          "digest": "sha256:4e8197e55b8b1646775281f5613d457026573b17cc486e0f74ce6edf234eb634",
+          "mediaType": "application/vnd.oci.image.manifest.v1+json",
+          "platform": {
+            "architecture": "arm64",
+            "os": "linux"
+          },
+          "size": 866
+        },
+        "Mounts": [],
+        "Name": "/ecomsre-live-sandbox-v1-currency",
+        "host_config_sha256": "10740fdf1ecde9f68016fa4dd867cba41d60b36252dd56393af888eddfebaf14",
+        "image_reference": "ghcr.io/open-telemetry/demo@sha256:f82a7805e7ba635b62c08f8fe67a5deccb06c91dc51cb56ae88767f582ad7f75",
+        "labels": {
+          "com.docker.compose.config-hash": "d137ff39220cc9aee6f2c84d8e613a20e7c35cafd46aabc4a9a6a33a961fe246",
+          "com.docker.compose.container-number": "1",
+          "com.docker.compose.depends_on": "otel-collector:service_started:false",
+          "com.docker.compose.image": "sha256:f82a7805e7ba635b62c08f8fe67a5deccb06c91dc51cb56ae88767f582ad7f75",
+          "com.docker.compose.oneoff": "False",
+          "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+          "com.docker.compose.project.config_files": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host/sandbox-compose.json",
+          "com.docker.compose.project.working_dir": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host",
+          "com.docker.compose.service": "currency",
+          "com.docker.compose.version": "5.3.0",
+          "io.ecomsre.product.v040.qualification": "c6a70e54d58b4df5a1325886304b4844",
+          "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+        },
+        "network_endpoints": {
+          "ecomsre-live-sandbox-v1-default": {
+            "Aliases": [
+              "ecomsre-live-sandbox-v1-currency",
+              "currency"
+            ],
+            "DNSNames": [
+              "ecomsre-live-sandbox-v1-currency",
+              "currency",
+              "c48df28ffbf1"
+            ],
+            "DriverOpts": null,
+            "EndpointID": "e2b634acc44fa2409773507fc745650215e5d36ffe840a82b6e0486647316b8c",
+            "Gateway": "172.18.0.1",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "GwPriority": 0,
+            "IPAMConfig": null,
+            "IPAddress": "172.18.0.19",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "Links": null,
+            "MacAddress": "96:15:9e:0e:c2:8e",
+            "NetworkID": "8268f64f2d2fc1b64dbff0ec081c7aa0cec354169e39c4b4756ebd68489b179f"
+          }
+        },
+        "raw_inspect_sha256": "04c25ba15d4856ef3a846734a76b5369b6dd99948f581c49ff03f695b6dfe0db",
+        "state": {
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Pid": 3917,
+          "Running": true,
+          "StartedAt": "2026-09-08T09:38:38.266167376Z",
+          "Status": "running"
+        }
+      },
+      {
+        "Created": "2026-09-08T09:37:37.209364292Z",
+        "Id": "c598cc5091013626cafa93bcf08260ff0c727b2453885c086eae67621499dd81",
+        "Image": "sha256:0601750a3ca4db7d27f746dc73f4180fda162e7a92a1a4847f5b6ae9ac51d477",
+        "ImageManifestDescriptor": {
+          "digest": "sha256:80478d79c95aba98f487dc8df11b10a1db1ddf537b739d32eac9e6ad1b887f9a",
+          "mediaType": "application/vnd.oci.image.manifest.v1+json",
+          "platform": {
+            "architecture": "arm64",
+            "os": "linux"
+          },
+          "size": 2771
+        },
+        "Mounts": [
+          {
+            "Destination": "/etc/kafka/secrets",
+            "Driver": "local",
+            "Mode": "z",
+            "Name": "ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-qualification-kafka-secrets",
+            "Propagation": "",
+            "RW": true,
+            "Source": "/var/lib/docker/volumes/ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-qualification-kafka-secrets/_data",
+            "Type": "volume"
+          },
+          {
+            "Destination": "/mnt/shared/config",
+            "Driver": "local",
+            "Mode": "z",
+            "Name": "ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-qualification-kafka-config",
+            "Propagation": "",
+            "RW": true,
+            "Source": "/var/lib/docker/volumes/ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-qualification-kafka-config/_data",
+            "Type": "volume"
+          },
+          {
+            "Destination": "/var/lib/kafka/data",
+            "Driver": "local",
+            "Mode": "z",
+            "Name": "ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-qualification-kafka-data",
+            "Propagation": "",
+            "RW": true,
+            "Source": "/var/lib/docker/volumes/ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-qualification-kafka-data/_data",
+            "Type": "volume"
+          }
+        ],
+        "Name": "/ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-volume-probe",
+        "host_config_sha256": "888fa32491f9040d2846fa3f25fef66b8895cfa8a51e109e31d3fd620bd31b25",
+        "image_reference": "ghcr.io/open-telemetry/demo@sha256:0601750a3ca4db7d27f746dc73f4180fda162e7a92a1a4847f5b6ae9ac51d477",
+        "labels": {
+          "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+          "com.docker.compose.service": "kafka-volume-probe",
+          "io.ecomsre.product.v040.qualification": "c6a70e54d58b4df5a1325886304b4844",
+          "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000",
+          "io.ecomsre.telemetry.jmx.sha256": "869ae5cfdcb2b06d5df4aa3d49ce50a671c8301367e378a31c2d6c54fec09055",
+          "org.label-schema.build-date": "2026-06-17",
+          "org.label-schema.description": "Apache Kafka",
+          "org.label-schema.name": "kafka",
+          "org.label-schema.vcs-url": "https://github.com/apache/kafka",
+          "org.opencontainers.image.authors": "Apache Kafka"
+        },
+        "network_endpoints": {
+          "none": {
+            "Aliases": null,
+            "DNSNames": null,
+            "DriverOpts": null,
+            "EndpointID": "",
+            "Gateway": "",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "GwPriority": 0,
+            "IPAMConfig": null,
+            "IPAddress": "",
+            "IPPrefixLen": 0,
+            "IPv6Gateway": "",
+            "Links": null,
+            "MacAddress": "",
+            "NetworkID": "da85c8b0472d387b015b0968868445bc378d3b8b32a3812ef2739b6cf93ddfa3"
+          }
+        },
+        "raw_inspect_sha256": "c9ab7355a66c599e8d14c353ec59d98f1fd600695d8b0d437c3aa9e950966e70",
+        "state": {
+          "FinishedAt": "2026-09-08T09:38:07.134657Z",
+          "Pid": 0,
+          "Running": false,
+          "StartedAt": "2026-09-08T09:37:46.177595546Z",
+          "Status": "exited"
+        }
+      },
+      {
+        "Created": "2026-09-08T09:38:26.817447551Z",
+        "Id": "cce1cb75cb4f7d8a7b6762c713e8d1e1a97084fb35726f4abf34ed8291a838f3",
+        "Image": "sha256:02602e60edbfa7e019b21fa98f95e3d44bc3181c9aafaf82a73b5169ae8f9031",
+        "ImageManifestDescriptor": {
+          "digest": "sha256:c3622ca9ed2cadd4a6b7a28ca703549b7898ef5c7ee9c08ee34f2db410b547dd",
+          "mediaType": "application/vnd.oci.image.manifest.v1+json",
+          "platform": {
+            "architecture": "arm64",
+            "os": "linux"
+          },
+          "size": 4843
+        },
+        "Mounts": [],
+        "Name": "/ecomsre-live-sandbox-v1-shipping",
+        "host_config_sha256": "36ebe2d688e35a5e9585a7b15aff1844043b95bce5c0d2b0840739248efdadc2",
+        "image_reference": "ghcr.io/open-telemetry/demo@sha256:02602e60edbfa7e019b21fa98f95e3d44bc3181c9aafaf82a73b5169ae8f9031",
+        "labels": {
+          "com.docker.compose.config-hash": "f22eee09a6ff1bd7734c76bfb608be00dd6e129eb494addffd6055e989064f04",
+          "com.docker.compose.container-number": "1",
+          "com.docker.compose.depends_on": "flagd:service_started:false,otel-collector:service_started:false",
+          "com.docker.compose.image": "sha256:02602e60edbfa7e019b21fa98f95e3d44bc3181c9aafaf82a73b5169ae8f9031",
+          "com.docker.compose.oneoff": "False",
+          "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+          "com.docker.compose.project.config_files": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host/sandbox-compose.json",
+          "com.docker.compose.project.working_dir": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host",
+          "com.docker.compose.service": "shipping",
+          "com.docker.compose.version": "5.3.0",
+          "io.ecomsre.product.v040.qualification": "c6a70e54d58b4df5a1325886304b4844",
+          "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+        },
+        "network_endpoints": {
+          "ecomsre-live-sandbox-v1-default": {
+            "Aliases": [
+              "ecomsre-live-sandbox-v1-shipping",
+              "shipping"
+            ],
+            "DNSNames": [
+              "ecomsre-live-sandbox-v1-shipping",
+              "shipping",
+              "cce1cb75cb4f"
+            ],
+            "DriverOpts": null,
+            "EndpointID": "5e59b1084409093875efeecef0d9f910f3325b271facf8279ba05888f87dad1e",
+            "Gateway": "172.18.0.1",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "GwPriority": 0,
+            "IPAMConfig": null,
+            "IPAddress": "172.18.0.15",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "Links": null,
+            "MacAddress": "ca:9e:aa:96:7d:97",
+            "NetworkID": "8268f64f2d2fc1b64dbff0ec081c7aa0cec354169e39c4b4756ebd68489b179f"
+          }
+        },
+        "raw_inspect_sha256": "364b6c4091c7ba7b7b660eae64ffa5f8daa99d92d400a265906ef5c39c53d511",
+        "state": {
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Pid": 3831,
+          "Running": true,
+          "StartedAt": "2026-09-08T09:38:38.256865543Z",
+          "Status": "running"
+        }
+      },
+      {
+        "Created": "2026-09-08T09:38:26.809142301Z",
+        "Id": "cebf0ec3d4fe453e34254a02f8ef9b0cfb7c28ba8136ea65c8042820a2d83c46",
+        "Image": "sha256:93e1585e97ac3de0e2ace6929dc5e2a797e2c009fbb3eba668fa3990f4f271b5",
+        "ImageManifestDescriptor": {
+          "digest": "sha256:a34c69344d9c7da1f312c3c4516d5e04e75b44bdfe1eae824215f76d89c6f74e",
+          "mediaType": "application/vnd.oci.image.manifest.v1+json",
+          "platform": {
+            "architecture": "arm64",
+            "os": "linux"
+          },
+          "size": 2571
+        },
+        "Mounts": [],
+        "Name": "/ecomsre-live-sandbox-v1-image-provider",
+        "host_config_sha256": "4be85815a09480770841e94f0a579bdd7e0a40c18cd72fd4f35281e4f7ce80af",
+        "image_reference": "ghcr.io/open-telemetry/demo@sha256:93e1585e97ac3de0e2ace6929dc5e2a797e2c009fbb3eba668fa3990f4f271b5",
+        "labels": {
+          "com.docker.compose.config-hash": "80a90ff3feb7fefd9525145b41c4763433bb61f048c7ed9c11221c27376f3507",
+          "com.docker.compose.container-number": "1",
+          "com.docker.compose.depends_on": "otel-collector:service_started:false",
+          "com.docker.compose.image": "sha256:93e1585e97ac3de0e2ace6929dc5e2a797e2c009fbb3eba668fa3990f4f271b5",
+          "com.docker.compose.oneoff": "False",
+          "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+          "com.docker.compose.project.config_files": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host/sandbox-compose.json",
+          "com.docker.compose.project.working_dir": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host",
+          "com.docker.compose.service": "image-provider",
+          "com.docker.compose.version": "5.3.0",
+          "io.ecomsre.product.v040.qualification": "c6a70e54d58b4df5a1325886304b4844",
+          "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000",
+          "maintainer": "NGINX Docker Maintainers <docker-maint@nginx.com>",
+          "org.opencontainers.image.created": "2026-01-26T04:07:20.178Z",
+          "org.opencontainers.image.description": "Unprivileged NGINX Dockerfiles",
+          "org.opencontainers.image.licenses": "Apache-2.0",
+          "org.opencontainers.image.revision": "eb142eabcc0a3e282aea6f1e5592cfe773e86321",
+          "org.opencontainers.image.source": "https://github.com/nginx/docker-nginx-unprivileged",
+          "org.opencontainers.image.title": "docker-nginx-unprivileged",
+          "org.opencontainers.image.url": "https://github.com/nginx/docker-nginx-unprivileged",
+          "org.opencontainers.image.version": "1.29.3-alpine-otel"
+        },
+        "network_endpoints": {
+          "ecomsre-live-sandbox-v1-default": {
+            "Aliases": [
+              "ecomsre-live-sandbox-v1-image-provider",
+              "image-provider"
+            ],
+            "DNSNames": [
+              "ecomsre-live-sandbox-v1-image-provider",
+              "image-provider",
+              "cebf0ec3d4fe"
+            ],
+            "DriverOpts": null,
+            "EndpointID": "cffc0aed53823590db57e15391d26619c801a8883860cad4f1c541136c0aa2a4",
+            "Gateway": "172.18.0.1",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "GwPriority": 0,
+            "IPAMConfig": null,
+            "IPAddress": "172.18.0.13",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "Links": null,
+            "MacAddress": "82:7f:05:d7:40:6a",
+            "NetworkID": "8268f64f2d2fc1b64dbff0ec081c7aa0cec354169e39c4b4756ebd68489b179f"
+          }
+        },
+        "raw_inspect_sha256": "8f14f8c61252e94c32d8f3c6937aeb579260709035ae8823fbae8f13880c071c",
+        "state": {
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Pid": 3656,
+          "Running": true,
+          "StartedAt": "2026-09-08T09:38:38.222289543Z",
+          "Status": "running"
+        }
+      },
+      {
+        "Created": "2026-09-08T09:38:27.16164226Z",
+        "Id": "d36987ca3f401492ea7e76d4d8bd748ca5ca9352621624344015226c0b763079",
+        "Image": "sha256:cd12cb42fb150fb2283fc05df5353fde88d5e35f3bf8189058756a6458eede87",
+        "ImageManifestDescriptor": {
+          "digest": "sha256:b04ac2c1fa16c126c1077710dd31d5780f002c5f69f8892c54b83a3a74877898",
+          "mediaType": "application/vnd.oci.image.manifest.v1+json",
+          "platform": {
+            "architecture": "arm64",
+            "os": "linux"
+          },
+          "size": 2376
+        },
+        "Mounts": [],
+        "Name": "/ecomsre-live-sandbox-v1-load-generator",
+        "host_config_sha256": "8f745ce1f60434ae7f4684bf7791ed00e53c091452463560823340c49297f633",
+        "image_reference": "ghcr.io/open-telemetry/demo@sha256:cd12cb42fb150fb2283fc05df5353fde88d5e35f3bf8189058756a6458eede87",
+        "labels": {
+          "com.docker.compose.config-hash": "853cf9eaf336fd77896d3585503733d4177b436b2d71bb2c8da79e369a523cc9",
+          "com.docker.compose.container-number": "1",
+          "com.docker.compose.depends_on": "frontend:service_healthy:false,frontend-proxy:service_healthy:false,flagd:service_started:false",
+          "com.docker.compose.image": "sha256:cd12cb42fb150fb2283fc05df5353fde88d5e35f3bf8189058756a6458eede87",
+          "com.docker.compose.oneoff": "False",
+          "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+          "com.docker.compose.project.config_files": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host/sandbox-compose.json",
+          "com.docker.compose.project.working_dir": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host",
+          "com.docker.compose.service": "load-generator",
+          "com.docker.compose.version": "5.3.0",
+          "io.ecomsre.product.v040.qualification": "c6a70e54d58b4df5a1325886304b4844",
+          "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+        },
+        "network_endpoints": {
+          "ecomsre-live-sandbox-v1-default": {
+            "Aliases": [
+              "ecomsre-live-sandbox-v1-load-generator",
+              "load-generator"
+            ],
+            "DNSNames": [
+              "ecomsre-live-sandbox-v1-load-generator",
+              "load-generator",
+              "d36987ca3f40"
+            ],
+            "DriverOpts": null,
+            "EndpointID": "60862c38a6e5a6a0578430d725884cacd5fe0b5afec2eb3ef510684160737bfd",
+            "Gateway": "172.18.0.1",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "GwPriority": 0,
+            "IPAMConfig": null,
+            "IPAddress": "172.18.0.29",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "Links": null,
+            "MacAddress": "a6:0e:be:a3:c1:76",
+            "NetworkID": "8268f64f2d2fc1b64dbff0ec081c7aa0cec354169e39c4b4756ebd68489b179f"
+          }
+        },
+        "raw_inspect_sha256": "d0a1dad27b6a653a34f8f24580bfe0fe04307915609092a7dec2d2dc07bf7bcf",
+        "state": {
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Pid": 6209,
+          "Running": true,
+          "StartedAt": "2026-09-08T09:38:55.746516509Z",
+          "Status": "running"
+        }
+      },
+      {
+        "Created": "2026-09-08T09:38:26.812201885Z",
+        "Id": "dc9c9dfb85cc5c6c8f161445d38ce3a4590fae820ea424ceb8e9ee0bc65a25ac",
+        "Image": "sha256:6bc8f7f6809e1435241dc9ea404e602657d192cf237bcd175d7344cec9e0d615",
+        "ImageManifestDescriptor": {
+          "digest": "sha256:370d920d330a145a5e6769eab82dd256a11c8186c78d7afd7927119f402d2438",
+          "mediaType": "application/vnd.oci.image.manifest.v1+json",
+          "platform": {
+            "architecture": "arm64",
+            "os": "linux"
+          },
+          "size": 3328
+        },
+        "Mounts": [],
+        "Name": "/ecomsre-live-sandbox-v1-quote",
+        "host_config_sha256": "4ddec4752969e444db0bc2f5ed64cb7fd314f683ef884684b710bf754a658961",
+        "image_reference": "ghcr.io/open-telemetry/demo@sha256:6bc8f7f6809e1435241dc9ea404e602657d192cf237bcd175d7344cec9e0d615",
+        "labels": {
+          "com.docker.compose.config-hash": "0223de4206ce126867638010632a75c5ab5fef1495cc97b39ba813efcbf2c03c",
+          "com.docker.compose.container-number": "1",
+          "com.docker.compose.depends_on": "otel-collector:service_started:false",
+          "com.docker.compose.image": "sha256:6bc8f7f6809e1435241dc9ea404e602657d192cf237bcd175d7344cec9e0d615",
+          "com.docker.compose.oneoff": "False",
+          "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+          "com.docker.compose.project.config_files": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host/sandbox-compose.json",
+          "com.docker.compose.project.working_dir": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host",
+          "com.docker.compose.service": "quote",
+          "com.docker.compose.version": "5.3.0",
+          "io.ecomsre.product.v040.qualification": "c6a70e54d58b4df5a1325886304b4844",
+          "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+        },
+        "network_endpoints": {
+          "ecomsre-live-sandbox-v1-default": {
+            "Aliases": [
+              "ecomsre-live-sandbox-v1-quote",
+              "quote"
+            ],
+            "DNSNames": [
+              "ecomsre-live-sandbox-v1-quote",
+              "quote",
+              "dc9c9dfb85cc"
+            ],
+            "DriverOpts": null,
+            "EndpointID": "63e3c4ad1ab23f19da0ea7b30917677817b03429c770a6c56fb1addbda58fbd0",
+            "Gateway": "172.18.0.1",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "GwPriority": 0,
+            "IPAMConfig": null,
+            "IPAddress": "172.18.0.20",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "Links": null,
+            "MacAddress": "86:1e:ff:e0:8e:6f",
+            "NetworkID": "8268f64f2d2fc1b64dbff0ec081c7aa0cec354169e39c4b4756ebd68489b179f"
+          }
+        },
+        "raw_inspect_sha256": "a1290f7498857505c24dc9334d3252c4e353f00221c65a6b5edddb05967f352e",
+        "state": {
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Pid": 3921,
+          "Running": true,
+          "StartedAt": "2026-09-08T09:38:38.264996251Z",
+          "Status": "running"
+        }
+      },
+      {
+        "Created": "2026-09-08T09:38:26.816947551Z",
+        "Id": "dce81635f5ca4da1f62484ee51d5fcca024c3d5de13c730bacf17685089ca625",
+        "Image": "sha256:74c490f862da264bc7c3b93fefb1a6cfce138861c3c6a8e0ceb32363bef17aaf",
+        "ImageManifestDescriptor": {
+          "digest": "sha256:0139fb0653a471d10160198ef2a117b6a63263c071fef77e2cd393b9b0853d51",
+          "mediaType": "application/vnd.oci.image.manifest.v1+json",
+          "platform": {
+            "architecture": "arm64",
+            "os": "linux"
+          },
+          "size": 2383
+        },
+        "Mounts": [],
+        "Name": "/ecomsre-live-sandbox-v1-accounting",
+        "host_config_sha256": "b5bc4a238c9b46b58cdefb24d5186fedb32ecd5f49fde8f33dede529393f2fee",
+        "image_reference": "ghcr.io/open-telemetry/demo@sha256:74c490f862da264bc7c3b93fefb1a6cfce138861c3c6a8e0ceb32363bef17aaf",
+        "labels": {
+          "com.docker.compose.config-hash": "b8dac7898e97bc498b71a8c12a676bd150e5f56b7e5f2a057d0dc4057d18d499",
+          "com.docker.compose.container-number": "1",
+          "com.docker.compose.depends_on": "otel-collector:service_started:false,kafka:service_healthy:false",
+          "com.docker.compose.image": "sha256:74c490f862da264bc7c3b93fefb1a6cfce138861c3c6a8e0ceb32363bef17aaf",
+          "com.docker.compose.oneoff": "False",
+          "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+          "com.docker.compose.project.config_files": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host/sandbox-compose.json",
+          "com.docker.compose.project.working_dir": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host",
+          "com.docker.compose.service": "accounting",
+          "com.docker.compose.version": "5.3.0",
+          "io.ecomsre.product.v040.qualification": "c6a70e54d58b4df5a1325886304b4844",
+          "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000",
+          "org.opencontainers.image.version": "24.04"
+        },
+        "network_endpoints": {
+          "ecomsre-live-sandbox-v1-default": {
+            "Aliases": [
+              "ecomsre-live-sandbox-v1-accounting",
+              "accounting"
+            ],
+            "DNSNames": [
+              "ecomsre-live-sandbox-v1-accounting",
+              "accounting",
+              "dce81635f5ca"
+            ],
+            "DriverOpts": null,
+            "EndpointID": "5e9dec02bd05b26065ae3c8732bb2a12a384eeb6bc48a52f3a4eeeaefccff6bc",
+            "Gateway": "172.18.0.1",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "GwPriority": 0,
+            "IPAMConfig": null,
+            "IPAddress": "172.18.0.24",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "Links": null,
+            "MacAddress": "96:57:a0:a3:ce:6c",
+            "NetworkID": "8268f64f2d2fc1b64dbff0ec081c7aa0cec354169e39c4b4756ebd68489b179f"
+          }
+        },
+        "raw_inspect_sha256": "860f9fa8fbf69a28af623eb489981d3ab0e81b7282077673fde1bb9cd0ae2df3",
+        "state": {
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Pid": 4878,
+          "Running": true,
+          "StartedAt": "2026-09-08T09:38:43.20512592Z",
+          "Status": "running"
+        }
+      },
+      {
+        "Created": "2026-09-08T09:38:25.920445009Z",
+        "Id": "e6a18c9315315ab8d6b63ba81f58540cdb133088fca1875ccaa0039a71b159b3",
+        "Image": "sha256:3c42b892cf723fa54d2f262c37a0e1f80aa8c8ddb1da7b9b0df9455a35a7f893",
+        "ImageManifestDescriptor": {
+          "digest": "sha256:2d61f37ba9f2185195dfad94ee500d7ac1986560bac79a77d0a6de182a5bf814",
+          "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+          "platform": {
+            "architecture": "arm64",
+            "os": "linux"
+          },
+          "size": 2198
+        },
+        "Mounts": [
+          {
+            "Destination": "/etc/prometheus/prometheus-config.yaml",
+            "Mode": "ro",
+            "Propagation": "rprivate",
+            "RW": false,
+            "Source": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/third_party/opentelemetry-demo/src/prometheus/prometheus-config.yaml",
+            "Type": "bind"
+          },
+          {
+            "Destination": "/prometheus",
+            "Driver": "local",
+            "Mode": "rw",
+            "Name": "ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-prometheus-data",
+            "Propagation": "",
+            "RW": true,
+            "Source": "/var/lib/docker/volumes/ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-prometheus-data/_data",
+            "Type": "volume"
+          }
+        ],
+        "Name": "/ecomsre-live-sandbox-v1-prometheus",
+        "host_config_sha256": "d57ea0fc15e44abc4615416617d06abf4711464428719ed699eb738cc7cd2e54",
+        "image_reference": "quay.io/prometheus/prometheus@sha256:3c42b892cf723fa54d2f262c37a0e1f80aa8c8ddb1da7b9b0df9455a35a7f893",
+        "labels": {
+          "com.docker.compose.config-hash": "5b58be0c8e6077446e96f940057f359f080b9e21fbfdee79e85c730d8f47f4a8",
+          "com.docker.compose.container-number": "1",
+          "com.docker.compose.depends_on": "",
+          "com.docker.compose.image": "sha256:3c42b892cf723fa54d2f262c37a0e1f80aa8c8ddb1da7b9b0df9455a35a7f893",
+          "com.docker.compose.oneoff": "False",
+          "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+          "com.docker.compose.project.config_files": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host/sandbox-compose.json",
+          "com.docker.compose.project.working_dir": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host",
+          "com.docker.compose.service": "prometheus",
+          "com.docker.compose.version": "5.3.0",
+          "io.ecomsre.product.v040.qualification": "c6a70e54d58b4df5a1325886304b4844",
+          "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000",
+          "io.prometheus.image.variant": "busybox",
+          "maintainer": "The Prometheus Authors <prometheus-developers@googlegroups.com>",
+          "org.opencontainers.image.authors": "The Prometheus Authors",
+          "org.opencontainers.image.description": "The Prometheus monitoring system and time series database",
+          "org.opencontainers.image.documentation": "https://prometheus.io/docs",
+          "org.opencontainers.image.licenses": "Apache License 2.0",
+          "org.opencontainers.image.source": "https://github.com/prometheus/prometheus",
+          "org.opencontainers.image.title": "Prometheus",
+          "org.opencontainers.image.url": "https://github.com/prometheus/prometheus",
+          "org.opencontainers.image.vendor": "Prometheus"
+        },
+        "network_endpoints": {
+          "ecomsre-live-sandbox-v1-default": {
+            "Aliases": [
+              "ecomsre-live-sandbox-v1-prometheus",
+              "prometheus"
+            ],
+            "DNSNames": [
+              "ecomsre-live-sandbox-v1-prometheus",
+              "prometheus",
+              "e6a18c931531"
+            ],
+            "DriverOpts": null,
+            "EndpointID": "3cef12c0257e7856353580ad5a2b70d6923cdbee7a64ffbba7bcd2a671414fa0",
+            "Gateway": "172.18.0.1",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "GwPriority": 0,
+            "IPAMConfig": null,
+            "IPAddress": "172.18.0.11",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "Links": null,
+            "MacAddress": "f2:48:91:33:fa:0f",
+            "NetworkID": "8268f64f2d2fc1b64dbff0ec081c7aa0cec354169e39c4b4756ebd68489b179f"
+          }
+        },
+        "raw_inspect_sha256": "f08475522e2c1e27ea46456bcfdeb6e0f7e75325a263a6ba80604bbddc7f22aa",
+        "state": {
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Pid": 2031,
+          "Running": true,
+          "StartedAt": "2026-09-08T09:38:27.35553501Z",
+          "Status": "running"
+        }
+      },
+      {
+        "Created": "2026-09-08T09:38:27.061356052Z",
+        "Id": "ea6e8f438a3de895de0f412ffb5493e0e14dc643e5e379e28224c1a14d46c5b4",
+        "Image": "sha256:9505e349e140ed5efde4b03b77cf500ef5d53c568ea83502c7e9c26494b964a3",
+        "ImageManifestDescriptor": {
+          "digest": "sha256:9b9495aa98049fe8987fcb9193312f70260fbacdba31b088089c789a2506a5c6",
+          "mediaType": "application/vnd.oci.image.manifest.v1+json",
+          "platform": {
+            "architecture": "arm64",
+            "os": "linux"
+          },
+          "size": 5609
+        },
+        "Mounts": [],
+        "Name": "/ecomsre-live-sandbox-v1-frontend",
+        "host_config_sha256": "58d51e44a08a0107aeb937d27afcf4ced1cdfc530b696b76ad46bddda6917fc6",
+        "image_reference": "ghcr.io/open-telemetry/demo@sha256:9505e349e140ed5efde4b03b77cf500ef5d53c568ea83502c7e9c26494b964a3",
+        "labels": {
+          "com.docker.compose.config-hash": "3a4dd99fe07097de47f29c137f79f06b5918dadfb02ddafcb8ef36957f4edee1",
+          "com.docker.compose.container-number": "1",
+          "com.docker.compose.depends_on": "product-catalog:service_started:false,checkout:service_started:false,ad:service_healthy:false,currency:service_healthy:false,otel-collector:service_started:false,flagd:service_started:false,cart:service_started:false,quote:service_healthy:false,recommendation:service_healthy:false,image-provider:service_healthy:false,shipping:service_started:false",
+          "com.docker.compose.image": "sha256:9505e349e140ed5efde4b03b77cf500ef5d53c568ea83502c7e9c26494b964a3",
+          "com.docker.compose.oneoff": "False",
+          "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+          "com.docker.compose.project.config_files": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host/sandbox-compose.json",
+          "com.docker.compose.project.working_dir": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host",
+          "com.docker.compose.service": "frontend",
+          "com.docker.compose.version": "5.3.0",
+          "io.ecomsre.product.v040.qualification": "c6a70e54d58b4df5a1325886304b4844",
+          "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+        },
+        "network_endpoints": {
+          "ecomsre-live-sandbox-v1-default": {
+            "Aliases": [
+              "ecomsre-live-sandbox-v1-frontend",
+              "frontend"
+            ],
+            "DNSNames": [
+              "ecomsre-live-sandbox-v1-frontend",
+              "frontend",
+              "ea6e8f438a3d"
+            ],
+            "DriverOpts": null,
+            "EndpointID": "9e4ddf335b09c37713ea848f024db8afe71e2748e5c24d05d7f7a55740e7fd97",
+            "Gateway": "172.18.0.1",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "GwPriority": 0,
+            "IPAMConfig": null,
+            "IPAddress": "172.18.0.27",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "Links": null,
+            "MacAddress": "ea:e1:61:55:db:77",
+            "NetworkID": "8268f64f2d2fc1b64dbff0ec081c7aa0cec354169e39c4b4756ebd68489b179f"
+          }
+        },
+        "raw_inspect_sha256": "ceb2f926993a0bb53968fe68ec10b70495c760ea80fdcf98869b26d8492b6ea0",
+        "state": {
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Pid": 5274,
+          "Running": true,
+          "StartedAt": "2026-09-08T09:38:44.517444671Z",
+          "Status": "running"
+        }
+      },
+      {
+        "Created": "2026-09-08T09:38:26.809606468Z",
+        "Id": "f1b8665eac41354174656c4525366e08ac6c60cd914b3f83f06303882d6b4dfd",
+        "Image": "sha256:d674d4081ca4201cbec9994e753ddf8f6a6fea7d57451c54fc964de6ac51c76c",
+        "ImageManifestDescriptor": {
+          "digest": "sha256:893da607ae8f600845a1039fb7922a3fdbf577fe4e265e2c87fb59262ae494f2",
+          "mediaType": "application/vnd.oci.image.manifest.v1+json",
+          "platform": {
+            "architecture": "arm64",
+            "os": "linux"
+          },
+          "size": 2186
+        },
+        "Mounts": [],
+        "Name": "/ecomsre-live-sandbox-v1-email",
+        "host_config_sha256": "b0c72b86ab558fe846d56b8f7b27cfff97ab0fc71f3c36f79a3d30eef5a8df5e",
+        "image_reference": "ghcr.io/open-telemetry/demo@sha256:d674d4081ca4201cbec9994e753ddf8f6a6fea7d57451c54fc964de6ac51c76c",
+        "labels": {
+          "com.docker.compose.config-hash": "9c27801a60e32c4e56f3e889c1a7398a38f40a624d73ac0304cdfc38826a4101",
+          "com.docker.compose.container-number": "1",
+          "com.docker.compose.depends_on": "otel-collector:service_started:false",
+          "com.docker.compose.image": "sha256:d674d4081ca4201cbec9994e753ddf8f6a6fea7d57451c54fc964de6ac51c76c",
+          "com.docker.compose.oneoff": "False",
+          "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+          "com.docker.compose.project.config_files": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host/sandbox-compose.json",
+          "com.docker.compose.project.working_dir": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host",
+          "com.docker.compose.service": "email",
+          "com.docker.compose.version": "5.3.0",
+          "io.ecomsre.product.v040.qualification": "c6a70e54d58b4df5a1325886304b4844",
+          "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+        },
+        "network_endpoints": {
+          "ecomsre-live-sandbox-v1-default": {
+            "Aliases": [
+              "ecomsre-live-sandbox-v1-email",
+              "email"
+            ],
+            "DNSNames": [
+              "ecomsre-live-sandbox-v1-email",
+              "email",
+              "f1b8665eac41"
+            ],
+            "DriverOpts": null,
+            "EndpointID": "72d93cda55a5265a4da92430d5b8d443f8d56c552ec9c61d780661cd034fd209",
+            "Gateway": "172.18.0.1",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "GwPriority": 0,
+            "IPAMConfig": null,
+            "IPAddress": "172.18.0.18",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "Links": null,
+            "MacAddress": "36:57:3d:85:c3:50",
+            "NetworkID": "8268f64f2d2fc1b64dbff0ec081c7aa0cec354169e39c4b4756ebd68489b179f"
+          }
+        },
+        "raw_inspect_sha256": "90ba59dc25145f0ffee9dab39cffc5d65574bfcf6e7f1dc1bd185cf685355cdf",
+        "state": {
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Pid": 3868,
+          "Running": true,
+          "StartedAt": "2026-09-08T09:38:38.260876626Z",
+          "Status": "running"
+        }
+      },
+      {
+        "Created": "2026-09-08T09:38:25.921890801Z",
+        "Id": "f720cc6f0d43184049857f23ecf4809eacfde5d67b531fdc09fcb95c14148d76",
+        "Image": "sha256:32234e63c1d0634883aabd31cbd46802934aaaef0153dfd653b5d1017940bb4e",
+        "ImageManifestDescriptor": {
+          "digest": "sha256:5115fd9352d58fd41c7be775b33336f5e4b2cef8056bf5982f5c704d13ec590e",
+          "mediaType": "application/vnd.oci.image.manifest.v1+json",
+          "platform": {
+            "architecture": "arm64",
+            "os": "linux"
+          },
+          "size": 2939
+        },
+        "Mounts": [
+          {
+            "Destination": "/etc/flagd",
+            "Mode": "ro",
+            "Propagation": "rprivate",
+            "RW": false,
+            "Source": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/sandbox/runtime/flagd",
+            "Type": "bind"
+          }
+        ],
+        "Name": "/ecomsre-live-sandbox-v1-flagd",
+        "host_config_sha256": "c0d4516012314d644235c0e7bcb7d8cca1212a25cb4133efdacb0b59ab9e367e",
+        "image_reference": "ghcr.io/open-feature/flagd@sha256:32234e63c1d0634883aabd31cbd46802934aaaef0153dfd653b5d1017940bb4e",
+        "labels": {
+          "com.docker.compose.config-hash": "42e07dbd0d51c9e86808d70bf6a7f8441af3488689859f95426327b09bcb27eb",
+          "com.docker.compose.container-number": "1",
+          "com.docker.compose.depends_on": "",
+          "com.docker.compose.image": "sha256:32234e63c1d0634883aabd31cbd46802934aaaef0153dfd653b5d1017940bb4e",
+          "com.docker.compose.oneoff": "False",
+          "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+          "com.docker.compose.project.config_files": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host/sandbox-compose.json",
+          "com.docker.compose.project.working_dir": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v040-runtime-qualification-v3/.local/product-v040-qualifications/qualification-c6a70e54d58b4df5a1325886304b4844/host",
+          "com.docker.compose.service": "flagd",
+          "com.docker.compose.version": "5.3.0",
+          "io.ecomsre.product.v040.qualification": "c6a70e54d58b4df5a1325886304b4844",
+          "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000",
+          "org.opencontainers.image.created": "2026-06-01T16:51:48.023Z",
+          "org.opencontainers.image.description": "A feature flag daemon with a Unix philosophy",
+          "org.opencontainers.image.licenses": "Apache-2.0",
+          "org.opencontainers.image.revision": "80b9e9548163c1adbd28d45ca52364956e7fa08f",
+          "org.opencontainers.image.source": "https://github.com/open-feature/flagd",
+          "org.opencontainers.image.title": "flagd",
+          "org.opencontainers.image.url": "https://github.com/open-feature/flagd",
+          "org.opencontainers.image.version": "main"
+        },
+        "network_endpoints": {
+          "ecomsre-live-sandbox-v1-default": {
+            "Aliases": [
+              "ecomsre-live-sandbox-v1-flagd",
+              "flagd"
+            ],
+            "DNSNames": [
+              "ecomsre-live-sandbox-v1-flagd",
+              "flagd",
+              "f720cc6f0d43"
+            ],
+            "DriverOpts": null,
+            "EndpointID": "ed1ffe00c2bc932541fd899327c3fe5a669573909d14d638a6ee328f7b8e9568",
+            "Gateway": "172.18.0.1",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "GwPriority": 0,
+            "IPAMConfig": null,
+            "IPAddress": "172.18.0.7",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "Links": null,
+            "MacAddress": "fe:e0:2c:87:ae:0d",
+            "NetworkID": "8268f64f2d2fc1b64dbff0ec081c7aa0cec354169e39c4b4756ebd68489b179f"
+          }
+        },
+        "raw_inspect_sha256": "6c501557773d32940305ed8dbafdafb0a8625c5d6545304d336faeb9044ccaa4",
+        "state": {
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Pid": 1904,
+          "Running": true,
+          "StartedAt": "2026-09-08T09:38:27.346644302Z",
+          "Status": "running"
+        }
+      }
+    ],
+    "networks": [
+      {
+        "Attachable": false,
+        "ConfigFrom": {
+          "Network": ""
+        },
+        "ConfigOnly": false,
+        "Containers": {
+          "013dfa0857bf40489198a1cbbd5eea69f3b5b365c85fd5edfcb9a39b8ec83a92": {
+            "EndpointID": "70b14ffe3a134ee6eca1dadf0774616997f32e5c4d8e6f4579abd96f746edcec",
+            "IPv4Address": "172.18.0.17/16",
+            "IPv6Address": "",
+            "MacAddress": "e6:c3:b3:b1:9d:8e",
+            "Name": "ecomsre-live-sandbox-v1-ad"
+          },
+          "16ee82958c618417c2f762b4cd85bcf17727e96fab09b613c5218064ad82f394": {
+            "EndpointID": "f60a7a5141c497490e02f16d00c16603d4e6abef9c1a3f31d91e62c728dfcb0f",
+            "IPv4Address": "172.18.0.10/16",
+            "IPv6Address": "",
+            "MacAddress": "e2:11:4e:0b:b0:67",
+            "Name": "ecomsre-live-sandbox-v1-kafka"
+          },
+          "2f33fa2a26959a03627503bafcb98f7cbf41f3c73b850792aa88903bb120533a": {
+            "EndpointID": "c1adfaef308eddcee4eebf1de42e9993d20c5100d12380fab95d2f114ebce530",
+            "IPv4Address": "172.18.0.3/16",
+            "IPv6Address": "",
+            "MacAddress": "b6:27:c8:bc:34:58",
+            "Name": "ecomsre-live-sandbox-v1-valkey-cart"
+          },
+          "3056bd649e7ce2379a979b3d951773ccc7e8886edc1e36b9158c0a330468c4e0": {
+            "EndpointID": "d287171b5f4e5cb38056967618e6067d563ffc907880ac6df340c5a878aa4fd3",
+            "IPv4Address": "172.18.0.6/16",
+            "IPv6Address": "",
+            "MacAddress": "4e:9b:7b:d8:d0:c4",
+            "Name": "ecomsre-live-sandbox-v1-astronomy-db"
+          },
+          "422f5cb1e204ca41b695e104df3230a4ef0d10e991077b434e7bf7e56054abb6": {
+            "EndpointID": "fc23bad29fdb80bdf715dacebbaa1bf840f38aca9e2e80f5e10ff0dc56e00f23",
+            "IPv4Address": "172.18.0.12/16",
+            "IPv6Address": "",
+            "MacAddress": "fa:59:46:e6:72:dc",
+            "Name": "ecomsre-live-sandbox-v1-otel-collector"
+          },
+          "43ad8a9aa246367e55ade06a23a8888d4a21fbf903b0790e32ef5f07299cc03c": {
+            "EndpointID": "a4b13a051721d746d4ad00f5363060e52171a11c583d3ce919b279e7f5aacbf1",
+            "IPv4Address": "172.18.0.26/16",
+            "IPv6Address": "",
+            "MacAddress": "42:63:6c:8a:6a:87",
+            "Name": "ecomsre-live-sandbox-v1-checkout"
+          },
+          "488ce97891b6df261382179ead7ed2eb6936cc088e59a1f00c34efcf56180f0b": {
+            "EndpointID": "769d24bfe76c38d3fc90285bb8e0e462443bcc5f1316d954b4c6687b10129223",
+            "IPv4Address": "172.18.0.23/16",
+            "IPv6Address": "",
+            "MacAddress": "e6:b0:5e:6d:32:05",
+            "Name": "ecomsre-live-sandbox-v1-recommendation"
+          },
+          "4c36cc7e34f7052bed17b64383b529c878421aa79f7c2d9c54c369dcb3eacfd2": {
+            "EndpointID": "a16480dae8d01aab3077be9ec8759882e59b9303e537f9ae2103a21e8981713f",
+            "IPv4Address": "172.18.0.14/16",
+            "IPv6Address": "",
+            "MacAddress": "ca:35:fb:26:cd:d3",
+            "Name": "ecomsre-live-sandbox-v1-payment"
+          },
+          "4e7a2733141e36a3fce6946ef9d72e7623f0c547ec1125b5359801f98dad5a9f": {
+            "EndpointID": "bc0df98e798d81f94bee54879db6caf206666a5bb01dc0ab23e9ba5cb2daaac8",
+            "IPv4Address": "172.18.0.4/16",
+            "IPv6Address": "",
+            "MacAddress": "b6:40:8c:d1:89:84",
+            "Name": "ecomsre-live-sandbox-v1-opamp-server"
+          },
+          "52964f9f611ebb0d81085e2482ca888688866029bd5bfcf3d6276694c5db0175": {
+            "EndpointID": "c1dcf4d293d8665f61a727c4bd57aeecde3ae922a4568413639194e0587e5739",
+            "IPv4Address": "172.18.0.28/16",
+            "IPv6Address": "",
+            "MacAddress": "8a:cf:49:39:32:02",
+            "Name": "ecomsre-live-sandbox-v1-frontend-proxy"
+          },
+          "57d5c97453801b87ecb493293a7e73ea7415c5ad5e5bd592be00eb280ec2372d": {
+            "EndpointID": "60ea21c0ede5f6a77c50e99e6e84090083e4d79b65fa316ea036efa3a1acbbe0",
+            "IPv4Address": "172.18.0.25/16",
+            "IPv6Address": "",
+            "MacAddress": "66:c3:d9:a5:fa:d9",
+            "Name": "ecomsre-live-sandbox-v1-fraud-detection"
+          },
+          "6e638dc868913e07bcd394d91b09d92170e85c513426393fb209ae49fea19e12": {
+            "EndpointID": "cba72ff0083fb55c1a64b6f7fe7779fb31a9751e7635ddc251e036a0a5055735",
+            "IPv4Address": "172.18.0.9/16",
+            "IPv6Address": "",
+            "MacAddress": "ea:40:a1:ed:58:ed",
+            "Name": "ecomsre-live-sandbox-v1-jaeger"
+          },
+          "7310f8f65a8211296e66fb8ce9ca81aacc59e03aea2bed30d494337fbc4b76a4": {
+            "EndpointID": "6bfde70cffd282622d77e8a8807485f4393cf531f2a9180112a66a97edc85d04",
+            "IPv4Address": "172.18.0.16/16",
+            "IPv6Address": "",
+            "MacAddress": "12:0a:48:9d:7b:84",
+            "Name": "ecomsre-live-sandbox-v1-flagd-ui"
+          },
+          "89763e46e0e1c4f4cda6dbe915f91c03f0e9a0e51eb4630eb13d99dfab67170b": {
+            "EndpointID": "16fe76d7e4ea73877842a373ceb8f750f7e72cb840d2221e29e75780b7e62c36",
+            "IPv4Address": "172.18.0.22/16",
+            "IPv6Address": "",
+            "MacAddress": "de:a3:04:45:99:d3",
+            "Name": "ecomsre-live-sandbox-v1-product-catalog"
+          },
+          "9adca9a38c4ba24986b67f1cd94de9da42353c4dd93a9a38b61de1d59e618b98": {
+            "EndpointID": "25587930c6a1a0adc95ce1efa12e8f8d859d32501cfc87ec2a38b778d5920d2b",
+            "IPv4Address": "172.18.0.8/16",
+            "IPv6Address": "",
+            "MacAddress": "da:c1:b5:8c:1b:6a",
+            "Name": "ecomsre-live-sandbox-v1-grafana"
+          },
+          "9c09119dd7931cd681220f9decb5fef081645d64d294fb209affb073390fe0a8": {
+            "EndpointID": "326e2269ee6f5c504720aad8b28cc9e44019666675b4d47a3160f10b67233c48",
+            "IPv4Address": "172.18.0.2/16",
+            "IPv6Address": "",
+            "MacAddress": "ce:55:8c:55:17:70",
+            "Name": "ecomsre-live-sandbox-v1-telemetry-docs"
+          },
+          "a5fbff6a08b53e6d22b14ff222d815409db8130dcc894470795e92686dbaa9b2": {
+            "EndpointID": "6239f56d185e4dc4c8658884263ee21bd4cf3c1c77aa0ee548cd4ccde6ed9794",
+            "IPv4Address": "172.18.0.21/16",
+            "IPv6Address": "",
+            "MacAddress": "be:b7:a5:c1:f7:cc",
+            "Name": "ecomsre-live-sandbox-v1-cart"
+          },
+          "bb06c5b1652cb0c8291ef1db5cffa0445a76c4ec8dae0d0f443c0a60d0b6944d": {
+            "EndpointID": "ca4bbb6dc96c6a2599f08b525dc091e9986e61a8e82ec689ca5259225bfa1234",
+            "IPv4Address": "172.18.0.5/16",
+            "IPv6Address": "",
+            "MacAddress": "be:0c:84:58:02:e8",
+            "Name": "ecomsre-live-sandbox-v1-opensearch"
+          },
+          "c48df28ffbf12abb303fb7373af8369ee5814259a405d0dc92fed1048676de34": {
+            "EndpointID": "e2b634acc44fa2409773507fc745650215e5d36ffe840a82b6e0486647316b8c",
+            "IPv4Address": "172.18.0.19/16",
+            "IPv6Address": "",
+            "MacAddress": "96:15:9e:0e:c2:8e",
+            "Name": "ecomsre-live-sandbox-v1-currency"
+          },
+          "cce1cb75cb4f7d8a7b6762c713e8d1e1a97084fb35726f4abf34ed8291a838f3": {
+            "EndpointID": "5e59b1084409093875efeecef0d9f910f3325b271facf8279ba05888f87dad1e",
+            "IPv4Address": "172.18.0.15/16",
+            "IPv6Address": "",
+            "MacAddress": "ca:9e:aa:96:7d:97",
+            "Name": "ecomsre-live-sandbox-v1-shipping"
+          },
+          "cebf0ec3d4fe453e34254a02f8ef9b0cfb7c28ba8136ea65c8042820a2d83c46": {
+            "EndpointID": "cffc0aed53823590db57e15391d26619c801a8883860cad4f1c541136c0aa2a4",
+            "IPv4Address": "172.18.0.13/16",
+            "IPv6Address": "",
+            "MacAddress": "82:7f:05:d7:40:6a",
+            "Name": "ecomsre-live-sandbox-v1-image-provider"
+          },
+          "d36987ca3f401492ea7e76d4d8bd748ca5ca9352621624344015226c0b763079": {
+            "EndpointID": "60862c38a6e5a6a0578430d725884cacd5fe0b5afec2eb3ef510684160737bfd",
+            "IPv4Address": "172.18.0.29/16",
+            "IPv6Address": "",
+            "MacAddress": "a6:0e:be:a3:c1:76",
+            "Name": "ecomsre-live-sandbox-v1-load-generator"
+          },
+          "dc9c9dfb85cc5c6c8f161445d38ce3a4590fae820ea424ceb8e9ee0bc65a25ac": {
+            "EndpointID": "63e3c4ad1ab23f19da0ea7b30917677817b03429c770a6c56fb1addbda58fbd0",
+            "IPv4Address": "172.18.0.20/16",
+            "IPv6Address": "",
+            "MacAddress": "86:1e:ff:e0:8e:6f",
+            "Name": "ecomsre-live-sandbox-v1-quote"
+          },
+          "dce81635f5ca4da1f62484ee51d5fcca024c3d5de13c730bacf17685089ca625": {
+            "EndpointID": "5e9dec02bd05b26065ae3c8732bb2a12a384eeb6bc48a52f3a4eeeaefccff6bc",
+            "IPv4Address": "172.18.0.24/16",
+            "IPv6Address": "",
+            "MacAddress": "96:57:a0:a3:ce:6c",
+            "Name": "ecomsre-live-sandbox-v1-accounting"
+          },
+          "e6a18c9315315ab8d6b63ba81f58540cdb133088fca1875ccaa0039a71b159b3": {
+            "EndpointID": "3cef12c0257e7856353580ad5a2b70d6923cdbee7a64ffbba7bcd2a671414fa0",
+            "IPv4Address": "172.18.0.11/16",
+            "IPv6Address": "",
+            "MacAddress": "f2:48:91:33:fa:0f",
+            "Name": "ecomsre-live-sandbox-v1-prometheus"
+          },
+          "ea6e8f438a3de895de0f412ffb5493e0e14dc643e5e379e28224c1a14d46c5b4": {
+            "EndpointID": "9e4ddf335b09c37713ea848f024db8afe71e2748e5c24d05d7f7a55740e7fd97",
+            "IPv4Address": "172.18.0.27/16",
+            "IPv6Address": "",
+            "MacAddress": "ea:e1:61:55:db:77",
+            "Name": "ecomsre-live-sandbox-v1-frontend"
+          },
+          "f1b8665eac41354174656c4525366e08ac6c60cd914b3f83f06303882d6b4dfd": {
+            "EndpointID": "72d93cda55a5265a4da92430d5b8d443f8d56c552ec9c61d780661cd034fd209",
+            "IPv4Address": "172.18.0.18/16",
+            "IPv6Address": "",
+            "MacAddress": "36:57:3d:85:c3:50",
+            "Name": "ecomsre-live-sandbox-v1-email"
+          },
+          "f720cc6f0d43184049857f23ecf4809eacfde5d67b531fdc09fcb95c14148d76": {
+            "EndpointID": "ed1ffe00c2bc932541fd899327c3fe5a669573909d14d638a6ee328f7b8e9568",
+            "IPv4Address": "172.18.0.7/16",
+            "IPv6Address": "",
+            "MacAddress": "fe:e0:2c:87:ae:0d",
+            "Name": "ecomsre-live-sandbox-v1-flagd"
+          }
+        },
+        "Created": "2026-09-08T09:38:11.747989253Z",
+        "Driver": "bridge",
+        "EnableIPv4": true,
+        "EnableIPv6": false,
+        "IPAM": {
+          "Config": [
+            {
+              "Gateway": "172.18.0.1",
+              "Subnet": "172.18.0.0/16"
+            }
+          ],
+          "Driver": "default",
+          "Options": {}
+        },
+        "Id": "8268f64f2d2fc1b64dbff0ec081c7aa0cec354169e39c4b4756ebd68489b179f",
+        "Ingress": false,
+        "Internal": false,
+        "Labels": {
+          "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+          "io.ecomsre.product.v040.qualification": "c6a70e54d58b4df5a1325886304b4844",
+          "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+        },
+        "Name": "ecomsre-live-sandbox-v1-default",
+        "Options": {
+          "com.docker.network.enable_ipv4": "true",
+          "com.docker.network.enable_ipv6": "false"
+        },
+        "Scope": "local",
+        "Status": {
+          "IPAM": {
+            "Subnets": {
+              "172.18.0.0/16": {
+                "DynamicIPsAvailable": 65505,
+                "IPsInUse": 31
+              }
+            }
+          }
+        },
+        "raw_inspect_sha256": "f3100ea516a8134744a2d4e2e274f4954ed40b46bf87c1b9ff31b325cafbaa1d"
+      },
+      {
+        "Attachable": false,
+        "ConfigFrom": {
+          "Network": ""
+        },
+        "ConfigOnly": false,
+        "Containers": {},
+        "Created": "2026-09-08T09:38:20.898387965Z",
+        "Driver": "bridge",
+        "EnableIPv4": true,
+        "EnableIPv6": false,
+        "IPAM": {
+          "Config": [
+            {
+              "Gateway": "172.20.0.1",
+              "Subnet": "172.20.0.0/16"
+            }
+          ],
+          "Driver": "default",
+          "Options": {}
+        },
+        "Id": "b5a0761c5ad0fa742c2c86b7eea2fdb47bd1af5b687faa5417e8576d5e4b2ca3",
+        "Ingress": false,
+        "Internal": true,
+        "Labels": {
+          "com.docker.compose.project": "ecomsre-product-v040",
+          "io.ecomsre.product": "ecomsre-product-mvp-v01",
+          "io.ecomsre.product.v040.goal": "d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a",
+          "io.ecomsre.product.v040.qualification": "c6a70e54d58b4df5a1325886304b4844"
+        },
+        "Name": "ecomsre-product-v040_remediation-observation",
+        "Options": {
+          "com.docker.network.enable_ipv4": "true",
+          "com.docker.network.enable_ipv6": "false"
+        },
+        "Scope": "local",
+        "Status": {
+          "IPAM": {
+            "Subnets": {
+              "172.20.0.0/16": {
+                "DynamicIPsAvailable": 65533,
+                "IPsInUse": 3
+              }
+            }
+          }
+        },
+        "raw_inspect_sha256": "df69e4f3ac7965f32b6ba2de0416b9d80cbf4af0105cb240e8deea9ea2590393"
+      },
+      {
+        "Attachable": false,
+        "ConfigFrom": {
+          "Network": ""
+        },
+        "ConfigOnly": false,
+        "Containers": {},
+        "Created": "2026-09-08T09:38:16.33069738Z",
+        "Driver": "bridge",
+        "EnableIPv4": true,
+        "EnableIPv6": false,
+        "IPAM": {
+          "Config": [
+            {
+              "Gateway": "172.19.0.1",
+              "Subnet": "172.19.0.0/16"
+            }
+          ],
+          "Driver": "default",
+          "Options": {}
+        },
+        "Id": "bb27e2b218b80dbf7d71fff6adf210656f70242e85216ee6a0012684d141b04a",
+        "Ingress": false,
+        "Internal": false,
+        "Labels": {
+          "com.docker.compose.project": "ecomsre-product-v040",
+          "io.ecomsre.product": "ecomsre-product-mvp-v01",
+          "io.ecomsre.product.v040.goal": "d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a",
+          "io.ecomsre.product.v040.qualification": "c6a70e54d58b4df5a1325886304b4844"
+        },
+        "Name": "ecomsre-product-v040-default",
+        "Options": {
+          "com.docker.network.enable_ipv4": "true",
+          "com.docker.network.enable_ipv6": "false"
+        },
+        "Scope": "local",
+        "Status": {
+          "IPAM": {
+            "Subnets": {
+              "172.19.0.0/16": {
+                "DynamicIPsAvailable": 65533,
+                "IPsInUse": 3
+              }
+            }
+          }
+        },
+        "raw_inspect_sha256": "2f177a1fe93d9bdde4c7a8bbffe13df4da6251901def4f2b8e181c4f939baa0c"
+      }
+    ],
+    "volumes": [
+      {
+        "CreatedAt": "2026-09-08T09:37:11Z",
+        "Driver": "local",
+        "Labels": {
+          "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+          "io.ecomsre.product.v040.qualification": "c6a70e54d58b4df5a1325886304b4844",
+          "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+        },
+        "Mountpoint": "/var/lib/docker/volumes/ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-astronomy-db-data/_data",
+        "Name": "ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-astronomy-db-data",
+        "Options": null,
+        "Scope": "local",
+        "raw_inspect_sha256": "3e1011d1e40059c50457076227c4a57c84f78ae5fbb664fd6bb8ce8afcc81ae7"
+      },
+      {
+        "CreatedAt": "2026-09-08T09:37:16Z",
+        "Driver": "local",
+        "Labels": {
+          "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+          "io.ecomsre.product.v040.qualification": "c6a70e54d58b4df5a1325886304b4844",
+          "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+        },
+        "Mountpoint": "/var/lib/docker/volumes/ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-jaeger-data/_data",
+        "Name": "ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-jaeger-data",
+        "Options": null,
+        "Scope": "local",
+        "raw_inspect_sha256": "0535974bd88498ba84e6b39c878ac0c461c1d31f71f3893b4b92943b82bdeb04"
+      },
+      {
+        "CreatedAt": "2026-09-08T09:37:20Z",
+        "Driver": "local",
+        "Labels": {
+          "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+          "io.ecomsre.product.v040.qualification": "c6a70e54d58b4df5a1325886304b4844",
+          "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+        },
+        "Mountpoint": "/var/lib/docker/volumes/ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-prometheus-data/_data",
+        "Name": "ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-prometheus-data",
+        "Options": null,
+        "Scope": "local",
+        "raw_inspect_sha256": "1aa14c0eec810e01e75a8c933490f2b94eed454bbd5edcd497a1bcbbaf9b9a90"
+      },
+      {
+        "CreatedAt": "2026-09-08T09:37:24Z",
+        "Driver": "local",
+        "Labels": {
+          "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+          "io.ecomsre.product.v040.qualification": "c6a70e54d58b4df5a1325886304b4844",
+          "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+        },
+        "Mountpoint": "/var/lib/docker/volumes/ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-qualification-kafka-config/_data",
+        "Name": "ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-qualification-kafka-config",
+        "Options": null,
+        "Scope": "local",
+        "raw_inspect_sha256": "5a2f22dfe5b7a1f24f8e1bac45d5378979ba9fab00910212b25287b930e9bda1"
+      },
+      {
+        "CreatedAt": "2026-09-08T09:37:28Z",
+        "Driver": "local",
+        "Labels": {
+          "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+          "io.ecomsre.product.v040.qualification": "c6a70e54d58b4df5a1325886304b4844",
+          "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+        },
+        "Mountpoint": "/var/lib/docker/volumes/ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-qualification-kafka-data/_data",
+        "Name": "ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-qualification-kafka-data",
+        "Options": null,
+        "Scope": "local",
+        "raw_inspect_sha256": "22a17ef30f708b85bd8e68581c2ab902a8211d9aebc207e9f299e2ad17cefdcc"
+      },
+      {
+        "CreatedAt": "2026-09-08T09:37:32Z",
+        "Driver": "local",
+        "Labels": {
+          "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+          "io.ecomsre.product.v040.qualification": "c6a70e54d58b4df5a1325886304b4844",
+          "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+        },
+        "Mountpoint": "/var/lib/docker/volumes/ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-qualification-kafka-secrets/_data",
+        "Name": "ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-qualification-kafka-secrets",
+        "Options": null,
+        "Scope": "local",
+        "raw_inspect_sha256": "b9964a233a613dabc6722d6cdefa81041729e5352c1ee34243defe16822bf49e"
+      }
+    ]
+  },
+  "schema_version": "ecomsre.v040.v3.retained-resources.v1"
+}
