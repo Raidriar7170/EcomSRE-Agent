@@ -93,6 +93,13 @@
   "review": {
     "cleanup_implementation": "Sagan ALLOW / Must Fix 0",
     "cleanup_evidence": "Sagan PASS / ALLOW / Must Fix 0",
-    "final_publication": "See final-review.md and exact final-head review in PR closure; no MERGE_ALLOW"
+    "final_publication": "Sagan PASS / Must Fix 0 / Claim Accuracy PASS / Draft publication ALLOW",
+    "reviewed_content_head": "028ba6751e79efe609be91419a78e6748c100ca1",
+    "record": "../../external-reviews/product-v040-preflight-v4-final-review.md"
+  },
+  "ci": {
+    "final_publication_head": "Exact final committed head bound in Draft PR closure",
+    "completion_requirement": "Both repository workflows SUCCESS before terminal publication completes",
+    "local_tested_head": "1b2fd87879b3f97aa3156387e370609dc735935f"
   }
 }
