@@ -5,14 +5,14 @@ import fcntl
 from pathlib import Path
 from typing import Any
 from .common import load, require, seal, now
+from .recovery import cleanup_complete
 
 
 def prior_barrier(root: Path, receipts: list[dict[str, Any]], surface: str) -> None:
     for prior in receipts:
         previous = root / prior["attempt_id"]
         require(
-            (previous / "cleanup-result.json").exists()
-            and load(previous / "cleanup-result.json")["status"] == "CLEAN",
+            cleanup_complete(root, prior["attempt_id"]),
             "PREVIOUS_CLEANUP_PENDING",
         )
         require((previous / "attempt-result.json").exists(), "PREVIOUS_RESULT_PENDING")
@@ -80,9 +80,7 @@ def reserve(root: Path, attempt: str, runtime_surface: str) -> dict[str, Any]:
             require(
                 identifier == attempt
                 or (
-                    (root / identifier / "cleanup-result.json").exists()
-                    and load(root / identifier / "cleanup-result.json")["status"]
-                    == "CLEAN"
+                    cleanup_complete(root, identifier)
                     and (root / identifier / "attempt-result.json").exists()
                 ),
                 "PRIOR_RESERVATION_UNRESOLVED",

@@ -1,5 +1,5 @@
 {
-  "schema_version": "ecomsre.preflight.v4.policy.v1",
+  "schema_version": "ecomsre.preflight.v4.policy.v2",
   "probe_namespace": "independent",
   "probe_death_before_sandbox_birth": true,
   "kafka_paths": [
@@ -19,5 +19,8 @@
   "formal_authority": "NONE",
   "provider_calls": 0,
   "readiness_policy": "exact-role-birth-id-with-contemporaneous-evidence",
-  "oom_representation_policy": "probe-only-false-to-null-bound-effective-cgroup-proof-v1"
+  "oom_representation_policy": "probe-only-false-to-null-bound-effective-cgroup-proof-v1",
+  "mount_order_policy": "exact-target-keyed-mount-content-v2",
+  "daemon_readiness": "version-info-only; authorized-build-immediately-before-fresh-baseline",
+  "prior_failed_attempt_recovery": "only-tracked-commitment-to-independent-daemon-event-and-exact-owned-cleanup"
 }

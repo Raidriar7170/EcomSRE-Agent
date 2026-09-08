@@ -1,0 +1,10 @@
+{
+  "schema_version": "ecomsre.preflight.v4.recovery-authorizations.v1",
+  "authority_scope": "prior-attempt-closure-only; all new-attempt gates remain required",
+  "attempts": {
+    "b8d4b937be174a87978f9d6314ac963b": {
+      "file": "stabilization-recovery-v2.json",
+      "sha256": "496ec999f70f2204b7a5d000e704c31e37637a833d5f8e9d3f0035d4df2d86cd"
+    }
+  }
+}

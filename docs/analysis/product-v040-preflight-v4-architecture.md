@@ -4,7 +4,9 @@ The activated [Goal](../goals/EcomSRE_Product_v0.4_Live_Harness_Engineering_Pref
 
 ## State
 
-Implementation in progress. No v4 runtime resource has been created; 0/5 attempts consumed. The focused suite currently passes 130 tests. The complete coordinator, independent probe, Product flow, private build context and recovery journal are implemented. Mainline mypy passes 695 source files. Full tests, exact-head CI and frozen-head Live Admission remain pending.
+Attempt 1 consumed 1/5 and failed before Probe start. Exact owned cleanup removed the Probe and three volumes; the original `FAILED / BLOCKED_SAFETY` result remains unchanged because builtin bridge identity drifted. There is no live PASS. Full repository tests on runtime head `d058ea6` passed 6623 tests with 21 skips; its CI passed. The current stabilization repair has 139 focused tests passing and awaits new frozen-head verification.
+
+Policy v2 treats Mounts array ordering as serialization while retaining every keyed mount field. Docker readiness uses only `version/info` as Goal section 18 requires. An authorized exact-source Product build is scheduled after CI and immediately before the new double baseline. A diagnostic `system df` probe was performed before this restriction was reconciled; it is preserved as a scoped read-only deviation and is not part of the admitted execution path. A narrowly committed recovery proof can acknowledge the prior exact owned closure after an independently observed daemon event without changing the old failed result or accepting its non-owned comparison as unchanged. Every new attempt still requires its own complete admission.
 
 ## Components and authority
 

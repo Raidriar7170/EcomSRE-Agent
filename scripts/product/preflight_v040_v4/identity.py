@@ -201,3 +201,26 @@ def validate_network_stage(
                 stage == "running" and len(endpoint) == 64,
                 "NETWORK_ENDPOINT_LIFETIME:" + name,
             )
+
+
+def created_identity(
+    birth: dict[str, Any], current: dict[str, Any], network_ids: dict[str, str]
+) -> None:
+    """Mount list order is serialization; all keyed mount contents remain exact."""
+    original, observed = deepcopy(birth), deepcopy(current)
+    for row in (original, observed):
+        row["Mounts"] = sorted(row["Mounts"], key=lambda mount: mount["Destination"])
+    require(original == observed, "CREATED_IMMUTABLE_DRIFT")
+    require(
+        birth["HostConfig"].get("OomKillDisable")
+        is current["HostConfig"].get("OomKillDisable"),
+        "CREATED_OOM_DRIFT",
+    )
+    require(
+        current["State"] == birth["State"]
+        and current["State"]["Status"] == "created"
+        and current["State"]["Running"] is False
+        and current["RestartCount"] == 0,
+        "CREATED_STATE_DRIFT",
+    )
+    validate_network_stage(current, network_ids, "created")

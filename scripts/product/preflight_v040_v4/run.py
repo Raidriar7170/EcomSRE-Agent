@@ -25,7 +25,7 @@ from .copyup import parse_copyup, validate_copyup
 from .docker import Docker, static_inventory, image_inventory
 from .host import listeners, require_ports_free, require_no_preexisting_owned
 from .http import LocalHTTP
-from .identity import lifecycle
+from .identity import lifecycle, created_identity
 from .oom import OOM_PROTOCOL, bind_oom
 from .prepare import prepare
 from .processes import CENSUS_PROTOCOL, validate_probe_census
@@ -181,6 +181,15 @@ def attempt(
     image = load(product_image_path)
     require(image["source_head"] == gate["source_head"], "PRODUCT_BUILD_HEAD_DRIFT")
     docker = Docker()
+    seal(
+        root,
+        "daemon-readiness.json",
+        {
+            "version": docker.read("version", "--format", "{{json .}}"),
+            "info": docker.read("info", "--format", "{{json .}}"),
+            **now(),
+        },
+    )
     initial = docker.capture()
     docker.bound = initial["binding"]
     second = docker.capture()
@@ -258,7 +267,7 @@ def attempt(
                 for r in before_copy["resources"]["container"]
                 if r["Id"] == identifier
             )
-            require(current_probe == birth["record"], "COPYUP_PROBE_DRIFT")
+            created_identity(birth["record"], current_probe, birth["network_ids"])
             copy_args = ["docker", "container", "cp", identifier + ":" + path, "-"]
             seal(
                 root,

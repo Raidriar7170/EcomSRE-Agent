@@ -15,3 +15,19 @@ Claim Accuracy: no live or formal claim made
 Live Admission: WITHHOLD
 
 This record will be updated from the frozen-head review before Attempt 1. Tests and CI remain independent admission conditions.
+
+
+## Frozen implementation admission and first failure
+
+Sagan approved `d058ea685a648084dffcc44a290ab58cc058ced2`, tree `5e7711fdf7ecd3be0936a3e09802a254a8b15fb0`: PASS / Must Fix 0 / Claim Accuracy PASS / Live Admission ALLOW for the code-review gate. Local checks and exact-head CI then passed before Attempt 1.
+
+After Attempt 1, independent review confirmed mount ordering was the functional guard issue, all eight mutation receipts matched exact create/remove commands, and no owned resource remained. Raw inventory proves real builtin bridge replacement. Independent backend-log inspection proves the idle VM start event triggered by first volume creation. Section 8.3 permits a separately reviewed stabilization repair; no unconditional Attempt 2 approval was granted and the old FAILED/BLOCKED_SAFETY result must remain immutable.
+
+Current repaired-head Live Admission: WITHHOLD pending review and full gates.
+
+
+## Stabilization repair review
+
+The reviewer accepted the narrowly committed prior-attempt recovery proof, independently verifying all 29 bound evidence files, four births, eight mutation receipts and the daemon event. Two Must Fix items were then raised: respect Goal section 18's version/info-only wake restriction, and relax only raw Mounts array ordering while preserving complete NetworkSettings and every other raw field.
+
+Both fixes are implemented. The execution path uses version/info only, and raw created-container comparison sorts only Mounts before complete equality. Alias, IPAMConfig and NetworkID drift remain rejected. The earlier read-only system-df diagnostic is retained as a scope deviation; it created no runtime resource and consumed no attempt. It is not used in the admitted execution path. New runtime admission remains pending frozen-head review and all checks.

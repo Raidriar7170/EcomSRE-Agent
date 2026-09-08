@@ -94,8 +94,5 @@
       },
       "recovery_disposition": "SEPARATE_REVIEW_REQUIRED; ORIGINAL_RESULT_UNCHANGED"
     }
-  ],
-  "consumed_attempts": 1,
-  "consecutive_complete_passes": 0,
-  "maximum_attempts": 5
+  ]
 }
