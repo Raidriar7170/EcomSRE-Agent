@@ -1,0 +1,29 @@
+{
+  "schema_version": "ecomsre.v040.v3.offline-review-repair.v1",
+  "initial_review": {
+    "head": "73589ed",
+    "decision": "WITHHOLD",
+    "must_fix": 2,
+    "findings": [
+      "Fingerprint projection retained nested raw HostConfig references; semantic comparison could mutate inspect data.",
+      "Builtin none endpoint was freshly inferred at every stage; coordinated replacement in both views could be accepted."
+    ]
+  },
+  "repair_head": "4895ed7336565b43d5d208019a5ed8a1061fa53c",
+  "repairs": [
+    "Deep-copy the entire raw fingerprint projection; actual driver capture and comparison regression verifies immutable raw-before/raw-after evidence and null preservation.",
+    "Bind the full container endpoint and matching network membership once at AFTER_PROBE_START; later consistent replacement fails closed; stop permits only EndpointID removal."
+  ],
+  "targeted_tests": {
+    "passed": 56,
+    "skipped": 0
+  },
+  "ruff": "PASS",
+  "mypy_v3_source_files": 10,
+  "mypy_mainline_source_files": 702,
+  "full_tests": "PENDING_FINAL_CANDIDATE",
+  "exact_head_ci": "PENDING",
+  "runtime_admission": "WITHHOLD_PENDING_GATES",
+  "v3_qualification_count": 0,
+  "formal_authority": false
+}
