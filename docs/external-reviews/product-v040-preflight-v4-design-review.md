@@ -47,3 +47,11 @@ Before Attempt 3, Sagan bound the publication head `5bc530b1aa50be37b9eb51173aab
 The network-options repair `346f081b281faba35e4f71db253a39c59ac11a09`, tree `e458502967b6a33c6dd7152a0024746100c14adb`, received cleanup-only ALLOW / Must Fix 0. The original create-default receipt passed the repaired validator without replacement. This disposition covered only recovery and exact removal of the retained network, with no start or new attempt. New runtime admission remains pending published-head review and full gates.
 
 After cleanup, Sagan independently verified the new exact remove-default chain and fresh preflight, owned-zero double captures, unchanged non-owned inventory/images and free ports. Implementation code gate for `346f081`: ALLOW / Must Fix 0 / Claim Accuracy PASS. Full published-head gates remain separate.
+
+## Attempt 4 created-container cleanup review
+
+Sagan admitted publication head `85ca64299a9afa086e22ec3aa9fbee71673e0bf7`, tree `0fc69f6737d776ab397fd94ba850894cc84736e7`, with ALLOW / Must Fix 0 / Claim Accuracy PASS. Its complete local tests and exact-head CI passed before Attempt 4.
+
+Cleanup repair `679df7afcf21d743145a5651f088774db2b81789`, tree `98e4aa37e582b0ec4d0ff4d42554c9156c9a1c7c`, received cleanup-only ALLOW / Must Fix 0. The reviewer verified the exact null environment mapping, fresh image v8 match, unchanged created-container identities, and all 28 original receipt rows passing complete repaired birth validation. Cleanup authority covered only the five retained containers and four volumes; no new start or create was allowed.
+
+After recovery, Sagan verified all five recovered container and six volume deletion chains (11 groups, including all nine new removals), fresh preflights, double final owned-zero/non-owned-unchanged captures, unchanged images and free listeners. Code gate for `679df7a`: ALLOW / Must Fix 0 / Claim Accuracy PASS. Original failure remains immutable.
