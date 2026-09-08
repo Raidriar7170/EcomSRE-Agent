@@ -43,7 +43,10 @@ def main() -> None:
         {**review, "history_verification_sha256": digest(verification), **stamp()},
     )
     seal(ROOT, "execution-once.json", {"base": BASE, **stamp()})
-    engine = Engine(a, Docker(a), ROOT)
+    docker = Docker(a)
+    docker.bound = json.loads((ROOT / "activation-docker-binding.json").read_bytes())
+    engine = Engine(a, docker, ROOT)
+    engine.binding = docker.bound
     try:
         result = engine.run()
     except Exception as error:

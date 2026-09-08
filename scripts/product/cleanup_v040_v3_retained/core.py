@@ -186,6 +186,7 @@ class Authority:
                     labels(kind, self.old[kind][rid]).get(LABEL) == QUAL,
                     "OWNERSHIP_MISMATCH",
                 )
+        self.all_network_ids = [r["Id"] for r in raw["inspect"]["networks"]]
         self.daemon = raw["daemon_before"]
         require(self.daemon == raw["daemon_after"], "HISTORICAL_DAEMON_DRIFT")
         self.images = raw["platform_images"]
@@ -281,6 +282,43 @@ class Authority:
                 row = current[rid]
                 if kind == "containers":
                     self.check_command(rid, row)
+                    old_eps = old["NetworkSettings"]["Networks"]
+                    current_eps = row["NetworkSettings"]["Networks"]
+                    require(
+                        set(current_eps) == set(old_eps),
+                        "RESOURCE_NETWORK_BINDING_DRIFT",
+                    )
+                    for name, endpoint in current_eps.items():
+                        expected = old_eps[name]
+                        if row["State"]["Running"]:
+                            require(
+                                endpoint == expected, "RESOURCE_ENDPOINT_IDENTITY_DRIFT"
+                            )
+                        else:
+                            # Only Engine-allocated address fields may clear on stop.
+                            clearable = {
+                                "EndpointID",
+                                "Gateway",
+                                "GlobalIPv6Address",
+                                "GlobalIPv6PrefixLen",
+                                "IPAddress",
+                                "IPPrefixLen",
+                                "IPv6Gateway",
+                                "MacAddress",
+                            }
+                            require(
+                                set(endpoint) == set(expected),
+                                "RESOURCE_ENDPOINT_IDENTITY_DRIFT",
+                            )
+                            require(
+                                all(
+                                    value == expected[key]
+                                    or key in clearable
+                                    and value in ("", 0)
+                                    for key, value in endpoint.items()
+                                ),
+                                "RESOURCE_ENDPOINT_IDENTITY_DRIFT",
+                            )
                 require(
                     fixed(kind, row) == fixed(kind, old),
                     "RESOURCE_IDENTITY_DRIFT:" + kind + ":" + rid,
@@ -288,6 +326,26 @@ class Authority:
                 if kind == "networks":
                     require(
                         set(row["Containers"]) <= set(self.records["containers"]),
+                        "UNEXPECTED_NETWORK_ENDPOINT",
+                    )
+                    require(
+                        all(
+                            cid in old["Containers"] and ep == old["Containers"][cid]
+                            for cid, ep in row["Containers"].items()
+                        ),
+                        "RESOURCE_ENDPOINT_IDENTITY_DRIFT",
+                    )
+                    running_attached = {
+                        c["Id"]
+                        for c in view["inspect"]["containers"]
+                        if c["State"]["Running"]
+                        and any(
+                            ep["NetworkID"] == rid
+                            for ep in c["NetworkSettings"]["Networks"].values()
+                        )
+                    }
+                    require(
+                        running_attached <= set(row["Containers"]),
                         "UNEXPECTED_NETWORK_ENDPOINT",
                     )
                 disposition[kind][rid] = "PRESENT_MATCHING"
@@ -346,7 +404,21 @@ def validate_pair(a: dict[str, Any], b: dict[str, Any]) -> None:
             == {ident(kind, r): fixed(kind, r) for r in b["inspect"][kind]},
             "RACED_OR_INCOMPLETE_CAPTURE",
         )
+        if kind == "containers":
+            require(
+                {r["Id"]: r["NetworkSettings"]["Networks"] for r in a["inspect"][kind]}
+                == {
+                    r["Id"]: r["NetworkSettings"]["Networks"]
+                    for r in b["inspect"][kind]
+                },
+                "RACED_OR_INCOMPLETE_CAPTURE",
+            )
         if kind == "networks":
+            require(
+                {r["Id"]: r.get("Status") for r in a["inspect"][kind]}
+                == {r["Id"]: r.get("Status") for r in b["inspect"][kind]},
+                "RACED_OR_INCOMPLETE_CAPTURE",
+            )
             require(
                 {r["Id"]: r["Containers"] for r in a["inspect"][kind]}
                 == {r["Id"]: r["Containers"] for r in b["inspect"][kind]},
@@ -364,8 +436,15 @@ def nonowned(
             if rid in authority.records[kind]:
                 continue
             value = fixed(kind, row)
+            if kind == "containers":
+                value = {
+                    k: deepcopy(v)
+                    for k, v in row.items()
+                    if k not in ("State", "RestartCount")
+                }
+                value["Mounts"] = sorted_mounts(row)
             if kind == "networks":
-                value["Containers"] = deepcopy(row["Containers"])
+                value = deepcopy(row)
                 if remove_probe and row["Name"] == "none":
                     value["Containers"].pop(PROBE, None)
             result[kind][rid] = value

@@ -180,8 +180,7 @@ class Docker:
         # network ls -q emits short IDs. Resolve only against previously frozen
         # full inventory identities; never inspect a short ID or adopt a new network.
         # A new unknown network blocks this conservative read surface.
-        raw = json.loads((PRIVATE / "host/cleanup/000-inventory.json").read_bytes())
-        full_networks = [r["Id"] for r in raw["inspect"]["networks"]]
+        full_networks = self.a.all_network_ids
         resolved = []
         for prefix in ids["networks"]:
             matches = [rid for rid in full_networks if rid.startswith(prefix)]

@@ -108,7 +108,11 @@ def fixture() -> tuple[Authority, dict[str, Any]]:
             "RW": True,
         }
     ]
-    rows: dict[str, Any] = {"containers": containers, "networks": networks, "volumes": volumes}
+    rows: dict[str, Any] = {
+        "containers": containers,
+        "networks": networks,
+        "volumes": volumes,
+    }
     retained = {
         "qualification_id": QUAL,
         "resources": {
@@ -272,7 +276,7 @@ def test_binding_drift(fixture: Any) -> None:
     a, v = fixture
     c = v["inspect"]["containers"][0]
     next(iter(c["NetworkSettings"]["Networks"].values()))["NetworkID"] = "f" * 64
-    with pytest.raises(Blocked, match="RESOURCE_IDENTITY_DRIFT"):
+    with pytest.raises(Blocked, match="RESOURCE_ENDPOINT_IDENTITY_DRIFT"):
         a.validate(v)
 
 
@@ -460,3 +464,111 @@ def test_receipt_chain_and_permissions(fixture: Any, tmp_path: Path) -> None:
         assert claim == digest(receipt)
         previous = sha(p.read_bytes())
         assert p.stat().st_mode & 0o777 == 0o600
+
+
+def test_nonowned_endpoint_configuration_is_exact(fixture: Any) -> None:
+    a, v = fixture
+    extra = deepcopy(v["inspect"]["containers"][0])
+    extra["Id"] = "e" * 64
+    extra["Name"] = "/other"
+    extra["Config"]["Labels"] = {}
+    v["inspect"]["containers"].append(extra)
+    post = deepcopy(v)
+    ep = next(
+        iter(post["inspect"]["containers"][-1]["NetworkSettings"]["Networks"].values())
+    )
+    ep["EndpointID"] = "drift"
+    assert nonowned(v, a, False) != nonowned(post, a, False)
+
+
+def test_duplicate_stop_intent_rejected(fixture: Any, tmp_path: Path) -> None:
+    a, v = fixture
+    fake = Fake(v)
+    e = Engine(a, fake, tmp_path)
+    e.baseline = v
+    e.binding = v["binding"]
+    rid = a.order[0]
+    e.action("containers", rid, "stop")
+    next(c for c in fake.view["inspect"]["containers"] if c["Id"] == rid)["State"][
+        "Running"
+    ] = True
+    for net in fake.view["inspect"]["networks"]:
+        if rid in a.old["networks"][net["Id"]]["Containers"]:
+            net["Containers"][rid] = deepcopy(
+                a.old["networks"][net["Id"]]["Containers"][rid]
+            )
+    with pytest.raises(Blocked, match="DUPLICATE_INTENT"):
+        e.action("containers", rid, "stop")
+    assert len(fake.calls) == 1
+
+
+def test_all_absent_never_mutates(fixture: Any, tmp_path: Path) -> None:
+    a, v = fixture
+    v["inspect"] = {k: [] for k in KINDS}
+    v["ids"] = {k: [] for k in KINDS}
+    fake = Fake(v)
+    result = Engine(a, fake, tmp_path).run()
+    assert fake.calls == [] and result["removed"] == {k: [] for k in KINDS}
+
+
+@pytest.mark.parametrize("tamper", [None, "post_digest", "missing_receipt"])
+def test_verifier_detects_evidence_tamper(
+    fixture: Any, tmp_path: Path, tamper: Any
+) -> None:
+    from scripts.product.cleanup_v040_v3_retained.core import BASE, GOAL_SHA, sha
+    from scripts.product.cleanup_v040_v3_retained.verify import verify
+
+    a, v = fixture
+    result = Engine(a, Fake(v), tmp_path).run()
+    result.update(starting_head=BASE, goal_sha256=GOAL_SHA)
+    seal(tmp_path, "final-cleanup-result.json", result)
+    if tamper == "post_digest":
+        p = tmp_path / "observations/000-post.json"
+        doc = json.loads(p.read_bytes())
+        doc["utc"] = "tampered"
+        p.write_text(json.dumps(doc))
+    if tamper == "missing_receipt":
+        (tmp_path / "mutation-receipts/065.json").unlink()
+    files = {
+        str(p.relative_to(tmp_path)): sha(p.read_bytes())
+        for p in tmp_path.rglob("*")
+        if p.is_file()
+    }
+    seal(
+        tmp_path,
+        "private-evidence-index.json",
+        {"files": files, "files_sha256": digest(files)},
+    )
+    if tamper is None:
+        assert verify(tmp_path, a)["status"] == "PASS"
+    else:
+        with pytest.raises(Blocked):
+            verify(tmp_path, a)
+
+
+@pytest.mark.parametrize("drift", ["container", "network", "missing_running_endpoint"])
+def test_retained_endpoint_identity(fixture: Any, drift: str) -> None:
+    a, v = fixture
+    if drift == "container":
+        ep = next(
+            iter(v["inspect"]["containers"][0]["NetworkSettings"]["Networks"].values())
+        )
+        ep["EndpointID"] = "new"
+    if drift == "network":
+        next(iter(v["inspect"]["networks"][2]["Containers"].values()))["EndpointID"] = (
+            "new"
+        )
+    if drift == "missing_running_endpoint":
+        v["inspect"]["networks"][2]["Containers"].clear()
+    with pytest.raises(Blocked):
+        a.validate(v)
+
+
+def test_activation_binding_not_replaced(fixture: Any, tmp_path: Path) -> None:
+    a, v = fixture
+    fake = Fake(v)
+    e = Engine(a, fake, tmp_path)
+    e.binding = {"daemon": "activation-other"}
+    with pytest.raises(Blocked, match="DAEMON_IDENTITY_DRIFT"):
+        e.run()
+    assert fake.calls == []

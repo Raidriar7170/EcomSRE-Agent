@@ -80,6 +80,77 @@ def verify(root: Path, a: Authority) -> dict[str, Any]:
             intent["command"],
         )
         op = argv[2]
+        prefix = f"observations/{number:03d}-{op}-{rid}-pre"
+        pre1 = json.loads((root / (prefix + "-1.json")).read_bytes())
+        pre = json.loads((root / (prefix + "-2.json")).read_bytes())
+        validate_pair(pre1, pre)
+        a.validate(pre)
+        current = next(
+            r
+            for r in pre["inspect"][kind]
+            if r["Name" if kind == "volumes" else "Id"] == rid
+        )
+        require(
+            digest(current) == intent["current_pre_mutation_digest"],
+            "PRE_OBSERVATION_BINDING",
+        )
+        require(pre["binding"] == intent["binding"], "INTENT_DAEMON_BINDING")
+        if kind == "containers":
+            require(
+                current["State"]["Running"] == (op == "stop"), "MUTATION_LIFECYCLE_GATE"
+            )
+        if kind == "networks":
+            require(
+                not current["Containers"]
+                and not any(
+                    ep["NetworkID"] == rid
+                    for c in pre["inspect"]["containers"]
+                    for ep in c["NetworkSettings"]["Networks"].values()
+                ),
+                "NETWORK_ATTACHMENT_GATE",
+            )
+        if kind == "volumes":
+            require(
+                not any(
+                    m.get("Name") == rid
+                    for c in pre["inspect"]["containers"]
+                    for m in c["Mounts"]
+                ),
+                "VOLUME_ATTACHMENT_GATE",
+            )
+        if receipt["outcome"] == "VERIFIED":
+            post = json.loads(
+                (root / f"observations/{number:03d}-post.json").read_bytes()
+            )
+            validate_pair(post, post)
+            a.validate(post)
+            require(
+                digest(post) == receipt["post_mutation_observation_digest"]
+                and pre["binding"] == post["binding"]
+                and receipt["client_exit_status"] == 0,
+                "POST_OBSERVATION_BINDING",
+            )
+            target = next(
+                (
+                    r
+                    for r in post["inspect"][kind]
+                    if r["Name" if kind == "volumes" else "Id"] == rid
+                ),
+                None,
+            )
+            if op == "stop":
+                require(
+                    target is not None and target["State"]["Running"] is False,
+                    "STOP_POSTCONDITION",
+                )
+            else:
+                require(
+                    target is None
+                    and not any(
+                        r["Name"] == current["Name"] for r in post["inspect"][kind]
+                    ),
+                    "REMOVE_POSTCONDITION",
+                )
         require(
             argv == a.argv(kind, rid, op) and (kind, rid, op) not in seen,
             "COMMAND_AUTHORITY",
