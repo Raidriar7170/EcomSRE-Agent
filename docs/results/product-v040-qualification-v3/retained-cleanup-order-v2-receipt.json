@@ -1,0 +1,20 @@
+{
+  "code": "CLEANUP_RACED_INVENTORY",
+  "detail": "CLEANUP_RACED_INVENTORY",
+  "ended_at": "2026-09-08T08:19:26.081128+00:00",
+  "formal_authority": false,
+  "goal_sha256": "bb5373899fc8523007b6e9cec0b865403450e4bf4f15b81426ae20f6e1f2deeb",
+  "operations": [
+    {
+      "argv": [
+        "container",
+        "stop",
+        "--time",
+        "5",
+        "c1e1f654931ebe062ae3253727adf884c28ea580781bef5976f322ac06bed66f"
+      ],
+      "output": "Flag --time has been deprecated, use --timeout instead\nc1e1f654931ebe062ae3253727adf884c28ea580781bef5976f322ac06bed66f\n"
+    }
+  ],
+  "status": "MANUAL_INTERVENTION_REQUIRED"
+}

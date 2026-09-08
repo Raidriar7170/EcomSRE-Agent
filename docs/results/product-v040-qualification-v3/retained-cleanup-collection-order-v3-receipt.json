@@ -1,0 +1,67 @@
+{
+  "already_stopped_by_preserved_cleanup": true,
+  "code": "CLEANUP_IMAGE_SET_DRIFT",
+  "detail": "CLEANUP_IMAGE_SET_DRIFT",
+  "ended_at": "2026-09-08T08:23:55.847989+00:00",
+  "formal_authority": false,
+  "goal_sha256": "bb5373899fc8523007b6e9cec0b865403450e4bf4f15b81426ae20f6e1f2deeb",
+  "operations": [
+    {
+      "argv": [
+        "container",
+        "rm",
+        "c1e1f654931ebe062ae3253727adf884c28ea580781bef5976f322ac06bed66f"
+      ],
+      "output": "c1e1f654931ebe062ae3253727adf884c28ea580781bef5976f322ac06bed66f\n"
+    },
+    {
+      "argv": [
+        "volume",
+        "rm",
+        "ecomsre-v040-ebbcf1e4e3e740a296f294fb9ab6047c-astronomy-db-data"
+      ],
+      "output": "ecomsre-v040-ebbcf1e4e3e740a296f294fb9ab6047c-astronomy-db-data\n"
+    },
+    {
+      "argv": [
+        "volume",
+        "rm",
+        "ecomsre-v040-ebbcf1e4e3e740a296f294fb9ab6047c-jaeger-data"
+      ],
+      "output": "ecomsre-v040-ebbcf1e4e3e740a296f294fb9ab6047c-jaeger-data\n"
+    },
+    {
+      "argv": [
+        "volume",
+        "rm",
+        "ecomsre-v040-ebbcf1e4e3e740a296f294fb9ab6047c-prometheus-data"
+      ],
+      "output": "ecomsre-v040-ebbcf1e4e3e740a296f294fb9ab6047c-prometheus-data\n"
+    },
+    {
+      "argv": [
+        "volume",
+        "rm",
+        "ecomsre-v040-ebbcf1e4e3e740a296f294fb9ab6047c-qualification-kafka-config"
+      ],
+      "output": "ecomsre-v040-ebbcf1e4e3e740a296f294fb9ab6047c-qualification-kafka-config\n"
+    },
+    {
+      "argv": [
+        "volume",
+        "rm",
+        "ecomsre-v040-ebbcf1e4e3e740a296f294fb9ab6047c-qualification-kafka-data"
+      ],
+      "output": "ecomsre-v040-ebbcf1e4e3e740a296f294fb9ab6047c-qualification-kafka-data\n"
+    },
+    {
+      "argv": [
+        "volume",
+        "rm",
+        "ecomsre-v040-ebbcf1e4e3e740a296f294fb9ab6047c-qualification-kafka-secrets"
+      ],
+      "output": "ecomsre-v040-ebbcf1e4e3e740a296f294fb9ab6047c-qualification-kafka-secrets\n"
+    }
+  ],
+  "status": "MANUAL_INTERVENTION_REQUIRED"
+}

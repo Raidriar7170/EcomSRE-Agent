@@ -1,0 +1,9 @@
+{
+  "code": "CLEANUP_IMAGE_SET_DRIFT",
+  "detail": "CLEANUP_IMAGE_SET_DRIFT",
+  "ended_at": "2026-09-08T08:16:20.678483+00:00",
+  "formal_authority": false,
+  "goal_sha256": "bb5373899fc8523007b6e9cec0b865403450e4bf4f15b81426ae20f6e1f2deeb",
+  "operations": [],
+  "status": "MANUAL_INTERVENTION_REQUIRED"
+}

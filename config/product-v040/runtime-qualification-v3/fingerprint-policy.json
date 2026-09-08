@@ -1,0 +1,49 @@
+{
+  "policy_id": "DOCKER_STAGE_AWARE_FINGERPRINT_V3",
+  "goal_id": "ecomsre-product-v040-runtime-qualification-successor-v3",
+  "goal_sha256": "bb5373899fc8523007b6e9cec0b865403450e4bf4f15b81426ae20f6e1f2deeb",
+  "base": "7d1c975e3450901a6b09fcbca8c0cd82f24cfc14",
+  "copyup_policy_path": "config/product-v040/copyup-access-v2/policy.json",
+  "copyup_policy_sha256": "64f19a543958c38eb57f878a9162ccb59ff2997d30622f3616509caef580c7fb",
+  "normalization_scope": {
+    "role": "probe/container/kafka-volume-probe",
+    "field": "HostConfig.OomKillDisable",
+    "birth_stage": "AFTER_COPYUP_CREATE",
+    "birth_value": false,
+    "permitted_transition": {"stage": "AFTER_PROBE_START", "before": false, "after": null},
+    "ordinary_stage_changes_allowed": false,
+    "stop_value_changes_allowed": false,
+    "other_containers": "EXACT_RAW_FINGERPRINT",
+    "raw_evidence_mutation_allowed": false,
+    "unknown_or_additional_field_changes_allowed": false
+  },
+  "effective_oom_measurement": {
+    "docker_cgroup_version": "2",
+    "proc_1_cgroup": "0::/",
+    "cgroup_filesystem": "cgroup2",
+    "mountpoint": "/sys/fs/cgroup",
+    "memory_max": "max",
+    "memory_oom_group": "0",
+    "oom_score_adj": "0",
+    "legacy_memory_oom_control": "ABSENT",
+    "inspect_memory": 0,
+    "inspect_memory_swap": 0,
+    "inspect_oom_score_adj": 0,
+    "process_uid_gid": 1000,
+    "forbidden_group": 0,
+    "process_capabilities": 0,
+    "no_new_privs": 1,
+    "capture": "Two complete builtin-only reads, bound to unchanged daemon, CID, Created, StartedAt, host PID and restart count; raw stdout retained",
+    "running_checkpoints": "FRESH_MEASUREMENT",
+    "stopped_checkpoints": "LAST_VERIFIED_BEFORE_EXPLICIT_STOP_INTENT",
+    "claim_limit": "Observed effective cgroup-v2 configuration and process OOM adjustment. memory.oom.group controls group killing, not OOM disable. No OOM is induced and no memory-pressure recovery behavior is claimed."
+  },
+  "builtin_none_membership": {
+    "identity_and_all_other_network_fields": "EXACT_INITIAL_BINDING",
+    "permitted_change": "Only the exact owned probe endpoint appears while running and disappears after its explicit stop; endpoint CID/name/ID must match both raw container and raw network inspection, with empty IP/MAC fields",
+    "raw_inventory_claim": "Full network inventory changes; only the separately recorded semantic view compares equal",
+    "unexpected_membership_allowed": false
+  },
+  "qualification_limit": 1,
+  "formal_authority": false
+}

@@ -1,0 +1,32 @@
+{
+  "authorized_container_removal_count": 1,
+  "authorized_stop_count": 1,
+  "authorized_volume_removal_count": 6,
+  "formal_authority": false,
+  "formal_campaign_executions": 0,
+  "formal_faults": 0,
+  "goal_sha256": "bb5373899fc8523007b6e9cec0b865403450e4bf4f15b81426ae20f6e1f2deeb",
+  "independent_review": {
+    "claim_accuracy": "PASS",
+    "must_fix": 0,
+    "phase_2_offline": "ALLOW",
+    "phase_3_runtime": "WITHHOLD_PENDING_GATES",
+    "reviewer": "review_qualification",
+    "status": "PASS",
+    "verified_cleanup_artifacts": 39,
+    "verified_predecessor_artifacts": 77
+  },
+  "non_owned_resources_unchanged_accounting_owned_endpoint_removal": true,
+  "postflight_adjudication": "Image IDs and full rows identical except exact Kafka Containers reference count 1->0 after recorded probe removal; image/mount list permutations are recorded, not identity changes.",
+  "postflight_inventory_sha256": "7bbc6524a82f54d0f6a65e4b327f8b437062f58db5b7c9b8baa4b96be2c0b18a",
+  "provider_calls": 0,
+  "raw_automated_terminal": "MANUAL_INTERVENTION_REQUIRED preserved in all three prior receipts",
+  "raw_cleanup_receipts_unchanged": true,
+  "remaining_retained_containers": 0,
+  "remaining_retained_volumes": 0,
+  "remediation_writes": 0,
+  "schema_version": "ecomsre.v040.v3.CleanupReceipt.closeout.v1",
+  "scope": "Exact retained PR98 probe and six owned volumes",
+  "status": "CLEAN",
+  "v3_qualification_count": 0
+}
