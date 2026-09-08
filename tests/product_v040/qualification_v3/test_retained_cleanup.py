@@ -162,3 +162,15 @@ def test_image_order_does_not_change_identity_but_content_does():
     changed = deepcopy(rows)
     changed[0]["ID"] = "replacement"
     assert image_set(rows) != image_set(changed)
+
+
+def test_mount_order_preserves_full_entries_and_rejects_value_change():
+    from scripts.product.qualification_v040_v3.retained_cleanup import inventory_rows
+
+    current, _ = inventories()
+    rows = current["inspect"]["containers"]
+    reordered = deepcopy(rows)
+    reordered[0]["Mounts"].reverse()
+    assert inventory_rows("containers", rows) == inventory_rows("containers", reordered)
+    reordered[0]["Mounts"][0]["RW"] = False
+    assert inventory_rows("containers", rows) != inventory_rows("containers", reordered)

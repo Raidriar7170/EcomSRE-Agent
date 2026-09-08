@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "must_fix": 0,
+  "claim_accuracy": "PASS",
+  "reviewer": "independent read-only review_qualification",
+  "script_sha256": "221d388b746bcd8708995dc35bd985a79f2b65a173f384ca7169b288ec21b476",
+  "tests_passed": 19,
+  "prior_operations": "one authorized stop; no removals",
+  "cause": "Complete mount objects unchanged; capture differed only by array order",
+  "decision": "ALLOW exact Phase1 removal with new evidence root; prior receipts immutable; no qualification startup"
+}

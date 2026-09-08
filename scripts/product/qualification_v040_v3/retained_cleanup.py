@@ -72,6 +72,16 @@ def image_set(rows: list[dict[str, Any]]) -> list[str]:
     return sorted(json.dumps(row, sort_keys=True) for row in rows)
 
 
+def inventory_rows(kind: str, rows: list[dict[str, Any]]) -> list[str]:
+    values = deepcopy(rows)
+    if kind == "containers":
+        for row in values:
+            row["Mounts"] = sorted(
+                row["Mounts"], key=lambda mount: json.dumps(mount, sort_keys=True)
+            )
+    return sorted(json.dumps(row, sort_keys=True) for row in values)
+
+
 def validate_capture(first: dict[str, Any], second: dict[str, Any]) -> None:
     for view in (first, second):
         require(
@@ -91,13 +101,11 @@ def validate_capture(first: dict[str, Any], second: dict[str, Any]) -> None:
                 "CLEANUP_INCOMPLETE_INVENTORY",
             )
     for kind in first["ids"]:
-
-        def canonical(view: dict[str, Any]) -> list[dict[str, Any]]:
-            return sorted(
-                view["inspect"][kind], key=lambda row: json.dumps(row, sort_keys=True)
-            )
-
-        require(canonical(first) == canonical(second), "CLEANUP_RACED_INVENTORY")
+        require(
+            inventory_rows(kind, first["inspect"][kind])
+            == inventory_rows(kind, second["inspect"][kind]),
+            "CLEANUP_RACED_INVENTORY",
+        )
     require(first["context"] == second["context"], "CLEANUP_CONTEXT_DRIFT")
     require(
         all(
@@ -242,7 +250,9 @@ def main() -> None:
         "HISTORY_DRIFT",
     )
     retained = json.loads(raw)
-    private = root / ".local/runtime-qualification-v3/retained-cleanup-order-v2"
+    private = (
+        root / ".local/runtime-qualification-v3/retained-cleanup-collection-order-v3"
+    )
     private.mkdir(parents=True, mode=0o700, exist_ok=False)
     private.parent.chmod(0o700)
     (private / "retained-reference.json").write_bytes(raw)
@@ -285,7 +295,12 @@ def main() -> None:
 
     try:
         initial = checked("BEFORE_STOP")
-        mutate(("container", "stop", "--time", "5", CONTAINER))
+        if next(c for c in initial["inspect"]["containers"] if c["Id"] == CONTAINER)[
+            "State"
+        ]["Running"]:
+            mutate(("container", "stop", "--time", "5", CONTAINER))
+        else:
+            receipt["already_stopped_by_preserved_cleanup"] = True
         stopped = checked("BEFORE_CONTAINER_REMOVE")
         require(
             not next(
