@@ -18,6 +18,15 @@
     "stop": 28,
     "volume_rm": 6
   },
+  "pr": {
+    "base": "codex/product-v040-runtime-qualification-v3",
+    "branch": "codex/product-v040-v3-retained-cleanup-only",
+    "is_draft": true,
+    "merged": false,
+    "number": 100,
+    "state": "OPEN",
+    "url": "https://github.com/Raidriar7170/EcomSRE-Agent/pull/100"
+  },
   "pr_disposition": "Draft / REVIEW_REQUIRED",
   "pre_mutation_review": {
     "claim_accuracy": "PASS",
@@ -52,7 +61,7 @@
   "runtime_checks": "PASS",
   "schema_version": "ecomsre.v040.v3.retained-cleanup.v1",
   "starting_head": "ea466d7ca14ac4a0a0c1f7680507747dbe67b06e",
-  "terminal": "PUBLICATION_PENDING",
+  "terminal": "goal_complete_checkpoint",
   "zero_counters": {
     "containers_started_or_restarted": 0,
     "formal_approvals": 0,

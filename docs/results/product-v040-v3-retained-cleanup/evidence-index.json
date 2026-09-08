@@ -356,9 +356,9 @@
   "private_index_sha256": "4061b6e1f149d872a0dc7fd71fe6ec2fc2dda62596c15aa6205ede63632d8c12",
   "public_files": {
     "CleanupReceipt.json": "11ea95b64ff607e5bc7b16d93cc7baec7cb5d6b18d81206a642366d0b249d5c7",
-    "HUMAN_BRIEF.md": "9fb34dfcbae9e69469633d870e422a95a9fd3882338a82d600ccbc0f0c8e3df9",
-    "README.md": "9e84211a9f5f3890739b20edc0a8884d93526868a94f3817f6b7e81bfd1d9e43",
-    "cleanup-result.json": "0f75c37424702907453ed166e08266948af02c6071384df6eae4106c07f592ab",
+    "HUMAN_BRIEF.md": "3829b9d314959778a70c0185b573b794d69abbb1f25ee06ae422d68c433f8d17",
+    "README.md": "28b0bec1fa8c5b880efa7dbda05049acf297c990aa2002caaabc8f6920638259",
+    "cleanup-result.json": "12a9355d54e227a5967c444d667c04ddc41f7c8b20d14f13770d1c6fe3f3ebe3",
     "effective-command-adjudication.json": "dd57edd5e04c30c83642b23bbfe034553ffb18c38089ee5a9055562c3d8c3ed7",
     "independent-review.md": "ed19bc3d30cd3a4a0cb32edc1d04694759ce0469009e403e7511a9a90b3eddd7",
     "nonowned-comparison.json": "bb759afbf5f1b7cd1643c422749d57b4cc3dc78f4213d6d61a1d90b181af99d9",

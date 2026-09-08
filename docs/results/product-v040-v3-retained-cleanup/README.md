@@ -2,7 +2,8 @@
 
 Cleanup complete: `ECOMSRE_PRODUCT_V040_V3_RETAINED_CLEANUP_COMPLETE`.
 Final independent review: PASS / Must Fix 0 / Claim Accuracy PASS.
-Draft PR publication is pending.
+Published as [Draft PR #100](https://github.com/Raidriar7170/EcomSRE-Agent/pull/100).
+Terminal: `goal_complete_checkpoint`; disposition: Draft / REVIEW_REQUIRED, unmerged.
 
 This cleanup removed all 29 retained containers, three retained networks and six
 retained volumes. All were present and matching before mutation; none were

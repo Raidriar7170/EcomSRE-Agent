@@ -1,7 +1,8 @@
 # PR #99 保留资源清理审阅摘要
 
 限定清理已完成；最终独立审查 PASS / Must Fix 0 / Claim Accuracy PASS。
-Draft PR 发布待完成，尚未发出 Goal 完成 checkpoint。
+已发布 [Draft PR #100](https://github.com/Raidriar7170/EcomSRE-Agent/pull/100)，
+终态为 `goal_complete_checkpoint`，保持 Draft / REVIEW_REQUIRED、未合并。
 
 本次实际停止 28 个 Sandbox 容器，删除 29 个容器（含已停止 Probe）、3 个网络、6 个卷。
 38 个保留资源在清理前全部存在且身份匹配；预先缺失为 0，最终剩余为 0。
