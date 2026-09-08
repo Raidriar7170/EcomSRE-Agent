@@ -1,0 +1,44 @@
+{
+  "status": "PASS_OFFLINE_CHECKS_ONLY",
+  "runtime_status": "BLOCKED_PRE_EXECUTION",
+  "checks": [
+    {
+      "command": ".venv/bin/python -m pytest tests/product_v040 -q",
+      "passed": 582
+    },
+    {
+      "command": ".venv/bin/python -m pytest -q",
+      "passed": 6940,
+      "skipped": 21,
+      "warnings": 16
+    },
+    {
+      "command": ".venv/bin/python -m ruff check .",
+      "status": "PASS"
+    },
+    {
+      "command": ".venv/bin/python -m mypy --no-incremental [Agent mainline scope]",
+      "status": "PASS",
+      "source_files": 702
+    },
+    {
+      "command": ".venv/bin/python -m mypy scripts/product/qualification_v040_v2 --follow-imports=silent",
+      "status": "PASS",
+      "source_files": 10
+    }
+  ],
+  "earlier_check_limitations": [
+    "Initial full-suite collection lacked pyarrow; installed cached pyarrow==23.0.1 offline into this worktree venv.",
+    "Interrupted initial full-suite run exposed dirty-checkout and nested Git metadata assertions. Committed frozen source and used git submodule absorbgitdirs on this new checkout without changing upstream content; four targeted checks passed and complete suite then passed."
+  ],
+  "no_network_dependency_install": true,
+  "logs": {
+    "offline-suite-with-pyarrow.log": "9067c412382902a4bb96127254387e5d1f9788831d73ae19e302b03209d1a9d8",
+    "mypy-mainline.log": "711705a9ebf40a9a66e000efd6a6c5f2138e2800ec22c77055cc18afca6af500",
+    "offline-suite-frozen.log": "305b8302c657d2b98c1cd09e4289b4677e54e57d79753fa567410e32dabb5f52",
+    "offline-venv.log": "e79ddda036297e95e1c37ee9e104efd1bd5d7eb74ab80396538daede65eb38b3",
+    "offline-suite.log": "f06190e3aab1057dabf1ebe0f92d762c9c781784ae14bcd8397df4170d8f742a"
+  },
+  "prior_evidence_files_verified_before_runtime": 316,
+  "formal_authority": false
+}

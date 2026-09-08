@@ -1,0 +1,120 @@
+{
+  "access_census": [],
+  "active_baseline": null,
+  "blocker": {
+    "code": "WRITER_CONTAINER_DRIFT",
+    "error_type": "QualificationBlocked"
+  },
+  "cleanup": {
+    "code": "CLEANUP_RESOURCE_REPLACED",
+    "error_type": "QualificationBlocked",
+    "status": "MANUAL_INTERVENTION_REQUIRED"
+  },
+  "completed_stage_count": 18,
+  "copyup": {
+    "gid": 1000,
+    "measurements": [
+      {
+        "archive_sha256": "6a63817abdcb9e51eea4854b75fb08d1251990a959ba42150148d7aadd59d26d",
+        "content_bytes": 0,
+        "entries": {
+          ".": {
+            "gid": 0,
+            "kind": "directory",
+            "mode": 509,
+            "size": 0,
+            "uid": 1000
+          }
+        },
+        "entries_sha256": "2db0a15f21bbdffa4769b22db5015b0c608f416ac1bb8129884ab437d1061cfd",
+        "path": "/etc/kafka/secrets"
+      },
+      {
+        "archive_sha256": "2c9c5b546ac338fb524fd4393dd63c1b9c286524bf9073e57be0bb13b107d0ac",
+        "content_bytes": 0,
+        "entries": {
+          ".": {
+            "gid": 1000,
+            "kind": "directory",
+            "mode": 493,
+            "size": 0,
+            "uid": 1000
+          }
+        },
+        "entries_sha256": "ac14de7fcbeff63ae5be14bc79d13285290c94e3d59b467d749ee0e09411e569",
+        "path": "/mnt/shared/config"
+      },
+      {
+        "archive_sha256": "ec153eaacec2982c8acda487a3fab44ed4718a34ada8a7549b234c3250b0c290",
+        "content_bytes": 0,
+        "entries": {
+          ".": {
+            "gid": 0,
+            "kind": "directory",
+            "mode": 509,
+            "size": 0,
+            "uid": 1000
+          }
+        },
+        "entries_sha256": "2db0a15f21bbdffa4769b22db5015b0c608f416ac1bb8129884ab437d1061cfd",
+        "path": "/var/lib/kafka/data"
+      }
+    ],
+    "uid": 1000,
+    "writeability": "NOT_EXECUTED"
+  },
+  "counter_evidence": {
+    "status": "NOT_CREATED_BEFORE_PRODUCT_START",
+    "tables": {}
+  },
+  "counters": {
+    "approvals": 0,
+    "attempt_authorizations": 0,
+    "executor_invocations": 0,
+    "formal_campaign_executions": 0,
+    "formal_candidates": 0,
+    "formal_faults": 0,
+    "formal_recovery_windows": 0,
+    "provider_calls": 0,
+    "remediation_writes": 0,
+    "step_receipts": 0,
+    "write_intents": 0
+  },
+  "ended_at": "2026-09-08T04:44:29.374626+00:00",
+  "expected_stage_count": 63,
+  "first_divergence": "LATCHED",
+  "formal_authority": false,
+  "future_formal_campaign_recommendation": "WITHHOLD_PENDING_INDEPENDENT_REVIEW",
+  "healthy_traffic": null,
+  "isolation": null,
+  "no_fault_qualification_consumption": {
+    "authorization_sha256": "9a3e83c12e7871182b84d0e48e5bc693a050a3c53f623c6f2174cf2cd21e52c9",
+    "formal_allowance_consumed": false,
+    "formal_campaign_count": 0,
+    "no_fault_qualification_count": 1,
+    "qualification_id": "ebbcf1e4e3e740a296f294fb9ab6047c",
+    "source_head": "a53ecbef84a3fc85b050243ca0548311ea807221"
+  },
+  "no_incident": null,
+  "one_shot_allowance_consumed": false,
+  "policy_id": "COPYUP_EFFECTIVE_ACCESS_POLICY_V2",
+  "policy_sha256": "d4a11c1d6913f6e625d158c1c8bc5306e6c01f7fe3bf2425fd9caedc293492f3",
+  "prior_v1": {
+    "blocker": "COPYUP_IDENTITY_MISMATCH",
+    "future_formal_campaign": "WITHHOLD",
+    "head": "e8a8afe935d972732bd37034b86af43d1c969ed8",
+    "policy_preserved": true,
+    "pr": 97,
+    "terminal": "BLOCKED_PRE_EXECUTION"
+  },
+  "runtime_process_identity": null,
+  "sentinel": "NOT_EXECUTED",
+  "source": {
+    "formal_authority": false,
+    "qualification_id": "ebbcf1e4e3e740a296f294fb9ab6047c",
+    "source_head": "a53ecbef84a3fc85b050243ca0548311ea807221",
+    "source_tree": "9f0db0b5ae457c4a2f5976ffc91c881f30436969"
+  },
+  "stage_journal_sha256": "367566ca9136f1caa383438a5a9a8be12dfa82ce7142f685c4b588d81e803740",
+  "status": "BLOCKED_PRE_EXECUTION"
+}

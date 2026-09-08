@@ -1,0 +1,111 @@
+{
+  "qualification_id": "ebbcf1e4e3e740a296f294fb9ab6047c",
+  "status": "BLOCKED_PRE_EXECUTION",
+  "first_divergence_stage": "AFTER_PROBE_START",
+  "blocker": "WRITER_CONTAINER_DRIFT",
+  "cleanup": "MANUAL_INTERVENTION_REQUIRED",
+  "cleanup_blocker": "CLEANUP_RESOURCE_REPLACED",
+  "observed_fixed_field_deltas": [
+    {
+      "path": "/HostConfig/OomKillDisable",
+      "before": false,
+      "after": null
+    }
+  ],
+  "same_container_id": true,
+  "interpretation": "The same container ID changed HostConfig.OomKillDisable from false to null across start. This establishes a fingerprint difference, not proof of physical container replacement or malicious mutation. No gate was weakened and no runtime retry occurred.",
+  "provenance_gate": "PASS",
+  "process_access_gate": "NOT_REACHED",
+  "sentinel": "NOT_EXECUTED",
+  "kafka_runtime": "NOT_STARTED",
+  "product_runtime": "NOT_STARTED",
+  "healthy_control": "NOT_REACHED",
+  "active_baseline": "NOT_REACHED",
+  "no_incident": "NOT_REACHED",
+  "remaining_resources": {
+    "containers": [
+      {
+        "id": "c1e1f654931ebe062ae3253727adf884c28ea580781bef5976f322ac06bed66f",
+        "name": "/ecomsre-v040-ebbcf1e4e3e740a296f294fb9ab6047c-volume-probe",
+        "running": true
+      }
+    ],
+    "networks": [],
+    "volumes": [
+      {
+        "id": "ecomsre-v040-ebbcf1e4e3e740a296f294fb9ab6047c-astronomy-db-data",
+        "name": "ecomsre-v040-ebbcf1e4e3e740a296f294fb9ab6047c-astronomy-db-data",
+        "running": null
+      },
+      {
+        "id": "ecomsre-v040-ebbcf1e4e3e740a296f294fb9ab6047c-jaeger-data",
+        "name": "ecomsre-v040-ebbcf1e4e3e740a296f294fb9ab6047c-jaeger-data",
+        "running": null
+      },
+      {
+        "id": "ecomsre-v040-ebbcf1e4e3e740a296f294fb9ab6047c-prometheus-data",
+        "name": "ecomsre-v040-ebbcf1e4e3e740a296f294fb9ab6047c-prometheus-data",
+        "running": null
+      },
+      {
+        "id": "ecomsre-v040-ebbcf1e4e3e740a296f294fb9ab6047c-qualification-kafka-config",
+        "name": "ecomsre-v040-ebbcf1e4e3e740a296f294fb9ab6047c-qualification-kafka-config",
+        "running": null
+      },
+      {
+        "id": "ecomsre-v040-ebbcf1e4e3e740a296f294fb9ab6047c-qualification-kafka-data",
+        "name": "ecomsre-v040-ebbcf1e4e3e740a296f294fb9ab6047c-qualification-kafka-data",
+        "running": null
+      },
+      {
+        "id": "ecomsre-v040-ebbcf1e4e3e740a296f294fb9ab6047c-qualification-kafka-secrets",
+        "name": "ecomsre-v040-ebbcf1e4e3e740a296f294fb9ab6047c-qualification-kafka-secrets",
+        "running": null
+      }
+    ]
+  },
+  "non_owned_comparison": {
+    "containers": true,
+    "volumes": true,
+    "images": true,
+    "network_identity_and_configuration": true,
+    "full_network_inventory_equal": false
+  },
+  "comparison_evidence": "immutable cleanup/000-inventory.json against initial-inventory.json",
+  "formal_action_counters": {
+    "approvals": 0,
+    "attempt_authorizations": 0,
+    "executor_invocations": 0,
+    "formal_campaign_executions": 0,
+    "formal_candidates": 0,
+    "formal_faults": 0,
+    "formal_recovery_windows": 0,
+    "provider_calls": 0,
+    "remediation_writes": 0,
+    "step_receipts": 0,
+    "write_intents": 0
+  },
+  "no_fault_qualification_count": 1,
+  "formal_allowance_consumed": false,
+  "no_cleanup_bypass": true,
+  "future_formal_campaign": "WITHHOLD",
+  "raw_result_sha256": "316ff41bb8e9fc0b893749a64d2f7fa0e7256688be7fe0d1c5654c22c39876f1",
+  "raw_evidence_index_sha256": "6d8e65ded181e806b6f0fac40a83961d5452fd57bfc7fde766d6fddb414e5793",
+  "non_owned_network_endpoint_deltas": [
+    {
+      "network_id": "da85c8b0472d387b015b0968868445bc378d3b8b32a3812ef2739b6cf93ddfa3",
+      "name": "none",
+      "before": {},
+      "after": {
+        "c1e1f654931ebe062ae3253727adf884c28ea580781bef5976f322ac06bed66f": {
+          "EndpointID": "3368ae9b98aa96cc472f9561eea3c1330c6f16156d8fbce33e18a4a2ba3d2444",
+          "IPv4Address": "",
+          "IPv6Address": "",
+          "MacAddress": "",
+          "Name": "ecomsre-v040-ebbcf1e4e3e740a296f294fb9ab6047c-volume-probe"
+        }
+      }
+    }
+  ],
+  "non_owned_comparison_interpretation": "Non-owned network identities/configuration are unchanged, but full network inventory is NOT equal: builtin none gained the owned probe endpoint during its authorized start. No network replacement was observed."
+}
