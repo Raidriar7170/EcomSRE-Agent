@@ -1,4 +1,4 @@
-"""One-shot v2 successor using frozen v1 lifecycle components by inheritance."""
+"""One-shot v3 successor with explicit semantic lifecycle admission."""
 
 from __future__ import annotations
 
@@ -113,6 +113,8 @@ class V3Driver(Driver):
                 if r["Id"] == self.probe_row["Id"]
             ]
             if rows:
+                assert self.probe_lifecycle is not None
+                self.probe_lifecycle.verify_endpoint(rows[0])
                 require(
                     raw_fingerprint(rows[0]) == raw_fingerprint(self.probe_row)
                     and process_identity(rows[0]) == process_identity(self.probe_row),
@@ -146,6 +148,7 @@ class V3Driver(Driver):
                 process_identity(row) == self.probe_lifecycle.last_identity,
                 "PROBE_PROCESS_IDENTITY_DRIFT",
             )
+        self.probe_lifecycle.verify_endpoint(row)
         semantic = raw_fingerprint(row)
         assert self.probe_lifecycle.birth is not None
         semantic["HostConfig"]["OomKillDisable"] = self.probe_lifecycle.birth[
@@ -205,7 +208,9 @@ class V3Driver(Driver):
             ]
             seal_private(prefix.with_suffix(".raw-after.json"), after)
             require(
-                raw_fingerprint(after) == raw_fingerprint(row),
+                raw_fingerprint(after) == raw_fingerprint(row)
+                and after["NetworkSettings"]["Networks"]
+                == row["NetworkSettings"]["Networks"],
                 "OOM_CAPTURE_FINGERPRINT_RACE",
             )
             require(self.runtime.boundary() == boundary, "OOM_DAEMON_DRIFT")
@@ -471,7 +476,13 @@ class V3Driver(Driver):
         plan["stage_fingerprint_policy"] = self.fingerprint_policy
         self.journal = V3Journal(runtime.private / "host/stage-journal", plan)
         self.journal.comparator = self.same
-        self.probe_lifecycle = ProbeLifecycle(plan["daemon"])
+        none_ids = [
+            rid
+            for rid, row in plan["nonowned"]["networks"].items()
+            if row["Name"] == "none"
+        ]
+        require(len(none_ids) == 1, "PROBE_NONE_NETWORK_UNBOUND")
+        self.probe_lifecycle = ProbeLifecycle(plan["daemon"], none_ids[0])
         self.journal.observe("INITIAL", initial)
 
     def create_probe(self) -> None:

@@ -8,6 +8,7 @@ from scripts.product.qualification_v040_v3.guard import QualificationJournal
 
 def case():
     journal = object.__new__(QualificationJournal)
+    journal.none_endpoint = None
     base = {
         "Id": "none-id",
         "Name": "none",
@@ -42,7 +43,9 @@ def test_owned_endpoint_semantic_view_preserves_raw_and_identity():
     journal, probe, rows = case()
     raw = deepcopy(rows)
     assert (
-        journal.nonowned_view(rows, {"probe/container/kafka-volume-probe": probe})
+        journal.nonowned_view(
+            rows, {"probe/container/kafka-volume-probe": probe}, "AFTER_PROBE_START"
+        )
         == journal.plan["nonowned"]
     )
     assert rows == raw
@@ -68,4 +71,26 @@ def test_unknown_network_membership_or_identity_fails_closed(change):
     else:
         probe["State"]["Running"] = False
     with pytest.raises(QualificationBlocked):
-        journal.nonowned_view(rows, {"probe/container/kafka-volume-probe": probe})
+        journal.nonowned_view(
+            rows, {"probe/container/kafka-volume-probe": probe}, "AFTER_PROBE_START"
+        )
+
+
+def test_consistent_endpoint_replacement_in_both_views_is_denied():
+    journal, probe, rows = case()
+    seen = {"probe/container/kafka-volume-probe": probe}
+    journal.nonowned_view(rows, seen, "AFTER_PROBE_START")
+    probe["NetworkSettings"]["Networks"]["none"]["EndpointID"] = "replacement"
+    rows["networks"]["none-id"]["Containers"]["owned-probe"]["EndpointID"] = (
+        "replacement"
+    )
+    with pytest.raises(QualificationBlocked, match="PROBE_ENDPOINT_IDENTITY_DRIFT"):
+        journal.nonowned_view(rows, seen, "BEFORE_SENTINEL")
+
+
+def test_endpoint_cannot_first_bind_at_an_ordinary_stage():
+    journal, probe, rows = case()
+    with pytest.raises(QualificationBlocked, match="PROBE_ENDPOINT_BIND_STAGE_DRIFT"):
+        journal.nonowned_view(
+            rows, {"probe/container/kafka-volume-probe": probe}, "BEFORE_SENTINEL"
+        )

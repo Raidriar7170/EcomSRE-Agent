@@ -14,19 +14,21 @@ STOP_STAGE = "AFTER_PROBE_STOP"
 
 
 def raw_fingerprint(row: dict[str, Any]) -> dict[str, Any]:
-    return {
-        **container_fixed(row),
-        "Name": row["Name"],
-        "Created": row["Created"],
-        "Path": row.get("Path"),
-        "Args": row.get("Args"),
-        "Driver": row.get("Driver"),
-        "Platform": row.get("Platform"),
-        "ImageManifestDescriptor": row.get("ImageManifestDescriptor"),
-        "AppArmorProfile": row.get("AppArmorProfile"),
-        "ProcessLabel": row.get("ProcessLabel"),
-        "MountLabel": row.get("MountLabel"),
-    }
+    return deepcopy(
+        {
+            **container_fixed(row),
+            "Name": row["Name"],
+            "Created": row["Created"],
+            "Path": row.get("Path"),
+            "Args": row.get("Args"),
+            "Driver": row.get("Driver"),
+            "Platform": row.get("Platform"),
+            "ImageManifestDescriptor": row.get("ImageManifestDescriptor"),
+            "AppArmorProfile": row.get("AppArmorProfile"),
+            "ProcessLabel": row.get("ProcessLabel"),
+            "MountLabel": row.get("MountLabel"),
+        }
+    )
 
 
 def identity(row: dict[str, Any]) -> dict[str, Any]:
@@ -86,8 +88,12 @@ def validate_oom(
 class ProbeLifecycle:
     """One immutable birth binding, explicit start/stop events, fresh measurement per running stage."""
 
-    def __init__(self, daemon: dict[str, Any]) -> None:
+    def __init__(
+        self, daemon: dict[str, Any], none_network_id: str = "none-id"
+    ) -> None:
         self.daemon = deepcopy(daemon)
+        self.none_network_id = none_network_id
+        self.endpoint: dict[str, Any] | None = None
         self.birth: dict[str, Any] | None = None
         self.last_raw: dict[str, Any] | None = None
         self.last_identity: dict[str, Any] | None = None
@@ -96,6 +102,32 @@ class ProbeLifecycle:
         self.stop_intent: dict[str, Any] | None = None
         self.last_proof: dict[str, Any] | None = None
         self.events: list[dict[str, Any]] = []
+
+    def verify_endpoint(self, row: dict[str, Any]) -> None:
+        require(
+            set(row["NetworkSettings"]["Networks"]) == {"none"},
+            "PROBE_NETWORK_SET_DRIFT",
+        )
+        endpoint = row["NetworkSettings"]["Networks"]["none"]
+        require(
+            all(
+                not endpoint.get(k)
+                for k in ("IPAddress", "GlobalIPv6Address", "MacAddress")
+            ),
+            "PROBE_NETWORK_ADDRESS_DRIFT",
+        )
+        if self.endpoint is not None:
+            expected = deepcopy(self.endpoint)
+            if not row["State"]["Running"]:
+                expected["EndpointID"] = ""
+            require(endpoint == expected, "PROBE_ENDPOINT_IDENTITY_DRIFT")
+        else:
+            require(not row["State"]["Running"], "PROBE_ENDPOINT_UNBOUND")
+            require(
+                not endpoint.get("EndpointID")
+                and endpoint.get("NetworkID") in ("", self.none_network_id),
+                "PROBE_PRESTART_ENDPOINT_DRIFT",
+            )
 
     def admit(
         self, row: dict[str, Any], stage: str, proof: dict[str, Any] | None
@@ -115,6 +147,7 @@ class ProbeLifecycle:
                 and value is False,
                 "PROBE_BIRTH_STAGE_DRIFT",
             )
+            self.verify_endpoint(row)
             self.birth, self.last_raw = deepcopy(raw), deepcopy(raw)
             self.last_identity = identity(row)
             return raw
@@ -181,6 +214,16 @@ class ProbeLifecycle:
                     "semantic_equal": True,
                 }
             )
+        if self.endpoint is None and row["State"]["Running"]:
+            require(stage == START_STAGE, "PROBE_ENDPOINT_BIND_STAGE_DRIFT")
+            endpoint = row["NetworkSettings"]["Networks"].get("none", {})
+            require(
+                endpoint.get("NetworkID") == self.none_network_id
+                and bool(endpoint.get("EndpointID")),
+                "PROBE_ENDPOINT_UNBOUND",
+            )
+            self.endpoint = deepcopy(endpoint)
+        self.verify_endpoint(row)
         self.last_raw = deepcopy(raw)
         if row["State"]["Running"]:
             self.last_identity = identity(row)

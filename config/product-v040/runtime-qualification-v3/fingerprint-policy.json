@@ -42,6 +42,7 @@
     "identity_and_all_other_network_fields": "EXACT_INITIAL_BINDING",
     "permitted_change": "Only the exact owned probe endpoint appears while running and disappears after its explicit stop; endpoint CID/name/ID must match both raw container and raw network inspection, with empty IP/MAC fields",
     "raw_inventory_claim": "Full network inventory changes; only the separately recorded semantic view compares equal",
+    "endpoint_binding": "Create once at AFTER_PROBE_START; every later running container and network view must match that exact EndpointID and full container endpoint binding; only EndpointID removal is permitted after explicit stop",
     "unexpected_membership_allowed": false
   },
   "qualification_limit": 1,

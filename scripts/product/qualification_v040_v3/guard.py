@@ -356,6 +356,7 @@ class QualificationJournal:
         self.seed_binding: dict[str, Any] | None = None
         self.generated_config: dict[str, Any] | None = None
         self.comparator = lambda bound, kind, row: bound == resource_fixed(kind, row)
+        self.none_endpoint: dict[str, Any] | None = None
         self.previous = self.plan_sha
         seal(root / "plan.json", plan)
 
@@ -391,7 +392,7 @@ class QualificationJournal:
         raise QualificationBlocked(code, detail)
 
     def nonowned_view(
-        self, rows: dict[str, Any], seen: dict[str, Any]
+        self, rows: dict[str, Any], seen: dict[str, Any], stage: str
     ) -> dict[str, Any]:
         view = deepcopy(rows)
         probe = seen.get("probe/container/kafka-volume-probe")
@@ -413,6 +414,15 @@ class QualificationJournal:
                 and bool(endpoint.get("EndpointID")),
                 "PROBE_ENDPOINT_UNBOUND",
             )
+            binding = {
+                "container_id": probe["Id"],
+                "network_id": network["Id"],
+                "endpoint_id": endpoint["EndpointID"],
+            }
+            if self.none_endpoint is None:
+                require(stage == "AFTER_PROBE_START", "PROBE_ENDPOINT_BIND_STAGE_DRIFT")
+                self.none_endpoint = binding
+            require(self.none_endpoint == binding, "PROBE_ENDPOINT_IDENTITY_DRIFT")
             expected[probe["Id"]] = {
                 "Name": name("containers", probe),
                 "EndpointID": endpoint["EndpointID"],
@@ -498,7 +508,7 @@ class QualificationJournal:
                         )
                         nonowned[kind][rid] = row
             require(set(seen) == expected, "INCOMPLETE_OWNED_INVENTORY")
-            nonowned = self.nonowned_view(nonowned, seen)
+            nonowned = self.nonowned_view(nonowned, seen, stage)
             for kind in KINDS:
                 require(
                     nonowned[kind] == self.plan["nonowned"][kind],

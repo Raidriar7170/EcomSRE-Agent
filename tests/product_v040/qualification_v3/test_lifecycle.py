@@ -23,7 +23,17 @@ def probe():
             "Privileged": False,
         },
         "Mounts": [],
-        "NetworkSettings": {"Networks": {}},
+        "NetworkSettings": {
+            "Networks": {
+                "none": {
+                    "NetworkID": "",
+                    "EndpointID": "",
+                    "IPAddress": "",
+                    "GlobalIPv6Address": "",
+                    "MacAddress": "",
+                }
+            }
+        },
         "RestartCount": 0,
         "State": {"Running": False, "Pid": 0, "StartedAt": "zero", "OOMKilled": False},
     }
@@ -62,6 +72,9 @@ def started():
     lifecycle.admit(row, "AFTER_COPYUP_CREATE", None)
     row["State"].update(Running=True, Pid=44, StartedAt="start")
     row["HostConfig"]["OomKillDisable"] = None
+    row["NetworkSettings"]["Networks"]["none"].update(
+        NetworkID="none-id", EndpointID="endpoint"
+    )
     return lifecycle, row
 
 
@@ -79,6 +92,7 @@ def test_only_predeclared_start_transition_with_fresh_policy_proof():
     lifecycle.admit(row, "BEFORE_PROBE_STOP", p)
     lifecycle.authorize_stop(row, p)
     row["State"].update(Running=False, Pid=0)
+    row["NetworkSettings"]["Networks"]["none"]["EndpointID"] = ""
     lifecycle.admit(row, "AFTER_PROBE_STOP", None)
     assert lifecycle.last_proof == p and lifecycle.stopped
 
@@ -159,6 +173,7 @@ def test_stop_without_intent_and_restart_are_denied():
     lifecycle, row = started()
     lifecycle.admit(row, "AFTER_PROBE_START", evidence(row, "AFTER_PROBE_START"))
     row["State"].update(Running=False, Pid=0)
+    row["NetworkSettings"]["Networks"]["none"]["EndpointID"] = ""
     with pytest.raises(QualificationBlocked, match="PROBE_STOP_INTENT_MISSING"):
         lifecycle.admit(row, "AFTER_PROBE_STOP", None)
 
@@ -199,3 +214,72 @@ def test_oom_protocol_incomplete_or_changed_reads_denied(case):
         raw = raw.replace("\x00123\x00", "\x00124\x00", 1)
     with pytest.raises(QualificationBlocked):
         parse_oom(raw)
+
+
+def test_endpoint_replacement_preserving_all_other_fields_is_denied():
+    lifecycle, row = started()
+    lifecycle.admit(row, "AFTER_PROBE_START", evidence(row, "AFTER_PROBE_START"))
+    row["NetworkSettings"]["Networks"]["none"]["EndpointID"] = "replacement"
+    with pytest.raises(QualificationBlocked, match="PROBE_ENDPOINT_IDENTITY_DRIFT"):
+        lifecycle.admit(row, "BEFORE_SENTINEL", evidence(row, "BEFORE_SENTINEL"))
+
+
+def test_driver_comparison_and_capture_preserve_raw_inspect(tmp_path, monkeypatch):
+    import json
+    from types import SimpleNamespace
+    from scripts.product.qualification_v040_v3 import driver as module
+    from scripts.product.qualification_v040_v3.lifecycle import raw_fingerprint
+
+    lifecycle, row = started()
+    original = deepcopy(row)
+    driver = object.__new__(module.V3Driver)
+    driver.probe_lifecycle = lifecycle
+    driver.probe_capture_count = 0
+    driver.active_stage = "AFTER_PROBE_START"
+    driver.journal = SimpleNamespace(
+        plan={
+            "roles": {
+                module.PROBE_ROLE: {
+                    "name": "probe",
+                    "birth_stage": "AFTER_COPYUP_CREATE",
+                }
+            },
+            "daemon": {"id": "daemon"},
+        },
+        bound={module.PROBE_ROLE: lifecycle.birth},
+    )
+    commands = []
+
+    def docker(*args, **kwargs):
+        commands.append(args)
+        if args[0] == "info":
+            return "2"
+        if args[0] == "exec":
+            return encoded_oom()
+        assert args == ("container", "inspect", "probe-id")
+        return json.dumps([original])
+
+    driver.runtime = SimpleNamespace(
+        private=tmp_path,
+        qualification="fixture",
+        docker=docker,
+        boundary=lambda: {"id": "daemon"},
+    )
+    # This regression isolates capture/comparison; role validation has separate fail-closed tests.
+    monkeypatch.setattr(module, "validate_role", lambda *args: None)
+    (tmp_path / "host").mkdir(mode=0o700)
+    driver.capture_probe_policy({"containers": [row]})
+    assert row == original
+    assert lifecycle.last_raw["HostConfig"]["OomKillDisable"] is None
+    assert driver.same(lifecycle.birth, "containers", row)
+    assert row == original
+    for suffix in ("raw-before", "raw-after"):
+        assert (
+            json.loads((tmp_path / f"host/probe-policy-001.{suffix}.json").read_text())
+            == original
+        )
+    detached = raw_fingerprint(row)
+    detached["Config"]["Labels"]["owned"] = "changed"
+    detached["HostConfig"]["OomKillDisable"] = False
+    assert row == original
+    assert len(commands) == 3
