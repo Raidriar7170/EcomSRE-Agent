@@ -1,0 +1,69 @@
+{
+  "diff_check_note": "Default code/test baseline and working tree checks PASS; whole committed diff uses core.whitespace=-blank-at-eol to retain 12 original byte-frozen Goal Markdown hard-break lines.",
+  "final_independent_review": {
+    "claim_accuracy": "PASS",
+    "must_fix": 0,
+    "verdict": "PASS"
+  },
+  "goal_sha256": "a2f8c3d20b7cd589c0494a161c3451702f3392cfb8857df642683af972d997e0",
+  "historical_pr95_to_99_remote_state": "unchanged since activation binding",
+  "historical_private_files_verified": 296,
+  "offline_validation": {
+    "checks": [
+      {
+        "argv": [
+          "python",
+          "-m",
+          "pytest",
+          "-q",
+          "tests/product_v040/cleanup_v3_retained"
+        ],
+        "exit_status": 0,
+        "output": "................................................................         [100%]\n64 passed in 0.90s\n"
+      },
+      {
+        "argv": [
+          "python",
+          "-m",
+          "ruff",
+          "check",
+          "scripts/product/cleanup_v040_v3_retained",
+          "tests/product_v040/cleanup_v3_retained"
+        ],
+        "exit_status": 0,
+        "output": "All checks passed!\n"
+      },
+      {
+        "argv": [
+          "python",
+          "-m",
+          "mypy",
+          "--follow-imports=silent",
+          "scripts/product/cleanup_v040_v3_retained",
+          "tests/product_v040/cleanup_v3_retained"
+        ],
+        "exit_status": 0,
+        "output": "Success: no issues found in 6 source files\n"
+      }
+    ],
+    "diff_check_exit_status": 0,
+    "historical_files_verified": 296,
+    "implementation_head": "7388fbd2e1012214cadd8158c9aee62253d00f76"
+  },
+  "private_index_sha256": "4061b6e1f149d872a0dc7fd71fe6ec2fc2dda62596c15aa6205ede63632d8c12",
+  "public_payload_review": "all ten files matched private evidence; secrets and host paths excluded",
+  "retained_blob": "8ad3ee775cb13b933312c9909e1d20cfc5b7667d",
+  "retained_raw_sha256": "263b43e61d6e6e736065701cf7b23e367da19cbd126811f831d990bb2fe4a168",
+  "runtime_evidence_verifier": {
+    "counts": {
+      "container_rm": 29,
+      "network_rm": 3,
+      "stop": 28,
+      "volume_rm": 6
+    },
+    "files_verified": 351,
+    "intent_receipt_pairs": 66,
+    "status": "PASS"
+  },
+  "source_unchanged_since_review": "verified against implementation commit before publication"
+}

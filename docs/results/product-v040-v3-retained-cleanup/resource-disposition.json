@@ -1,0 +1,347 @@
+{
+  "attribution_basis": "Each removal binds one private immutable intent/receipt and direct postcondition; no preexisting absences claimed as removals.",
+  "resources": [
+    {
+      "final_disposition": "REMOVED_BY_THIS_GOAL",
+      "initial_disposition": "PRESENT_MATCHING",
+      "name": "/ecomsre-live-sandbox-v1-ad",
+      "remaining": false,
+      "resource_kind": "containers",
+      "retained_identity": "013dfa0857bf40489198a1cbbd5eea69f3b5b365c85fd5edfcb9a39b8ec83a92",
+      "retained_record_digest": "4b3d5c7680aeb7942d94300a5f6fbd6a78b9d392a05a32e0429191b4c12be274"
+    },
+    {
+      "final_disposition": "REMOVED_BY_THIS_GOAL",
+      "initial_disposition": "PRESENT_MATCHING",
+      "name": "/ecomsre-live-sandbox-v1-kafka",
+      "remaining": false,
+      "resource_kind": "containers",
+      "retained_identity": "16ee82958c618417c2f762b4cd85bcf17727e96fab09b613c5218064ad82f394",
+      "retained_record_digest": "0e214816e6d05bb400c9e6f6f7a620a4d220c9ceae6c9656b117ab54bcec4c7a"
+    },
+    {
+      "final_disposition": "REMOVED_BY_THIS_GOAL",
+      "initial_disposition": "PRESENT_MATCHING",
+      "name": "/ecomsre-live-sandbox-v1-valkey-cart",
+      "remaining": false,
+      "resource_kind": "containers",
+      "retained_identity": "2f33fa2a26959a03627503bafcb98f7cbf41f3c73b850792aa88903bb120533a",
+      "retained_record_digest": "f5ae32fab0233d35d724c76ef0b46ab3295c89a44bc6e2e7922a3c067b0aab60"
+    },
+    {
+      "final_disposition": "REMOVED_BY_THIS_GOAL",
+      "initial_disposition": "PRESENT_MATCHING",
+      "name": "/ecomsre-live-sandbox-v1-astronomy-db",
+      "remaining": false,
+      "resource_kind": "containers",
+      "retained_identity": "3056bd649e7ce2379a979b3d951773ccc7e8886edc1e36b9158c0a330468c4e0",
+      "retained_record_digest": "8691ff79c0c49bb8021d2ad784ab0f3cb9c26f35578efcd1e2233943e18aa159"
+    },
+    {
+      "final_disposition": "REMOVED_BY_THIS_GOAL",
+      "initial_disposition": "PRESENT_MATCHING",
+      "name": "/ecomsre-live-sandbox-v1-otel-collector",
+      "remaining": false,
+      "resource_kind": "containers",
+      "retained_identity": "422f5cb1e204ca41b695e104df3230a4ef0d10e991077b434e7bf7e56054abb6",
+      "retained_record_digest": "59e13e4a0a8565db0b9e3e3b796bbdf582b7a42aad0772b7bda1a2eb3fe3acac"
+    },
+    {
+      "final_disposition": "REMOVED_BY_THIS_GOAL",
+      "initial_disposition": "PRESENT_MATCHING",
+      "name": "/ecomsre-live-sandbox-v1-checkout",
+      "remaining": false,
+      "resource_kind": "containers",
+      "retained_identity": "43ad8a9aa246367e55ade06a23a8888d4a21fbf903b0790e32ef5f07299cc03c",
+      "retained_record_digest": "089b7baf8b3e723dfa53948cb232a471b0d8349ddbe121c7ee5aae5c1a400be6"
+    },
+    {
+      "final_disposition": "REMOVED_BY_THIS_GOAL",
+      "initial_disposition": "PRESENT_MATCHING",
+      "name": "/ecomsre-live-sandbox-v1-recommendation",
+      "remaining": false,
+      "resource_kind": "containers",
+      "retained_identity": "488ce97891b6df261382179ead7ed2eb6936cc088e59a1f00c34efcf56180f0b",
+      "retained_record_digest": "73372e75c0eddf94f612b8a9263c8ec0c3743061f05da234ec111168d3011f13"
+    },
+    {
+      "final_disposition": "REMOVED_BY_THIS_GOAL",
+      "initial_disposition": "PRESENT_MATCHING",
+      "name": "/ecomsre-live-sandbox-v1-payment",
+      "remaining": false,
+      "resource_kind": "containers",
+      "retained_identity": "4c36cc7e34f7052bed17b64383b529c878421aa79f7c2d9c54c369dcb3eacfd2",
+      "retained_record_digest": "00189fcccbd1737c2ebf75aee349bdce2a5c332e9b0b5d78ba1b1ca0e37039b1"
+    },
+    {
+      "final_disposition": "REMOVED_BY_THIS_GOAL",
+      "initial_disposition": "PRESENT_MATCHING",
+      "name": "/ecomsre-live-sandbox-v1-opamp-server",
+      "remaining": false,
+      "resource_kind": "containers",
+      "retained_identity": "4e7a2733141e36a3fce6946ef9d72e7623f0c547ec1125b5359801f98dad5a9f",
+      "retained_record_digest": "9645e70e3224e93207dba2e7c32e3e255758e7df9865a6946a0863d2774b0197"
+    },
+    {
+      "final_disposition": "REMOVED_BY_THIS_GOAL",
+      "initial_disposition": "PRESENT_MATCHING",
+      "name": "/ecomsre-live-sandbox-v1-frontend-proxy",
+      "remaining": false,
+      "resource_kind": "containers",
+      "retained_identity": "52964f9f611ebb0d81085e2482ca888688866029bd5bfcf3d6276694c5db0175",
+      "retained_record_digest": "5bb9dd15cc10bc640b1ec9b83c72729865383df1ce43a627fb126793bceba0ef"
+    },
+    {
+      "final_disposition": "REMOVED_BY_THIS_GOAL",
+      "initial_disposition": "PRESENT_MATCHING",
+      "name": "/ecomsre-live-sandbox-v1-fraud-detection",
+      "remaining": false,
+      "resource_kind": "containers",
+      "retained_identity": "57d5c97453801b87ecb493293a7e73ea7415c5ad5e5bd592be00eb280ec2372d",
+      "retained_record_digest": "6c6a4162ad0c2b607697efa60ef5470bcfc8d09bc19ffe321d65e3be095076e0"
+    },
+    {
+      "final_disposition": "REMOVED_BY_THIS_GOAL",
+      "initial_disposition": "PRESENT_MATCHING",
+      "name": "/ecomsre-live-sandbox-v1-jaeger",
+      "remaining": false,
+      "resource_kind": "containers",
+      "retained_identity": "6e638dc868913e07bcd394d91b09d92170e85c513426393fb209ae49fea19e12",
+      "retained_record_digest": "7edc01dc575946696cddbd3178006c39f6f6b107cb8cbb40c6401bb836ba6aef"
+    },
+    {
+      "final_disposition": "REMOVED_BY_THIS_GOAL",
+      "initial_disposition": "PRESENT_MATCHING",
+      "name": "/ecomsre-live-sandbox-v1-flagd-ui",
+      "remaining": false,
+      "resource_kind": "containers",
+      "retained_identity": "7310f8f65a8211296e66fb8ce9ca81aacc59e03aea2bed30d494337fbc4b76a4",
+      "retained_record_digest": "6acdff87be8dee5be9176a95dbc4d741d9d7fe9d1cc6949c7c3a0901f6b92cbf"
+    },
+    {
+      "final_disposition": "REMOVED_BY_THIS_GOAL",
+      "initial_disposition": "PRESENT_MATCHING",
+      "name": "/ecomsre-live-sandbox-v1-product-catalog",
+      "remaining": false,
+      "resource_kind": "containers",
+      "retained_identity": "89763e46e0e1c4f4cda6dbe915f91c03f0e9a0e51eb4630eb13d99dfab67170b",
+      "retained_record_digest": "d294418e1d36794659f16b2dc921bb70d289ab6ceadd8a31e042c3092174265e"
+    },
+    {
+      "final_disposition": "REMOVED_BY_THIS_GOAL",
+      "initial_disposition": "PRESENT_MATCHING",
+      "name": "/ecomsre-live-sandbox-v1-grafana",
+      "remaining": false,
+      "resource_kind": "containers",
+      "retained_identity": "9adca9a38c4ba24986b67f1cd94de9da42353c4dd93a9a38b61de1d59e618b98",
+      "retained_record_digest": "4e7d3b8958d6f79db352c237ed921cc1999fdc2d8740ea57bcff92c7d9827b52"
+    },
+    {
+      "final_disposition": "REMOVED_BY_THIS_GOAL",
+      "initial_disposition": "PRESENT_MATCHING",
+      "name": "/ecomsre-live-sandbox-v1-telemetry-docs",
+      "remaining": false,
+      "resource_kind": "containers",
+      "retained_identity": "9c09119dd7931cd681220f9decb5fef081645d64d294fb209affb073390fe0a8",
+      "retained_record_digest": "9260875702faa961dd818432ffd52580d8d56dd361aa5fc5134c82611ce2bef6"
+    },
+    {
+      "final_disposition": "REMOVED_BY_THIS_GOAL",
+      "initial_disposition": "PRESENT_MATCHING",
+      "name": "/ecomsre-live-sandbox-v1-cart",
+      "remaining": false,
+      "resource_kind": "containers",
+      "retained_identity": "a5fbff6a08b53e6d22b14ff222d815409db8130dcc894470795e92686dbaa9b2",
+      "retained_record_digest": "e95d51aea0817d0fb8460ada18977ac63fc7c3af1f5567784d2ef4522936da3f"
+    },
+    {
+      "final_disposition": "REMOVED_BY_THIS_GOAL",
+      "initial_disposition": "PRESENT_MATCHING",
+      "name": "/ecomsre-live-sandbox-v1-opensearch",
+      "remaining": false,
+      "resource_kind": "containers",
+      "retained_identity": "bb06c5b1652cb0c8291ef1db5cffa0445a76c4ec8dae0d0f443c0a60d0b6944d",
+      "retained_record_digest": "7406e21848509257ac6b1e2981490dce5ba451946295c036c8fcb1dd302e1a29"
+    },
+    {
+      "final_disposition": "REMOVED_BY_THIS_GOAL",
+      "initial_disposition": "PRESENT_MATCHING",
+      "name": "/ecomsre-live-sandbox-v1-currency",
+      "remaining": false,
+      "resource_kind": "containers",
+      "retained_identity": "c48df28ffbf12abb303fb7373af8369ee5814259a405d0dc92fed1048676de34",
+      "retained_record_digest": "c18277277710d5fa7e0eba52adae5de70466cc49d89303784c9a6e58406eb7a5"
+    },
+    {
+      "final_disposition": "REMOVED_BY_THIS_GOAL",
+      "initial_disposition": "PRESENT_MATCHING",
+      "name": "/ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-volume-probe",
+      "remaining": false,
+      "resource_kind": "containers",
+      "retained_identity": "c598cc5091013626cafa93bcf08260ff0c727b2453885c086eae67621499dd81",
+      "retained_record_digest": "d68963338364d8a604db89e669aaac1d734fbcd23cbd9cffb218556b7e4254e0"
+    },
+    {
+      "final_disposition": "REMOVED_BY_THIS_GOAL",
+      "initial_disposition": "PRESENT_MATCHING",
+      "name": "/ecomsre-live-sandbox-v1-shipping",
+      "remaining": false,
+      "resource_kind": "containers",
+      "retained_identity": "cce1cb75cb4f7d8a7b6762c713e8d1e1a97084fb35726f4abf34ed8291a838f3",
+      "retained_record_digest": "a7b158363b0f2f59024df42e47605c0e18015679390b268e7b03b139b5259f23"
+    },
+    {
+      "final_disposition": "REMOVED_BY_THIS_GOAL",
+      "initial_disposition": "PRESENT_MATCHING",
+      "name": "/ecomsre-live-sandbox-v1-image-provider",
+      "remaining": false,
+      "resource_kind": "containers",
+      "retained_identity": "cebf0ec3d4fe453e34254a02f8ef9b0cfb7c28ba8136ea65c8042820a2d83c46",
+      "retained_record_digest": "1e21f88f1d49d0ab8933173b9303d6dba85d0c8fc40527c06e9f132d68076db2"
+    },
+    {
+      "final_disposition": "REMOVED_BY_THIS_GOAL",
+      "initial_disposition": "PRESENT_MATCHING",
+      "name": "/ecomsre-live-sandbox-v1-load-generator",
+      "remaining": false,
+      "resource_kind": "containers",
+      "retained_identity": "d36987ca3f401492ea7e76d4d8bd748ca5ca9352621624344015226c0b763079",
+      "retained_record_digest": "26994bbd0e7b4c8a9bcb512fd78f8eef8e8f365969e640973045765dc2c85523"
+    },
+    {
+      "final_disposition": "REMOVED_BY_THIS_GOAL",
+      "initial_disposition": "PRESENT_MATCHING",
+      "name": "/ecomsre-live-sandbox-v1-quote",
+      "remaining": false,
+      "resource_kind": "containers",
+      "retained_identity": "dc9c9dfb85cc5c6c8f161445d38ce3a4590fae820ea424ceb8e9ee0bc65a25ac",
+      "retained_record_digest": "36d11e68e1fda935dccdd3eb03a34ce3106c220a8f6b121953ec52dbf61e6e02"
+    },
+    {
+      "final_disposition": "REMOVED_BY_THIS_GOAL",
+      "initial_disposition": "PRESENT_MATCHING",
+      "name": "/ecomsre-live-sandbox-v1-accounting",
+      "remaining": false,
+      "resource_kind": "containers",
+      "retained_identity": "dce81635f5ca4da1f62484ee51d5fcca024c3d5de13c730bacf17685089ca625",
+      "retained_record_digest": "bb6e315e984929ce15ad9052b3cf8e2f5d6f778c0687a3cbfa5f8d744b922677"
+    },
+    {
+      "final_disposition": "REMOVED_BY_THIS_GOAL",
+      "initial_disposition": "PRESENT_MATCHING",
+      "name": "/ecomsre-live-sandbox-v1-prometheus",
+      "remaining": false,
+      "resource_kind": "containers",
+      "retained_identity": "e6a18c9315315ab8d6b63ba81f58540cdb133088fca1875ccaa0039a71b159b3",
+      "retained_record_digest": "4a3bd7e9fb9b13bf331dae336aa46589aec8f67db1d7d7fe393628c6b238789f"
+    },
+    {
+      "final_disposition": "REMOVED_BY_THIS_GOAL",
+      "initial_disposition": "PRESENT_MATCHING",
+      "name": "/ecomsre-live-sandbox-v1-frontend",
+      "remaining": false,
+      "resource_kind": "containers",
+      "retained_identity": "ea6e8f438a3de895de0f412ffb5493e0e14dc643e5e379e28224c1a14d46c5b4",
+      "retained_record_digest": "b2eeeccd3e223510ab604b2491c4a88b1b5af79c5746945d02011c174dbd892e"
+    },
+    {
+      "final_disposition": "REMOVED_BY_THIS_GOAL",
+      "initial_disposition": "PRESENT_MATCHING",
+      "name": "/ecomsre-live-sandbox-v1-email",
+      "remaining": false,
+      "resource_kind": "containers",
+      "retained_identity": "f1b8665eac41354174656c4525366e08ac6c60cd914b3f83f06303882d6b4dfd",
+      "retained_record_digest": "c989ddb550fb15506a42019ccdf4ca376793ddc17bae5af84487c9e2af1a82f3"
+    },
+    {
+      "final_disposition": "REMOVED_BY_THIS_GOAL",
+      "initial_disposition": "PRESENT_MATCHING",
+      "name": "/ecomsre-live-sandbox-v1-flagd",
+      "remaining": false,
+      "resource_kind": "containers",
+      "retained_identity": "f720cc6f0d43184049857f23ecf4809eacfde5d67b531fdc09fcb95c14148d76",
+      "retained_record_digest": "04cf8ff68fa20c152a6e0d0c166a9e184320868c4387527001724e9bd03d4549"
+    },
+    {
+      "final_disposition": "REMOVED_BY_THIS_GOAL",
+      "initial_disposition": "PRESENT_MATCHING",
+      "name": "ecomsre-live-sandbox-v1-default",
+      "remaining": false,
+      "resource_kind": "networks",
+      "retained_identity": "8268f64f2d2fc1b64dbff0ec081c7aa0cec354169e39c4b4756ebd68489b179f",
+      "retained_record_digest": "345eac3f2f29b9db0a205a4ccaf20857b66a7949655b224a03db4e687fe741a8"
+    },
+    {
+      "final_disposition": "REMOVED_BY_THIS_GOAL",
+      "initial_disposition": "PRESENT_MATCHING",
+      "name": "ecomsre-product-v040_remediation-observation",
+      "remaining": false,
+      "resource_kind": "networks",
+      "retained_identity": "b5a0761c5ad0fa742c2c86b7eea2fdb47bd1af5b687faa5417e8576d5e4b2ca3",
+      "retained_record_digest": "f18e189109a56d41d8ba2429d157d07c21e658205a9039982f07ed022a7dbeed"
+    },
+    {
+      "final_disposition": "REMOVED_BY_THIS_GOAL",
+      "initial_disposition": "PRESENT_MATCHING",
+      "name": "ecomsre-product-v040-default",
+      "remaining": false,
+      "resource_kind": "networks",
+      "retained_identity": "bb27e2b218b80dbf7d71fff6adf210656f70242e85216ee6a0012684d141b04a",
+      "retained_record_digest": "6d23285225ad28cdeffe72358eec3fc75bac7bcfb6a827556207ddbf298b4ccd"
+    },
+    {
+      "final_disposition": "REMOVED_BY_THIS_GOAL",
+      "initial_disposition": "PRESENT_MATCHING",
+      "name": "ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-astronomy-db-data",
+      "remaining": false,
+      "resource_kind": "volumes",
+      "retained_identity": "ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-astronomy-db-data",
+      "retained_record_digest": "94fc83bf07a2aa4339fa26ce972544ca4c78ba858cf2c1c6fa8872e3eea7170d"
+    },
+    {
+      "final_disposition": "REMOVED_BY_THIS_GOAL",
+      "initial_disposition": "PRESENT_MATCHING",
+      "name": "ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-jaeger-data",
+      "remaining": false,
+      "resource_kind": "volumes",
+      "retained_identity": "ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-jaeger-data",
+      "retained_record_digest": "1ef815acc9eda7fbc5afe5cfc657a324d266111e21b33e981e0f4dd29091cc20"
+    },
+    {
+      "final_disposition": "REMOVED_BY_THIS_GOAL",
+      "initial_disposition": "PRESENT_MATCHING",
+      "name": "ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-prometheus-data",
+      "remaining": false,
+      "resource_kind": "volumes",
+      "retained_identity": "ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-prometheus-data",
+      "retained_record_digest": "a39654a9d788937c9851151172bd25a01acd6a507e87a5df8dfa19486700ead2"
+    },
+    {
+      "final_disposition": "REMOVED_BY_THIS_GOAL",
+      "initial_disposition": "PRESENT_MATCHING",
+      "name": "ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-qualification-kafka-config",
+      "remaining": false,
+      "resource_kind": "volumes",
+      "retained_identity": "ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-qualification-kafka-config",
+      "retained_record_digest": "e1c0e4e4042f804324983fc7e14c7c792d494e69daac623e99c9f92add008880"
+    },
+    {
+      "final_disposition": "REMOVED_BY_THIS_GOAL",
+      "initial_disposition": "PRESENT_MATCHING",
+      "name": "ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-qualification-kafka-data",
+      "remaining": false,
+      "resource_kind": "volumes",
+      "retained_identity": "ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-qualification-kafka-data",
+      "retained_record_digest": "24f746746977287394939dbdc9f0ff19cd8227a182f566c1f8a99c17e25166f8"
+    },
+    {
+      "final_disposition": "REMOVED_BY_THIS_GOAL",
+      "initial_disposition": "PRESENT_MATCHING",
+      "name": "ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-qualification-kafka-secrets",
+      "remaining": false,
+      "resource_kind": "volumes",
+      "retained_identity": "ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-qualification-kafka-secrets",
+      "retained_record_digest": "94d2a92d033b70c812524d508b2fb76598bf0ed7707bb66a0f04aadd216a83cd"
+    }
+  ]
+}

@@ -1,0 +1,741 @@
+{
+  "containers": {
+    "013dfa0857bf40489198a1cbbd5eea69f3b5b365c85fd5edfcb9a39b8ec83a92": {
+      "compose_declared_command": null,
+      "compose_declared_entrypoint": null,
+      "current_actual_command": null,
+      "current_actual_entrypoint": [
+        "./build/install/opentelemetry-demo-ad/bin/Ad"
+      ],
+      "declaration_source": "frozen_compose",
+      "image_default_command": null,
+      "image_default_entrypoint": [
+        "./build/install/opentelemetry-demo-ad/bin/Ad"
+      ],
+      "pinned_image_config_sha256": "e697d8a5065d38d1e0a61ebc9866ebc3ab1e50d6cbc02ae3ab949b03332a61c1",
+      "resolved_effective_command": null,
+      "resolved_effective_entrypoint": [
+        "./build/install/opentelemetry-demo-ad/bin/Ad"
+      ]
+    },
+    "16ee82958c618417c2f762b4cd85bcf17727e96fab09b613c5218064ad82f394": {
+      "compose_declared_command": null,
+      "compose_declared_entrypoint": null,
+      "current_actual_command": [
+        "/etc/kafka/docker/run"
+      ],
+      "current_actual_entrypoint": [
+        "/__cacert_entrypoint.sh"
+      ],
+      "declaration_source": "frozen_compose",
+      "image_default_command": [
+        "/etc/kafka/docker/run"
+      ],
+      "image_default_entrypoint": [
+        "/__cacert_entrypoint.sh"
+      ],
+      "pinned_image_config_sha256": "52779aa406291c60fe48ad3a5384b5df2123c5ae08675e78cae182905555a96f",
+      "resolved_effective_command": [
+        "/etc/kafka/docker/run"
+      ],
+      "resolved_effective_entrypoint": [
+        "/__cacert_entrypoint.sh"
+      ]
+    },
+    "2f33fa2a26959a03627503bafcb98f7cbf41f3c73b850792aa88903bb120533a": {
+      "compose_declared_command": null,
+      "compose_declared_entrypoint": null,
+      "current_actual_command": [
+        "valkey-server"
+      ],
+      "current_actual_entrypoint": [
+        "docker-entrypoint.sh"
+      ],
+      "declaration_source": "frozen_compose",
+      "image_default_command": [
+        "valkey-server"
+      ],
+      "image_default_entrypoint": [
+        "docker-entrypoint.sh"
+      ],
+      "pinned_image_config_sha256": "0d19fd957008057a2bdd7690804429f1b67e7e28038fcf7a55edc4972b7fc12e",
+      "resolved_effective_command": [
+        "valkey-server"
+      ],
+      "resolved_effective_entrypoint": [
+        "docker-entrypoint.sh"
+      ]
+    },
+    "3056bd649e7ce2379a979b3d951773ccc7e8886edc1e36b9158c0a330468c4e0": {
+      "compose_declared_command": [
+        "postgres",
+        "-c",
+        "shared_preload_libraries=pg_stat_statements"
+      ],
+      "compose_declared_entrypoint": null,
+      "current_actual_command": [
+        "postgres",
+        "-c",
+        "shared_preload_libraries=pg_stat_statements"
+      ],
+      "current_actual_entrypoint": [
+        "docker-entrypoint.sh"
+      ],
+      "declaration_source": "frozen_compose",
+      "image_default_command": [
+        "postgres"
+      ],
+      "image_default_entrypoint": [
+        "docker-entrypoint.sh"
+      ],
+      "pinned_image_config_sha256": "c9d90ae55208ee71d268da1ca62aef53d64b3814d2adaa7e2a7e777884fd5658",
+      "resolved_effective_command": [
+        "postgres",
+        "-c",
+        "shared_preload_libraries=pg_stat_statements"
+      ],
+      "resolved_effective_entrypoint": [
+        "docker-entrypoint.sh"
+      ]
+    },
+    "422f5cb1e204ca41b695e104df3230a4ef0d10e991077b434e7bf7e56054abb6": {
+      "compose_declared_command": [
+        "--config=/etc/otelcol-config.yml",
+        "--config=/etc/otelcol-config-full.yml",
+        "--config=/etc/otelcol-config-observability.yml",
+        "--config=/etc/otelcol-config-extras.yml",
+        "--config=/etc/otelcol-config-sandbox.yml",
+        "--feature-gates=service.profilesSupport"
+      ],
+      "compose_declared_entrypoint": null,
+      "current_actual_command": [
+        "--config=/etc/otelcol-config.yml",
+        "--config=/etc/otelcol-config-full.yml",
+        "--config=/etc/otelcol-config-observability.yml",
+        "--config=/etc/otelcol-config-extras.yml",
+        "--config=/etc/otelcol-config-sandbox.yml",
+        "--feature-gates=service.profilesSupport"
+      ],
+      "current_actual_entrypoint": [
+        "/otelcol-contrib"
+      ],
+      "declaration_source": "frozen_compose",
+      "image_default_command": [
+        "--config",
+        "/etc/otelcol-contrib/config.yaml"
+      ],
+      "image_default_entrypoint": [
+        "/otelcol-contrib"
+      ],
+      "pinned_image_config_sha256": "98707abdcbd8a19987e97f66878e65677c56e50381770bb078a2e11a101b2c4a",
+      "resolved_effective_command": [
+        "--config=/etc/otelcol-config.yml",
+        "--config=/etc/otelcol-config-full.yml",
+        "--config=/etc/otelcol-config-observability.yml",
+        "--config=/etc/otelcol-config-extras.yml",
+        "--config=/etc/otelcol-config-sandbox.yml",
+        "--feature-gates=service.profilesSupport"
+      ],
+      "resolved_effective_entrypoint": [
+        "/otelcol-contrib"
+      ]
+    },
+    "43ad8a9aa246367e55ade06a23a8888d4a21fbf903b0790e32ef5f07299cc03c": {
+      "compose_declared_command": null,
+      "compose_declared_entrypoint": null,
+      "current_actual_command": null,
+      "current_actual_entrypoint": [
+        "./checkout"
+      ],
+      "declaration_source": "frozen_compose",
+      "image_default_command": null,
+      "image_default_entrypoint": [
+        "./checkout"
+      ],
+      "pinned_image_config_sha256": "ed545c09a6a480489a445a1108eaf67225259854f445413dfb2b89ef4239e6f3",
+      "resolved_effective_command": null,
+      "resolved_effective_entrypoint": [
+        "./checkout"
+      ]
+    },
+    "488ce97891b6df261382179ead7ed2eb6936cc088e59a1f00c34efcf56180f0b": {
+      "compose_declared_command": null,
+      "compose_declared_entrypoint": null,
+      "current_actual_command": null,
+      "current_actual_entrypoint": [
+        "/venv/bin/opentelemetry-instrument",
+        "/venv/bin/python",
+        "recommendation_server.py"
+      ],
+      "declaration_source": "frozen_compose",
+      "image_default_command": null,
+      "image_default_entrypoint": [
+        "/venv/bin/opentelemetry-instrument",
+        "/venv/bin/python",
+        "recommendation_server.py"
+      ],
+      "pinned_image_config_sha256": "6d2e3c2fd1bfec90127f08f862a75dd8a6c7ee96733833b22caf79b65c8de40f",
+      "resolved_effective_command": null,
+      "resolved_effective_entrypoint": [
+        "/venv/bin/opentelemetry-instrument",
+        "/venv/bin/python",
+        "recommendation_server.py"
+      ]
+    },
+    "4c36cc7e34f7052bed17b64383b529c878421aa79f7c2d9c54c369dcb3eacfd2": {
+      "compose_declared_command": null,
+      "compose_declared_entrypoint": null,
+      "current_actual_command": [
+        "index.js"
+      ],
+      "current_actual_entrypoint": [
+        "/nodejs/bin/node"
+      ],
+      "declaration_source": "frozen_compose",
+      "image_default_command": [
+        "index.js"
+      ],
+      "image_default_entrypoint": [
+        "/nodejs/bin/node"
+      ],
+      "pinned_image_config_sha256": "e7468fc7941909e7f594bd2f9458928904c7ab2e10bc55494cdbc6f96725d272",
+      "resolved_effective_command": [
+        "index.js"
+      ],
+      "resolved_effective_entrypoint": [
+        "/nodejs/bin/node"
+      ]
+    },
+    "4e7a2733141e36a3fce6946ef9d72e7623f0c547ec1125b5359801f98dad5a9f": {
+      "compose_declared_command": null,
+      "compose_declared_entrypoint": null,
+      "current_actual_command": null,
+      "current_actual_entrypoint": [
+        "/opamp-server"
+      ],
+      "declaration_source": "frozen_compose",
+      "image_default_command": null,
+      "image_default_entrypoint": [
+        "/opamp-server"
+      ],
+      "pinned_image_config_sha256": "5711c2d514672ed98b19453f840699acb668344f052256269bdee5b020e946a8",
+      "resolved_effective_command": null,
+      "resolved_effective_entrypoint": [
+        "/opamp-server"
+      ]
+    },
+    "52964f9f611ebb0d81085e2482ca888688866029bd5bfcf3d6276694c5db0175": {
+      "compose_declared_command": null,
+      "compose_declared_entrypoint": null,
+      "current_actual_command": null,
+      "current_actual_entrypoint": [
+        "/bin/sh",
+        "-c",
+        "envsubst < envoy.tmpl.yaml > envoy.yaml && envoy -c envoy.yaml;"
+      ],
+      "declaration_source": "frozen_compose",
+      "image_default_command": null,
+      "image_default_entrypoint": [
+        "/bin/sh",
+        "-c",
+        "envsubst < envoy.tmpl.yaml > envoy.yaml && envoy -c envoy.yaml;"
+      ],
+      "pinned_image_config_sha256": "9647a750ba489a3793e7717ff3551d199b3ee1f7caf90dc16484fb5f4a51fb6c",
+      "resolved_effective_command": null,
+      "resolved_effective_entrypoint": [
+        "/bin/sh",
+        "-c",
+        "envsubst < envoy.tmpl.yaml > envoy.yaml && envoy -c envoy.yaml;"
+      ]
+    },
+    "57d5c97453801b87ecb493293a7e73ea7415c5ad5e5bd592be00eb280ec2372d": {
+      "compose_declared_command": null,
+      "compose_declared_entrypoint": null,
+      "current_actual_command": null,
+      "current_actual_entrypoint": [
+        "java",
+        "-jar",
+        "fraud-detection-1.0-all.jar"
+      ],
+      "declaration_source": "frozen_compose",
+      "image_default_command": null,
+      "image_default_entrypoint": [
+        "java",
+        "-jar",
+        "fraud-detection-1.0-all.jar"
+      ],
+      "pinned_image_config_sha256": "db4d73b2717e8948282abe967d065187b37047e685574d89b8a9e9a6928bb26e",
+      "resolved_effective_command": null,
+      "resolved_effective_entrypoint": [
+        "java",
+        "-jar",
+        "fraud-detection-1.0-all.jar"
+      ]
+    },
+    "6e638dc868913e07bcd394d91b09d92170e85c513426393fb209ae49fea19e12": {
+      "compose_declared_command": [
+        "--config=file:/etc/jaeger/config.yml"
+      ],
+      "compose_declared_entrypoint": null,
+      "current_actual_command": [
+        "--config=file:/etc/jaeger/config.yml"
+      ],
+      "current_actual_entrypoint": [
+        "/cmd/jaeger/jaeger-linux"
+      ],
+      "declaration_source": "frozen_compose",
+      "image_default_command": null,
+      "image_default_entrypoint": [
+        "/cmd/jaeger/jaeger-linux"
+      ],
+      "pinned_image_config_sha256": "c644be920a6b1ab418f0e4f613a247a61455ec8d7b5f92b4a745f550f3e42264",
+      "resolved_effective_command": [
+        "--config=file:/etc/jaeger/config.yml"
+      ],
+      "resolved_effective_entrypoint": [
+        "/cmd/jaeger/jaeger-linux"
+      ]
+    },
+    "7310f8f65a8211296e66fb8ce9ca81aacc59e03aea2bed30d494337fbc4b76a4": {
+      "compose_declared_command": null,
+      "compose_declared_entrypoint": null,
+      "current_actual_command": [
+        "sh",
+        "-c",
+        "ulimit -n 65536 && exec /app/bin/server"
+      ],
+      "current_actual_entrypoint": null,
+      "declaration_source": "frozen_compose",
+      "image_default_command": [
+        "sh",
+        "-c",
+        "ulimit -n 65536 && exec /app/bin/server"
+      ],
+      "image_default_entrypoint": null,
+      "pinned_image_config_sha256": "f6223baecbe7b57c7efd610bc74a0c7e5fdc255b9510d689f7ed8dc6269b8b5d",
+      "resolved_effective_command": [
+        "sh",
+        "-c",
+        "ulimit -n 65536 && exec /app/bin/server"
+      ],
+      "resolved_effective_entrypoint": null
+    },
+    "89763e46e0e1c4f4cda6dbe915f91c03f0e9a0e51eb4630eb13d99dfab67170b": {
+      "compose_declared_command": null,
+      "compose_declared_entrypoint": null,
+      "current_actual_command": null,
+      "current_actual_entrypoint": [
+        "./product-catalog"
+      ],
+      "declaration_source": "frozen_compose",
+      "image_default_command": null,
+      "image_default_entrypoint": [
+        "./product-catalog"
+      ],
+      "pinned_image_config_sha256": "d65f8c5e8ec29030733da9518286bbdcff86b178672e83ae6395a88e2e148efa",
+      "resolved_effective_command": null,
+      "resolved_effective_entrypoint": [
+        "./product-catalog"
+      ]
+    },
+    "9adca9a38c4ba24986b67f1cd94de9da42353c4dd93a9a38b61de1d59e618b98": {
+      "compose_declared_command": null,
+      "compose_declared_entrypoint": null,
+      "current_actual_command": null,
+      "current_actual_entrypoint": [
+        "/run.sh"
+      ],
+      "declaration_source": "frozen_compose",
+      "image_default_command": null,
+      "image_default_entrypoint": [
+        "/run.sh"
+      ],
+      "pinned_image_config_sha256": "03bd893dd90d93b7ba156b9e8a629392067dccbf549aa1d2c2634a4934168a1c",
+      "resolved_effective_command": null,
+      "resolved_effective_entrypoint": [
+        "/run.sh"
+      ]
+    },
+    "9c09119dd7931cd681220f9decb5fef081645d64d294fb209affb073390fe0a8": {
+      "compose_declared_command": null,
+      "compose_declared_entrypoint": null,
+      "current_actual_command": [
+        "/bin/sh",
+        "-c",
+        "envsubst '$OTEL_COLLECTOR_HOST $OTEL_COLLECTOR_PORT_GRPC $OTEL_SERVICE_NAME $TELEMETRY_DOCS_PORT' < /nginx.conf.template > /etc/nginx/nginx.conf && exec nginx -g 'daemon off;'"
+      ],
+      "current_actual_entrypoint": [
+        "/docker-entrypoint.sh"
+      ],
+      "declaration_source": "frozen_compose",
+      "image_default_command": [
+        "/bin/sh",
+        "-c",
+        "envsubst '$OTEL_COLLECTOR_HOST $OTEL_COLLECTOR_PORT_GRPC $OTEL_SERVICE_NAME $TELEMETRY_DOCS_PORT' < /nginx.conf.template > /etc/nginx/nginx.conf && exec nginx -g 'daemon off;'"
+      ],
+      "image_default_entrypoint": [
+        "/docker-entrypoint.sh"
+      ],
+      "pinned_image_config_sha256": "258d826980644120abf22ec5a9ebd45d5ebe81b00b271d704f2b36f527daf710",
+      "resolved_effective_command": [
+        "/bin/sh",
+        "-c",
+        "envsubst '$OTEL_COLLECTOR_HOST $OTEL_COLLECTOR_PORT_GRPC $OTEL_SERVICE_NAME $TELEMETRY_DOCS_PORT' < /nginx.conf.template > /etc/nginx/nginx.conf && exec nginx -g 'daemon off;'"
+      ],
+      "resolved_effective_entrypoint": [
+        "/docker-entrypoint.sh"
+      ]
+    },
+    "a5fbff6a08b53e6d22b14ff222d815409db8130dcc894470795e92686dbaa9b2": {
+      "compose_declared_command": null,
+      "compose_declared_entrypoint": null,
+      "current_actual_command": null,
+      "current_actual_entrypoint": [
+        "./cart"
+      ],
+      "declaration_source": "frozen_compose",
+      "image_default_command": null,
+      "image_default_entrypoint": [
+        "./cart"
+      ],
+      "pinned_image_config_sha256": "45d78979d0d7be3c5115c20e7b0b824eaebadc5e00cadb09af21c724d3e5b01d",
+      "resolved_effective_command": null,
+      "resolved_effective_entrypoint": [
+        "./cart"
+      ]
+    },
+    "bb06c5b1652cb0c8291ef1db5cffa0445a76c4ec8dae0d0f443c0a60d0b6944d": {
+      "compose_declared_command": null,
+      "compose_declared_entrypoint": null,
+      "current_actual_command": [
+        "opensearch"
+      ],
+      "current_actual_entrypoint": [
+        "./opensearch-docker-entrypoint.sh"
+      ],
+      "declaration_source": "frozen_compose",
+      "image_default_command": [
+        "opensearch"
+      ],
+      "image_default_entrypoint": [
+        "./opensearch-docker-entrypoint.sh"
+      ],
+      "pinned_image_config_sha256": "8d153ba23f9e2a4e3af3f614389d8a5a30f5a684ec696e275f6ed2c95789c215",
+      "resolved_effective_command": [
+        "opensearch"
+      ],
+      "resolved_effective_entrypoint": [
+        "./opensearch-docker-entrypoint.sh"
+      ]
+    },
+    "c48df28ffbf12abb303fb7373af8369ee5814259a405d0dc92fed1048676de34": {
+      "compose_declared_command": null,
+      "compose_declared_entrypoint": null,
+      "current_actual_command": null,
+      "current_actual_entrypoint": [
+        "sh",
+        "-c",
+        "./usr/local/bin/currency ${CURRENCY_PORT}"
+      ],
+      "declaration_source": "frozen_compose",
+      "image_default_command": null,
+      "image_default_entrypoint": [
+        "sh",
+        "-c",
+        "./usr/local/bin/currency ${CURRENCY_PORT}"
+      ],
+      "pinned_image_config_sha256": "d871f89b1408d2e7ecae0ce1a3fcfd5bc62fbe9bb382e7f01cc56e368e4465c0",
+      "resolved_effective_command": null,
+      "resolved_effective_entrypoint": [
+        "sh",
+        "-c",
+        "./usr/local/bin/currency ${CURRENCY_PORT}"
+      ]
+    },
+    "c598cc5091013626cafa93bcf08260ff0c727b2453885c086eae67621499dd81": {
+      "compose_declared_command": [
+        "2147483647"
+      ],
+      "compose_declared_entrypoint": [
+        "/bin/sleep"
+      ],
+      "current_actual_command": [
+        "2147483647"
+      ],
+      "current_actual_entrypoint": [
+        "/bin/sleep"
+      ],
+      "declaration_source": "frozen_probe_plan",
+      "image_default_command": [
+        "/etc/kafka/docker/run"
+      ],
+      "image_default_entrypoint": [
+        "/__cacert_entrypoint.sh"
+      ],
+      "pinned_image_config_sha256": "52779aa406291c60fe48ad3a5384b5df2123c5ae08675e78cae182905555a96f",
+      "resolved_effective_command": [
+        "2147483647"
+      ],
+      "resolved_effective_entrypoint": [
+        "/bin/sleep"
+      ]
+    },
+    "cce1cb75cb4f7d8a7b6762c713e8d1e1a97084fb35726f4abf34ed8291a838f3": {
+      "compose_declared_command": null,
+      "compose_declared_entrypoint": null,
+      "current_actual_command": [
+        "./shipping"
+      ],
+      "current_actual_entrypoint": null,
+      "declaration_source": "frozen_compose",
+      "image_default_command": [
+        "./shipping"
+      ],
+      "image_default_entrypoint": null,
+      "pinned_image_config_sha256": "dd85a2cac6b9d503a24ff2f5c97715df3a586cbb3d9721c9c8a6743712324983",
+      "resolved_effective_command": [
+        "./shipping"
+      ],
+      "resolved_effective_entrypoint": null
+    },
+    "cebf0ec3d4fe453e34254a02f8ef9b0cfb7c28ba8136ea65c8042820a2d83c46": {
+      "compose_declared_command": null,
+      "compose_declared_entrypoint": null,
+      "current_actual_command": [
+        "/bin/sh",
+        "-c",
+        "envsubst '$OTEL_COLLECTOR_HOST $IMAGE_PROVIDER_PORT $OTEL_COLLECTOR_PORT_GRPC $OTEL_SERVICE_NAME' < /nginx.conf.template > /etc/nginx/nginx.conf && cat  /etc/nginx/nginx.conf && exec nginx -g 'daemon off;'"
+      ],
+      "current_actual_entrypoint": [
+        "/docker-entrypoint.sh"
+      ],
+      "declaration_source": "frozen_compose",
+      "image_default_command": [
+        "/bin/sh",
+        "-c",
+        "envsubst '$OTEL_COLLECTOR_HOST $IMAGE_PROVIDER_PORT $OTEL_COLLECTOR_PORT_GRPC $OTEL_SERVICE_NAME' < /nginx.conf.template > /etc/nginx/nginx.conf && cat  /etc/nginx/nginx.conf && exec nginx -g 'daemon off;'"
+      ],
+      "image_default_entrypoint": [
+        "/docker-entrypoint.sh"
+      ],
+      "pinned_image_config_sha256": "956247d39178f74c21e7ee120bae01721a7f54ae9d56e8eb0f0a17217b5fcd23",
+      "resolved_effective_command": [
+        "/bin/sh",
+        "-c",
+        "envsubst '$OTEL_COLLECTOR_HOST $IMAGE_PROVIDER_PORT $OTEL_COLLECTOR_PORT_GRPC $OTEL_SERVICE_NAME' < /nginx.conf.template > /etc/nginx/nginx.conf && cat  /etc/nginx/nginx.conf && exec nginx -g 'daemon off;'"
+      ],
+      "resolved_effective_entrypoint": [
+        "/docker-entrypoint.sh"
+      ]
+    },
+    "d36987ca3f401492ea7e76d4d8bd748ca5ca9352621624344015226c0b763079": {
+      "compose_declared_command": null,
+      "compose_declared_entrypoint": null,
+      "current_actual_command": null,
+      "current_actual_entrypoint": [
+        "./entrypoint.sh"
+      ],
+      "declaration_source": "frozen_compose",
+      "image_default_command": null,
+      "image_default_entrypoint": [
+        "./entrypoint.sh"
+      ],
+      "pinned_image_config_sha256": "78881c500de15f665c7d12473aed184d96435bb7928ac186fa0713b27903e85b",
+      "resolved_effective_command": null,
+      "resolved_effective_entrypoint": [
+        "./entrypoint.sh"
+      ]
+    },
+    "dc9c9dfb85cc5c6c8f161445d38ce3a4590fae820ea424ceb8e9ee0bc65a25ac": {
+      "compose_declared_command": null,
+      "compose_declared_entrypoint": null,
+      "current_actual_command": [
+        "php",
+        "public/index.php"
+      ],
+      "current_actual_entrypoint": [
+        "docker-php-entrypoint"
+      ],
+      "declaration_source": "frozen_compose",
+      "image_default_command": [
+        "php",
+        "public/index.php"
+      ],
+      "image_default_entrypoint": [
+        "docker-php-entrypoint"
+      ],
+      "pinned_image_config_sha256": "f49a10fc377074ecf3df21ecc1d3dd033ef827a3ceded14aed74030b43e8d065",
+      "resolved_effective_command": [
+        "php",
+        "public/index.php"
+      ],
+      "resolved_effective_entrypoint": [
+        "docker-php-entrypoint"
+      ]
+    },
+    "dce81635f5ca4da1f62484ee51d5fcca024c3d5de13c730bacf17685089ca625": {
+      "compose_declared_command": null,
+      "compose_declared_entrypoint": null,
+      "current_actual_command": null,
+      "current_actual_entrypoint": [
+        "./instrument.sh",
+        "dotnet",
+        "Accounting.dll"
+      ],
+      "declaration_source": "frozen_compose",
+      "image_default_command": null,
+      "image_default_entrypoint": [
+        "./instrument.sh",
+        "dotnet",
+        "Accounting.dll"
+      ],
+      "pinned_image_config_sha256": "730dfc392b511c6c899e172285e6383a95fa0a7e3f141c0abe077e57e70b5fca",
+      "resolved_effective_command": null,
+      "resolved_effective_entrypoint": [
+        "./instrument.sh",
+        "dotnet",
+        "Accounting.dll"
+      ]
+    },
+    "e6a18c9315315ab8d6b63ba81f58540cdb133088fca1875ccaa0039a71b159b3": {
+      "compose_declared_command": [
+        "--web.console.templates=/etc/prometheus/consoles",
+        "--web.console.libraries=/etc/prometheus/console_libraries",
+        "--storage.tsdb.retention.time=7d",
+        "--config.file=/etc/prometheus/prometheus-config.yaml",
+        "--storage.tsdb.path=/prometheus",
+        "--web.enable-lifecycle",
+        "--web.route-prefix=/",
+        "--web.enable-otlp-receiver",
+        "--enable-feature=exemplar-storage"
+      ],
+      "compose_declared_entrypoint": null,
+      "current_actual_command": [
+        "--web.console.templates=/etc/prometheus/consoles",
+        "--web.console.libraries=/etc/prometheus/console_libraries",
+        "--storage.tsdb.retention.time=7d",
+        "--config.file=/etc/prometheus/prometheus-config.yaml",
+        "--storage.tsdb.path=/prometheus",
+        "--web.enable-lifecycle",
+        "--web.route-prefix=/",
+        "--web.enable-otlp-receiver",
+        "--enable-feature=exemplar-storage"
+      ],
+      "current_actual_entrypoint": [
+        "/bin/prometheus"
+      ],
+      "declaration_source": "frozen_compose",
+      "image_default_command": [
+        "--config.file=/etc/prometheus/prometheus.yml",
+        "--storage.tsdb.path=/prometheus"
+      ],
+      "image_default_entrypoint": [
+        "/bin/prometheus"
+      ],
+      "pinned_image_config_sha256": "bc15cda2a6dd03e9904f3992e0c25899db25bafc915184c3e4d46fb9628bb7de",
+      "resolved_effective_command": [
+        "--web.console.templates=/etc/prometheus/consoles",
+        "--web.console.libraries=/etc/prometheus/console_libraries",
+        "--storage.tsdb.retention.time=7d",
+        "--config.file=/etc/prometheus/prometheus-config.yaml",
+        "--storage.tsdb.path=/prometheus",
+        "--web.enable-lifecycle",
+        "--web.route-prefix=/",
+        "--web.enable-otlp-receiver",
+        "--enable-feature=exemplar-storage"
+      ],
+      "resolved_effective_entrypoint": [
+        "/bin/prometheus"
+      ]
+    },
+    "ea6e8f438a3de895de0f412ffb5493e0e14dc643e5e379e28224c1a14d46c5b4": {
+      "compose_declared_command": null,
+      "compose_declared_entrypoint": null,
+      "current_actual_command": [
+        "--require=./Instrumentation.js",
+        "server.js"
+      ],
+      "current_actual_entrypoint": [
+        "/nodejs/bin/node"
+      ],
+      "declaration_source": "frozen_compose",
+      "image_default_command": [
+        "--require=./Instrumentation.js",
+        "server.js"
+      ],
+      "image_default_entrypoint": [
+        "/nodejs/bin/node"
+      ],
+      "pinned_image_config_sha256": "64a60ea6a3b29f6bcb6771132f4ae8f8dc26271b71308dd24797c3a3a48ef3da",
+      "resolved_effective_command": [
+        "--require=./Instrumentation.js",
+        "server.js"
+      ],
+      "resolved_effective_entrypoint": [
+        "/nodejs/bin/node"
+      ]
+    },
+    "f1b8665eac41354174656c4525366e08ac6c60cd914b3f83f06303882d6b4dfd": {
+      "compose_declared_command": null,
+      "compose_declared_entrypoint": null,
+      "current_actual_command": null,
+      "current_actual_entrypoint": [
+        "bundle",
+        "exec",
+        "ruby",
+        "email_server.rb"
+      ],
+      "declaration_source": "frozen_compose",
+      "image_default_command": null,
+      "image_default_entrypoint": [
+        "bundle",
+        "exec",
+        "ruby",
+        "email_server.rb"
+      ],
+      "pinned_image_config_sha256": "b96ac456b9db19367ea5fe1220febf3b71d69844287d0f61e0df7041a0a54461",
+      "resolved_effective_command": null,
+      "resolved_effective_entrypoint": [
+        "bundle",
+        "exec",
+        "ruby",
+        "email_server.rb"
+      ]
+    },
+    "f720cc6f0d43184049857f23ecf4809eacfde5d67b531fdc09fcb95c14148d76": {
+      "compose_declared_command": [
+        "start",
+        "--uri",
+        "file:./etc/flagd/demo.flagd.json"
+      ],
+      "compose_declared_entrypoint": null,
+      "current_actual_command": [
+        "start",
+        "--uri",
+        "file:./etc/flagd/demo.flagd.json"
+      ],
+      "current_actual_entrypoint": [
+        "/flagd-build"
+      ],
+      "declaration_source": "frozen_compose",
+      "image_default_command": null,
+      "image_default_entrypoint": [
+        "/flagd-build"
+      ],
+      "pinned_image_config_sha256": "9eabf74ecc22c95decd6b335969a5d4d9f73bb541ab4784c18ee19fc43b8440e",
+      "resolved_effective_command": [
+        "start",
+        "--uri",
+        "file:./etc/flagd/demo.flagd.json"
+      ],
+      "resolved_effective_entrypoint": [
+        "/flagd-build"
+      ]
+    }
+  },
+  "matched_containers": 29,
+  "probe_oom_boundary": "Retained probe already OomKillDisable=null; no additional normalization or remeasurement performed. Frozen v3 interpretation preserved.",
+  "raw_capture_sha256": "263b43e61d6e6e736065701cf7b23e367da19cbd126811f831d990bb2fe4a168",
+  "source": "Hash-verified frozen sandbox-compose-expanded.json plus pinned image Config; probe explicit override from frozen stage-journal/plan.json",
+  "status": "PASS"
+}

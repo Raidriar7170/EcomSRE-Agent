@@ -1,0 +1,73 @@
+{
+  "completed_at": "2026-09-08T12:47:12.561274+00:00",
+  "final_review": {
+    "claim_accuracy": "PASS",
+    "must_fix": 0,
+    "verdict": "PASS"
+  },
+  "future_formal_campaign": "WITHHOLD",
+  "goal_id": "ecomsre-product-v040-v3-retained-cleanup-only-v1",
+  "goal_sha256": "a2f8c3d20b7cd589c0494a161c3451702f3392cfb8857df642683af972d997e0",
+  "historical_pr99_cleanup_terminal": "MANUAL_INTERVENTION_REQUIRED / COMMAND_DRIFT",
+  "historical_pr99_runtime_terminal": "BLOCKED_PRE_EXECUTION / SANDBOX_UNHEALTHY",
+  "implementation_head": "7388fbd2e1012214cadd8158c9aee62253d00f76",
+  "implementation_tree": "c34dc405e5ac3f8df115e218d6f7a5bef0a5acde",
+  "mutation_counts": {
+    "container_rm": 29,
+    "network_rm": 3,
+    "stop": 28,
+    "volume_rm": 6
+  },
+  "pr_disposition": "Draft / REVIEW_REQUIRED",
+  "pre_mutation_review": {
+    "claim_accuracy": "PASS",
+    "exact_retained_cleanup": "ALLOW",
+    "must_fix": 0,
+    "verdict": "PASS"
+  },
+  "product_terminal": "ECOMSRE_PRODUCT_V040_V3_RETAINED_CLEANUP_COMPLETE",
+  "qualification_id": "c6a70e54d58b4df5a1325886304b4844",
+  "resource_disposition": {
+    "containers": {
+      "already_absent": 0,
+      "expected": 29,
+      "remaining": 0,
+      "removed_by_goal": 29
+    },
+    "networks": {
+      "already_absent": 0,
+      "expected": 3,
+      "remaining": 0,
+      "removed_by_goal": 3
+    },
+    "volumes": {
+      "already_absent": 0,
+      "expected": 6,
+      "remaining": 0,
+      "removed_by_goal": 6
+    }
+  },
+  "retained_artifact_blob": "8ad3ee775cb13b933312c9909e1d20cfc5b7667d",
+  "retained_raw_capture_sha256": "263b43e61d6e6e736065701cf7b23e367da19cbd126811f831d990bb2fe4a168",
+  "runtime_checks": "PASS",
+  "schema_version": "ecomsre.v040.v3.retained-cleanup.v1",
+  "starting_head": "ea466d7ca14ac4a0a0c1f7680507747dbe67b06e",
+  "terminal": "PUBLICATION_PENDING",
+  "zero_counters": {
+    "containers_started_or_restarted": 0,
+    "formal_approvals": 0,
+    "formal_attempt_authorizations": 0,
+    "formal_campaign_executions": 0,
+    "formal_candidates": 0,
+    "formal_faults": 0,
+    "formal_write_intents": 0,
+    "image_mutations": 0,
+    "new_docker_resources": 0,
+    "nonowned_stop_remove_configuration_mutations": 0,
+    "product_provider_calls": 0,
+    "recovery_windows": 0,
+    "remediation_executor_invocations": 0,
+    "remediation_writes": 0,
+    "step_receipts": 0
+  }
+}

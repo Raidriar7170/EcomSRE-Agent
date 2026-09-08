@@ -1,0 +1,2181 @@
+{
+  "counts": {
+    "container_rm": 29,
+    "network_rm": 3,
+    "stop": 28,
+    "volume_rm": 6
+  },
+  "private_chain_tip": "a75c59a8414feb417ca8257ad425b1cf69e759e79baba829362b73e9171dac53",
+  "projection_note": "receipt_sha256 commits full private receipt excluding its self-hash; previous_receipt_sha256 commits previous complete private file. Public projection omits raw output and daemon endpoint.",
+  "receipts": [
+    {
+      "bounded_output_digest": "e237332994f24673f218a9c18073e2bfe810870c4a443760b4e8d6680f7e6c1d",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "rm",
+        "c598cc5091013626cafa93bcf08260ff0c727b2453885c086eae67621499dd81"
+      ],
+      "current_pre_mutation_digest": "c9ab7355a66c599e8d14c353ec59d98f1fd600695d8b0d437c3aa9e950966e70",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717642929115000,
+        "utc": "2026-09-08T12:43:43.474070+00:00"
+      },
+      "expected_postcondition": "ABSENT",
+      "intent_sha256": "05c0f1607f913b355bf140183d8f577c332a54441e19ca0c3067b380041333d6",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "5e10ac1dfd74dfccb0d7e1df8d78bcd6d80f4cc1a6dc3092106eaf7c752ca0e1",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": null,
+      "private_receipt_file": "mutation-receipts/000.json",
+      "private_receipt_file_sha256": "076521c9bfa60b3333fbc1037541fdd5ad0707b6bb2922d740d45ad7531dd59f",
+      "receipt_sha256": "b2fa85a295927aa2c7276c666d8bd2f709f4d497212996ece5ca3eccbd8c8661",
+      "resource_kind": "containers",
+      "retained_identity": "c598cc5091013626cafa93bcf08260ff0c727b2453885c086eae67621499dd81",
+      "retained_record_digest": "d68963338364d8a604db89e669aaac1d734fbcd23cbd9cffb218556b7e4254e0",
+      "started_at": {
+        "monotonic_ns": 717642313198833,
+        "utc": "2026-09-08T12:43:42.858146+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "675f1ba0c9e8a65dbabe6b0b0eb6e6e55a9e0ad2e413534df641a5d87c076277",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "stop",
+        "--time",
+        "30",
+        "dce81635f5ca4da1f62484ee51d5fcca024c3d5de13c730bacf17685089ca625"
+      ],
+      "current_pre_mutation_digest": "860f9fa8fbf69a28af623eb489981d3ab0e81b7282077673fde1bb9cd0ae2df3",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717644717467500,
+        "utc": "2026-09-08T12:43:45.262443+00:00"
+      },
+      "expected_postcondition": "STOPPED",
+      "intent_sha256": "caae5747072b7e31660de4fdfdfc496190c3229590a6ee4796f1bb4283221bc9",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "f9fdd8bc8b08d7bf3fcfa0c47a836ee6f94d0951d1eec6ffa68b87ce45154cce",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "076521c9bfa60b3333fbc1037541fdd5ad0707b6bb2922d740d45ad7531dd59f",
+      "private_receipt_file": "mutation-receipts/001.json",
+      "private_receipt_file_sha256": "47dc2ea3dfe20b46b7572cbae22ba2bb362102135de1c4182b13fcb6870a3beb",
+      "receipt_sha256": "762988b2723df99d2ce25cca58ee2286315ff73fc129f08d3fee5e2ba2fda780",
+      "resource_kind": "containers",
+      "retained_identity": "dce81635f5ca4da1f62484ee51d5fcca024c3d5de13c730bacf17685089ca625",
+      "retained_record_digest": "bb6e315e984929ce15ad9052b3cf8e2f5d6f778c0687a3cbfa5f8d744b922677",
+      "started_at": {
+        "monotonic_ns": 717643852883416,
+        "utc": "2026-09-08T12:43:44.397854+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "89b1a0fd4a185bfb72cfe6f6781aa06be7b96431781cc09f492c87d235510039",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "stop",
+        "--time",
+        "30",
+        "57d5c97453801b87ecb493293a7e73ea7415c5ad5e5bd592be00eb280ec2372d"
+      ],
+      "current_pre_mutation_digest": "6dc33d7cdec675016dc4b12cbffe4890c96644e0c9530e588af36030b10ddc2e",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717646854844666,
+        "utc": "2026-09-08T12:43:47.399842+00:00"
+      },
+      "expected_postcondition": "STOPPED",
+      "intent_sha256": "3fa0fb3a3510cab48b420334756e831954fa11ecbb1226e7ad21d55837498515",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "a2ec21305c9ec4b982a6aa238777ddc37917b4f43d84cfba7a0344e3c4eb905e",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "47dc2ea3dfe20b46b7572cbae22ba2bb362102135de1c4182b13fcb6870a3beb",
+      "private_receipt_file": "mutation-receipts/002.json",
+      "private_receipt_file_sha256": "ea94f47726f03afb983132faba0f3248768c0733808dd3893b7f95763c1c2555",
+      "receipt_sha256": "c8640dc1855a0dd59550a307b1e60bb92bc433ac5be504ccefcb28a230a94287",
+      "resource_kind": "containers",
+      "retained_identity": "57d5c97453801b87ecb493293a7e73ea7415c5ad5e5bd592be00eb280ec2372d",
+      "retained_record_digest": "6c6a4162ad0c2b607697efa60ef5470bcfc8d09bc19ffe321d65e3be095076e0",
+      "started_at": {
+        "monotonic_ns": 717645696391291,
+        "utc": "2026-09-08T12:43:46.241380+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "6df03d266a4ad8ba7ae137a4c35a2bd5324b578381ea6ecc5d39a2103c7c8275",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "stop",
+        "--time",
+        "30",
+        "d36987ca3f401492ea7e76d4d8bd748ca5ca9352621624344015226c0b763079"
+      ],
+      "current_pre_mutation_digest": "ae01fd4cbed25a8f304123660551c700bb7a3183d3de2f76ec48089763e41cc9",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717651823283250,
+        "utc": "2026-09-08T12:43:52.368337+00:00"
+      },
+      "expected_postcondition": "STOPPED",
+      "intent_sha256": "efaf39af183c9dd044f0da33ddc50c94e6d8f3b9035b1dcab5cc608d6d21364c",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "c81d36aa107b4d735bc0166efe9c89247730540428d264cbd9a544f51daec7bf",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "ea94f47726f03afb983132faba0f3248768c0733808dd3893b7f95763c1c2555",
+      "private_receipt_file": "mutation-receipts/003.json",
+      "private_receipt_file_sha256": "f12d7f20a000994d7695c1eb5ec8c2fb52cc3afbf3b2ae00e5c962c2ba410713",
+      "receipt_sha256": "72527475cd06e024cae11fa638b9a91ac874a6566e35ba98dd5b742ed2e97e3e",
+      "resource_kind": "containers",
+      "retained_identity": "d36987ca3f401492ea7e76d4d8bd748ca5ca9352621624344015226c0b763079",
+      "retained_record_digest": "26994bbd0e7b4c8a9bcb512fd78f8eef8e8f365969e640973045765dc2c85523",
+      "started_at": {
+        "monotonic_ns": 717647795665083,
+        "utc": "2026-09-08T12:43:48.340680+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "ca288ce77c0730631455fc2b10619c59f3be6c016373bc81f5df7e0614b7c42d",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "stop",
+        "--time",
+        "30",
+        "52964f9f611ebb0d81085e2482ca888688866029bd5bfcf3d6276694c5db0175"
+      ],
+      "current_pre_mutation_digest": "60699453c722ab33b7ac4289fbb57be09bd4fd9dddb66efbe36c2af79d38996b",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717683715940625,
+        "utc": "2026-09-08T12:44:24.261347+00:00"
+      },
+      "expected_postcondition": "STOPPED",
+      "intent_sha256": "f72a8c6071e6dd422ea1d55231a2a1d299e389b633111b6bcc1473cb81726d4e",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "35edbbb4222be5c2228dce7a5a756296be1ce34eca77fd6aff1e4e72af0c2e23",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "f12d7f20a000994d7695c1eb5ec8c2fb52cc3afbf3b2ae00e5c962c2ba410713",
+      "private_receipt_file": "mutation-receipts/004.json",
+      "private_receipt_file_sha256": "dd53a8f4ca87528bd227e50e139288434d4746a7fb3482a845829bd7c7edb0c7",
+      "receipt_sha256": "8b1f66b36037c347ea11d8a55df2654af93ecbe960bcd360667ac6fcf08e3b19",
+      "resource_kind": "containers",
+      "retained_identity": "52964f9f611ebb0d81085e2482ca888688866029bd5bfcf3d6276694c5db0175",
+      "retained_record_digest": "5bb9dd15cc10bc640b1ec9b83c72729865383df1ce43a627fb126793bceba0ef",
+      "started_at": {
+        "monotonic_ns": 717652765633375,
+        "utc": "2026-09-08T12:43:53.310702+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "9a0ea4e562a12ca617e84440d4196490ad60d6863c3652e2c23f4c1d1c5fbf09",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "stop",
+        "--time",
+        "30",
+        "7310f8f65a8211296e66fb8ce9ca81aacc59e03aea2bed30d494337fbc4b76a4"
+      ],
+      "current_pre_mutation_digest": "5eabb08d91f839db9697ef870685167e13a2ac681c41eb1960e2e43caf6b9438",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717686480343416,
+        "utc": "2026-09-08T12:44:27.025781+00:00"
+      },
+      "expected_postcondition": "STOPPED",
+      "intent_sha256": "08ed49dd2dbd75b810d2a28a8c5238f08f345be0d600f85183d2d77ff336ef90",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "64468db16d616875ef4d01b470a2db4dc699e74247e8c5b811947d93f1731c8c",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "dd53a8f4ca87528bd227e50e139288434d4746a7fb3482a845829bd7c7edb0c7",
+      "private_receipt_file": "mutation-receipts/005.json",
+      "private_receipt_file_sha256": "2f2bb01c7f8b1a110b19cb68a841559dfab57f11cddaa2545810b005a273fee3",
+      "receipt_sha256": "13462b8f55927875694bdad63982fe15617b614860a33209dbfff9d59f9f407f",
+      "resource_kind": "containers",
+      "retained_identity": "7310f8f65a8211296e66fb8ce9ca81aacc59e03aea2bed30d494337fbc4b76a4",
+      "retained_record_digest": "6acdff87be8dee5be9176a95dbc4d741d9d7fe9d1cc6949c7c3a0901f6b92cbf",
+      "started_at": {
+        "monotonic_ns": 717684693196041,
+        "utc": "2026-09-08T12:44:25.238618+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "3b7d57a51725a44cd99bb1178c2cb4ef27f3c514c20f4cc145d75b3d4d6c4966",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "stop",
+        "--time",
+        "30",
+        "ea6e8f438a3de895de0f412ffb5493e0e14dc643e5e379e28224c1a14d46c5b4"
+      ],
+      "current_pre_mutation_digest": "3117d337c337b9f05308823a086d06e76fede64c04d674d4644c80c5865ee79b",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717688251811708,
+        "utc": "2026-09-08T12:44:28.797269+00:00"
+      },
+      "expected_postcondition": "STOPPED",
+      "intent_sha256": "a65201d14f68f0cba6c5824ff4418521d29ed430f73753bfd71c7ce18cfd525c",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "e6030a8e32b6e49f4284192b5630ef9a596f4334fb756796e99fd89700680d2c",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "2f2bb01c7f8b1a110b19cb68a841559dfab57f11cddaa2545810b005a273fee3",
+      "private_receipt_file": "mutation-receipts/006.json",
+      "private_receipt_file_sha256": "6f91578981e5e280682e55ef49cf0a23d0b987aacb0f85d193e7142e2bb0a35f",
+      "receipt_sha256": "e3f774bc7117785ea67a65582e384d270a92939d4807f84cd7372edd20556b22",
+      "resource_kind": "containers",
+      "retained_identity": "ea6e8f438a3de895de0f412ffb5493e0e14dc643e5e379e28224c1a14d46c5b4",
+      "retained_record_digest": "b2eeeccd3e223510ab604b2491c4a88b1b5af79c5746945d02011c174dbd892e",
+      "started_at": {
+        "monotonic_ns": 717687496753333,
+        "utc": "2026-09-08T12:44:28.042206+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "ebfd343c6809bebf9a94c1accde5f6d7407b31251f6ce95ec38053909b7b04d6",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "stop",
+        "--time",
+        "30",
+        "013dfa0857bf40489198a1cbbd5eea69f3b5b365c85fd5edfcb9a39b8ec83a92"
+      ],
+      "current_pre_mutation_digest": "b25179c78bc89cc52cc93bc12fad01c2ae093566a10904a9f636c588a0d2652e",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717690285977166,
+        "utc": "2026-09-08T12:44:30.831459+00:00"
+      },
+      "expected_postcondition": "STOPPED",
+      "intent_sha256": "4e9e62c4c3036bf1d1272c33e648276a2710f6f65de580889f2fea8b31f0a8f5",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "be9955e2b03b9ec3a47ff3d3798b4cdee80b3c40aad4d6d09e8d81fa31d79914",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "6f91578981e5e280682e55ef49cf0a23d0b987aacb0f85d193e7142e2bb0a35f",
+      "private_receipt_file": "mutation-receipts/007.json",
+      "private_receipt_file_sha256": "a13926070c24c0a13b7fb81dcf3dfc8c1f2fd6523b0da544cda4398dc070a1f9",
+      "receipt_sha256": "20e73af242a118a657d98f8250b55e6a00bf5ee8cccaa6d0285959df17114ad9",
+      "resource_kind": "containers",
+      "retained_identity": "013dfa0857bf40489198a1cbbd5eea69f3b5b365c85fd5edfcb9a39b8ec83a92",
+      "retained_record_digest": "4b3d5c7680aeb7942d94300a5f6fbd6a78b9d392a05a32e0429191b4c12be274",
+      "started_at": {
+        "monotonic_ns": 717689182502541,
+        "utc": "2026-09-08T12:44:29.727969+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "fc93df86006899e3fd146a11dd224a0148ca7469870854aebcb925956142eac8",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "stop",
+        "--time",
+        "30",
+        "43ad8a9aa246367e55ade06a23a8888d4a21fbf903b0790e32ef5f07299cc03c"
+      ],
+      "current_pre_mutation_digest": "8e9e789ba6b1d17a786fdf983216995305671d2496660148ccf2c2e133d4e246",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717692002799875,
+        "utc": "2026-09-08T12:44:32.548298+00:00"
+      },
+      "expected_postcondition": "STOPPED",
+      "intent_sha256": "e290c7cd9f1d68f4ed9ce1c4c407314728fc914e8c548b8a5f51ce6b6e38791d",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "f8bfcff6555d0d127bc9163cb25295dd7b279f188126fe590a7feb8e5103838f",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "a13926070c24c0a13b7fb81dcf3dfc8c1f2fd6523b0da544cda4398dc070a1f9",
+      "private_receipt_file": "mutation-receipts/008.json",
+      "private_receipt_file_sha256": "10bda4b9b46f3b38d7e980c9683d4723811c4ded80de10846a6a1414b7ee5481",
+      "receipt_sha256": "0461cce2ad2fd801824087065157a7dec7048bad12b1e7c26b14081207a7aa6a",
+      "resource_kind": "containers",
+      "retained_identity": "43ad8a9aa246367e55ade06a23a8888d4a21fbf903b0790e32ef5f07299cc03c",
+      "retained_record_digest": "089b7baf8b3e723dfa53948cb232a471b0d8349ddbe121c7ee5aae5c1a400be6",
+      "started_at": {
+        "monotonic_ns": 717691220675083,
+        "utc": "2026-09-08T12:44:31.766170+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "b58bb18e7463c6e4852c3d07177efc856986ce37103eeebfa91fe0a6836fe0ce",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "stop",
+        "--time",
+        "30",
+        "a5fbff6a08b53e6d22b14ff222d815409db8130dcc894470795e92686dbaa9b2"
+      ],
+      "current_pre_mutation_digest": "446151424d6572fe79e75af4683781af21889da5c14f9c590f102fb25d678ad4",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717693716248083,
+        "utc": "2026-09-08T12:44:34.261768+00:00"
+      },
+      "expected_postcondition": "STOPPED",
+      "intent_sha256": "6f60634a22e65ecc079e8ada3f00ded5ed35a71f6cabfde21016a3a1ee70fd3d",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "d54822c1c00fa7d83d85da8d0d58e209aacaf8c2ca2829069706b0cdb8609b82",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "10bda4b9b46f3b38d7e980c9683d4723811c4ded80de10846a6a1414b7ee5481",
+      "private_receipt_file": "mutation-receipts/009.json",
+      "private_receipt_file_sha256": "0baa401ea6dfbcc36b188814a85ac8842f987138931102066a0ee782f85dd281",
+      "receipt_sha256": "dd671f6da20bed211eab2de1b890f8bcd16f1e3577a911b2965bc22c2d420c2e",
+      "resource_kind": "containers",
+      "retained_identity": "a5fbff6a08b53e6d22b14ff222d815409db8130dcc894470795e92686dbaa9b2",
+      "retained_record_digest": "e95d51aea0817d0fb8460ada18977ac63fc7c3af1f5567784d2ef4522936da3f",
+      "started_at": {
+        "monotonic_ns": 717692958142666,
+        "utc": "2026-09-08T12:44:33.503658+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "9d1374e2a33ed77d87b33e0a079a508d676dbc50a8b3ed278277b506e0dbcea2",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "stop",
+        "--time",
+        "30",
+        "c48df28ffbf12abb303fb7373af8369ee5814259a405d0dc92fed1048676de34"
+      ],
+      "current_pre_mutation_digest": "c3a22b96fefb337be5c74b604be7a24b7e343eacb7e6b962e26566ac6d9b7815",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717725417356833,
+        "utc": "2026-09-08T12:45:05.963228+00:00"
+      },
+      "expected_postcondition": "STOPPED",
+      "intent_sha256": "a32b3a3b7adbaeaa833b79a072ac8201c265c5de38883c8492ffe877b154b786",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "0b79fa65cc859409ed9b502ecda5ee58c56827df6aaad00490611984b391965f",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "0baa401ea6dfbcc36b188814a85ac8842f987138931102066a0ee782f85dd281",
+      "private_receipt_file": "mutation-receipts/010.json",
+      "private_receipt_file_sha256": "6982c995d7e0d19e3baa89e51f3b312c4ebe9fea92a866a23250fa7e96cb72d6",
+      "receipt_sha256": "a65c655b1a9f188698e3910c16550b00c5c4c9accca300c6f1de11bacdc9783e",
+      "resource_kind": "containers",
+      "retained_identity": "c48df28ffbf12abb303fb7373af8369ee5814259a405d0dc92fed1048676de34",
+      "retained_record_digest": "c18277277710d5fa7e0eba52adae5de70466cc49d89303784c9a6e58406eb7a5",
+      "started_at": {
+        "monotonic_ns": 717694687641208,
+        "utc": "2026-09-08T12:44:35.233173+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "cbaf971f8e92a28d2f5105fa7aa33a4f469e9a70d1a1318dbf79326d9acb34ab",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "stop",
+        "--time",
+        "30",
+        "f1b8665eac41354174656c4525366e08ac6c60cd914b3f83f06303882d6b4dfd"
+      ],
+      "current_pre_mutation_digest": "7a495bba0335f7fb17c2b9b1d3451e211fb463e425baf9d840c7446ef19864fc",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717727129005916,
+        "utc": "2026-09-08T12:45:07.674892+00:00"
+      },
+      "expected_postcondition": "STOPPED",
+      "intent_sha256": "9487a2031d47b1a76c6212568cfd60b8363b1688c7e7ff299e23a7b7b7a44b3b",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "6ee667906b9b4feaf528b35500272aa720f1890cfbbc21617ddbd06915307b12",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "6982c995d7e0d19e3baa89e51f3b312c4ebe9fea92a866a23250fa7e96cb72d6",
+      "private_receipt_file": "mutation-receipts/011.json",
+      "private_receipt_file_sha256": "aa26899a4b8fe69df37da8732daa74bebd3deb9e7af711310fd81820a59ff708",
+      "receipt_sha256": "8987ad5a6bbc3166fa2863f1038c662e8db52d419c7b2542d2408fd112ca52ab",
+      "resource_kind": "containers",
+      "retained_identity": "f1b8665eac41354174656c4525366e08ac6c60cd914b3f83f06303882d6b4dfd",
+      "retained_record_digest": "c989ddb550fb15506a42019ccdf4ca376793ddc17bae5af84487c9e2af1a82f3",
+      "started_at": {
+        "monotonic_ns": 717726372852708,
+        "utc": "2026-09-08T12:45:06.918738+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "b0f60abb4dbd73e430e074da30963a2fbc15153c0a9527f85584664241c64090",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "stop",
+        "--time",
+        "30",
+        "9adca9a38c4ba24986b67f1cd94de9da42353c4dd93a9a38b61de1d59e618b98"
+      ],
+      "current_pre_mutation_digest": "6176e372e1b8c336de66b0d2b5651a95e22b3a69c762a7e92e88c4e7a0a478cf",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717728883597458,
+        "utc": "2026-09-08T12:45:09.429503+00:00"
+      },
+      "expected_postcondition": "STOPPED",
+      "intent_sha256": "e845013691d7e4c78b190580769dc5d7615459cd883243dc393dac6cd54ca6e1",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "34f7cc31f2837eb409ad2568d539c1966ed68390107c154683192b416ac88316",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "aa26899a4b8fe69df37da8732daa74bebd3deb9e7af711310fd81820a59ff708",
+      "private_receipt_file": "mutation-receipts/012.json",
+      "private_receipt_file_sha256": "1a2cbe0d38d8e9cc2179d2cc7d8407708fedc2229c6c79d0047c5d24f32ee73b",
+      "receipt_sha256": "599c175c101f8d8d768613134d9aafc5cf32459e7e15662b889391af7c1813bf",
+      "resource_kind": "containers",
+      "retained_identity": "9adca9a38c4ba24986b67f1cd94de9da42353c4dd93a9a38b61de1d59e618b98",
+      "retained_record_digest": "4e7d3b8958d6f79db352c237ed921cc1999fdc2d8740ea57bcff92c7d9827b52",
+      "started_at": {
+        "monotonic_ns": 717728068529958,
+        "utc": "2026-09-08T12:45:08.614434+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "384ea10f2578ed9a9e046bf6a0a2294b11f89ab58f43a15a6017338a00f557c9",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "stop",
+        "--time",
+        "30",
+        "cebf0ec3d4fe453e34254a02f8ef9b0cfb7c28ba8136ea65c8042820a2d83c46"
+      ],
+      "current_pre_mutation_digest": "0843369f00bf0181244d6238264c466126ebd70e549b3dc3559ddb959db887d3",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717730624292125,
+        "utc": "2026-09-08T12:45:11.170220+00:00"
+      },
+      "expected_postcondition": "STOPPED",
+      "intent_sha256": "9c7a91cae59cf9025f6242c62e47975c6f9159e2a8b9b3bf2b53233ff887edd2",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "2e8e2f75eee2c8cb896d2c7cbf3c8d94a5da7808865a95443825e3c5ca3da0bc",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "1a2cbe0d38d8e9cc2179d2cc7d8407708fedc2229c6c79d0047c5d24f32ee73b",
+      "private_receipt_file": "mutation-receipts/013.json",
+      "private_receipt_file_sha256": "47b0a3a5437f0787a844fe62f2bffd2ba07ed74bf71cf0b0508a4509458f8c5f",
+      "receipt_sha256": "cd995d0d6404830f363bcf1a7fd29511b58593419cccfb31e845b2d0427187e5",
+      "resource_kind": "containers",
+      "retained_identity": "cebf0ec3d4fe453e34254a02f8ef9b0cfb7c28ba8136ea65c8042820a2d83c46",
+      "retained_record_digest": "1e21f88f1d49d0ab8933173b9303d6dba85d0c8fc40527c06e9f132d68076db2",
+      "started_at": {
+        "monotonic_ns": 717729856810083,
+        "utc": "2026-09-08T12:45:10.402735+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "fbe123655645d6f1c259c10d8dfb7a0af1f1d0b1a9a8be91578df8d9864668bc",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "stop",
+        "--time",
+        "30",
+        "16ee82958c618417c2f762b4cd85bcf17727e96fab09b613c5218064ad82f394"
+      ],
+      "current_pre_mutation_digest": "fdfb2e1cc58dc28b617aadc2591debd96160b89854453dc41f9e13c30469b2b9",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717732934851000,
+        "utc": "2026-09-08T12:45:13.480804+00:00"
+      },
+      "expected_postcondition": "STOPPED",
+      "intent_sha256": "1a9ce3fa94e2f01f6c23227740b6e0b4745cd09928287f64612b8721f996fa35",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "319ada18ae587341d9de4dfd3bf47144ada7f95c1815ce7aefc294fd1d4ed76e",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "47b0a3a5437f0787a844fe62f2bffd2ba07ed74bf71cf0b0508a4509458f8c5f",
+      "private_receipt_file": "mutation-receipts/014.json",
+      "private_receipt_file_sha256": "f0ff66760d1d27249295034912d880b2d27697be40be9f286d6713855767a010",
+      "receipt_sha256": "2c876aa4a70021951a86c75882178d3160fdc3d47b0a9715451776d517de2f56",
+      "resource_kind": "containers",
+      "retained_identity": "16ee82958c618417c2f762b4cd85bcf17727e96fab09b613c5218064ad82f394",
+      "retained_record_digest": "0e214816e6d05bb400c9e6f6f7a620a4d220c9ceae6c9656b117ab54bcec4c7a",
+      "started_at": {
+        "monotonic_ns": 717731552161833,
+        "utc": "2026-09-08T12:45:12.098103+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "b627de43df649e6ae3334245b74e54768a950145bcf406fe93399bf89a07238b",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "stop",
+        "--time",
+        "30",
+        "4c36cc7e34f7052bed17b64383b529c878421aa79f7c2d9c54c369dcb3eacfd2"
+      ],
+      "current_pre_mutation_digest": "5b7026f6337f5c5dced2aeff39c6b32da910b07bdf89ec1defafac2d149dbce4",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717734744204958,
+        "utc": "2026-09-08T12:45:15.290178+00:00"
+      },
+      "expected_postcondition": "STOPPED",
+      "intent_sha256": "818203ae0dae973699ed8dbc05cdd6cf49fdb793f3b3489046cca7ff649e7a54",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "96ff9882540bcf02551ae7c2661d82fd792bea43f0d8e49c79ad6a100c4818ca",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "f0ff66760d1d27249295034912d880b2d27697be40be9f286d6713855767a010",
+      "private_receipt_file": "mutation-receipts/015.json",
+      "private_receipt_file_sha256": "c4e9ec500ee70f1756fa2a2827611fca6fe0d38e9697a7cc615e81c8b514feea",
+      "receipt_sha256": "63c38b25bfba5c99809f536da171e3de021be1f18d0e29e309be1d47b1cd55d2",
+      "resource_kind": "containers",
+      "retained_identity": "4c36cc7e34f7052bed17b64383b529c878421aa79f7c2d9c54c369dcb3eacfd2",
+      "retained_record_digest": "00189fcccbd1737c2ebf75aee349bdce2a5c332e9b0b5d78ba1b1ca0e37039b1",
+      "started_at": {
+        "monotonic_ns": 717733938617041,
+        "utc": "2026-09-08T12:45:14.484584+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "4136666f877d9c33e16525dbf0121ca870956e7820c46ac5f73fb47f5b7a3557",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "stop",
+        "--time",
+        "30",
+        "e6a18c9315315ab8d6b63ba81f58540cdb133088fca1875ccaa0039a71b159b3"
+      ],
+      "current_pre_mutation_digest": "f08475522e2c1e27ea46456bcfdeb6e0f7e75325a263a6ba80604bbddc7f22aa",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717736566581750,
+        "utc": "2026-09-08T12:45:17.112573+00:00"
+      },
+      "expected_postcondition": "STOPPED",
+      "intent_sha256": "8c63839e97096d3fc808377626d5e944cc3c768213696abd2d277162c6096c43",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "6a3654d8d7dc598576583920f59960f212cf360203d6ca35f27e22364a756447",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "c4e9ec500ee70f1756fa2a2827611fca6fe0d38e9697a7cc615e81c8b514feea",
+      "private_receipt_file": "mutation-receipts/016.json",
+      "private_receipt_file_sha256": "211a0fc8d81bee73c51bd3342da137c87a9c899f8976bd1cdca3d53c4137f6cc",
+      "receipt_sha256": "c5dcbcfb4a34aa5ac924fd64fdf355d371b046a0fdeecfc9a55edb435c81fc5c",
+      "resource_kind": "containers",
+      "retained_identity": "e6a18c9315315ab8d6b63ba81f58540cdb133088fca1875ccaa0039a71b159b3",
+      "retained_record_digest": "4a3bd7e9fb9b13bf331dae336aa46589aec8f67db1d7d7fe393628c6b238789f",
+      "started_at": {
+        "monotonic_ns": 717735710277333,
+        "utc": "2026-09-08T12:45:16.256264+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "41318b4ae5122cafbe30fb3fdca9772b2c6bd27c60e0ec487301912a80bf37e3",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "stop",
+        "--time",
+        "30",
+        "dc9c9dfb85cc5c6c8f161445d38ce3a4590fae820ea424ceb8e9ee0bc65a25ac"
+      ],
+      "current_pre_mutation_digest": "7996a744e0449a5dd6fa725f42422b61f291a00985dfe82184396c2a94ea0917",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717738312186916,
+        "utc": "2026-09-08T12:45:18.858201+00:00"
+      },
+      "expected_postcondition": "STOPPED",
+      "intent_sha256": "553c75526dcbeb23dea5b46e05343614eae7eb7792a173c0effceada6508b109",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "96d09d794bce8b979720f3c289209dbc62974057f63897882e27a68446e0cc94",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "211a0fc8d81bee73c51bd3342da137c87a9c899f8976bd1cdca3d53c4137f6cc",
+      "private_receipt_file": "mutation-receipts/017.json",
+      "private_receipt_file_sha256": "e45f7dcbe4c3e5f0fdca409300d159a6f5b167cccf5393725e40b11586e5b0d5",
+      "receipt_sha256": "b8e6d172897cf3f87464579807e4105a20605dce3ac3392cf6be06b5ae3373fd",
+      "resource_kind": "containers",
+      "retained_identity": "dc9c9dfb85cc5c6c8f161445d38ce3a4590fae820ea424ceb8e9ee0bc65a25ac",
+      "retained_record_digest": "36d11e68e1fda935dccdd3eb03a34ce3106c220a8f6b121953ec52dbf61e6e02",
+      "started_at": {
+        "monotonic_ns": 717737564349166,
+        "utc": "2026-09-08T12:45:18.110359+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "9c66f5cffc5979e0472ac81d75f4a40f2373fc81a86a9a6a81194dd3bc59e915",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "stop",
+        "--time",
+        "30",
+        "488ce97891b6df261382179ead7ed2eb6936cc088e59a1f00c34efcf56180f0b"
+      ],
+      "current_pre_mutation_digest": "2d9e8a7f29c239c67372a8aa24e4cc3595a03099d08e341ad493980f871e937d",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717770071368416,
+        "utc": "2026-09-08T12:45:50.615275+00:00"
+      },
+      "expected_postcondition": "STOPPED",
+      "intent_sha256": "485c37f941da5e9ca50383ebb9715a21caea571dd516682b65a2d404393cbb25",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "965048e4524cf429b4ff3220ce67590205897719bad96dddbba6be6871643264",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "e45f7dcbe4c3e5f0fdca409300d159a6f5b167cccf5393725e40b11586e5b0d5",
+      "private_receipt_file": "mutation-receipts/018.json",
+      "private_receipt_file_sha256": "ce7d650a21b9756f51884e5ec949f17a8db010ed104b398b61a31df464e174f1",
+      "receipt_sha256": "ef21675004c0cff97697fb26ade934b7e909a6c01ef126f9fcd4adadf633d2b8",
+      "resource_kind": "containers",
+      "retained_identity": "488ce97891b6df261382179ead7ed2eb6936cc088e59a1f00c34efcf56180f0b",
+      "retained_record_digest": "73372e75c0eddf94f612b8a9263c8ec0c3743061f05da234ec111168d3011f13",
+      "started_at": {
+        "monotonic_ns": 717739294293541,
+        "utc": "2026-09-08T12:45:19.840318+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "476fc8b9ef9ff92d0159106c8a9499c682710a3aa6f3f89663902a6b7b3a5b75",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "stop",
+        "--time",
+        "30",
+        "89763e46e0e1c4f4cda6dbe915f91c03f0e9a0e51eb4630eb13d99dfab67170b"
+      ],
+      "current_pre_mutation_digest": "a452ce87f12404bd543cd582347310de1c6e242e84596df3839a6403a4298908",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717771736609541,
+        "utc": "2026-09-08T12:45:52.280358+00:00"
+      },
+      "expected_postcondition": "STOPPED",
+      "intent_sha256": "d9d88b40f890caba2d5a27b33e15d287f2bae1efc73e36929a3286620a31156d",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "57bb2cc58b06f0d687c979e1337fc8f97ba3829fcd7cbc42c9cf57b9dd40ed1b",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "ce7d650a21b9756f51884e5ec949f17a8db010ed104b398b61a31df464e174f1",
+      "private_receipt_file": "mutation-receipts/019.json",
+      "private_receipt_file_sha256": "0f1b508832b2623b4fa9287e01b638ce345067c3393aa751dd7ad9bc4800324e",
+      "receipt_sha256": "783787ab7a3cbf7450df812ba42d32dabcc56d6fc91c3ddc16d8229f7a541159",
+      "resource_kind": "containers",
+      "retained_identity": "89763e46e0e1c4f4cda6dbe915f91c03f0e9a0e51eb4630eb13d99dfab67170b",
+      "retained_record_digest": "d294418e1d36794659f16b2dc921bb70d289ab6ceadd8a31e042c3092174265e",
+      "started_at": {
+        "monotonic_ns": 717771003960208,
+        "utc": "2026-09-08T12:45:51.547781+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "858519c15c8c023f9305bfd657bc3c2c8451d9b1c56e8771c6922ec0a94bc194",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "stop",
+        "--time",
+        "30",
+        "3056bd649e7ce2379a979b3d951773ccc7e8886edc1e36b9158c0a330468c4e0"
+      ],
+      "current_pre_mutation_digest": "f8b3d3532ac38faa4f9892cc1935fa23c98c3297eb6ca01b7aeae03cac4412c1",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717773402474166,
+        "utc": "2026-09-08T12:45:53.946079+00:00"
+      },
+      "expected_postcondition": "STOPPED",
+      "intent_sha256": "cc66e6c6e32d9ba92b548bb521527218826424d2cbe174b6906289ac96dddecf",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "053c8ba53954dc59ea8434a3ad8793b733602bb16b71291b2e9926fcca219ede",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "0f1b508832b2623b4fa9287e01b638ce345067c3393aa751dd7ad9bc4800324e",
+      "private_receipt_file": "mutation-receipts/020.json",
+      "private_receipt_file_sha256": "d9173b984462d06cdec3e0c0352f6b16fbdf43e46dcff214ca9dda55cf799aa2",
+      "receipt_sha256": "9e72a54dad78f7546c9a46e867bb192406d419cdc86f854573334ab1bab80d54",
+      "resource_kind": "containers",
+      "retained_identity": "3056bd649e7ce2379a979b3d951773ccc7e8886edc1e36b9158c0a330468c4e0",
+      "retained_record_digest": "8691ff79c0c49bb8021d2ad784ab0f3cb9c26f35578efcd1e2233943e18aa159",
+      "started_at": {
+        "monotonic_ns": 717772660365125,
+        "utc": "2026-09-08T12:45:53.204033+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "20377b0c2cb2ca3e974309fd0e87f9f5e4954a9190af7c3d444041499b46a588",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "stop",
+        "--time",
+        "30",
+        "cce1cb75cb4f7d8a7b6762c713e8d1e1a97084fb35726f4abf34ed8291a838f3"
+      ],
+      "current_pre_mutation_digest": "b30df04b4107bada45c7e2bdd4f524e49d2557d85d99436ba9ca3d7504480178",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717775487493333,
+        "utc": "2026-09-08T12:45:56.030944+00:00"
+      },
+      "expected_postcondition": "STOPPED",
+      "intent_sha256": "18a98a9fc649c9e1e00a58bafcb44996042b1bb3e3c9d78b195bd2fa76f427f8",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "f84ecc7f5593637b3e0f25fbcb900ac603a741461271dfc4bc1022d9538d66b0",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "d9173b984462d06cdec3e0c0352f6b16fbdf43e46dcff214ca9dda55cf799aa2",
+      "private_receipt_file": "mutation-receipts/021.json",
+      "private_receipt_file_sha256": "3ae36522f016d35a37494af3ebde58e6eaab2fd7cb3f62fb570658a8a81ed01c",
+      "receipt_sha256": "a59f8b0d3a5f62df47f37111e6301943eeda5c5c730b5d6d958cfb7f76fa1d40",
+      "resource_kind": "containers",
+      "retained_identity": "cce1cb75cb4f7d8a7b6762c713e8d1e1a97084fb35726f4abf34ed8291a838f3",
+      "retained_record_digest": "a7b158363b0f2f59024df42e47605c0e18015679390b268e7b03b139b5259f23",
+      "started_at": {
+        "monotonic_ns": 717774435233250,
+        "utc": "2026-09-08T12:45:54.978762+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "5548f928e4524b45fbd8dd10c1148fcad125acc0e72412f08864024b886a2c43",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "stop",
+        "--time",
+        "30",
+        "f720cc6f0d43184049857f23ecf4809eacfde5d67b531fdc09fcb95c14148d76"
+      ],
+      "current_pre_mutation_digest": "6c501557773d32940305ed8dbafdafb0a8625c5d6545304d336faeb9044ccaa4",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717777280401708,
+        "utc": "2026-09-08T12:45:57.823737+00:00"
+      },
+      "expected_postcondition": "STOPPED",
+      "intent_sha256": "3af0245e41e2f97475d8660026d95bfedd0e046a44c56861acf6e111dda93fa1",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "96ae866a504c184749775f2275b425b7987df10ce83be5523d9fd37986588f60",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "3ae36522f016d35a37494af3ebde58e6eaab2fd7cb3f62fb570658a8a81ed01c",
+      "private_receipt_file": "mutation-receipts/022.json",
+      "private_receipt_file_sha256": "2e3d6e74deb424f2955dc7a9b4674989aa6dabd83a69cb9e436203b5331b59b2",
+      "receipt_sha256": "6ac6702dbc1908716a663cd3f6530d856c1e90f77c364ad9c539b19c7bafc987",
+      "resource_kind": "containers",
+      "retained_identity": "f720cc6f0d43184049857f23ecf4809eacfde5d67b531fdc09fcb95c14148d76",
+      "retained_record_digest": "04cf8ff68fa20c152a6e0d0c166a9e184320868c4387527001724e9bd03d4549",
+      "started_at": {
+        "monotonic_ns": 717776459584708,
+        "utc": "2026-09-08T12:45:57.002974+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "f2224c50e1bd8e057abe8ad8d38c72edeb90540aed3786690aed7d20f427bb3c",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "stop",
+        "--time",
+        "30",
+        "422f5cb1e204ca41b695e104df3230a4ef0d10e991077b434e7bf7e56054abb6"
+      ],
+      "current_pre_mutation_digest": "de1138109cb672ea8b9f6059ce141e33bcdbc729b6b5802e85706f5befbd7c3a",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717778962166666,
+        "utc": "2026-09-08T12:45:59.505407+00:00"
+      },
+      "expected_postcondition": "STOPPED",
+      "intent_sha256": "7a9858653201d6d91ccc806b08553a4be32de4c507c8c3ab50dcaaa18fe71614",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "b89e2639968ccd0a14fe7ddff71e6e337bf80ae99b7537203c6724e7c4ba46da",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "2e3d6e74deb424f2955dc7a9b4674989aa6dabd83a69cb9e436203b5331b59b2",
+      "private_receipt_file": "mutation-receipts/023.json",
+      "private_receipt_file_sha256": "313576a45ba2e037e27b0b4fb8ff3ed69d5357ad08846b6d9bbac6052407fc7c",
+      "receipt_sha256": "bfe8da8553cb812d3b960428e2d8acdfbf320620879dd598d7292dfb53b0ccc3",
+      "resource_kind": "containers",
+      "retained_identity": "422f5cb1e204ca41b695e104df3230a4ef0d10e991077b434e7bf7e56054abb6",
+      "retained_record_digest": "59e13e4a0a8565db0b9e3e3b796bbdf582b7a42aad0772b7bda1a2eb3fe3acac",
+      "started_at": {
+        "monotonic_ns": 717778237316000,
+        "utc": "2026-09-08T12:45:58.780598+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "d7dca1d085d8ff117c019a819c2929a96920dea13f8ab7e197d05876af4ca94e",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "stop",
+        "--time",
+        "30",
+        "6e638dc868913e07bcd394d91b09d92170e85c513426393fb209ae49fea19e12"
+      ],
+      "current_pre_mutation_digest": "0eb6da0b472ebf9e0b0239af879c62753dc8244e630c313c0e4b102ceb2c4804",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717782795354958,
+        "utc": "2026-09-08T12:46:03.338421+00:00"
+      },
+      "expected_postcondition": "STOPPED",
+      "intent_sha256": "0cedb2ea8dd05b041eb0572444a094cfaec738524be6450f1b5673d16f951e5e",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "f3c43e75db6c225a09c4ed53325f73964242c9d638c58bb452670f324a0690e2",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "313576a45ba2e037e27b0b4fb8ff3ed69d5357ad08846b6d9bbac6052407fc7c",
+      "private_receipt_file": "mutation-receipts/024.json",
+      "private_receipt_file_sha256": "3d21a936510f7add0e8324dbbef9901541d65b53702b10ee09998611a270c7c1",
+      "receipt_sha256": "bdc3903b20839dcd28f035b093121f60c712166cf78c14eababb210d5466bd36",
+      "resource_kind": "containers",
+      "retained_identity": "6e638dc868913e07bcd394d91b09d92170e85c513426393fb209ae49fea19e12",
+      "retained_record_digest": "7edc01dc575946696cddbd3178006c39f6f6b107cb8cbb40c6401bb836ba6aef",
+      "started_at": {
+        "monotonic_ns": 717779888783250,
+        "utc": "2026-09-08T12:46:00.431979+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "7028e1e91839b9432d7d82ccf4c2d830cc58b46bfa9b72b2e4b0b2c4e6c6773b",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "stop",
+        "--time",
+        "30",
+        "4e7a2733141e36a3fce6946ef9d72e7623f0c547ec1125b5359801f98dad5a9f"
+      ],
+      "current_pre_mutation_digest": "da1fbfcc0e97f5f573fabfccecb6bb36980582169a69bda50b98870a1ef7d91c",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717784457563166,
+        "utc": "2026-09-08T12:46:05.000569+00:00"
+      },
+      "expected_postcondition": "STOPPED",
+      "intent_sha256": "f366c8aafacb2a4d4d6295e8be218f2354bb295c6b5c2c397bf992211c7243a3",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "0b7b7086995ddb1e25c2120746e64ac9ded274682a759cca9510fc82dbba37f6",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "3d21a936510f7add0e8324dbbef9901541d65b53702b10ee09998611a270c7c1",
+      "private_receipt_file": "mutation-receipts/025.json",
+      "private_receipt_file_sha256": "2501b18d3b7f6b7a25ade0f23d4d16d7b3c45c9a6042e647fb3920a08f1e7284",
+      "receipt_sha256": "cce6c79d0cf01dfd7cf3b98d344e056d8308bc6a12ca4c66314c394fb558ef5f",
+      "resource_kind": "containers",
+      "retained_identity": "4e7a2733141e36a3fce6946ef9d72e7623f0c547ec1125b5359801f98dad5a9f",
+      "retained_record_digest": "9645e70e3224e93207dba2e7c32e3e255758e7df9865a6946a0863d2774b0197",
+      "started_at": {
+        "monotonic_ns": 717783737109791,
+        "utc": "2026-09-08T12:46:04.280144+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "9988a4af7b08a46ef687342e704e20f3904381b2d488876572a7b17a11c349ee",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "stop",
+        "--time",
+        "30",
+        "bb06c5b1652cb0c8291ef1db5cffa0445a76c4ec8dae0d0f443c0a60d0b6944d"
+      ],
+      "current_pre_mutation_digest": "038858f1c508e08eb4250d289ecf47c780531e42b3aa6bd7427a475736468348",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717786499035791,
+        "utc": "2026-09-08T12:46:07.041975+00:00"
+      },
+      "expected_postcondition": "STOPPED",
+      "intent_sha256": "9c12f78d8cb9818f92be9946f7e86223380cb243ec82ca456cca7d6890fecf93",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "53e50a62fcb6c48e4eceed6da4c88df5c77085622640c909dc6c5d019a76e17d",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "2501b18d3b7f6b7a25ade0f23d4d16d7b3c45c9a6042e647fb3920a08f1e7284",
+      "private_receipt_file": "mutation-receipts/026.json",
+      "private_receipt_file_sha256": "d61aa3e63b4a5f853aadc5143c86d02bf9707324203e22e73c9957d84af32e38",
+      "receipt_sha256": "ac0b03f00eb0ef647067659f4f1b9103cce9173745276b0986c77366fca73869",
+      "resource_kind": "containers",
+      "retained_identity": "bb06c5b1652cb0c8291ef1db5cffa0445a76c4ec8dae0d0f443c0a60d0b6944d",
+      "retained_record_digest": "7406e21848509257ac6b1e2981490dce5ba451946295c036c8fcb1dd302e1a29",
+      "started_at": {
+        "monotonic_ns": 717785417030708,
+        "utc": "2026-09-08T12:46:05.960008+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "7cddb61d74ce8459a67aa1646d5a079374de1f0e3c010ad57152f0aa45d3f175",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "stop",
+        "--time",
+        "30",
+        "9c09119dd7931cd681220f9decb5fef081645d64d294fb209affb073390fe0a8"
+      ],
+      "current_pre_mutation_digest": "95d1fe5ef1cda386209c6d002ca0e182277c6a79659472825349a46ecfc9a54a",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717800897917583,
+        "utc": "2026-09-08T12:46:21.440643+00:00"
+      },
+      "expected_postcondition": "STOPPED",
+      "intent_sha256": "eaff172304ce979156f31ef232e55052fd5638c4254ca98d53a8adb68cb12747",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "1bb153240a768700fc3e21fa7d4f338df5e0d352b20c42d91ee2a3fea360ece1",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "d61aa3e63b4a5f853aadc5143c86d02bf9707324203e22e73c9957d84af32e38",
+      "private_receipt_file": "mutation-receipts/027.json",
+      "private_receipt_file_sha256": "b8fcf9d60d572b0c85216d65373c50ed496eff08f66e84bb3133dfe28546bd61",
+      "receipt_sha256": "cef660c1dbf0409008b57eb25f4fb16402d29746439751c1d2adb4f259904aa2",
+      "resource_kind": "containers",
+      "retained_identity": "9c09119dd7931cd681220f9decb5fef081645d64d294fb209affb073390fe0a8",
+      "retained_record_digest": "9260875702faa961dd818432ffd52580d8d56dd361aa5fc5134c82611ce2bef6",
+      "started_at": {
+        "monotonic_ns": 717787448995416,
+        "utc": "2026-09-08T12:46:07.991913+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "5426e58db5cdd17a0032950aa5b33972a6499a4044bc9eaf477b5b62c736aac1",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "stop",
+        "--time",
+        "30",
+        "2f33fa2a26959a03627503bafcb98f7cbf41f3c73b850792aa88903bb120533a"
+      ],
+      "current_pre_mutation_digest": "4696bea46e32c3b658dcc1987ed3a4d6fcb52ab82efcdfd644ea73244117e16e",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717802605712750,
+        "utc": "2026-09-08T12:46:23.148430+00:00"
+      },
+      "expected_postcondition": "STOPPED",
+      "intent_sha256": "786ccfea7925865843306a1e14efc8d3bec2953e00b384d07a9f926639a2b39b",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "a1ad35632b12440c8950714580670bb9c514c0bb73111c7950ebe02467844ddc",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "b8fcf9d60d572b0c85216d65373c50ed496eff08f66e84bb3133dfe28546bd61",
+      "private_receipt_file": "mutation-receipts/028.json",
+      "private_receipt_file_sha256": "ffaf7fa728531858ac59d447714d510e4d4f288c5ca81180859e3821518428a2",
+      "receipt_sha256": "35c0a366f9e0743907679f60bd31eb10bf52f78281a4720b153afb7974fbc78d",
+      "resource_kind": "containers",
+      "retained_identity": "2f33fa2a26959a03627503bafcb98f7cbf41f3c73b850792aa88903bb120533a",
+      "retained_record_digest": "f5ae32fab0233d35d724c76ef0b46ab3295c89a44bc6e2e7922a3c067b0aab60",
+      "started_at": {
+        "monotonic_ns": 717801830628166,
+        "utc": "2026-09-08T12:46:22.373354+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "5997c50e48eda7d7b5bd6e9b83e2ad7cc69deb59c02b7ae0434d2805eda0d6a6",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "rm",
+        "dce81635f5ca4da1f62484ee51d5fcca024c3d5de13c730bacf17685089ca625"
+      ],
+      "current_pre_mutation_digest": "89435b5d4c8ba044c28d39364103d83b5027a2beac7b7b7b7e314d9afde71b06",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717805039450500,
+        "utc": "2026-09-08T12:46:25.582164+00:00"
+      },
+      "expected_postcondition": "ABSENT",
+      "intent_sha256": "a2dbde91c3a80738d1ea24869d209a56213f9c3a4927e6f17fbd4a57133a1b05",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "243e877e031ae14e792d5d7932ab7d9c6715e8fdfb4c898a31911af27eb70ab8",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "ffaf7fa728531858ac59d447714d510e4d4f288c5ca81180859e3821518428a2",
+      "private_receipt_file": "mutation-receipts/029.json",
+      "private_receipt_file_sha256": "e40e892173769e6c38e75ef838b3c40e3896cee178bb8969fa9f368c75d3e810",
+      "receipt_sha256": "194d87d70d6a372306030215ac26e233abe292987ec686488edab287d0205c28",
+      "resource_kind": "containers",
+      "retained_identity": "dce81635f5ca4da1f62484ee51d5fcca024c3d5de13c730bacf17685089ca625",
+      "retained_record_digest": "bb6e315e984929ce15ad9052b3cf8e2f5d6f778c0687a3cbfa5f8d744b922677",
+      "started_at": {
+        "monotonic_ns": 717804455441458,
+        "utc": "2026-09-08T12:46:24.998161+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "48c00ee4532ea26d66125be62123e8957f7dcfb209818a28ca2f70e498d2a409",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "rm",
+        "57d5c97453801b87ecb493293a7e73ea7415c5ad5e5bd592be00eb280ec2372d"
+      ],
+      "current_pre_mutation_digest": "0917ee8bfa052a6bb86db2df78a79cc4b5f854e3e4b4b296599819b44a140b91",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717806599765583,
+        "utc": "2026-09-08T12:46:27.142477+00:00"
+      },
+      "expected_postcondition": "ABSENT",
+      "intent_sha256": "5160780d5ee9d9edd760f40ae96ca5a0bb720bfc33db22b2089ebfd6f73bbce2",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "e21de591d8e0daf1f9e5abfe16466edb41ad4615e5cb1fe4b4040a435c0a94e0",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "e40e892173769e6c38e75ef838b3c40e3896cee178bb8969fa9f368c75d3e810",
+      "private_receipt_file": "mutation-receipts/030.json",
+      "private_receipt_file_sha256": "0c62c200c524a8225973a3229f82551f483e5a20cc61ffbc1f24d562173cbab6",
+      "receipt_sha256": "d6ded9f3e04b85fe0699623ac30e820988014c4aa3e1d939e012012bdd222f78",
+      "resource_kind": "containers",
+      "retained_identity": "57d5c97453801b87ecb493293a7e73ea7415c5ad5e5bd592be00eb280ec2372d",
+      "retained_record_digest": "6c6a4162ad0c2b607697efa60ef5470bcfc8d09bc19ffe321d65e3be095076e0",
+      "started_at": {
+        "monotonic_ns": 717805983747791,
+        "utc": "2026-09-08T12:46:26.526464+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "d5554bbf64c8a1a838f2d588e8002d64fafc92de8ab7362bf4ec58192fd1ef36",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "rm",
+        "d36987ca3f401492ea7e76d4d8bd748ca5ca9352621624344015226c0b763079"
+      ],
+      "current_pre_mutation_digest": "e1c2e6cde4831efe21254291385afc20783c1418ca52813edb477fc21b528948",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717808081410416,
+        "utc": "2026-09-08T12:46:28.624126+00:00"
+      },
+      "expected_postcondition": "ABSENT",
+      "intent_sha256": "dead8033c76516f232f3210ff81272cb2d42db932642fa40503a01207d0e19be",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "14c3d8b341842a4a5acd7dd14bd5876c0898aa8483157c9c9f7f113e99ff608a",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "0c62c200c524a8225973a3229f82551f483e5a20cc61ffbc1f24d562173cbab6",
+      "private_receipt_file": "mutation-receipts/031.json",
+      "private_receipt_file_sha256": "ab612630d5cdce8eab91e6e2d47bee30988f6c595de491dd6a09597fcadf30c9",
+      "receipt_sha256": "00227d10f312416f2bb3aeac89056f82ecfed4defb325b6a917bc3905460827f",
+      "resource_kind": "containers",
+      "retained_identity": "d36987ca3f401492ea7e76d4d8bd748ca5ca9352621624344015226c0b763079",
+      "retained_record_digest": "26994bbd0e7b4c8a9bcb512fd78f8eef8e8f365969e640973045765dc2c85523",
+      "started_at": {
+        "monotonic_ns": 717807497981666,
+        "utc": "2026-09-08T12:46:28.040698+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "a3353bb0713c3001c0f9d5b8ab500ecdd4b30ff4ff34a6061d5840ee83df5869",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "rm",
+        "52964f9f611ebb0d81085e2482ca888688866029bd5bfcf3d6276694c5db0175"
+      ],
+      "current_pre_mutation_digest": "bfe01a5c12d9f4363fce9b637465bbc11c91ffe14829fab90cd1e0e10cad44fc",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717809576189958,
+        "utc": "2026-09-08T12:46:30.118906+00:00"
+      },
+      "expected_postcondition": "ABSENT",
+      "intent_sha256": "c740264c189cda9b4c2a09f94cf568f5836c9c377ca52ab04972a98a74cf5be1",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "af7b10d80a31ef1632a0c24a692c2681f2bfb40286189909aaff9067c32d7597",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "ab612630d5cdce8eab91e6e2d47bee30988f6c595de491dd6a09597fcadf30c9",
+      "private_receipt_file": "mutation-receipts/032.json",
+      "private_receipt_file_sha256": "490663ec25fdbed51f1d53dbd9c11c023cff4c33274258da28db37d63bdbebbd",
+      "receipt_sha256": "42d5f2bf93e858c4e495695dbcb3b5a61c27e8d3dcbd8a34b87e9dbf9ba1adc3",
+      "resource_kind": "containers",
+      "retained_identity": "52964f9f611ebb0d81085e2482ca888688866029bd5bfcf3d6276694c5db0175",
+      "retained_record_digest": "5bb9dd15cc10bc640b1ec9b83c72729865383df1ce43a627fb126793bceba0ef",
+      "started_at": {
+        "monotonic_ns": 717808988521000,
+        "utc": "2026-09-08T12:46:29.531239+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "2043ed1ed846d29b68db88a02b1fb5d2265b456d19ba49d101527884af93ea16",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "rm",
+        "7310f8f65a8211296e66fb8ce9ca81aacc59e03aea2bed30d494337fbc4b76a4"
+      ],
+      "current_pre_mutation_digest": "2805831bd07c766aa90ba3919d9c48063cd1d5b86245d2b554cd1c581b43c2ef",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717811030141958,
+        "utc": "2026-09-08T12:46:31.572863+00:00"
+      },
+      "expected_postcondition": "ABSENT",
+      "intent_sha256": "ea662a4452f10d8bd72e5b3976e6f119accd6f7d3e998c5ae61d8306f5c35b54",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "7f5747a523a59de40232996eeb7cece7a5a3c7a5c0c909e9e02eb53d880d9e81",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "490663ec25fdbed51f1d53dbd9c11c023cff4c33274258da28db37d63bdbebbd",
+      "private_receipt_file": "mutation-receipts/033.json",
+      "private_receipt_file_sha256": "d1aee03758723cbebce7836ad1fb6b82146340c2d762a3784b240ea1e12fee35",
+      "receipt_sha256": "e3788edfd7c214fb070937eeea7096f795258d3e0039b6926c0d4aff86ffb1d3",
+      "resource_kind": "containers",
+      "retained_identity": "7310f8f65a8211296e66fb8ce9ca81aacc59e03aea2bed30d494337fbc4b76a4",
+      "retained_record_digest": "6acdff87be8dee5be9176a95dbc4d741d9d7fe9d1cc6949c7c3a0901f6b92cbf",
+      "started_at": {
+        "monotonic_ns": 717810454960333,
+        "utc": "2026-09-08T12:46:30.997683+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "e4ca70c69e6c065d64fb59f4c77215e0a69750676051d97d4d8282ab548019d2",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "rm",
+        "ea6e8f438a3de895de0f412ffb5493e0e14dc643e5e379e28224c1a14d46c5b4"
+      ],
+      "current_pre_mutation_digest": "6ee709d877ab984773077d1467aa38235f267b067df7f55f9b96c4628c237154",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717812478261625,
+        "utc": "2026-09-08T12:46:33.020985+00:00"
+      },
+      "expected_postcondition": "ABSENT",
+      "intent_sha256": "6cd7274f5ecfb863de31d787c20a2195d6beca062e7b6334d3863ef292584374",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "19ed5c11cd813a35632704d266cc948c922043dea686b80cf2c3410eed1b9d95",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "d1aee03758723cbebce7836ad1fb6b82146340c2d762a3784b240ea1e12fee35",
+      "private_receipt_file": "mutation-receipts/034.json",
+      "private_receipt_file_sha256": "81985bcd844157e3ebfba40e57e7af7e130025bb748ec165bc8494c7ee6710ad",
+      "receipt_sha256": "c025c95f0c1219cf1a802bd11286cbcdff7409a94bf74179769b4e94b2962a98",
+      "resource_kind": "containers",
+      "retained_identity": "ea6e8f438a3de895de0f412ffb5493e0e14dc643e5e379e28224c1a14d46c5b4",
+      "retained_record_digest": "b2eeeccd3e223510ab604b2491c4a88b1b5af79c5746945d02011c174dbd892e",
+      "started_at": {
+        "monotonic_ns": 717811904775083,
+        "utc": "2026-09-08T12:46:32.447498+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "cc28fed74e27fdf46d00ef7f8521be2edecdc9cbe22fe8df5b49b5f49401ff16",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "rm",
+        "013dfa0857bf40489198a1cbbd5eea69f3b5b365c85fd5edfcb9a39b8ec83a92"
+      ],
+      "current_pre_mutation_digest": "c9b2671b03b86630429260ae8a4e2eaf60257648685714dbda60eb80bd605885",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717813891329416,
+        "utc": "2026-09-08T12:46:34.434058+00:00"
+      },
+      "expected_postcondition": "ABSENT",
+      "intent_sha256": "120dc099b472a9ac1e8548cbac239ffb3540794a27e6f4ae52dd9bc89b6c5928",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "d626eea366ffe825d8af81a86319d0225d574be6ddc62741354081aa89623947",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "81985bcd844157e3ebfba40e57e7af7e130025bb748ec165bc8494c7ee6710ad",
+      "private_receipt_file": "mutation-receipts/035.json",
+      "private_receipt_file_sha256": "062faed7f9547f07154e6d67016ce9ea679efb3b33b68af8ee2ce8e8764834a1",
+      "receipt_sha256": "d2cc7e8613f18c250f7293357ea41ef50b4f8626e8f6f20e3c93f2755391045d",
+      "resource_kind": "containers",
+      "retained_identity": "013dfa0857bf40489198a1cbbd5eea69f3b5b365c85fd5edfcb9a39b8ec83a92",
+      "retained_record_digest": "4b3d5c7680aeb7942d94300a5f6fbd6a78b9d392a05a32e0429191b4c12be274",
+      "started_at": {
+        "monotonic_ns": 717813333221375,
+        "utc": "2026-09-08T12:46:33.875952+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "be61dafd8eadab92ebd8c1463d408064bebc9cb2e4b66d683606e89b5d21fb4a",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "rm",
+        "43ad8a9aa246367e55ade06a23a8888d4a21fbf903b0790e32ef5f07299cc03c"
+      ],
+      "current_pre_mutation_digest": "5397a2e62197e92a2e334ed1d628efb807249ee41d0407490b59ba8606672871",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717815284027916,
+        "utc": "2026-09-08T12:46:35.826764+00:00"
+      },
+      "expected_postcondition": "ABSENT",
+      "intent_sha256": "9e66747e7cd0d88be098b0f7630e89a3049d1c5f6b8e8fc02fe295658b205fe9",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "c3b9e1a84bc9b6d5389042a6d3c2767b5a413bc72675637a300cd91a3f98c8b9",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "062faed7f9547f07154e6d67016ce9ea679efb3b33b68af8ee2ce8e8764834a1",
+      "private_receipt_file": "mutation-receipts/036.json",
+      "private_receipt_file_sha256": "dbbccacc170d0df797d174f4f8a4cc5ec5ef69a3730530725944c797b01ab654",
+      "receipt_sha256": "da651d616f4f19a7d6d6d71b111765e8e7e7373ca97e346beb9973ab6a9fb42a",
+      "resource_kind": "containers",
+      "retained_identity": "43ad8a9aa246367e55ade06a23a8888d4a21fbf903b0790e32ef5f07299cc03c",
+      "retained_record_digest": "089b7baf8b3e723dfa53948cb232a471b0d8349ddbe121c7ee5aae5c1a400be6",
+      "started_at": {
+        "monotonic_ns": 717814725916291,
+        "utc": "2026-09-08T12:46:35.268652+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "aac55519bf448686147fe27c3da1d9c66fe6c874a277cccf6a92d7e42a5c6228",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "rm",
+        "a5fbff6a08b53e6d22b14ff222d815409db8130dcc894470795e92686dbaa9b2"
+      ],
+      "current_pre_mutation_digest": "01fb9d06c2d0872f4e461d7afa5479f18e9f8872ff9b971cfd3ff36b57b3dc3c",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717816676699208,
+        "utc": "2026-09-08T12:46:37.219439+00:00"
+      },
+      "expected_postcondition": "ABSENT",
+      "intent_sha256": "5b05323085007207f1d1d961c8bf99922dc0359ef572da491ac5a3a98a66bbc5",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "53a1009d7f01e305889839a98d70c995f30e0f92f560100d3b28120db07b6580",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "dbbccacc170d0df797d174f4f8a4cc5ec5ef69a3730530725944c797b01ab654",
+      "private_receipt_file": "mutation-receipts/037.json",
+      "private_receipt_file_sha256": "58cd26f6806085fb3d254246e99e26a44df9057c69fef9963610908ef4a9d0d7",
+      "receipt_sha256": "91db1e587ab1fa07bdb1d6e26c5015a4fa3c87be35ced63733aafebc8f2e2a2a",
+      "resource_kind": "containers",
+      "retained_identity": "a5fbff6a08b53e6d22b14ff222d815409db8130dcc894470795e92686dbaa9b2",
+      "retained_record_digest": "e95d51aea0817d0fb8460ada18977ac63fc7c3af1f5567784d2ef4522936da3f",
+      "started_at": {
+        "monotonic_ns": 717816125852375,
+        "utc": "2026-09-08T12:46:36.668596+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "cc9cb5ffc0ed2c0d3f2f9dfee4fa7245d9e3b22b0b46ca732575e571511ba390",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "rm",
+        "c48df28ffbf12abb303fb7373af8369ee5814259a405d0dc92fed1048676de34"
+      ],
+      "current_pre_mutation_digest": "c69dabdace65b18e5d28f076631318cc6027c5bd7024e4046906b46066173f0f",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717818060136250,
+        "utc": "2026-09-08T12:46:38.602885+00:00"
+      },
+      "expected_postcondition": "ABSENT",
+      "intent_sha256": "2de83f8316f968148a6c443322af4d01de6f0d93a5ed97744c97d8860da0f23c",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "a8cd644ce08f9884d180ec5a5a9118a78ffd18e12717fe2ac2fc08acebe2b583",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "58cd26f6806085fb3d254246e99e26a44df9057c69fef9963610908ef4a9d0d7",
+      "private_receipt_file": "mutation-receipts/038.json",
+      "private_receipt_file_sha256": "0839b4fcf4d268d412813ed6f20a80a3ba6e7f2d114caf39bbe400a58a67f89d",
+      "receipt_sha256": "c2ada495aa7fce83c96ed0c5f2b7c188a8922cb5c5fb7ca1bffef32d31290609",
+      "resource_kind": "containers",
+      "retained_identity": "c48df28ffbf12abb303fb7373af8369ee5814259a405d0dc92fed1048676de34",
+      "retained_record_digest": "c18277277710d5fa7e0eba52adae5de70466cc49d89303784c9a6e58406eb7a5",
+      "started_at": {
+        "monotonic_ns": 717817513526958,
+        "utc": "2026-09-08T12:46:38.056276+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "b3a816ffcbd2dc6be41b0e9c16c150755491fd8aaf43bdd74049ac1fa86c30ad",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "rm",
+        "f1b8665eac41354174656c4525366e08ac6c60cd914b3f83f06303882d6b4dfd"
+      ],
+      "current_pre_mutation_digest": "e1f38d963392ae1b1649dbf792e692c6d2c8d6b66e372629c1bfa25d3986178a",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717819440029833,
+        "utc": "2026-09-08T12:46:39.982787+00:00"
+      },
+      "expected_postcondition": "ABSENT",
+      "intent_sha256": "a8d2dfc0d351dadd0c19f3fc62708c5e0482a6650c2b267e8e684fb16a285af1",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "cfe40a375da3e63795e7c111daa03c5658aacfdff35d95635ee708d0d70646bc",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "0839b4fcf4d268d412813ed6f20a80a3ba6e7f2d114caf39bbe400a58a67f89d",
+      "private_receipt_file": "mutation-receipts/039.json",
+      "private_receipt_file_sha256": "e85a9dc1ce50052a2f2bef618be63d9e110fbbc393034c86a50148f6970868fa",
+      "receipt_sha256": "eb463a02beed3b85e0912eb238043b7ab51eafec590a4199cd4d24d0fd8d064f",
+      "resource_kind": "containers",
+      "retained_identity": "f1b8665eac41354174656c4525366e08ac6c60cd914b3f83f06303882d6b4dfd",
+      "retained_record_digest": "c989ddb550fb15506a42019ccdf4ca376793ddc17bae5af84487c9e2af1a82f3",
+      "started_at": {
+        "monotonic_ns": 717818891405000,
+        "utc": "2026-09-08T12:46:39.434160+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "6196257d7e3a8d0062e6ee2f98869c069aa304e7a4b0914ae09af03bd96121f1",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "rm",
+        "9adca9a38c4ba24986b67f1cd94de9da42353c4dd93a9a38b61de1d59e618b98"
+      ],
+      "current_pre_mutation_digest": "b22aabd0de653b35f736bc49ccd7a5d0ff663a6e88ee4fd5ba4ff7a94bf7c4f7",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717820818446333,
+        "utc": "2026-09-08T12:46:41.361212+00:00"
+      },
+      "expected_postcondition": "ABSENT",
+      "intent_sha256": "f4ba8e3793061be65e9af059ce508cb390c4d035dd7b4dab3e1d0542173fe188",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "6a896019d5ebc9ad0d44ccb7351dae2fe9d3855f6efa5a1807fc435b2b4605a9",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "e85a9dc1ce50052a2f2bef618be63d9e110fbbc393034c86a50148f6970868fa",
+      "private_receipt_file": "mutation-receipts/040.json",
+      "private_receipt_file_sha256": "cf80077a1d699e57aa6104fc6ffc9103a6e5ec265214f82b3b44afe3f7dc4cff",
+      "receipt_sha256": "18a5f31c33708cad29659810ef2faf1993c99093958bf019704a99780483a3bf",
+      "resource_kind": "containers",
+      "retained_identity": "9adca9a38c4ba24986b67f1cd94de9da42353c4dd93a9a38b61de1d59e618b98",
+      "retained_record_digest": "4e7d3b8958d6f79db352c237ed921cc1999fdc2d8740ea57bcff92c7d9827b52",
+      "started_at": {
+        "monotonic_ns": 717820251336791,
+        "utc": "2026-09-08T12:46:40.794103+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "69270678c5ff68b990a10f18cd4bae0c5c54b5471bd087fb2a690d1a77fa5260",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "rm",
+        "cebf0ec3d4fe453e34254a02f8ef9b0cfb7c28ba8136ea65c8042820a2d83c46"
+      ],
+      "current_pre_mutation_digest": "988ddeb59af2b5f95c51ba1754ce2103c19b04a4b140083a2807172533f5b596",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717822181266041,
+        "utc": "2026-09-08T12:46:42.724040+00:00"
+      },
+      "expected_postcondition": "ABSENT",
+      "intent_sha256": "5f740b17aef64da982a40ba1f95032983da6830b9ffbe151662926ed756e4329",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "923a19c0a45a6a530bc09d2b7d8885965cfed9ee738ae4fe097ba2a624549358",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "cf80077a1d699e57aa6104fc6ffc9103a6e5ec265214f82b3b44afe3f7dc4cff",
+      "private_receipt_file": "mutation-receipts/041.json",
+      "private_receipt_file_sha256": "b8393eb8067f546c5f7c7dbfdad1211efdb9aa4e2766554fc85292388d681f06",
+      "receipt_sha256": "85047b9997c8b94d1d5eb2d386d701c3956c4755a6bd8afc586a0328c6e9fe07",
+      "resource_kind": "containers",
+      "retained_identity": "cebf0ec3d4fe453e34254a02f8ef9b0cfb7c28ba8136ea65c8042820a2d83c46",
+      "retained_record_digest": "1e21f88f1d49d0ab8933173b9303d6dba85d0c8fc40527c06e9f132d68076db2",
+      "started_at": {
+        "monotonic_ns": 717821622734541,
+        "utc": "2026-09-08T12:46:42.165508+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "e8e14d484c8ff9c3ffd3880d3e4caa6dfe421d7d7d116833db691a66075b9069",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "rm",
+        "16ee82958c618417c2f762b4cd85bcf17727e96fab09b613c5218064ad82f394"
+      ],
+      "current_pre_mutation_digest": "923f9f5b91d6cff5362953a0b21dd89c95ec10b4726fa51788911a9431b52212",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717823573156041,
+        "utc": "2026-09-08T12:46:44.115938+00:00"
+      },
+      "expected_postcondition": "ABSENT",
+      "intent_sha256": "67d411f56bd126a6a11426c1d81987c6009edaae5b6de50e775010e1837064ea",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "c7fd5c14c23d9c1227e91368702a4e5726c705c8a489ad09429bb1ee2e3d4610",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "b8393eb8067f546c5f7c7dbfdad1211efdb9aa4e2766554fc85292388d681f06",
+      "private_receipt_file": "mutation-receipts/042.json",
+      "private_receipt_file_sha256": "8c9a1bf2926522112055c61b3ec83205b3ea1a1cc57f779d153d4adb76b2bbb1",
+      "receipt_sha256": "dc3f4acfb521ec14e57351efec08860f03b053265dcf52b99fb6b26fd73512f6",
+      "resource_kind": "containers",
+      "retained_identity": "16ee82958c618417c2f762b4cd85bcf17727e96fab09b613c5218064ad82f394",
+      "retained_record_digest": "0e214816e6d05bb400c9e6f6f7a620a4d220c9ceae6c9656b117ab54bcec4c7a",
+      "started_at": {
+        "monotonic_ns": 717823017652625,
+        "utc": "2026-09-08T12:46:43.560435+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "3cb0ef71dfed67788c133a4e6be47fab3e152b94ad11fcd8a9bf092d14734b79",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "rm",
+        "4c36cc7e34f7052bed17b64383b529c878421aa79f7c2d9c54c369dcb3eacfd2"
+      ],
+      "current_pre_mutation_digest": "d5f413084c8f26e0ea04b2ce4e9c755b23689e15a834aaac577d8fe7fbf71f59",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717824919163833,
+        "utc": "2026-09-08T12:46:45.461957+00:00"
+      },
+      "expected_postcondition": "ABSENT",
+      "intent_sha256": "1d200ad1ff56818b542db142cb672aa5924f9bd320fdd2111934b82d8c0a9fd9",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "08d53f068850741590fbab42c1e2109d9226026be13dc74dabd3af170b4db423",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "8c9a1bf2926522112055c61b3ec83205b3ea1a1cc57f779d153d4adb76b2bbb1",
+      "private_receipt_file": "mutation-receipts/043.json",
+      "private_receipt_file_sha256": "520e139dcd3336bbceb143b8984682f022a6e8f041a8a52f11ff4f079e68a236",
+      "receipt_sha256": "281a8c08ec6520c0e4e29dd275200faccd8e96e4eb8ab044bdabd7fe08a16057",
+      "resource_kind": "containers",
+      "retained_identity": "4c36cc7e34f7052bed17b64383b529c878421aa79f7c2d9c54c369dcb3eacfd2",
+      "retained_record_digest": "00189fcccbd1737c2ebf75aee349bdce2a5c332e9b0b5d78ba1b1ca0e37039b1",
+      "started_at": {
+        "monotonic_ns": 717824377785083,
+        "utc": "2026-09-08T12:46:44.920576+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "54d2a9f4cdf327f1f63cfbb5d25cd387d709abe413f163e128c9a06a931626c4",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "rm",
+        "e6a18c9315315ab8d6b63ba81f58540cdb133088fca1875ccaa0039a71b159b3"
+      ],
+      "current_pre_mutation_digest": "906a0a21df8a6c35ff7ab23897bb7db2a71f367aa407fc5ad91c14b8576959fc",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717826265881750,
+        "utc": "2026-09-08T12:46:46.808687+00:00"
+      },
+      "expected_postcondition": "ABSENT",
+      "intent_sha256": "3da604950b8cc006276fbfd3fecbc3cded9ad9da0dca2993a2100eb4cf9e0499",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "a81952444c90234b53c6bf038391df7506f68591cf60c4341033e5bb672ae19c",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "520e139dcd3336bbceb143b8984682f022a6e8f041a8a52f11ff4f079e68a236",
+      "private_receipt_file": "mutation-receipts/044.json",
+      "private_receipt_file_sha256": "1bc8699572a974c78b646120a1b30aa3addd3b8bceab43988a82b35073b529f4",
+      "receipt_sha256": "a7fc48cc2f60865a0cdbdb1c954f5c6d215c7746233d77d0441f6113880fa380",
+      "resource_kind": "containers",
+      "retained_identity": "e6a18c9315315ab8d6b63ba81f58540cdb133088fca1875ccaa0039a71b159b3",
+      "retained_record_digest": "4a3bd7e9fb9b13bf331dae336aa46589aec8f67db1d7d7fe393628c6b238789f",
+      "started_at": {
+        "monotonic_ns": 717825724692750,
+        "utc": "2026-09-08T12:46:46.267495+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "c3e78a8691f0ccb8edba5ce4fc61d1cd01d01348789b8cdc0f9028bf148eed16",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "rm",
+        "dc9c9dfb85cc5c6c8f161445d38ce3a4590fae820ea424ceb8e9ee0bc65a25ac"
+      ],
+      "current_pre_mutation_digest": "288cacd0c5842af6bc7da6d286c13960428e2a525cfc446fe8780cdbed6b7313",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717827575337208,
+        "utc": "2026-09-08T12:46:48.118151+00:00"
+      },
+      "expected_postcondition": "ABSENT",
+      "intent_sha256": "cd336a029424dd8cf03be47399d677550c18eef219c9cc5ecf8bbbd54d92c918",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "9a423dbbc7f45e56a8fd42c615be8895e70a5236cbe8e68c7d3dfc5ec75c527d",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "1bc8699572a974c78b646120a1b30aa3addd3b8bceab43988a82b35073b529f4",
+      "private_receipt_file": "mutation-receipts/045.json",
+      "private_receipt_file_sha256": "8f3592827a0d6218ba018cc21c03eed8b6ef6523360c8fe11733774444f108fa",
+      "receipt_sha256": "7f8504448fd2d239ae1bacb3fbd93033712df0f58b24bfce4913138d8d6bc095",
+      "resource_kind": "containers",
+      "retained_identity": "dc9c9dfb85cc5c6c8f161445d38ce3a4590fae820ea424ceb8e9ee0bc65a25ac",
+      "retained_record_digest": "36d11e68e1fda935dccdd3eb03a34ce3106c220a8f6b121953ec52dbf61e6e02",
+      "started_at": {
+        "monotonic_ns": 717827044411458,
+        "utc": "2026-09-08T12:46:47.587222+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "259582272548954193149fb3392af4476fe79e92bc19170d5236202b70202510",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "rm",
+        "488ce97891b6df261382179ead7ed2eb6936cc088e59a1f00c34efcf56180f0b"
+      ],
+      "current_pre_mutation_digest": "181b9999600d5e0e1babe5a8212aab0bcc08ea856dc75550a471f951202de290",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717828874344625,
+        "utc": "2026-09-08T12:46:49.417168+00:00"
+      },
+      "expected_postcondition": "ABSENT",
+      "intent_sha256": "9f79f143958a8b8902b22a3ccbb7522928ebace1863cd579725a4fea29a5d7d6",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "fbe92f70c46449d3f54cd905da19364252746b083844215f0153a9eeafb7033d",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "8f3592827a0d6218ba018cc21c03eed8b6ef6523360c8fe11733774444f108fa",
+      "private_receipt_file": "mutation-receipts/046.json",
+      "private_receipt_file_sha256": "3cce4e6c1fbddacbfe9ac11251a924042bca73f5cf219164292ac9d87943e8d1",
+      "receipt_sha256": "d27738c04538424365f9b3fc7ef9f378ed1747e5f54e04ed06f0abecab44ff94",
+      "resource_kind": "containers",
+      "retained_identity": "488ce97891b6df261382179ead7ed2eb6936cc088e59a1f00c34efcf56180f0b",
+      "retained_record_digest": "73372e75c0eddf94f612b8a9263c8ec0c3743061f05da234ec111168d3011f13",
+      "started_at": {
+        "monotonic_ns": 717828347416458,
+        "utc": "2026-09-08T12:46:48.890240+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "a870a041cb8064fa5c330400eff18c7596aa5fa8a4ff3837b7b5419b1290d211",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "rm",
+        "89763e46e0e1c4f4cda6dbe915f91c03f0e9a0e51eb4630eb13d99dfab67170b"
+      ],
+      "current_pre_mutation_digest": "0abec2bf60a5836bc52d438a20e0ea29f258c14155710ab662c5f98b385f39e0",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717830133606083,
+        "utc": "2026-09-08T12:46:50.676442+00:00"
+      },
+      "expected_postcondition": "ABSENT",
+      "intent_sha256": "2554d8986e99e167cb2cfd63485e2ce5a0693a34981b930f84ac7895f7a96283",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "39619ed8914c0b9e7573f932e87630f9ddcffd39eef4e14378d0c8482b65e227",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "3cce4e6c1fbddacbfe9ac11251a924042bca73f5cf219164292ac9d87943e8d1",
+      "private_receipt_file": "mutation-receipts/047.json",
+      "private_receipt_file_sha256": "61cfc939347deb891fb657126792a2449f7eec91065c4b2d8dad85190d97d65b",
+      "receipt_sha256": "1df5c8714fc33a51291ed74160e0223c7f32f0dae38e19f8d3ba7eeb12250bd0",
+      "resource_kind": "containers",
+      "retained_identity": "89763e46e0e1c4f4cda6dbe915f91c03f0e9a0e51eb4630eb13d99dfab67170b",
+      "retained_record_digest": "d294418e1d36794659f16b2dc921bb70d289ab6ceadd8a31e042c3092174265e",
+      "started_at": {
+        "monotonic_ns": 717829627403166,
+        "utc": "2026-09-08T12:46:50.170237+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "166bf7ca9a1b54783e6034b8d9a0b53843100e77b52e1d808ebe0f1a6be7b4f6",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "rm",
+        "3056bd649e7ce2379a979b3d951773ccc7e8886edc1e36b9158c0a330468c4e0"
+      ],
+      "current_pre_mutation_digest": "b1d0ab85d68d22e1e4454ecdf786314a13363c6c9f486f9217d0954e6a043693",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717831399761583,
+        "utc": "2026-09-08T12:46:51.942608+00:00"
+      },
+      "expected_postcondition": "ABSENT",
+      "intent_sha256": "01b62aca6c6586a9dbee06f7216a88f97e22275a6bd20b13630d74139b7ba558",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "55f40e425ba2d0e275b585baccc5d67b9f4639bf3d93e0f99d45643cf2899002",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "61cfc939347deb891fb657126792a2449f7eec91065c4b2d8dad85190d97d65b",
+      "private_receipt_file": "mutation-receipts/048.json",
+      "private_receipt_file_sha256": "62400a15d08077748338fc080abdaec198517eb609fde7dc90d03e8252f76a75",
+      "receipt_sha256": "d1f6385189ea6c56ac7033de31e6dc9a6079636c5a50a12229acaad172bf7b48",
+      "resource_kind": "containers",
+      "retained_identity": "3056bd649e7ce2379a979b3d951773ccc7e8886edc1e36b9158c0a330468c4e0",
+      "retained_record_digest": "8691ff79c0c49bb8021d2ad784ab0f3cb9c26f35578efcd1e2233943e18aa159",
+      "started_at": {
+        "monotonic_ns": 717830896504958,
+        "utc": "2026-09-08T12:46:51.439349+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "1c2b27d4f2509872ad1812f7fe00d5319f13ab4fef936ffdf2816764d6ad66c0",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "rm",
+        "cce1cb75cb4f7d8a7b6762c713e8d1e1a97084fb35726f4abf34ed8291a838f3"
+      ],
+      "current_pre_mutation_digest": "50359f25204dde7a48e3fc0df722bbbcffeffd146c7c3d4c86cab427a31caf65",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717832639786375,
+        "utc": "2026-09-08T12:46:53.182643+00:00"
+      },
+      "expected_postcondition": "ABSENT",
+      "intent_sha256": "17cebf590f29e77b3afeefb3b328e9ff1f2251c056d6e08cf1e20f9636ad7a2f",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "106b898c0a5b35a1ace389eab9259799fa61a16ac5c013caa9b28245eea8064a",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "62400a15d08077748338fc080abdaec198517eb609fde7dc90d03e8252f76a75",
+      "private_receipt_file": "mutation-receipts/049.json",
+      "private_receipt_file_sha256": "954f7dc6103419747866e5e845c6e238eaa2bc55159a30c3d2e3d4cc3df8eb3f",
+      "receipt_sha256": "e96657de93a6e0e873087c25d51e549423853c065d93fe862845d1788ab0acbc",
+      "resource_kind": "containers",
+      "retained_identity": "cce1cb75cb4f7d8a7b6762c713e8d1e1a97084fb35726f4abf34ed8291a838f3",
+      "retained_record_digest": "a7b158363b0f2f59024df42e47605c0e18015679390b268e7b03b139b5259f23",
+      "started_at": {
+        "monotonic_ns": 717832138970500,
+        "utc": "2026-09-08T12:46:52.681825+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "4b76e71d675665c2dfa11ea3244abb42dc280fe656ff673bb483982cb9f4f58f",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "rm",
+        "f720cc6f0d43184049857f23ecf4809eacfde5d67b531fdc09fcb95c14148d76"
+      ],
+      "current_pre_mutation_digest": "e1a4b4ea65aac561aaceee183d5047a9e8ce56c5ee5a3e60de7383d64cac84f3",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717833861487125,
+        "utc": "2026-09-08T12:46:54.404354+00:00"
+      },
+      "expected_postcondition": "ABSENT",
+      "intent_sha256": "6d60dc60337d4ac7d2124334946f3550f37fe71d7d0e12276c5c15b567570a11",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "c636f4209ea6005c52c3be69c37bbbe522c42949d57283a0e803dc6c061eb457",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "954f7dc6103419747866e5e845c6e238eaa2bc55159a30c3d2e3d4cc3df8eb3f",
+      "private_receipt_file": "mutation-receipts/050.json",
+      "private_receipt_file_sha256": "40227f08673ea82eb478174c945f0df2a526e6a0f58166f8d47f4f55890a736d",
+      "receipt_sha256": "060ed969e78c3e753d0f3ddaa0df6be182f3badc14bd6b76b54cff639465e806",
+      "resource_kind": "containers",
+      "retained_identity": "f720cc6f0d43184049857f23ecf4809eacfde5d67b531fdc09fcb95c14148d76",
+      "retained_record_digest": "04cf8ff68fa20c152a6e0d0c166a9e184320868c4387527001724e9bd03d4549",
+      "started_at": {
+        "monotonic_ns": 717833372563375,
+        "utc": "2026-09-08T12:46:53.915429+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "fd89b545c0d9fc3b13bc9874ef9780e5a0339b5829202a20b7dc55789239edb4",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "rm",
+        "422f5cb1e204ca41b695e104df3230a4ef0d10e991077b434e7bf7e56054abb6"
+      ],
+      "current_pre_mutation_digest": "2ea0fe6c97a10bbd646d2719c7b8995855929934d168bc155e1b0b9ac6e4aabd",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717835086495333,
+        "utc": "2026-09-08T12:46:55.629373+00:00"
+      },
+      "expected_postcondition": "ABSENT",
+      "intent_sha256": "8584dc14254252a3e1d554a1a6b87add20465c65b9ac64fc77eb95f0c680a1eb",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "4a2ea537818301ff46fcfc05946e408242499d35cdfecfc038fba0310afbea2b",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "40227f08673ea82eb478174c945f0df2a526e6a0f58166f8d47f4f55890a736d",
+      "private_receipt_file": "mutation-receipts/051.json",
+      "private_receipt_file_sha256": "259796681c7bee992197b46f4fecdd6b7cf21699b7165558e1dcbf6eb0e4a8ab",
+      "receipt_sha256": "24006626fdf04078084b2f8b382006eb4e4bc57a0c7ab109b9f26ffd8ba5bc91",
+      "resource_kind": "containers",
+      "retained_identity": "422f5cb1e204ca41b695e104df3230a4ef0d10e991077b434e7bf7e56054abb6",
+      "retained_record_digest": "59e13e4a0a8565db0b9e3e3b796bbdf582b7a42aad0772b7bda1a2eb3fe3acac",
+      "started_at": {
+        "monotonic_ns": 717834593504791,
+        "utc": "2026-09-08T12:46:55.136379+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "75fc7568928d87861f89396d5eebd8fd804683ec559023c26e89024db12afc76",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "rm",
+        "6e638dc868913e07bcd394d91b09d92170e85c513426393fb209ae49fea19e12"
+      ],
+      "current_pre_mutation_digest": "4bbdb0a7df91337a234be0699b2df64110f2115c4c6b2e5ba148b042726e1948",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717836277079458,
+        "utc": "2026-09-08T12:46:56.819969+00:00"
+      },
+      "expected_postcondition": "ABSENT",
+      "intent_sha256": "df71c764e0bd890e935d1b720d3680b11aac927459c780c52c1b83904cd3e82b",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "0681416ea0ad6d7f40dccdcf1b7c2b52c4e992cf242265b341d1830155e4abde",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "259796681c7bee992197b46f4fecdd6b7cf21699b7165558e1dcbf6eb0e4a8ab",
+      "private_receipt_file": "mutation-receipts/052.json",
+      "private_receipt_file_sha256": "0bd2fc8d9396f8b16b86d656ef0d545ff18c1f944117fade1630fa7ae588c3ea",
+      "receipt_sha256": "5ca6e53274c766e65fb7054bc1a6acda3c61c873fcb4ef3d7e508044cc6e5231",
+      "resource_kind": "containers",
+      "retained_identity": "6e638dc868913e07bcd394d91b09d92170e85c513426393fb209ae49fea19e12",
+      "retained_record_digest": "7edc01dc575946696cddbd3178006c39f6f6b107cb8cbb40c6401bb836ba6aef",
+      "started_at": {
+        "monotonic_ns": 717835803263708,
+        "utc": "2026-09-08T12:46:56.346151+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "f49ccde7c2bb33233cc67dd76ac420973db7f9d8a87a2c7d2448e0cefbd70b70",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "rm",
+        "4e7a2733141e36a3fce6946ef9d72e7623f0c547ec1125b5359801f98dad5a9f"
+      ],
+      "current_pre_mutation_digest": "e3c455b1f70c81a7807c28712181c14cd6a800abc2e241780df07379e2497189",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717837462427958,
+        "utc": "2026-09-08T12:46:58.005328+00:00"
+      },
+      "expected_postcondition": "ABSENT",
+      "intent_sha256": "b010479e86ddc044776a2a6b1532f0f146b609a915ac563fdba347700c41ca3e",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "8bf23246f2e43dd5ccc501b79382a99185789b4dd3cec0a814f1ecb5f5612778",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "0bd2fc8d9396f8b16b86d656ef0d545ff18c1f944117fade1630fa7ae588c3ea",
+      "private_receipt_file": "mutation-receipts/053.json",
+      "private_receipt_file_sha256": "52f8963f1de2fc9380da6b2f6205348cce7aaac941820e78a42217ac4d5a7886",
+      "receipt_sha256": "1bbc05ecf7b1b696f2ec009e8250fb177112c474e36cca889b88060fe1272635",
+      "resource_kind": "containers",
+      "retained_identity": "4e7a2733141e36a3fce6946ef9d72e7623f0c547ec1125b5359801f98dad5a9f",
+      "retained_record_digest": "9645e70e3224e93207dba2e7c32e3e255758e7df9865a6946a0863d2774b0197",
+      "started_at": {
+        "monotonic_ns": 717836976212208,
+        "utc": "2026-09-08T12:46:57.519108+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "04e322918cec4b3a4d81df7715c1f9185fcda19ab8869520f88fe284f36f1518",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "rm",
+        "bb06c5b1652cb0c8291ef1db5cffa0445a76c4ec8dae0d0f443c0a60d0b6944d"
+      ],
+      "current_pre_mutation_digest": "1ca77e19e0df41fc313a0da8fe9114c01cfe6a582d5e1499fad58304bef723fd",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717838641398916,
+        "utc": "2026-09-08T12:46:59.184309+00:00"
+      },
+      "expected_postcondition": "ABSENT",
+      "intent_sha256": "7ce3fc1bcc975d873cb029a99d40e35738bae680600fbef1b21adec7eed24148",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "0fc24884a638eda42e4cbf0a3e7434ac4d339b60c33f1a5706870521d60e0583",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "52f8963f1de2fc9380da6b2f6205348cce7aaac941820e78a42217ac4d5a7886",
+      "private_receipt_file": "mutation-receipts/054.json",
+      "private_receipt_file_sha256": "e4ae360889e0bbc251f7cb4a5ef69cac1d8644b60c46c703e7d54b9feea0a097",
+      "receipt_sha256": "d48d66e4d1a58a2d19fdac468e57f19ec1fe22a2f4e5379b68546725bcf471a5",
+      "resource_kind": "containers",
+      "retained_identity": "bb06c5b1652cb0c8291ef1db5cffa0445a76c4ec8dae0d0f443c0a60d0b6944d",
+      "retained_record_digest": "7406e21848509257ac6b1e2981490dce5ba451946295c036c8fcb1dd302e1a29",
+      "started_at": {
+        "monotonic_ns": 717838179571333,
+        "utc": "2026-09-08T12:46:58.722478+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "34717c46ade63dac282dc424f3a1132f57facf28498bcb0331cf9ef0a4f608ea",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "rm",
+        "9c09119dd7931cd681220f9decb5fef081645d64d294fb209affb073390fe0a8"
+      ],
+      "current_pre_mutation_digest": "5d08965a4cc58d3db4dad927f153a9dac896957258dae57064161cecdc145c5e",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717839809784333,
+        "utc": "2026-09-08T12:47:00.352706+00:00"
+      },
+      "expected_postcondition": "ABSENT",
+      "intent_sha256": "9ef7555fc0d090a6bab85ae1e2a08ded005612fcf617a71a805c34f06e5cfe46",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "21d9bd10256a078273af570bce7f9a8101bc9869a8533737d2f8479c26a2f2be",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "e4ae360889e0bbc251f7cb4a5ef69cac1d8644b60c46c703e7d54b9feea0a097",
+      "private_receipt_file": "mutation-receipts/055.json",
+      "private_receipt_file_sha256": "9935946e9983b117727239e65d2a631f0d3329e9e0da28a80bba1dc378489762",
+      "receipt_sha256": "6422ec0ebc73d193e2e21bb607b45988e925645dfc90da055053e107f84e921a",
+      "resource_kind": "containers",
+      "retained_identity": "9c09119dd7931cd681220f9decb5fef081645d64d294fb209affb073390fe0a8",
+      "retained_record_digest": "9260875702faa961dd818432ffd52580d8d56dd361aa5fc5134c82611ce2bef6",
+      "started_at": {
+        "monotonic_ns": 717839342267458,
+        "utc": "2026-09-08T12:46:59.885186+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "b88c8d6f528e2ad3114d626a5cdb2b03e586c10b072c830d43211d2808bca31d",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "container",
+        "rm",
+        "2f33fa2a26959a03627503bafcb98f7cbf41f3c73b850792aa88903bb120533a"
+      ],
+      "current_pre_mutation_digest": "5b22a4592b1c582e2a1aacc99e98359b68238a9c659abe70793a57a8eb8325f5",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717840963833208,
+        "utc": "2026-09-08T12:47:01.506766+00:00"
+      },
+      "expected_postcondition": "ABSENT",
+      "intent_sha256": "07d942c0d5d8a76f44b78e9393e2f99fd524fb148cfe7ae55d99197c0efda986",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "243e0675a1cac5d20873f5b12ba5d9dba009dd1402929d62c8a0af257162c436",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "9935946e9983b117727239e65d2a631f0d3329e9e0da28a80bba1dc378489762",
+      "private_receipt_file": "mutation-receipts/056.json",
+      "private_receipt_file_sha256": "f350ea3715f5ed845eca405be9e3cec788b3901b5c95314c287d7b939db6ffa5",
+      "receipt_sha256": "a98415ef5e7b880d981f8d1f1d92fd7a25e14aebb1495cd01f5470b0d258c890",
+      "resource_kind": "containers",
+      "retained_identity": "2f33fa2a26959a03627503bafcb98f7cbf41f3c73b850792aa88903bb120533a",
+      "retained_record_digest": "f5ae32fab0233d35d724c76ef0b46ab3295c89a44bc6e2e7922a3c067b0aab60",
+      "started_at": {
+        "monotonic_ns": 717840503800166,
+        "utc": "2026-09-08T12:47:01.046728+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "2deebd3af23501d0d18e572cafeb07f609d4982d9e0dd14c6501888e71f194ed",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "network",
+        "rm",
+        "b5a0761c5ad0fa742c2c86b7eea2fdb47bd1af5b687faa5417e8576d5e4b2ca3"
+      ],
+      "current_pre_mutation_digest": "df69e4f3ac7965f32b6ba2de0416b9d80cbf4af0105cb240e8deea9ea2590393",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717842207692125,
+        "utc": "2026-09-08T12:47:02.750635+00:00"
+      },
+      "expected_postcondition": "ABSENT",
+      "intent_sha256": "2060002d94aac6e974ab3d90ea3bbc2c1ba49c0def76af4949bf6e8c594b86eb",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "e40f40867bb1a7f920569c0639294d5bb951d63623457fd139b6985a0b0cf12c",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "f350ea3715f5ed845eca405be9e3cec788b3901b5c95314c287d7b939db6ffa5",
+      "private_receipt_file": "mutation-receipts/057.json",
+      "private_receipt_file_sha256": "5197ca820def4320b19c338af23b7738ace517fdd8f25d70674b56580708d150",
+      "receipt_sha256": "34f9d3c5bcca7864b1304af84721112f99b93f576737fbff81bceb566dc5efc2",
+      "resource_kind": "networks",
+      "retained_identity": "b5a0761c5ad0fa742c2c86b7eea2fdb47bd1af5b687faa5417e8576d5e4b2ca3",
+      "retained_record_digest": "f18e189109a56d41d8ba2429d157d07c21e658205a9039982f07ed022a7dbeed",
+      "started_at": {
+        "monotonic_ns": 717841604443333,
+        "utc": "2026-09-08T12:47:02.147384+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "7b3fb8cbd3d6e293cc75e0d84c5a94088ed424fd6c75eb8af351aef16adc2555",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "network",
+        "rm",
+        "bb27e2b218b80dbf7d71fff6adf210656f70242e85216ee6a0012684d141b04a"
+      ],
+      "current_pre_mutation_digest": "2f177a1fe93d9bdde4c7a8bbffe13df4da6251901def4f2b8e181c4f939baa0c",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717843522378041,
+        "utc": "2026-09-08T12:47:04.065333+00:00"
+      },
+      "expected_postcondition": "ABSENT",
+      "intent_sha256": "23c2bbc595a43f0b004a8243d4d4b8dbd46f366489358adbf15cf6088518d94d",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "8a2a4bd735b0a03d7aa11e5258f263dfd6cb8686dfcc6c5b7a62a3c481181598",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "5197ca820def4320b19c338af23b7738ace517fdd8f25d70674b56580708d150",
+      "private_receipt_file": "mutation-receipts/058.json",
+      "private_receipt_file_sha256": "4fbc719397550d8d788a285656b2b8a6aea04cb6718e4fd1cf5f7ee80ea4b2d7",
+      "receipt_sha256": "d68c06c72e315ea1c028cc708028f7ee9215262c02936987e05779ddfa30fcc0",
+      "resource_kind": "networks",
+      "retained_identity": "bb27e2b218b80dbf7d71fff6adf210656f70242e85216ee6a0012684d141b04a",
+      "retained_record_digest": "6d23285225ad28cdeffe72358eec3fc75bac7bcfb6a827556207ddbf298b4ccd",
+      "started_at": {
+        "monotonic_ns": 717842861366541,
+        "utc": "2026-09-08T12:47:03.404319+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "6cf8ad3b07223b8271f9704594575b05e83c20fd78b2be208650188185726d06",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "network",
+        "rm",
+        "8268f64f2d2fc1b64dbff0ec081c7aa0cec354169e39c4b4756ebd68489b179f"
+      ],
+      "current_pre_mutation_digest": "85a26aa46c231da086749c262c4f52b4654008b109367774353e5eedbc056925",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717844819813916,
+        "utc": "2026-09-08T12:47:05.362784+00:00"
+      },
+      "expected_postcondition": "ABSENT",
+      "intent_sha256": "a34584e88e823fff68d0ad6e2bb6f0c72e4efaecc1c723f0586406b5e6c3bffa",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "7dda13b8ade8cc7b8c6538394ee419a1fe217baae747e2cd1e6fe73b9b34e2cd",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "4fbc719397550d8d788a285656b2b8a6aea04cb6718e4fd1cf5f7ee80ea4b2d7",
+      "private_receipt_file": "mutation-receipts/059.json",
+      "private_receipt_file_sha256": "d5bd01e5b336ef3ae0ad46916663ca282ec00f7bea70ef9ac62b02c821991b5f",
+      "receipt_sha256": "b1cd41cf5e8fa2ff5b5e2833a15e9d04fe78f2dee4b24d0ad9677f7d2d4aff02",
+      "resource_kind": "networks",
+      "retained_identity": "8268f64f2d2fc1b64dbff0ec081c7aa0cec354169e39c4b4756ebd68489b179f",
+      "retained_record_digest": "345eac3f2f29b9db0a205a4ccaf20857b66a7949655b224a03db4e687fe741a8",
+      "started_at": {
+        "monotonic_ns": 717844170687916,
+        "utc": "2026-09-08T12:47:04.713652+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "5634d3dad584672c8deaedb27b114df4d1547aa1223d2e47450a505f983ed1d3",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "volume",
+        "rm",
+        "ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-astronomy-db-data"
+      ],
+      "current_pre_mutation_digest": "3e1011d1e40059c50457076227c4a57c84f78ae5fbb664fd6bb8ce8afcc81ae7",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717845904411916,
+        "utc": "2026-09-08T12:47:06.447392+00:00"
+      },
+      "expected_postcondition": "ABSENT",
+      "intent_sha256": "dec8e55e68904333a3875420bbf4ddfb05f3fc9921725e49fa83316371b20589",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "12373a81f4c5a4f702afd866bc526ec576f7c0024a98a4cf88687ba9cbb1f64e",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "d5bd01e5b336ef3ae0ad46916663ca282ec00f7bea70ef9ac62b02c821991b5f",
+      "private_receipt_file": "mutation-receipts/060.json",
+      "private_receipt_file_sha256": "7ed5fc1d12f2d7e812daeecb2cbda2d9e6473140e296f89b9a5984ba709cabac",
+      "receipt_sha256": "5e66339e59b12487b4843a278dc13f2f99e23b169effcb81b6ca34395abc173a",
+      "resource_kind": "volumes",
+      "retained_identity": "ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-astronomy-db-data",
+      "retained_record_digest": "94fc83bf07a2aa4339fa26ce972544ca4c78ba858cf2c1c6fa8872e3eea7170d",
+      "started_at": {
+        "monotonic_ns": 717845453141041,
+        "utc": "2026-09-08T12:47:05.996118+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "f8c34b5e1dd11a199a894c2695efe301dc6dcc8de9aa42ae640050affa1ee7b0",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "volume",
+        "rm",
+        "ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-jaeger-data"
+      ],
+      "current_pre_mutation_digest": "0535974bd88498ba84e6b39c878ac0c461c1d31f71f3893b4b92943b82bdeb04",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717846960407541,
+        "utc": "2026-09-08T12:47:07.503397+00:00"
+      },
+      "expected_postcondition": "ABSENT",
+      "intent_sha256": "daba9d968c4f2af8a6b0ce87d293e05e49c61ca557686aeb2f7f1f88de4c26a7",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "4369ceddcae9f0e71f927569bc514d17acafb8396cf78faf52aa7aa3070d3750",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "7ed5fc1d12f2d7e812daeecb2cbda2d9e6473140e296f89b9a5984ba709cabac",
+      "private_receipt_file": "mutation-receipts/061.json",
+      "private_receipt_file_sha256": "f413b317444cbeb84b406a92138f466a62843250ce2b5d4280cc0599ad3c9352",
+      "receipt_sha256": "df760c679c3a94f4696b87e9159447ee0fa47a699bee4c2d72d7f7e00971b7f5",
+      "resource_kind": "volumes",
+      "retained_identity": "ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-jaeger-data",
+      "retained_record_digest": "1ef815acc9eda7fbc5afe5cfc657a324d266111e21b33e981e0f4dd29091cc20",
+      "started_at": {
+        "monotonic_ns": 717846528383958,
+        "utc": "2026-09-08T12:47:07.071370+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "59d33bde8efd69ec02154645a20fe43c11b17dfe2831a66171b65bb2f82e29a0",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "volume",
+        "rm",
+        "ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-prometheus-data"
+      ],
+      "current_pre_mutation_digest": "1aa14c0eec810e01e75a8c933490f2b94eed454bbd5edcd497a1bcbbaf9b9a90",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717848039641833,
+        "utc": "2026-09-08T12:47:08.582641+00:00"
+      },
+      "expected_postcondition": "ABSENT",
+      "intent_sha256": "953f234682766d9027929da6f7184d82895b7d2bd76042a6a9e2a5b58a787ec0",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "539ee0a5e9f027fca2492fb2c5c1b0d583d5145128465b603dca79b4c2752196",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "f413b317444cbeb84b406a92138f466a62843250ce2b5d4280cc0599ad3c9352",
+      "private_receipt_file": "mutation-receipts/062.json",
+      "private_receipt_file_sha256": "e606e5e4156a760c432b711eb2164c3a23e82b1524d789020f8d3ab91453549b",
+      "receipt_sha256": "2bf588ed2b25c49c65ff0d0ed2c89583c197e8f2e0aea74b11dfd5c1100d245d",
+      "resource_kind": "volumes",
+      "retained_identity": "ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-prometheus-data",
+      "retained_record_digest": "a39654a9d788937c9851151172bd25a01acd6a507e87a5df8dfa19486700ead2",
+      "started_at": {
+        "monotonic_ns": 717847599737333,
+        "utc": "2026-09-08T12:47:08.142734+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "7c73dbf5e27a9cf2308ac5b54f781acbf30eb48017e8731f125b506f09bf87f8",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "volume",
+        "rm",
+        "ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-qualification-kafka-config"
+      ],
+      "current_pre_mutation_digest": "5a2f22dfe5b7a1f24f8e1bac45d5378979ba9fab00910212b25287b930e9bda1",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717849125460958,
+        "utc": "2026-09-08T12:47:09.668470+00:00"
+      },
+      "expected_postcondition": "ABSENT",
+      "intent_sha256": "d10e390d2ce8ee06aff6266d5e5650146a5a33dc7b06937c46db5d14ab90e28f",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "4fb567a89142cc4913dc5b8feea6c4904b6683d393fe2aa085372c9e3abec805",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "e606e5e4156a760c432b711eb2164c3a23e82b1524d789020f8d3ab91453549b",
+      "private_receipt_file": "mutation-receipts/063.json",
+      "private_receipt_file_sha256": "5ed3185bd7078c30baec33d3508ad082b45839824b6965ee19d82da00821bb69",
+      "receipt_sha256": "46a97e571e71da576f7bb6e24c5c8f7571d82da93667d707843fcc56e0d562a8",
+      "resource_kind": "volumes",
+      "retained_identity": "ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-qualification-kafka-config",
+      "retained_record_digest": "e1c0e4e4042f804324983fc7e14c7c792d494e69daac623e99c9f92add008880",
+      "started_at": {
+        "monotonic_ns": 717848683675500,
+        "utc": "2026-09-08T12:47:09.226685+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "7d2009b306b27e2301134c17605378775c4191865eeed0cf1580d0ced0755ddf",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "volume",
+        "rm",
+        "ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-qualification-kafka-data"
+      ],
+      "current_pre_mutation_digest": "22a17ef30f708b85bd8e68581c2ab902a8211d9aebc207e9f299e2ad17cefdcc",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717850211859583,
+        "utc": "2026-09-08T12:47:10.754879+00:00"
+      },
+      "expected_postcondition": "ABSENT",
+      "intent_sha256": "72d639d27a2c7742aafac0b0dd716083c5018bc77c2bd9f2126694e188cf5a90",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "1a95833373de91a10d3a295e749ee7a1072af7bbf56e4f0ad931f1917b613ef8",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "5ed3185bd7078c30baec33d3508ad082b45839824b6965ee19d82da00821bb69",
+      "private_receipt_file": "mutation-receipts/064.json",
+      "private_receipt_file_sha256": "fddfbf1be138320912ad777447e307c84dc2dc81ff07832f5d4588a82a947912",
+      "receipt_sha256": "e972dd8fdc4429e2a6a63fa11127e5259ec950ef69716168ad553591fc85099a",
+      "resource_kind": "volumes",
+      "retained_identity": "ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-qualification-kafka-data",
+      "retained_record_digest": "24f746746977287394939dbdc9f0ff19cd8227a182f566c1f8a99c17e25166f8",
+      "started_at": {
+        "monotonic_ns": 717849780876583,
+        "utc": "2026-09-08T12:47:10.323895+00:00"
+      }
+    },
+    {
+      "bounded_output_digest": "9a18da2dbbd64897fe7116a67c2c328b22f4812135d3bb4bb082a900e19c9d0c",
+      "client_exit_status": 0,
+      "command": [
+        "docker",
+        "volume",
+        "rm",
+        "ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-qualification-kafka-secrets"
+      ],
+      "current_pre_mutation_digest": "b9964a233a613dabc6722d6cdefa81041729e5352c1ee34243defe16822bf49e",
+      "daemon_context_binding_sha256": "a8ad3a893900c576ac97e1823cebd20cd29c9dc2189cef43ad64397bdad3be83",
+      "ended_at": {
+        "monotonic_ns": 717851292890916,
+        "utc": "2026-09-08T12:47:11.835924+00:00"
+      },
+      "expected_postcondition": "ABSENT",
+      "intent_sha256": "1a5db6ffa6fdbef8f317b0b9f7149a7860ec1bc9b2dc4783e3767670c2306aea",
+      "outcome": "VERIFIED",
+      "post_mutation_observation_digest": "34887aa9ccd4d23dfba2064028bdb66cca83455caff5164993b9a3c7650a6417",
+      "postcondition": "VERIFIED",
+      "previous_receipt_sha256": "fddfbf1be138320912ad777447e307c84dc2dc81ff07832f5d4588a82a947912",
+      "private_receipt_file": "mutation-receipts/065.json",
+      "private_receipt_file_sha256": "a75c59a8414feb417ca8257ad425b1cf69e759e79baba829362b73e9171dac53",
+      "receipt_sha256": "634c275c012c8f73f07a47a2b06286aa2b40d91699abf62eebc36037749cf9c3",
+      "resource_kind": "volumes",
+      "retained_identity": "ecomsre-v040-c6a70e54d58b4df5a1325886304b4844-qualification-kafka-secrets",
+      "retained_record_digest": "94d2a92d033b70c812524d508b2fb76598bf0ed7707bb66a0f04aadd216a83cd",
+      "started_at": {
+        "monotonic_ns": 717850856502166,
+        "utc": "2026-09-08T12:47:11.399533+00:00"
+      }
+    }
+  ],
+  "schema_version": "ecomsre.v040.v3.retained-cleanup-receipts.v1"
+}

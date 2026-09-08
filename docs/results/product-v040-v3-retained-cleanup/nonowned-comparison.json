@@ -1,0 +1,21 @@
+{
+  "after_sha256": "0e05dc6f1f05c5048ff85a511c651c12d65f9480da2165271a3039dec3c9ec0a",
+  "allowed_probe_endpoint_exception_used": false,
+  "baseline": "new pre-cleanup double capture",
+  "before_sha256": "0e05dc6f1f05c5048ff85a511c651c12d65f9480da2165271a3039dec3c9ec0a",
+  "builtin_none_probe_endpoint_present_before": false,
+  "exact_configuration_equal": true,
+  "note": "Three builtin networks and three unrelated volumes preserved. No nonowned containers existed at baseline.",
+  "post_counts": {
+    "containers": 0,
+    "networks": 3,
+    "volumes": 3
+  },
+  "pre_counts": {
+    "containers": 0,
+    "networks": 3,
+    "volumes": 3
+  },
+  "status": "PASS",
+  "unauthorized_differences": []
+}
