@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "must_fix": 0,
+  "claim_accuracy": "PASS",
+  "reviewer": "independent read-only review_qualification",
+  "script_sha256": "4f92afa107c492afd6a0488f2cd4ad70e4ac582b0658434dc44a2736ab777451",
+  "tests_passed": 17,
+  "authority": "Exact retained probe and six volumes only; any mismatch stops; no qualification startup approval"
+}

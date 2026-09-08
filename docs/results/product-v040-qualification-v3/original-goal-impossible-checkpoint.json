@@ -1,0 +1,20 @@
+{
+  "schema_version": "ecomsre.goal.impossible-checkpoint.v1",
+  "status": "goal_impossible_checkpoint",
+  "original_goal": "EcomSRE Product v0.4 Bounded Remediation Goal v1",
+  "original_start": "3f851bdfd17f686fe84a20a390122deb9c7276b7",
+  "checkpoint_pr": 98,
+  "checkpoint_head": "7d1c975e3450901a6b09fcbca8c0cd82f24cfc14",
+  "qualification_id": "ebbcf1e4e3e740a296f294fb9ab6047c",
+  "qualification_status": "BLOCKED_PRE_EXECUTION",
+  "blocker": "WRITER_CONTAINER_DRIFT",
+  "cleanup_status": "MANUAL_INTERVENTION_REQUIRED",
+  "consumed_no_fault_authorization_sha256": "9a3e83c12e7871182b84d0e48e5bc693a050a3c53f623c6f2174cf2cd21e52c9",
+  "no_fault_qualification_count": 1,
+  "same_authorization_retry_allowed": false,
+  "formal_payment_campaign_allowance_consumed": false,
+  "historical_results_reinterpreted": false,
+  "original_goal_success": false,
+  "successor_goal_id": "ecomsre-product-v040-runtime-qualification-successor-v3",
+  "authority": "Explicit user instruction to close as a preserved impossible checkpoint and create v3"
+}
