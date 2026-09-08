@@ -15,6 +15,32 @@ def environment(entries: list[str]) -> dict[str, str]:
     return {p[0]: p[1] for p in pairs}
 
 
+def validate_image_identity(row: dict[str, Any], planned: dict[str, Any]) -> None:
+    service = planned["service"]
+    role = service["labels"]["io.ecomsre.preflight.v4.role"]
+    image_allowed = row["Image"] in (planned["image_id"], planned["platform_digest"])
+    descriptor = row.get("ImageManifestDescriptor")
+    if not image_allowed:
+        # Engine container inspect may retain the exact index used to create,
+        # while platform-selective image inspect returns its selected manifest.
+        image_allowed = (
+            row["Image"] == service["image"]
+            and service["image"].startswith("sha256:")
+            and len(service["image"]) == 71
+            and isinstance(descriptor, dict)
+            and descriptor.get("digest") == planned["platform_digest"]
+            and descriptor.get("platform") == {"os": "linux", "architecture": "arm64"}
+        )
+    require(image_allowed, "BIRTH_IMAGE:" + role)
+    if descriptor:
+        require(
+            descriptor["digest"] == planned["platform_digest"], "BIRTH_PLATFORM:" + role
+        )
+    require(
+        row["Config"].get("Image") == service["image"], "BIRTH_IMAGE_REFERENCE:" + role
+    )
+
+
 def validate_container(
     row: dict[str, Any],
     planned: dict[str, Any],
@@ -33,17 +59,7 @@ def validate_container(
         and row["Name"] == "/" + service["container_name"],
         "BIRTH_NAME_OR_ID:" + role,
     )
-    require(
-        row["Image"] in (planned["image_id"], planned["platform_digest"]),
-        "BIRTH_IMAGE:" + role,
-    )
-    if descriptor := row.get("ImageManifestDescriptor"):
-        require(
-            descriptor["digest"] == planned["platform_digest"], "BIRTH_PLATFORM:" + role
-        )
-    require(
-        row["Config"].get("Image") == service["image"], "BIRTH_IMAGE_REFERENCE:" + role
-    )
+    validate_image_identity(row, planned)
     config = row["Config"]
     host = row["HostConfig"]
     process_matches(row, planned["process"])

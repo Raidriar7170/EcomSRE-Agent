@@ -6,7 +6,18 @@ from typing import Any, Callable
 import json
 from .birth import validate_container, validate_storage
 from .cleanup import cleanup_command, nonowned
-from .common import Failure, LABEL, canonical, digest, git, load, now, require, seal
+from .common import (
+    Failure,
+    LABEL,
+    GOAL_SHA,
+    canonical,
+    digest,
+    git,
+    load,
+    now,
+    require,
+    seal,
+)
 from .docker import Docker
 from .identity import stable_running, validate_network_stage, lifecycle, immutable
 from .budget import consume
@@ -15,7 +26,13 @@ from .journal import Journal
 
 class Resources:
     def __init__(
-        self, root: Path, plan: dict[str, Any], docker: Docker, source_head: str
+        self,
+        root: Path,
+        plan: dict[str, Any],
+        docker: Docker,
+        source_head: str,
+        *,
+        cleanup_admission: dict[str, Any] | None = None,
     ) -> None:
         self.root, self.plan, self.docker, self.source_head = (
             root,
@@ -23,6 +40,22 @@ class Resources:
             docker,
             source_head,
         )
+        self.execution_head = source_head
+        self.cleanup_only = cleanup_admission is not None
+        if cleanup_admission is not None:
+            require(
+                cleanup_admission["goal_sha256"] == GOAL_SHA
+                and cleanup_admission["attempt_id"] == plan["attempt_id"]
+                and cleanup_admission["original_source_head"] == source_head
+                and cleanup_admission["plan_digest"] == digest(plan)
+                and cleanup_admission["cleanup_head"] == git("rev-parse", "HEAD")
+                and cleanup_admission["reviewed_tree"]
+                == git("rev-parse", "HEAD^{tree}")
+                and cleanup_admission["verdict"] == "ALLOW"
+                and cleanup_admission["must_fix"] == 0,
+                "CLEANUP_REPAIR_NOT_ADMITTED",
+            )
+            self.execution_head = cleanup_admission["cleanup_head"]
         self.attempt = plan["attempt_id"]
         self.binding = docker.binding()
         docker.bound = self.binding
@@ -127,13 +160,24 @@ class Resources:
 
     def command(self, args: list[str]) -> dict[str, Any]:
         require(
-            git("rev-parse", "HEAD") == self.source_head, "RUNTIME_SOURCE_HEAD_DRIFT"
+            git("rev-parse", "HEAD") == self.execution_head, "RUNTIME_SOURCE_HEAD_DRIFT"
         )
         require(
             not git("diff", "--name-only")
             and not git("diff", "--cached", "--name-only"),
             "RUNTIME_SOURCE_DIRTY",
         )
+        if self.cleanup_only:
+            require(
+                args[:2]
+                in (
+                    ["container", "stop"],
+                    ["container", "rm"],
+                    ["network", "rm"],
+                    ["volume", "rm"],
+                ),
+                "CLEANUP_ONLY_COMMAND_DENIED",
+            )
         self.docker.binding()
         result = self.docker.command(args, timeout=180)
         return {
@@ -246,6 +290,7 @@ class Resources:
             "binding": self.binding,
             "plan_digest": digest(self.plan),
             "source_head": self.source_head,
+            "validation_head": self.execution_head,
             "plan_validated": True,
             "create_key": create_key,
             "create_intent_digest": digest(intent),

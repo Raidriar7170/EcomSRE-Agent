@@ -141,3 +141,39 @@ def test_recovery_cannot_be_self_authorized(recovered):
     (prior / "stabilization-recovery-v2.json").write_text("{}")
     with pytest.raises(Failure, match="COMMITMENT_DRIFT"):
         recovery.cleanup_complete(root, identifier)
+
+
+def test_index_identity_requires_exact_platform_descriptor():
+    from scripts.product.preflight_v040_v4.birth import validate_image_identity
+
+    index, platform = "sha256:" + "a" * 64, "sha256:" + "b" * 64
+    plan = {
+        "image_id": platform,
+        "platform_digest": platform,
+        "service": {
+            "image": index,
+            "labels": {"io.ecomsre.preflight.v4.role": "probe"},
+        },
+    }
+    row = {
+        "Image": index,
+        "Config": {"Image": index},
+        "ImageManifestDescriptor": {
+            "digest": platform,
+            "platform": {"os": "linux", "architecture": "arm64"},
+        },
+    }
+    validate_image_identity(row, plan)
+    for changed in (
+        {**row, "Image": "sha256:" + "c" * 64},
+        {**row, "ImageManifestDescriptor": None},
+        {
+            **row,
+            "ImageManifestDescriptor": {
+                "digest": platform,
+                "platform": {"os": "linux", "architecture": "amd64"},
+            },
+        },
+    ):
+        with pytest.raises(Failure, match="BIRTH_IMAGE"):
+            validate_image_identity(changed, plan)
