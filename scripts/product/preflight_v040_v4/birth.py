@@ -182,11 +182,28 @@ def validate_container(
 
 
 def validate_storage(kind: str, row: dict[str, Any], plan: dict[str, Any]) -> None:
+    options = row.get("Options") or {}
+    options_allowed = not options
+    if kind == "network" and options:
+        # Engine 29 may materialize its ordinary IP-family defaults even when
+        # the exact network-create command supplies no driver options.
+        options_allowed = (
+            row.get("Driver") == "bridge"
+            and row.get("Scope") == "local"
+            and row.get("EnableIPv4") is True
+            and row.get("EnableIPv6") is False
+            and row.get("ConfigOnly") is False
+            and options
+            == {
+                "com.docker.network.enable_ipv4": "true",
+                "com.docker.network.enable_ipv6": "false",
+            }
+        )
     require(
         row["Name"] == plan["name"]
         and row["Driver"] == plan["driver"]
         and (row.get("Labels") or {}) == plan["labels"]
-        and not row.get("Options"),
+        and options_allowed,
         "STORAGE_BIRTH_DRIFT",
     )
     if kind == "network":
