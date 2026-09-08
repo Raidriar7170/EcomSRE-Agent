@@ -6,13 +6,21 @@ from .common import require
 from .identity import process_matches, validate_network_stage
 
 
-def environment(entries: list[str]) -> dict[str, str]:
+def environment(
+    entries: list[str], *, unset_keys: set[str] | None = None
+) -> dict[str, str]:
+    unset_keys = unset_keys or set()
     pairs = [item.split("=", 1) for item in entries]
     require(
-        all(len(p) == 2 for p in pairs) and len({p[0] for p in pairs}) == len(pairs),
+        all(len(p) == 2 or p[0] in unset_keys for p in pairs)
+        and len({p[0] for p in pairs}) == len(pairs),
         "ENVIRONMENT_MALFORMED",
     )
-    return {p[0]: p[1] for p in pairs}
+    require(
+        all(len(p) == 1 for p in pairs if p[0] in unset_keys),
+        "EXPLICIT_UNSET_ASSIGNED",
+    )
+    return {p[0]: p[1] for p in pairs if len(p) == 2}
 
 
 def validate_image_identity(row: dict[str, Any], planned: dict[str, Any]) -> None:
@@ -29,7 +37,11 @@ def validate_image_identity(row: dict[str, Any], planned: dict[str, Any]) -> Non
             and len(service["image"]) == 71
             and isinstance(descriptor, dict)
             and descriptor.get("digest") == planned["platform_digest"]
-            and descriptor.get("platform") == {"os": "linux", "architecture": "arm64"}
+            and descriptor.get("platform")
+            in (
+                {"os": "linux", "architecture": "arm64"},
+                {"os": "linux", "architecture": "arm64", "variant": "v8"},
+            )
         )
     require(image_allowed, "BIRTH_IMAGE:" + role)
     if descriptor:
@@ -74,15 +86,18 @@ def validate_container(
         "BIRTH_WORKDIR:" + role,
     )
     require(config.get("Hostname") == service["hostname"], "BIRTH_HOSTNAME:" + role)
-    env = {
-        **environment(image_config.get("Env") or []),
-        **{
-            k: str(v)
-            for k, v in service.get("environment", {}).items()
-            if v is not None
-        },
-    }
-    require(environment(config.get("Env") or []) == env, "BIRTH_ENVIRONMENT:" + role)
+    env = environment(image_config.get("Env") or [])
+    unset_keys = set()
+    for key, value in service.get("environment", {}).items():
+        if value is None:
+            unset_keys.add(key)
+            env.pop(key, None)
+        else:
+            env[key] = str(value)
+    require(
+        environment(config.get("Env") or [], unset_keys=unset_keys) == env,
+        "BIRTH_ENVIRONMENT:" + role,
+    )
     actual_labels = config.get("Labels") or {}
     require(
         all(

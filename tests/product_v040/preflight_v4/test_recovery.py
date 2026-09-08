@@ -164,7 +164,13 @@ def test_index_identity_requires_exact_platform_descriptor():
         },
     }
     validate_image_identity(row, plan)
+    v8 = deepcopy(row)
+    v8["ImageManifestDescriptor"]["platform"]["variant"] = "v8"
+    validate_image_identity(v8, plan)
+    v9 = deepcopy(v8)
+    v9["ImageManifestDescriptor"]["platform"]["variant"] = "v9"
     for changed in (
+        v9,
         {**row, "Image": "sha256:" + "c" * 64},
         {**row, "ImageManifestDescriptor": None},
         {
@@ -177,3 +183,22 @@ def test_index_identity_requires_exact_platform_descriptor():
     ):
         with pytest.raises(Failure, match="BIRTH_IMAGE"):
             validate_image_identity(changed, plan)
+
+
+def test_explicit_unset_environment_is_not_an_empty_assignment():
+    from scripts.product.preflight_v040_v4.birth import environment
+
+    entries = ["PATH=/bin", "_JAVA_OPTIONS"]
+    assert environment(entries, unset_keys={"_JAVA_OPTIONS"}) == {"PATH": "/bin"}
+    assert entries == ["PATH=/bin", "_JAVA_OPTIONS"]
+    for values in (
+        ["_JAVA_OPTIONS="],
+        ["_JAVA_OPTIONS=-Dexample=true"],
+        ["_JAVA_OPTIONS", "_JAVA_OPTIONS"],
+        ["_JAVA_OPTIONS", "_JAVA_OPTIONS="],
+        ["UNKNOWN"],
+    ):
+        with pytest.raises(Failure):
+            environment(values, unset_keys={"_JAVA_OPTIONS"})
+    with pytest.raises(Failure, match="ENVIRONMENT_MALFORMED"):
+        environment(entries)
