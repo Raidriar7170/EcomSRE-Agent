@@ -120,15 +120,27 @@ def build() -> dict[str, Any]:
     )
     require(result.returncode == 0, "PRODUCT_BUILD_FAILED")
     identifier = (root / "iid.txt").read_text().strip()
-    image = json.loads(docker.read("image", "inspect", identifier))[0]
+    metadata = json.loads((root / "metadata.json").read_bytes())
+    require(
+        metadata["containerimage.config.digest"] == identifier, "BUILD_CONFIG_ID_DRIFT"
+    )
+    platform = metadata["containerimage.digest"]
+    require(
+        metadata["containerimage.descriptor"]["digest"] == platform
+        and metadata["containerimage.descriptor"]["platform"]
+        == {"architecture": "arm64", "os": "linux"},
+        "BUILD_MANIFEST_PLATFORM_DRIFT",
+    )
+    image = json.loads(
+        docker.read("image", "inspect", "--platform", "linux/arm64", platform)
+    )[0]
+    require(image["Id"] in (platform, identifier), "BUILD_LOCAL_IMAGE_ID_DRIFT")
     require(
         image["Os"] == "linux"
         and image["Architecture"] == "arm64"
         and image["Config"]["Labels"]["io.ecomsre.preflight.v4.source"] == head,
         "PRODUCT_BUILD_IDENTITY",
     )
-    metadata = json.loads((root / "metadata.json").read_bytes())
-    platform = metadata.get("containerimage.digest", image["Id"])
     value = {
         "source_head": head,
         "context_files": manifest,
@@ -138,6 +150,7 @@ def build() -> dict[str, Any]:
         "uv_image_digest": "sha256:e590846f4776907b254ac0f44b5b380347af5d90d668138ca7938d1b0c2f98d3",
         "image_id": image["Id"],
         "platform_digest": platform,
+        "config_digest": identifier,
         "tag": tag,
         "config": image["Config"],
         "raw_inspect": image,
