@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "must_fix": 0,
+  "claim_accuracy": "PASS",
+  "reviewer": "independent read-only review_qualification",
+  "script_sha256": "85cb780420b2932a7d9e6dc5e2eee081123dcef16de0d5d132b582e221ad240e",
+  "tests_passed": 18,
+  "prior_cleanup_operations": 0,
+  "cause": "Same43 complete image rows differ only in order; no identity mismatch observed",
+  "decision": "ALLOW continuation of unexecuted exact Phase1 cleanup with a new evidence root; first receipt immutable; no qualification retry"
+}

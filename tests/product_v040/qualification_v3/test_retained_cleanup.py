@@ -152,3 +152,13 @@ def test_overlapping_bind_is_unexpected_attachment(source):
     )
     with pytest.raises(QualificationBlocked, match="CLEANUP_ATTACHMENT_DRIFT"):
         validate(current, retained, set(VOLUMES), True)
+
+
+def test_image_order_does_not_change_identity_but_content_does():
+    from scripts.product.qualification_v040_v3.retained_cleanup import image_set
+
+    rows = [{"ID": "one", "Tag": "a"}, {"ID": "two", "Tag": "b"}]
+    assert image_set(rows) == image_set(list(reversed(rows)))
+    changed = deepcopy(rows)
+    changed[0]["ID"] = "replacement"
+    assert image_set(rows) != image_set(changed)

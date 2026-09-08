@@ -68,6 +68,10 @@ def inventory_pass() -> dict[str, Any]:
     }
 
 
+def image_set(rows: list[dict[str, Any]]) -> list[str]:
+    return sorted(json.dumps(row, sort_keys=True) for row in rows)
+
+
 def validate_capture(first: dict[str, Any], second: dict[str, Any]) -> None:
     for view in (first, second):
         require(
@@ -109,7 +113,10 @@ def validate_capture(first: dict[str, Any], second: dict[str, Any]) -> None:
         ),
         "CLEANUP_DAEMON_DRIFT",
     )
-    require(first["images"] == second["images"], "CLEANUP_IMAGE_SET_DRIFT")
+    require(
+        image_set(first["images"]) == image_set(second["images"]),
+        "CLEANUP_IMAGE_SET_DRIFT",
+    )
 
 
 def snapshot() -> dict[str, Any]:
@@ -235,7 +242,7 @@ def main() -> None:
         "HISTORY_DRIFT",
     )
     retained = json.loads(raw)
-    private = root / ".local/runtime-qualification-v3/retained-cleanup"
+    private = root / ".local/runtime-qualification-v3/retained-cleanup-order-v2"
     private.mkdir(parents=True, mode=0o700, exist_ok=False)
     private.parent.chmod(0o700)
     (private / "retained-reference.json").write_bytes(raw)
@@ -310,7 +317,10 @@ def main() -> None:
             }
 
         require(nonowned(initial) == nonowned(final), "CLEANUP_NONOWNED_DRIFT")
-        require(initial["images"] == final["images"], "CLEANUP_IMAGE_SET_DRIFT")
+        require(
+            image_set(initial["images"]) == image_set(final["images"]),
+            "CLEANUP_IMAGE_SET_DRIFT",
+        )
         receipt.update(
             status="CLEAN",
             remaining_containers=0,
