@@ -31,3 +31,11 @@ Current repaired-head Live Admission: WITHHOLD pending review and full gates.
 The reviewer accepted the narrowly committed prior-attempt recovery proof, independently verifying all 29 bound evidence files, four births, eight mutation receipts and the daemon event. Two Must Fix items were then raised: respect Goal section 18's version/info-only wake restriction, and relax only raw Mounts array ordering while preserving complete NetworkSettings and every other raw field.
 
 Both fixes are implemented. The execution path uses version/info only, and raw created-container comparison sorts only Mounts before complete equality. Alias, IPAMConfig and NetworkID drift remain rejected. The earlier read-only system-df diagnostic is retained as a scope deviation; it created no runtime resource and consumed no attempt. It is not used in the admitted execution path. New runtime admission remains pending frozen-head review and all checks.
+
+## Attempt 2 identity repair and cleanup review
+
+The frozen `c71f954c65a2347634523ae07833137377a326d2` implementation had received ALLOW / Must Fix 0 before its complete offline and CI gates. Attempt 2 then failed on exact index versus selected platform identity before Probe start.
+
+Sagan independently approved cleanup-only repair HEAD `3f82e3513e71e03689efea640e5ccef7d95bae80`, tree `358c3c0f3e693641b1c85404a9446b4b037a76a6`. The original receipt passed full repaired birth validation. The reviewer verified all eight create/remove chains, fresh identity checks for four removals, double final owned-zero/non-owned-unchanged captures, unchanged images and free listeners. Original failure remained intact.
+
+Implementation code gate: ALLOW. Must Fix: 0. Claim Accuracy: PASS. This covers the implementation repair; final publication-head review, offline checks, exact-head CI and new image/fresh baseline admission remain required before Attempt 3.

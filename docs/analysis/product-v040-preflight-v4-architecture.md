@@ -4,7 +4,7 @@ The activated [Goal](../goals/EcomSRE_Product_v0.4_Live_Harness_Engineering_Pref
 
 ## State
 
-Attempt 1 consumed 1/5 and failed before Probe start. Exact owned cleanup removed the Probe and three volumes; the original `FAILED / BLOCKED_SAFETY` result remains unchanged because builtin bridge identity drifted. There is no live PASS. Full repository tests on runtime head `d058ea6` passed 6623 tests with 21 skips; its CI passed. The current stabilization repair has 139 focused tests passing and awaits new frozen-head verification.
+Two attempts consumed 2/5 and failed before Probe start. Attempt 1 retains its original non-owned bridge drift. Attempt 2 failed on an exact index/platform representation mismatch; reviewed cleanup subsequently returned CLEAN with zero owned resources and unchanged non-owned resources. Neither failed attempt is rewritten as PASS. Full repository tests on runtime head `c71f954` passed 6632 tests with 21 skips and both CI workflows passed. The current identity/cleanup repair has 140 focused tests passing and awaits final published-head verification.
 
 Policy v2 treats Mounts array ordering as serialization while retaining every keyed mount field. Docker readiness uses only `version/info` as Goal section 18 requires. An authorized exact-source Product build is scheduled after CI and immediately before the new double baseline. A diagnostic `system df` probe was performed before this restriction was reconciled; it is preserved as a scoped read-only deviation and is not part of the admitted execution path. A narrowly committed recovery proof can acknowledge the prior exact owned closure after an independently observed daemon event without changing the old failed result or accepting its non-owned comparison as unchanged. Every new attempt still requires its own complete admission.
 
@@ -35,3 +35,7 @@ Docker image compatibility normalization is limited to documented absent/default
 Private runtime evidence is append-only, mode 0600 under directories 0700. Public files contain safe commitments and accurate progress. The frozen image records are selected immutable image facts from hash-verified historical observations; they provide no old resource identity or execution authority. Every attempt freshly verifies current image commitments and resources. All historical outcomes remain unchanged.
 
 A pass requires complete traffic, baseline, diagnosis, zero formal actions and verified cleanup. Two consecutive complete passes must bind the same runtime surface and Product image. No live result is currently claimed.
+
+## Exact index identity and cleanup recovery
+
+A container may retain the frozen immutable image index while platform-selective image inspect returns the selected manifest. The added birth path requires the exact digest reference, exact platform descriptor and linux/arm64. It does not admit tags or an unbound index. `cleanup_resume.py` binds an independently reviewed cleanup head/tree to the original plan/source and replays only existing create receipts, then revalidates fresh identity before exact deletion. Its command gate allows only cleanup verbs. Attempt 2 exercised this path without starting the Probe or creating a replacement.

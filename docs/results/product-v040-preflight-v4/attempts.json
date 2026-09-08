@@ -93,6 +93,98 @@
         "retained_resources": []
       },
       "recovery_disposition": "SEPARATE_REVIEW_REQUIRED; ORIGINAL_RESULT_UNCHANGED"
+    },
+    {
+      "schema_version": "ecomsre.product.v040.preflight-v4-attempt.v1",
+      "attempt_id": "ca131709ca59447ba17f2445af19da5e",
+      "attempt_ordinal": 2,
+      "goal_sha256": "3f3751ec1b957547da508e0068d36eb1c7877d4374477820f2b370de2d16ece5",
+      "source_head": "c71f954c65a2347634523ae07833137377a326d2",
+      "runtime_surface_sha256": "4e01d7095f16585770671ddb886ebd54e2ee7c57492184d0bc99fc9a87b08b5c",
+      "terminal": "FAILED",
+      "cleanup_terminal": "BLOCKED_SAFETY",
+      "last_completed_stage": "06-KAFKA_VOLUMES_CREATE",
+      "safe_error_code": "UNPROVABLE_CREATED_IDENTITY",
+      "probe": {
+        "created": true,
+        "provenance": false,
+        "process_access": false,
+        "sentinel": false,
+        "removed_before_sandbox": false,
+        "birth_validation_initially_failed": true
+      },
+      "sandbox": {
+        "expected_roles": [
+          "accounting",
+          "ad",
+          "astronomy-db",
+          "cart",
+          "checkout",
+          "currency",
+          "email",
+          "flagd",
+          "flagd-ui",
+          "fraud-detection",
+          "frontend",
+          "frontend-proxy",
+          "grafana",
+          "image-provider",
+          "jaeger",
+          "kafka",
+          "load-generator",
+          "opamp-server",
+          "opensearch",
+          "otel-collector",
+          "payment",
+          "product-catalog",
+          "prometheus",
+          "quote",
+          "recommendation",
+          "shipping",
+          "telemetry-docs",
+          "valkey-cart"
+        ],
+        "observed_roles": [],
+        "per_service_health": {},
+        "healthy": false
+      },
+      "traffic": {
+        "warmup_succeeded": null,
+        "planned": null,
+        "completed": null,
+        "succeeded": null,
+        "failed": null,
+        "retries": null
+      },
+      "baseline": {
+        "baseline_id": null,
+        "window_count": null,
+        "successful_windows": null,
+        "active": null
+      },
+      "product": {
+        "ready": false,
+        "environment_id": null,
+        "incident_id": null,
+        "diagnosis_id": null,
+        "terminal": null,
+        "capability_limitations": null,
+        "evidence_refs_resolve": false
+      },
+      "formal_counters": null,
+      "provider_calls": 0,
+      "formal_authority": "NONE",
+      "product_image_id": "sha256:3cd394c7af1a62b7692e5bcc3ca1a100a11df6c485d78b8b8869cc811b415672",
+      "evidence_index_sha256": "023add364018468e1b3451aa2fc7785f441ef6d0f3cc0e3aaead8d5524b47f7e",
+      "claim_boundary": "ENGINEERING_PREFLIGHT_ONLY; NO_FORMAL_REMEDIATION_OR_PRODUCTION_READINESS",
+      "cleanup_recovery": {
+        "head": "3f82e3513e71e03689efea640e5ccef7d95bae80",
+        "review": "ALLOW / Must Fix 0",
+        "terminal": "CLEAN",
+        "owned_remaining": 0,
+        "nonowned_unchanged": true,
+        "original_result_preserved": true
+      }
     }
   ]
 }
