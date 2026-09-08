@@ -1,0 +1,18 @@
+{
+  "schema_version": "ecomsre.preflight.v4.contract.v1",
+  "goal_sha256": "3f3751ec1b957547da508e0068d36eb1c7877d4374477820f2b370de2d16ece5",
+  "goal_path": "docs/goals/EcomSRE_Product_v0.4_Live_Harness_Engineering_Preflight_v4_Goal.md",
+  "starting_head": "cc941b51cbff9287b876be49652cd0ad83030474",
+  "starting_tree": "1b3baa986bcffc00dd4064c8b6c147c30f15e4d3",
+  "upstream": "1755859a9de82c2e5e225be68abc401a5ebf2b4f",
+  "max_attempts": 5,
+  "consecutive_complete_passes": 2,
+  "formal_authority": "NONE",
+  "provider_calls": 0,
+  "terminals": [
+    "goal_complete_checkpoint",
+    "engineering_preflight_exhausted_checkpoint",
+    "safety_final_checkpoint",
+    "repository_incompatible_final"
+  ]
+}

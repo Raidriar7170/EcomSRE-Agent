@@ -1,0 +1,278 @@
+{
+  "schema_version": "ecomsre.preflight.v4.image-provenance.v1",
+  "source": {
+    "commit": "ea466d7ca14ac4a0a0c1f7680507747dbe67b06e",
+    "path": "config/product-v040/copyup-access-v2/policy.json",
+    "sha256": "64f19a543958c38eb57f878a9162ccb59ff2997d30622f3616509caef580c7fb",
+    "archive_sha256": "2381e338230f746003668444ffadc22bca736090b38d13774a96a0fb11f21175"
+  },
+  "image": {
+    "platform_digest": "sha256:80478d79c95aba98f487dc8df11b10a1db1ddf537b739d32eac9e6ad1b887f9a",
+    "config_digest": "sha256:2c8a663bc5fd9aeadece70a6715b18dda9a61dc794f5f119613368c9f90abecb",
+    "platform": "linux/arm64",
+    "config_user": "appuser",
+    "config_env": [
+      "PATH=/opt/java/openjdk/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+      "JAVA_HOME=/opt/java/openjdk",
+      "LANG=en_US.UTF-8",
+      "LANGUAGE=en_US:en",
+      "LC_ALL=en_US.UTF-8",
+      "JAVA_VERSION=jdk-21.0.11+10",
+      "KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER",
+      "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT",
+      "KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS=0",
+      "KAFKA_PROCESS_ROLES=controller,broker",
+      "KAFKA_NODE_ID=1",
+      "KAFKA_METADATA_LOG_SEGMENT_MS=15000",
+      "KAFKA_METADATA_MAX_RETENTION_MS=60000",
+      "KAFKA_METADATA_LOG_MAX_RECORD_BYTES_BETWEEN_SNAPSHOTS=2800",
+      "KAFKA_AUTO_CREATE_TOPICS_ENABLE=true",
+      "KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1",
+      "KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1",
+      "KAFKA_OPTS=-javaagent:/tmp/opentelemetry-javaagent.jar -Dotel.jmx.target.system=kafka-broker",
+      "CLUSTER_ID=ckjPoprWQzOf0-FuNkGfFQ"
+    ],
+    "config_volumes": {
+      "/etc/kafka/secrets": {},
+      "/mnt/shared/config": {},
+      "/var/lib/kafka/data": {}
+    },
+    "rootfs_diff_ids": [
+      "sha256:a8d26d037006414043b277ecb95287692d0960219289d9e27b0bcea0ce233b02",
+      "sha256:82baf9c1d57725bb1cb1ef74973fac84b0a8a9be642e27b5dde47aac3a000bad",
+      "sha256:0ce25d4981601d0c524d000cdd01487a37b77234f9a884c982d1b15beecff905",
+      "sha256:05ad289c803946f0f3b84c006b627b756a4a711805bb9af4cc85dd37d33f411d",
+      "sha256:2d4110215c54b6b001d3d63dd094b21578350307234ff95ecaa5e6095f7c6947",
+      "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef",
+      "sha256:41e65ad54a54e8d2f613431b3e8afce995e00f9a29c94b4783b7ebd6365edf6d",
+      "sha256:7def7e54ac1620332bb729288ee90047ef379ba897a8b729bec503f26cb19722",
+      "sha256:21ef8629d5b9605f180f2cbd33418197cab20ff8a67dbf808a4e94d3fc9845cd",
+      "sha256:c0b85c8af66c37ba61531d07704eadebd4c3acdc21a87d5e3b9c6d90fb203615",
+      "sha256:ab9159b4bf728e00dd5aeec66afc620e25d7d072c620f1fbc65a749b6b54e0c9",
+      "sha256:fc17c06fb73ba7cf1895c9624017480fb990a7caaeb034d8a08801e87f5191e7",
+      "sha256:201b00d55c0e11adfb672485734105857ec890e2b24ed49964b6bac676283eb4"
+    ],
+    "manifest_layers": [
+      {
+        "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+        "digest": "sha256:d17f077ada118cc762df373ff803592abf2dfa3ddafaa7381e364dd27a88fca7",
+        "size": 4199870
+      },
+      {
+        "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+        "digest": "sha256:bf450a430f283e30e1c40224be86cafae4f423e0521eb9ba2e8799bef6b81f96",
+        "size": 16808915
+      },
+      {
+        "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+        "digest": "sha256:ec4bddb7f46e4f78e2ad4312982140fa4df3f2fabe062b83836c8fb58e949ccc",
+        "size": 52367876
+      },
+      {
+        "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+        "digest": "sha256:ff48e0031f1e3b1efe1e77813f0dafa06ee81a76c884d23e8a2bfd5113592585",
+        "size": 128
+      },
+      {
+        "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+        "digest": "sha256:1ab8d09dd6da961016c94e5c1d602e23b7d50b9cf3de06d915601c48c4ac160a",
+        "size": 2281
+      },
+      {
+        "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+        "digest": "sha256:4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1",
+        "size": 32
+      },
+      {
+        "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+        "digest": "sha256:98ab838cde0915d1868de0be191db3e7826bece444774cf2bbb66b644e60b1d1",
+        "size": 143536338
+      },
+      {
+        "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+        "digest": "sha256:a1a0a5be0a532bbe21d68b1aadca71f57a06bfc7dc96e5b4373cf21ec9c4ea6e",
+        "size": 3001
+      },
+      {
+        "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+        "digest": "sha256:8aa345741bd6a75a905528b8377f0513074815c91786379d2c5fc678081719e2",
+        "size": 14537253
+      },
+      {
+        "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+        "digest": "sha256:4f30acd2d4c8b14c002a4719ffcbe2ab63dc5d66910379318a656b009be9932b",
+        "size": 7131471
+      },
+      {
+        "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+        "digest": "sha256:4365be2114c99d880178ed4ef5cd7826ab108512bd89ef13da219e2ee01d772e",
+        "size": 2278
+      },
+      {
+        "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+        "digest": "sha256:f4e75a4b31504d3597d4820b52d4153f11c949efadc2f95095623d5e905e8591",
+        "size": 1570
+      },
+      {
+        "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+        "digest": "sha256:d89c3ae3db6995dca188c59e94109e151f082e9955dd3fbad54c8f2f42888123",
+        "size": 20915343
+      }
+    ],
+    "paths": {
+      "/etc/kafka/secrets": {
+        "path": "/etc/kafka/secrets",
+        "kind": "directory",
+        "uid": 1000,
+        "gid": 0,
+        "mode": 509,
+        "size": 0,
+        "layer_index": 6,
+        "layer_digest": "sha256:98ab838cde0915d1868de0be191db3e7826bece444774cf2bbb66b644e60b1d1",
+        "rootfs_diff_id": "sha256:41e65ad54a54e8d2f613431b3e8afce995e00f9a29c94b4783b7ebd6365edf6d"
+      },
+      "/mnt/shared/config": {
+        "path": "/mnt/shared/config",
+        "kind": "directory",
+        "uid": 1000,
+        "gid": 1000,
+        "mode": 493,
+        "size": 0,
+        "layer_index": 6,
+        "layer_digest": "sha256:98ab838cde0915d1868de0be191db3e7826bece444774cf2bbb66b644e60b1d1",
+        "rootfs_diff_id": "sha256:41e65ad54a54e8d2f613431b3e8afce995e00f9a29c94b4783b7ebd6365edf6d"
+      },
+      "/var/lib/kafka/data": {
+        "path": "/var/lib/kafka/data",
+        "kind": "directory",
+        "uid": 1000,
+        "gid": 0,
+        "mode": 509,
+        "size": 0,
+        "layer_index": 6,
+        "layer_digest": "sha256:98ab838cde0915d1868de0be191db3e7826bece444774cf2bbb66b644e60b1d1",
+        "rootfs_diff_id": "sha256:41e65ad54a54e8d2f613431b3e8afce995e00f9a29c94b4783b7ebd6365edf6d"
+      }
+    },
+    "image_repo_digests": [
+      "ghcr.io/open-telemetry/demo@sha256:0601750a3ca4db7d27f746dc73f4180fda162e7a92a1a4847f5b6ae9ac51d477"
+    ],
+    "entries": {
+      "/etc": {
+        "path": "/etc",
+        "kind": "directory",
+        "uid": 0,
+        "gid": 0,
+        "mode": 493,
+        "size": 0,
+        "layer_index": 11,
+        "layer_digest": "sha256:f4e75a4b31504d3597d4820b52d4153f11c949efadc2f95095623d5e905e8591",
+        "rootfs_diff_id": "sha256:fc17c06fb73ba7cf1895c9624017480fb990a7caaeb034d8a08801e87f5191e7"
+      },
+      "/mnt": {
+        "path": "/mnt",
+        "kind": "directory",
+        "uid": 0,
+        "gid": 0,
+        "mode": 493,
+        "size": 0,
+        "layer_index": 6,
+        "layer_digest": "sha256:98ab838cde0915d1868de0be191db3e7826bece444774cf2bbb66b644e60b1d1",
+        "rootfs_diff_id": "sha256:41e65ad54a54e8d2f613431b3e8afce995e00f9a29c94b4783b7ebd6365edf6d"
+      },
+      "/var": {
+        "path": "/var",
+        "kind": "directory",
+        "uid": 0,
+        "gid": 0,
+        "mode": 493,
+        "size": 0,
+        "layer_index": 6,
+        "layer_digest": "sha256:98ab838cde0915d1868de0be191db3e7826bece444774cf2bbb66b644e60b1d1",
+        "rootfs_diff_id": "sha256:41e65ad54a54e8d2f613431b3e8afce995e00f9a29c94b4783b7ebd6365edf6d"
+      },
+      "/var/lib": {
+        "path": "/var/lib",
+        "kind": "directory",
+        "uid": 0,
+        "gid": 0,
+        "mode": 493,
+        "size": 0,
+        "layer_index": 6,
+        "layer_digest": "sha256:98ab838cde0915d1868de0be191db3e7826bece444774cf2bbb66b644e60b1d1",
+        "rootfs_diff_id": "sha256:41e65ad54a54e8d2f613431b3e8afce995e00f9a29c94b4783b7ebd6365edf6d"
+      },
+      "/etc/kafka": {
+        "path": "/etc/kafka",
+        "kind": "directory",
+        "uid": 1000,
+        "gid": 0,
+        "mode": 509,
+        "size": 0,
+        "layer_index": 11,
+        "layer_digest": "sha256:f4e75a4b31504d3597d4820b52d4153f11c949efadc2f95095623d5e905e8591",
+        "rootfs_diff_id": "sha256:fc17c06fb73ba7cf1895c9624017480fb990a7caaeb034d8a08801e87f5191e7"
+      },
+      "/etc/kafka/secrets": {
+        "path": "/etc/kafka/secrets",
+        "kind": "directory",
+        "uid": 1000,
+        "gid": 0,
+        "mode": 509,
+        "size": 0,
+        "layer_index": 6,
+        "layer_digest": "sha256:98ab838cde0915d1868de0be191db3e7826bece444774cf2bbb66b644e60b1d1",
+        "rootfs_diff_id": "sha256:41e65ad54a54e8d2f613431b3e8afce995e00f9a29c94b4783b7ebd6365edf6d"
+      },
+      "/mnt/shared": {
+        "path": "/mnt/shared",
+        "kind": "directory",
+        "uid": 0,
+        "gid": 0,
+        "mode": 493,
+        "size": 0,
+        "layer_index": 6,
+        "layer_digest": "sha256:98ab838cde0915d1868de0be191db3e7826bece444774cf2bbb66b644e60b1d1",
+        "rootfs_diff_id": "sha256:41e65ad54a54e8d2f613431b3e8afce995e00f9a29c94b4783b7ebd6365edf6d"
+      },
+      "/mnt/shared/config": {
+        "path": "/mnt/shared/config",
+        "kind": "directory",
+        "uid": 1000,
+        "gid": 1000,
+        "mode": 493,
+        "size": 0,
+        "layer_index": 6,
+        "layer_digest": "sha256:98ab838cde0915d1868de0be191db3e7826bece444774cf2bbb66b644e60b1d1",
+        "rootfs_diff_id": "sha256:41e65ad54a54e8d2f613431b3e8afce995e00f9a29c94b4783b7ebd6365edf6d"
+      },
+      "/var/lib/kafka": {
+        "path": "/var/lib/kafka",
+        "kind": "directory",
+        "uid": 1000,
+        "gid": 0,
+        "mode": 509,
+        "size": 0,
+        "layer_index": 6,
+        "layer_digest": "sha256:98ab838cde0915d1868de0be191db3e7826bece444774cf2bbb66b644e60b1d1",
+        "rootfs_diff_id": "sha256:41e65ad54a54e8d2f613431b3e8afce995e00f9a29c94b4783b7ebd6365edf6d"
+      },
+      "/var/lib/kafka/data": {
+        "path": "/var/lib/kafka/data",
+        "kind": "directory",
+        "uid": 1000,
+        "gid": 0,
+        "mode": 509,
+        "size": 0,
+        "layer_index": 6,
+        "layer_digest": "sha256:98ab838cde0915d1868de0be191db3e7826bece444774cf2bbb66b644e60b1d1",
+        "rootfs_diff_id": "sha256:41e65ad54a54e8d2f613431b3e8afce995e00f9a29c94b4783b7ebd6365edf6d"
+      }
+    },
+    "identity_files": {
+      "/etc/group": "root:x:0:root\nbin:x:1:root,bin,daemon\ndaemon:x:2:root,bin,daemon\nsys:x:3:root,bin\nadm:x:4:root,daemon\ntty:x:5:\ndisk:x:6:root\nlp:x:7:lp\nkmem:x:9:\nwheel:x:10:root\nfloppy:x:11:root\nmail:x:12:mail\nnews:x:13:news\nuucp:x:14:uucp\ncron:x:16:cron\naudio:x:18:\ncdrom:x:19:\ndialout:x:20:root\nftp:x:21:\nsshd:x:22:\ninput:x:23:\ntape:x:26:root\nvideo:x:27:root\nnetdev:x:28:\nkvm:x:34:kvm\ngames:x:35:\nshadow:x:42:\nwww-data:x:82:\nusers:x:100:games\nntp:x:123:\nabuild:x:300:\nutmp:x:406:\nping:x:999:\nnogroup:x:65533:\nnobody:x:65534:\nappuser:x:1000:\n",
+      "/etc/passwd": "root:x:0:0:root:/root:/bin/sh\nbin:x:1:1:bin:/bin:/sbin/nologin\ndaemon:x:2:2:daemon:/sbin:/sbin/nologin\nlp:x:4:7:lp:/var/spool/lpd:/sbin/nologin\nsync:x:5:0:sync:/sbin:/bin/sync\nshutdown:x:6:0:shutdown:/sbin:/sbin/shutdown\nhalt:x:7:0:halt:/sbin:/sbin/halt\nmail:x:8:12:mail:/var/mail:/sbin/nologin\nnews:x:9:13:news:/usr/lib/news:/sbin/nologin\nuucp:x:10:14:uucp:/var/spool/uucppublic:/sbin/nologin\ncron:x:16:16:cron:/var/spool/cron:/sbin/nologin\nftp:x:21:21::/var/lib/ftp:/sbin/nologin\nsshd:x:22:22:sshd:/dev/null:/sbin/nologin\ngames:x:35:35:games:/usr/games:/sbin/nologin\nntp:x:123:123:NTP:/var/empty:/sbin/nologin\nguest:x:405:100:guest:/dev/null:/sbin/nologin\nnobody:x:65534:65534:nobody:/:/sbin/nologin\nappuser:x:1000:1000::/home/appuser:/bin/bash\n"
+    }
+  },
+  "authority": "IMMUTABLE_IMAGE_FACTS_ONLY_NO_PRIOR_RUNTIME_AUTHORITY"
+}

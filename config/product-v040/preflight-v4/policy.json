@@ -1,0 +1,23 @@
+{
+  "schema_version": "ecomsre.preflight.v4.policy.v1",
+  "probe_namespace": "independent",
+  "probe_death_before_sandbox_birth": true,
+  "kafka_paths": [
+    "/etc/kafka/secrets",
+    "/mnt/shared/config",
+    "/var/lib/kafka/data"
+  ],
+  "process_uid": 1000,
+  "process_gid": 1000,
+  "capabilities": 0,
+  "no_new_privileges": true,
+  "runtime_chown_chmod": false,
+  "cleanup_authority": "verified-plan-and-birth-receipt",
+  "one_target_per_cleanup_command": true,
+  "force_kill_prune": false,
+  "remediation_profile": "ABSENT",
+  "formal_authority": "NONE",
+  "provider_calls": 0,
+  "readiness_policy": "exact-role-birth-id-with-contemporaneous-evidence",
+  "oom_representation_policy": "probe-only-false-to-null-bound-effective-cgroup-proof-v1"
+}

@@ -1,0 +1,12 @@
+{
+  "schema_version": "ecomsre.preflight.v4.progress.v1",
+  "goal_sha256": "3f3751ec1b957547da508e0068d36eb1c7877d4374477820f2b370de2d16ece5",
+  "stage": "IMPLEMENTATION",
+  "attempt_count": 0,
+  "maximum_attempts": 5,
+  "consecutive_complete_passes": 0,
+  "live_admission": "WITHHOLD",
+  "terminal": null,
+  "formal_authority": "NONE",
+  "provider_calls": 0
+}

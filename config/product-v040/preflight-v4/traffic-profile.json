@@ -1,0 +1,18 @@
+{
+  "schema_version": "ecomsre.preflight.v4.traffic.v1",
+  "warmup_max_requests": 3,
+  "warmup_min_business_successes": 2,
+  "settlement_seconds": 330,
+  "healthy_requests": 30,
+  "healthy_required_successes": 30,
+  "retries": 0,
+  "product_id": "0PUK6V6EV0",
+  "quantity": 1,
+  "baseline": {
+    "lookback_seconds": 180,
+    "window_count": 5,
+    "minimum_sample_count": 5,
+    "warmup_seconds": 180
+  },
+  "formal_authority": "NONE"
+}
