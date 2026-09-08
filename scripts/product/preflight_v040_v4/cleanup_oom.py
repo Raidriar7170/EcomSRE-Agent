@@ -297,7 +297,11 @@ def load_validated_proof(
     parsed = parse_cleanup_oom(raw["stdout"])
     value = parsed["first"]
     require(
-        proof["evidence"] == parsed
+        proof["pid"] == row["State"]["Pid"]
+        and proof["started_at"] == row["State"]["StartedAt"]
+        and proof["immutable_digest"] == digest(immutable(row))
+        and proof["binding_digest"] == digest(before["binding"])
+        and proof["evidence"] == parsed
         and proof["networks"] == row["NetworkSettings"]["Networks"]
         and value["cgroup"] == "0::/"
         and value["cgroup_fs"] == "cgroup2"

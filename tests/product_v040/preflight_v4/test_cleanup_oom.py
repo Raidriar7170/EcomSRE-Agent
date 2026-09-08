@@ -224,3 +224,22 @@ def test_persisted_proof_chain_tamper_rejected(proof_chain, name, mutate):
     path.write_text(json.dumps(data))
     with pytest.raises(Failure):
         permits_cleanup(birth, row, binding, ATTEMPT)
+
+
+@pytest.mark.parametrize(
+    "proof_key,state_key,value",
+    [("pid", "Pid", 9876), ("started_at", "StartedAt", "new-lifetime")],
+)
+def test_proof_and_current_cannot_collude_on_new_lifetime(
+    proof_chain, proof_key, state_key, value
+):
+    import json
+    from scripts.product.preflight_v040_v4.cleanup_oom import permits_cleanup, ATTEMPT
+
+    birth, row, binding, root = proof_chain
+    proof = birth["cleanup_only_oom_proof"]
+    proof[proof_key] = value
+    (root / "cleanup-only-oom-proof.json").write_text(json.dumps(proof))
+    row["State"][state_key] = value
+    with pytest.raises(Failure):
+        permits_cleanup(birth, row, binding, ATTEMPT)
