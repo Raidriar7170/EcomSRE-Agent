@@ -1,133 +1,80 @@
-# EcomSRE-Agent · 中文项目讲法
+# EcomSRE-Agent 面试讲稿 · v0.4.1
 
-[离线 HTML 手册](ecomsre-agent-v03-handbook.html) ·
-[当前状态与证据](../product/STATUS.md) · [架构](../product/ARCHITECTURE.md)
+项目结果与个人职责分开说明。以下是项目讲法；请按实际参与范围补充“我负责”的设计、实现、实验或审查，不能自动声称全部独立完成。实测入口见 [STATUS](../product/STATUS.md) 与 [claim map](../analysis/product-v041-claim-map.json)。
 
-## 20 秒招聘沟通版
+## 20 秒版
 
-这是一个可验证、只读的 SRE Agent，把指标、日志、调用链和运行状态变成带证据的故障判断。
-已知问题用确定性规则，未知问题先聚成故障族，
-经过人工门控和影子评估后变成环境规则。模型不持有执行权限。
-目前在本地多服务环境完成了健康控制和一个 Kafka 队列积压知识闭环。
+这是一个面向微服务的可验证 SRE Agent。它先检查证据能否支持诊断，未知故障经人工门控沉淀为环境知识；真实恢复则要求独立批准和新鲜状态授权。当前已完成一个本地 Payment 配置故障的固定回滚与双窗口恢复验证，仍是单租户原型。
 
-## 90 秒技术版
+## 90 秒版
 
-我用这个项目研究的是：如何让诊断结论真正受证据约束，而不是让模型自由选工具再编一个解释。
-项目先探索过 Multi-Agent 和模型取证，发现收益依赖场景，复杂度增加并不稳定提高质量。
-因此当前系统把服务身份、候选、查询、覆盖度、谓词和诊断准入放到确定性 Runtime。
+我用这个项目研究如何让诊断结论和真实动作都能被证据约束。服务别名、遥测缺失和采样噪声会影响定位，所以 Runtime 维护身份、Baseline、覆盖度、谓词和引用。已知故障走确定性规则；有强异常却未命中的事件形成指纹与故障族，经人工确认、规则挖掘和 Shadow 评估后成为环境扩展。
 
-Product 层用 FastAPI 接收事件，Worker 做有界多源读取，
-SQLite 保存状态，内容寻址存储保存不可变证据，事件绑定激活的多窗口 Baseline。
-诊断依次尝试 Core Known、环境扩展、No-Incident、Open-World。
-证据不足或冲突就保留不确定性，不把缺失当健康。
+工程层把它接到 FastAPI、Worker、SQLite 和内容寻址证据库。恢复层继续分权：Diagnosis 没有写权限，Candidate 也不能执行；Approval 后还要重新读取目标和配置状态，绑定一次授权，再提交 WriteIntent，由独立 Executor 执行固定动作。Receipt 证明动作结果，两个业务窗口证明恢复。
 
-未知强异常会生成指纹，在同一环境聚为故障族。人工接受后，
-Runtime 从正负例矩阵挖掘规则，跑健康、已知故障、来源失败和反事实 Shadow，
-再经过人工晋升。模型只可辅助命名和解释。
-实测三个队列异常窗口形成一个族，选出“运行健康且队列 lag 异常”的两源规则；
-新的 H1 窗口命中扩展，证明知识进入了诊断路径。
-边界是单环境、单机制、单租户原型，不能宣称生产可用或自主修复。
+可引用的结果是 v0.2.4 健康 30/30 checkout 与 NO_INCIDENT，v0.3 一个 Kafka 故障族与新窗口 H1 命中，以及 v0.4 一次 Payment 恢复，两个窗口各 39 请求、0 错误。v0.4.1 正在补充真实安全拒绝与重复执行证据。它不证明生产自主自愈，也没有跨环境恢复泛化。
 
-## 三个最强技术贡献
+## 四个核心贡献面
 
-以下是仓库可验证的项目贡献，不自动等于全部由个人独立实现；
-面试时只用自己实际承担的“设计 / 实现 / 评估 / 协调”动词。
+| 面向 | 技术取舍 | 证据 / 代码 |
+| --- | --- | --- |
+| 证据驱动诊断 | 缺失不当反证，Runtime 维护准入 | [diagnosis bridge](../../src/ecomsre/product/incidents/diagnosis_bridge.py) |
+| Product 工程化 | API / Worker、SQLite 租约、CAS 持久化 | [Product](../../src/ecomsre/product) |
+| 人引导知识演化 | 小样本确定性指纹、规则挖掘、Shadow、显式 Promotion | [knowledge runtime](../../src/ecomsre/product/knowledge/runtime.py) |
+| 状态绑定受限恢复 | 批准与执行分离，单次固定写入，外部双窗口验证 | [remediation](../../src/ecomsre/product/remediation) |
 
-1. **把证据可信性做成运行时契约。**
-   服务身份、来源覆盖、谓词支持与内容绑定可检查；
-   数据缺失、源失败和真实反证分开表示。
-2. **把研究链路变成有状态的只读 Product。**
-   API / Worker / SQLite WAL / CAS，事件绑定 Baseline，
-   租约 fencing 与恢复检查点避免错误覆盖证据或重复发布。
-3. **把未知故障沉淀为环境规则。**
-   多事件故障族、Runtime 规则挖掘、Shadow、人类治理与留出复发，
-   将语义可靠性与模型输出格式可靠性分开验证。
-
-上游 OTel Demo 提供被观测环境，不属于个人自研微服务；
-不要把框架能力、AI 辅助实现或协作者工作描述成个人从零独立完成。
+这张表列出项目可讨论的贡献面，不是个人独立完成证明。OTel Demo 微服务、OpenTelemetry、Prometheus 等是上游组件。
 
 ## 两条简历候选表述
 
-仅在确认相应个人职责后使用；不写内部微版本，不声称全部独立完成。
+- 将 SRE 研究原型工程化为 FastAPI / Worker / SQLite / CAS Product，使用类型化遥测与证据准入支持确定性诊断，并通过故障族、规则挖掘、Shadow 与人工门控形成环境级知识扩展。
+- 设计并验证 Diagnosis → Candidate → Approval → 状态绑定授权 → 隔离执行 → Receipt → 双窗口验证的受限恢复链路；在本地真实 Payment 配置故障中完成一次固定 Baseline 回滚，两个恢复窗口均为 39 次请求 / 0 错误。
 
-- 构建证据驱动的只读 SRE Agent，以多源遥测、类型化证据和确定性准入支持故障定位；
-  在本地 OpenTelemetry Demo 环境完成 30/30 健康事务验收，
-  输出 NO_INCIDENT，覆盖指标、日志、调用链、资源与运行状态。
-- 实现环境级故障知识演化链路：跨事件聚类、人工门控、规则挖掘与影子评估；
-  三个未知队列积压窗口形成故障族，晋升一个两源规则，
-  留出复发命中 EXTENSION_KNOWN，模型无修复执行权限。
+仅在与实际职责一致时使用“设计”“工程化”“验证”等动词。Safety Matrix 尚未收口前不把其预期结果写进简历。
 
-## 八个高频问题
+## 高频问答
 
-### 1. 为什么不用 Multi-Agent？
+**为什么不让 LLM 直接调用工具恢复？** 模型文本不能作为目标或权限的来源。Runtime 与 Registry 固定动作、参数和状态门槛；LLM 可辅助命名/解释，本次 Product live 结果 Provider calls = 0。
 
-不是否定 Multi-Agent，而是先要求复杂度带来可验证收益。
-[冻结比较](../results/phase5b-v2-final-summary.md)未支持预注册优势；
-[真实故障取证比较](../results/dta-v226-real-fault-comparison.md)
-显示该小样本中确定性路由优于自由模型取证。
-这支持当前边界设计，不证明 Multi-Agent 普遍无效。
+**Approval 为什么还不够？** 它记录用户对范围的同意，但当前状态可能变了。Attempt 重新读取状态，绑定身份、Baseline、批准和时限；执行前再验证。
 
-### 2. LLM 实际做什么？
+**Candidate、Approval、Authorization 差别？** 候选说明能考虑什么；批准说明人同意了什么；授权绑定这一次当前状态下允许执行的固定动作。
 
-可选的命名与解释，不控制谓词、根服务、审批或动作。
-当前 live 知识闭环 Provider = 0，不能说成果依赖更强模型。
-追问“是不是 RAG/微调”：这里没有为该闭环训练模型，也不是以向量检索替代证据准入。
+**为什么不是自主自愈？** 需要显式授权，只有一个本地 Payment Runbook；不支持自由选择动作或循环试错。
 
-### 3. 如何保证证据有效？
+**APPLIED 为什么不等于 RECOVERED？** 前者是动作 Receipt，后者需要两个独立窗口满足业务请求数与错误率等条件。配置恢复但业务证据不足时必须转人工。
 
-从读取窗口、服务身份、来源状态到引用解析和 CAS 持久化逐层绑定。
-只有完整覆盖下的缺席才是负证据；哈希保证内容绑定，不保证观测天然正确。
-仍需连接器测试与独立结果验证，不能把完整性等同真实世界正确性。
+**重复调用如何处理？** API Idempotency-Key 绑定语义请求；WriteIntent 与 gateway 单次消费提供额外防线。重复执行已有 intent 进入拒绝/协调路径，不建立通用 exactly-once 声明。
 
-### 4. 如何控制健康误报？
+**不确定写入怎么办？** 保留 OUTCOME_UNKNOWN 与证据，转人工，不因超时直接再发一次。cleanup 不改写原终态。
 
-健康控制需要实际事务和覆盖证据。
-Product 不让孤立短窗口内存增长单独成为强残差，
-Shadow 必须包含 No-Incident 控制且误报为零。
-30/30 和两个健康窗口是有限验证，不是长期零误报率。
+**为什么不用 embedding 聚类？** 当前是小样本环境内确定性加权指纹 baseline，便于解释根服务、领域与异常来源。没有对 embedding 做优越性结论，拆分/误合并与跨环境效果仍需评估。
 
-### 5. 未注册故障怎么发现？
+**Shadow 1.0 / 0.0 能证明什么？** 只是在三个正例和十个负向/反事实/失败用例上的观测；其他扩展分层不可用，不能推导通用准确率。
 
-现有类型未解释的强异常进入 Open-World；
-Runtime 生成受证据约束的领域、根服务和指纹，在同一环境聚类。
-三个实测窗口的 CONCURRENCY / fraud-detection 形成同一故障族。
-这不是从空白学习任意故障，更不是普遍因果发现。
+**MTTD / TTR 怎么讲？** 单次观测称 Observed Time to Detect / Verified Recovery，标明起止事件、样本数和 UTC/monotonic 来源。不能叫平均值、稳定 P95 或生产 SLO；缺失写 NOT_MEASURED。
 
-### 6. 规则怎样挖掘和晋升？
+**健康为什么还会证据不足？** Minimal 有真实健康 Payment 请求，但 Logs / Runtime / Traces 没有提供给健康 Diagnosis，所以保留 INSUFFICIENT_EVIDENCE。v0.2.4 的 NO_INCIDENT 属于另一完整健康证据窗口。
 
-人工 ACCEPT_AS_NEW 后建立多正负例 Predicate Matrix。
-Runtime 搜索长度 1–3 的合取式，再运行 Shadow，
-通过后还需要人工 Promotion。实测选中 Runtime 健康 + 队列 lag 异常。
-本次人工操作依据明确事先授权，不代表运行中重新人工复核。
+**你本人做了什么？** 按实际职责补充决策、编码、实验和 review 的范围，并指出上游组件与 AI 协作部分。仓库结果不能自动证明个人贡献占比。
 
-### 7. H1 为什么重要？
+## Safety Matrix 与时间线
 
-H1 是晋升后新采集的留出复发窗口。
-命中扩展、根服务等于故障族多数根、引用有效且没有新临时报告/故障族，
-说明规则真的进入运行时匹配，而非仅生成文字。
-它仍是同环境同机制的一次复发。
+[真实安全矩阵](../results/product-v041-live-safety/README.md)围绕健康、撤销批准、状态漂移、重复请求与验证证据不足。预期零写入案例不能用 fixture 替代 live。结果完成后按 [timing summary](../results/product-v041-live-safety/timing-summary.json)解释诊断、授权、执行与窗口等待的分解。
 
-### 8. 距生产还差什么？
+## 代码阅读路线
 
-独立环境/机制、长健康窗口、其他扩展干扰、长期负载、
-多租户隔离、HA、安全与运维可靠性验证。
-当前单租户 SQLite 和受限本地实验不能当生产证据；
-延迟、成本没有通用量化承诺，不能用测试耗时替代线上 SLO。
+1. [app.py](../../src/ecomsre/product/app.py)：API 与仓储注入。
+2. [diagnosis_bridge.py](../../src/ecomsre/product/incidents/diagnosis_bridge.py)：诊断分路与证据缺口。
+3. [knowledge/runtime.py](../../src/ecomsre/product/knowledge/runtime.py)：指纹、规则与 Shadow。
+4. [remediation/api.py](../../src/ecomsre/product/remediation/api.py)：Candidate / Approval / Attempt 接口。
+5. [attempts.py](../../src/ecomsre/product/remediation/attempts.py)：fresh state、授权、WriteIntent。
+6. [executor.py](../../src/ecomsre/product/remediation/executor.py) → [payment_control.py](../../src/ecomsre/product/remediation/payment_control.py)：隔离与单次消费。
+7. [recovery.py](../../src/ecomsre/product/remediation/recovery.py) → [verifier.py](../../src/ecomsre/product/remediation/verifier.py)：Receipt 与双窗口评估。
+8. [live_safety_v041](../../scripts/product/live_safety_v041)：独立环境、真实 API 与追加写审计。
 
-## 代码阅读路线（最多八站）
+## 失败教训与 Claim Boundary
 
-1. [app.py](../../src/ecomsre/product/app.py)：API 应用、状态与生命周期入口。
-2. [worker.py](../../src/ecomsre/product/jobs/worker.py)：任务领取与执行。
-3. [baselines.py](../../src/ecomsre/product/baselines.py)：窗口政策与激活绑定。
-4. [read_backend.py](../../src/ecomsre/product/incidents/read_backend.py)：有界多源取证。
-5. [diagnosis_bridge.py](../../src/ecomsre/product/incidents/diagnosis_bridge.py)：固定诊断顺序。
-6. [runtime.py](../../src/ecomsre/product/knowledge/runtime.py)：指纹、相似度、规则与 Shadow。
-7. [repository.py](../../src/ecomsre/product/knowledge/repository.py)：人工门控与注册持久化。
-8. [run_product_mvp_demo.py](../../scripts/product/run_product_mvp_demo.py)：可执行端到端夹具路线。
+完整 28 服务 Harness 的负向实验与精确 cleanup 仍是历史事实；Minimal 成功只建立更窄的 Payment 结果。早期 restored-but-unverified 不能称恢复成功。状态、权限和证据必须分别成立，CI 通过不能替代真实环境证据。
 
-## 面试材料自检
-
-手册覆盖动机、架构、证据、算法、指标、失败教训与边界。
-公开结果可核查，生产/泛化声明不成立；个人职责不由代码存在自动证明，
-使用简历候选表述前需本人确认实际分工。
-更完整的逐题覆盖审计位于 HTML 手册末节。
+不能声称生产自主自愈、所有故障恢复、跨环境泛化、exactly-once、HA、多租户、Kubernetes 或长期 SLO。见 [演进历史](../history/PROJECT_EVOLUTION.md)。

@@ -28,6 +28,19 @@ def main() -> None:
             if self.path != "/read":
                 self.send_error(404)
                 return
+            if self.headers.get("X-EcomSRE-Peer-Witness") == "GATEWAY_READ_ONLY_PROBE":
+                with (ROOT / "peer-witness.json").open("x") as log:
+                    json.dump(
+                        {
+                            "peer": self.client_address[0],
+                            "utc": datetime.now(UTC).isoformat(),
+                            "monotonic_ns": time.monotonic_ns(),
+                            "clock_scope": "flag-transport-process",
+                        },
+                        log,
+                    )
+                    log.flush()
+                    os.fsync(log.fileno())
             body = json.dumps(
                 {"flags": json.loads(path.read_bytes())["flags"]}
             ).encode()

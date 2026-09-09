@@ -1,12 +1,12 @@
-# 当前系统架构 · Product v0.3
+# 当前系统架构 · Product v0.4.1
 
-三层结构：环境与证据、确定性诊断、人引导知识演化。
+四层结构：环境与证据、确定性诊断、人引导知识演化、受限恢复。
 [当前结果](STATUS.md)与[限制](LIMITATIONS.md)定义公开能力边界。
 
-![EcomSRE-Agent 当前架构](../assets/ecomsre-v03-architecture.svg)
+![EcomSRE-Agent 当前架构](../assets/ecomsre-v041-architecture.svg)
 
-[Mermaid 源文件](../assets/ecomsre-v03-architecture.mmd) ·
-[离线手册](../interview/ecomsre-agent-v03-handbook.html)
+[Mermaid 源文件](../assets/ecomsre-v041-architecture.mmd) ·
+[离线手册](../interview/ecomsre-agent-v041-handbook.html)
 
 ## A · 环境与证据
 
@@ -65,6 +65,19 @@ Shadow Evaluation → Human Promotion → ACTIVE Extension Registry。
 [知识演化案例](KNOWLEDGE_EVOLUTION.md)说明实测与人工门控方式。
 扩展生效后，新事件命中返回 `EXTENSION_KNOWN`；
 多个扩展同时匹配进入冲突处理，不靠模型任选一个。
+
+## D · Bounded Remediation
+
+`DiagnosisResultV1` → `RemediationCandidateV1` → `OperatorApprovalV1` → `CurrentStateSnapshotV1` → `AttemptAuthorizationV1` → `WriteIntentV1` → isolated Executor → `StepReceiptV1` → `RecoveryWindowV1 × 2` → `RecoveryEvaluationV1`。
+
+Diagnosis action_authority = NONE；Approval ≠ execution authority。LLM does not select target / action / command。Executor has no Docker socket。
+
+[Candidate](../../src/ecomsre/product/remediation/candidate_filter.py)从严格诊断结果生成固定映射；[attempts](../../src/ecomsre/product/remediation/attempts.py)重新读取状态并持久化授权，批准撤销、过期或状态漂移会拒绝。
+[executor](../../src/ecomsre/product/remediation/executor.py)先提交 WriteIntent，再通过独立写通道执行；[recovery](../../src/ecomsre/product/remediation/recovery.py)绑定 Receipt 与两个独立窗口。恢复判定不会重新进入执行器。
+
+默认部署不启用 remediation profile。显式配置的 API 只有读取通道；独立 gateway 持有固定私有控制配置；Executor 通过 Unix socket 调用固定动作，没有网络或 Docker socket。实验控制器负责环境生命周期及故障注入，与 Product 恢复计数分开。
+
+唯一 Runbook 与不确定结果语义见 [REMEDIATION](REMEDIATION.md)。
 
 ## 部署与持久化
 

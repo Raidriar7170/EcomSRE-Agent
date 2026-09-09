@@ -348,7 +348,7 @@ def run(product_image: str, case_id: str) -> dict[str, Any]:
         if len(projection["candidates"]) != 1:
             raise ValueError("UNIQUE_CANDIDATE_MISSING:" + json.dumps(projection))
         candidate = projection["candidates"][0]
-        control_url = "http://payment-control:8080"
+        control_url = f"http://host.docker.internal:{ports['control']}"
         flag_url = f"http://host.docker.internal:{ports['flagd']}"
         binding = TrustedStateBindingV1.build(
             environment_id=candidate["environment_id"],
@@ -449,6 +449,13 @@ def run(product_image: str, case_id: str) -> dict[str, Any]:
         save(
             root / "running-gateway.json",
             owned.require_birth("container", ids["remediation-control-gateway"]),
+        )
+        command(
+            "docker",
+            "exec",
+            ids["remediation-control-gateway"],
+            "python",
+            "/peer_probe.py",
         )
         candidate, approval = product.approve(fault_diagnosis)
         result["events"]["approval_response_observed"] = stamp()

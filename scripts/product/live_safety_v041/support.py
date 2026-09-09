@@ -101,4 +101,7 @@ def build_plan(
     plan["services"]["payment-control"]["volumes"].append(
         bind(REPO / "scripts/product/live_safety_v041", "/safety")
     )
+    plan["services"]["remediation-control-gateway"]["volumes"].append(
+        bind(REPO / "scripts/product/live_safety_v041/peer_probe.py", "/peer_probe.py")
+    )
     return plan

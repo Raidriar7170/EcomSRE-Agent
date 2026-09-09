@@ -1,0 +1,8 @@
+flowchart TB
+ A["A · Environment / Evidence: Identity · Baseline · Typed Observations · CAS"] --> B["B · Deterministic Diagnosis: Core → Extension → No-Incident → Open-World"]
+ B --> C["C · Human-Gated Knowledge: Fault Family → Rule Mining → Shadow → Promotion"]
+ C --> B
+ B --> D["D · Bounded Remediation: Candidate → Approval → fresh State → Authorization"]
+ D --> E["WriteIntent → isolated Executor → StepReceipt → two Recovery Windows → Evaluation"]
+ N["Diagnosis action_authority = NONE; Approval ≠ execution authority"] --- D
+ L["LLM does not select target / action / command; Executor has no Docker socket"] --- E
