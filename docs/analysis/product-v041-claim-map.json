@@ -109,6 +109,15 @@
       "evidence_sha256": "d15eda57f75154767dc89f1d721450d594be317c12194ff8ec8c1e09abe6d258",
       "scope": "v0.3 live_005 Shadow only",
       "limitations": "13 evaluated items, not 13 independent live experiments"
+    },
+    {
+      "claim_id": "v040-single-runbook",
+      "public_text": "One Payment ROLLBACK_CONFIGURATION Runbook; maximum forward steps = 1",
+      "source_file": "config/product-v040/remediation-registry.v1.json",
+      "source_path_or_object": "registry runbooks and fixed parameter contract",
+      "evidence_sha256": "dbcd01e283175fdaeb055701486b7325aeaa01cb773d84b0b17cfd15a5023385",
+      "scope": "Current Product v0.4 registry",
+      "limitations": "Does not register other actions or grant diagnosis write authority"
     }
   ]
 }

@@ -93,6 +93,14 @@ def verify_case(case: dict[str, Any]) -> None:
         len(applied) == writes and all(r["document"] == "baseline" for r in applied),
         "EXTERNAL_EFFECT",
     )
+    healthy = case["healthy_diagnosis"]
+    require(
+        healthy["provider_calls"]
+        == healthy["agent_writes"]
+        == healthy["runbook_executions"]
+        == 0,
+        "HEALTHY_DIAGNOSIS_WRITE_OR_PROVIDER",
+    )
     if ident == "S0":
         require(
             case["terminal"] == "NO_CANDIDATE"
@@ -378,6 +386,38 @@ def verify_documents() -> None:
         )
 
 
+def verify_timing(case: dict[str, Any], item: dict[str, Any]) -> None:
+    from scripts.product.live_safety_v041.summarize import PAIRS, duration
+
+    ident = case["case_id"]
+    pairs = (
+        PAIRS
+        if ident == "S3"
+        else (
+            {
+                "receipt_to_verification_failed_ms": (
+                    "StepReceipt_persisted",
+                    "VERIFICATION_FAILED_persisted",
+                )
+            }
+            if ident == "S4"
+            else {
+                "time_to_safe_denial_ms": ("safe_denial_request_started", "safe_denial")
+            }
+        )
+    )
+    require(
+        item["events"] == case["timeline"] and item["sample_count"] == 1,
+        "TIMING_CASE_DRIFT",
+    )
+    require(set(item["metrics"]) == set(pairs), "TIMING_METRICS_MISSING_OR_EXTRA")
+    for name, pair in pairs.items():
+        require(
+            item["metrics"][name] == duration(item["events"], *pair),
+            "TIMING_RECOMPUTATION",
+        )
+
+
 def main() -> None:
     cases = [json.loads(p.read_text()) for p in sorted(RESULT.glob("case-s*.json"))]
     require(
@@ -396,20 +436,8 @@ def main() -> None:
             "MATRIX_CASE_DRIFT",
         )
     timing = json.loads((RESULT / "timing-summary.json").read_text())
-    from scripts.product.live_safety_v041.summarize import duration
-
     for case in cases:
-        item = timing["cases"][case["case_id"]]
-        require(
-            item["events"] == case["timeline"] and item["sample_count"] == 1,
-            "TIMING_CASE_DRIFT",
-        )
-        for metric in item["metrics"].values():
-            require(
-                metric
-                == duration(item["events"], metric["start_event"], metric["end_event"]),
-                "TIMING_RECOMPUTATION",
-            )
+        verify_timing(case, timing["cases"][case["case_id"]])
     manifest = json.loads((RESULT / "evidence-manifest.json").read_text())
     for name, expected in manifest["files"].items():
         require(

@@ -81,3 +81,41 @@ def test_peer_witness_requires_exact_gateway_and_admits_observed_nat(tmp_path):
     (tmp_path / "running-gateway.json").write_text(json.dumps(row))
     assert observed_gateway_peers(tmp_path) == {"192.0.2.1", "192.0.2.2"}
     assert "192.0.2.3" not in observed_gateway_peers(tmp_path)
+
+
+@pytest.mark.parametrize(
+    "field", ["provider_calls", "agent_writes", "runbook_executions"]
+)
+def test_healthy_diagnosis_counters_are_measured(field):
+    case = json.loads(
+        (
+            ROOT
+            / "docs/results/product-v041-live-safety/case-s0-healthy-non-action.json"
+        ).read_text()
+    )
+    case["healthy_diagnosis"][field] = 1
+    with pytest.raises(ValueError, match="HEALTHY_DIAGNOSIS"):
+        verify_case(case)
+
+
+@pytest.mark.parametrize("mutation", ["missing", "wrong_pair"])
+def test_timing_requires_named_metric_and_exact_endpoints(mutation):
+    from scripts.ci.verify_product_v041_closeout import verify_timing
+
+    case = json.loads(
+        (
+            ROOT
+            / "docs/results/product-v041-live-safety/case-s0-healthy-non-action.json"
+        ).read_text()
+    )
+    item = json.loads(
+        (ROOT / "docs/results/product-v041-live-safety/timing-summary.json").read_text()
+    )["cases"]["S0"]
+    if mutation == "missing":
+        item["metrics"] = {}
+    else:
+        item["metrics"]["time_to_safe_denial_ms"] = duration(
+            item["events"], "safe_denial", "safe_denial"
+        )
+    with pytest.raises(ValueError, match="TIMING_"):
+        verify_timing(case, item)
