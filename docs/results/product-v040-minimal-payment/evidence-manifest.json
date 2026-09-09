@@ -1,0 +1,9 @@
+{
+  "files": {
+    "HUMAN_BRIEF.md": "4e346c29c4c08fb38db1bdbba70e7a89595b21d0f8f8d5a59c619844654680d5",
+    "README.md": "eb6e1923101bb284088bfcdbf7ba971a7649ec0f412710939217c985bc5c753a",
+    "engineering-attempts.json": "ac70114e985a947089315f679f45398cb9ea2bfb1f74ae43135c1ea227bc5b29",
+    "live-result.json": "5f0a3a54b723b77b9e155fd5f85f912947e7630b846d6a4cfe020286ec902ce9"
+  },
+  "schema_version": "product-v040-minimal-payment-public-manifest-v1"
+}

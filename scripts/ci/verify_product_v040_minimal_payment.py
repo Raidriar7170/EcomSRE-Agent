@@ -45,11 +45,27 @@ def verify(value: dict[str, Any]) -> dict[str, Any]:
     )
     require(value["baseline_file_restored"], "BASELINE_NOT_RESTORED")
     require(
+        value["healthy"]["business_requests"] > 0
+        and value["fault"]["confirmed_requests"] > 0
+        and value["fault"]["expected_payment_failures"]
+        == value["fault"]["confirmed_requests"],
+        "BUSINESS_FAULT_NOT_PROVEN",
+    )
+    require(
         value["fault_injections"] == value["executor_attempts"] == 1, "ATTEMPT_COUNTS"
+    )
+    require(
+        value["goal_sha256"]
+        == "290e2f2c7948522f3f642f16696e73fc77c5535374be992e5f2ec2ff5db5337b",
+        "ACTIVE_GOAL_MISMATCH",
     )
     candidate = RemediationCandidateV1.model_validate(value["objects"]["candidate"])
     approval = OperatorApprovalV1.model_validate(value["objects"]["approval"])
     state = CurrentStateSnapshotV1.model_validate(value["objects"]["current_state"])
+    write_state = CurrentStateSnapshotV1.model_validate(value["objects"]["write_state"])
+    dispatch_state = CurrentStateSnapshotV1.model_validate(
+        value["objects"]["dispatch_state"]
+    )
     authorization = AttemptAuthorizationV1.model_validate(
         value["objects"]["authorization"]
     )
@@ -90,9 +106,9 @@ def verify(value: dict[str, Any]) -> dict[str, Any]:
         "STATE_NOT_ADMISSIBLE",
     )
     require(
-        authorization.current_state_sha256
-        == state.snapshot_sha256
-        == intent.before_state_sha256,
+        authorization.current_state_sha256 == state.snapshot_sha256
+        and intent.before_state_sha256 == write_state.snapshot_sha256
+        and dispatch.before_state_sha256 == dispatch_state.snapshot_sha256,
         "STATE_INTENT_BINDING",
     )
     require(
@@ -111,7 +127,8 @@ def verify(value: dict[str, Any]) -> dict[str, Any]:
     require(
         receipt.before_state_digest
         == state.current_configuration_digest
-        == policy.fault_configuration_digest,
+        == policy.fault_configuration_digest
+        == value["fault"]["configuration_digest"],
         "FAULT_STATE_BINDING",
     )
     require(
@@ -145,10 +162,11 @@ def verify(value: dict[str, Any]) -> dict[str, Any]:
         and value["goal_authorization"]["approval_sha256"] == approval.approval_sha256,
         "GOAL_APPROVAL_BINDING",
     )
-    from ecomsre.dta_v2.v22.read_contracts import semantic_sha256_v22
+    from ecomsre.product.incidents.contracts import DiagnosisResultV1
 
     require(
-        candidate.diagnosis_sha256 == semantic_sha256_v22(value["product_diagnosis"]),
+        candidate.diagnosis_sha256
+        == DiagnosisResultV1.model_validate(value["product_diagnosis"]).result_sha256,
         "DIAGNOSIS_OBJECT_BINDING",
     )
     require(candidate.matched_clause_id == value["matched_clause"], "CLAUSE_BINDING")
@@ -207,6 +225,40 @@ def verify(value: dict[str, Any]) -> dict[str, Any]:
         "ENVIRONMENT_BINDING",
     )
 
+    require(
+        authorization.issued_at
+        < write_state.observed_at
+        <= intent.committed_at
+        <= dispatch_state.observed_at
+        <= dispatch.created_at
+        <= receipt.started_at,
+        "PREWRITE_RECAPTURE_ORDER",
+    )
+    require(
+        all(
+            s.fault_still_present
+            and s.configuration_drift_visible
+            and s.active_remediation_count == 1
+            and s.current_configuration_digest == state.current_configuration_digest
+            and s.target_identity_digest == state.target_identity_digest
+            and s.control_identity_sha256 == state.control_identity_sha256
+            and s.baseline_sha256 == state.baseline_sha256
+            and s.approval_sha256 == approval.approval_sha256
+            for s in (write_state, dispatch_state)
+        ),
+        "PREWRITE_STATE_DRIFT",
+    )
+    from ecomsre.product.baselines import EnvironmentBaselineV1
+
+    baseline = EnvironmentBaselineV1.model_validate_json(
+        json.dumps(value["active_baseline"])
+    )
+    require(
+        baseline.active
+        and baseline.baseline_sha256 == candidate.baseline_sha256
+        and baseline.successful_windows == 5,
+        "ACTIVE_BASELINE_EVIDENCE",
+    )
     evidence = value["recovery_evidence"]
 
     def resolve(ref: str) -> bytes:
@@ -248,15 +300,24 @@ def verify(value: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def main() -> None:
-    value = json.loads((RESULT / "live-result.json").read_bytes())
-    manifest = json.loads((RESULT / "evidence-manifest.json").read_bytes())
+def verify_manifest(root: Path) -> None:
+    manifest = json.loads((root / "evidence-manifest.json").read_bytes())
+    require(
+        set(manifest["files"])
+        == {"README.md", "HUMAN_BRIEF.md", "live-result.json", "engineering-attempts.json"},
+        "PUBLIC_MANIFEST_INCOMPLETE",
+    )
     for name, checksum in manifest["files"].items():
         require("/" not in name and ".." not in name, "MANIFEST_PATH_INVALID")
         require(
-            hashlib.sha256((RESULT / name).read_bytes()).hexdigest() == checksum,
+            hashlib.sha256((root / name).read_bytes()).hexdigest() == checksum,
             "PUBLIC_MANIFEST_MISMATCH",
         )
+
+
+def main() -> None:
+    verify_manifest(RESULT)
+    value = json.loads((RESULT / "live-result.json").read_bytes())
     print(json.dumps(verify(value), indent=2, sort_keys=True))
 
 

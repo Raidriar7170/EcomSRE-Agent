@@ -3,7 +3,7 @@
 from copy import deepcopy
 import json
 import pytest
-from scripts.ci.verify_product_v040_minimal_payment import RESULT, verify
+from scripts.ci.verify_product_v040_minimal_payment import RESULT, verify, verify_manifest
 from scripts.product.minimal_payment_acceptance_v040.api_transport import validate
 
 
@@ -18,7 +18,7 @@ def test_public_chain_replays_with_current_product_verifier(live):
 
 @pytest.mark.parametrize(
     "mutation",
-    ["cleanup", "second_write", "missing_window", "goal_approval", "diagnosis"],
+    ["cleanup", "second_write", "missing_window", "goal_approval", "diagnosis", "no_fault", "no_healthy"],
 )
 def test_incomplete_or_misbound_live_claim_is_denied(live, mutation):
     value = deepcopy(live)
@@ -30,6 +30,10 @@ def test_incomplete_or_misbound_live_claim_is_denied(live, mutation):
         value["objects"]["recovery_windows"].pop()
     elif mutation == "goal_approval":
         value["goal_authorization"]["goal_sha256"] = "0" * 64
+    elif mutation == "no_fault":
+        value["fault"]["expected_payment_failures"] = 0
+    elif mutation == "no_healthy":
+        value["healthy"]["business_requests"] = 0
     else:
         value["product_diagnosis"]["mechanism"] = "OTHER"
     with pytest.raises(ValueError):
@@ -61,3 +65,9 @@ def test_api_transport_rejects_command_fields():
                 "command": "anything",
             }
         )
+
+
+def test_empty_manifest_cannot_bypass_evidence_integrity(tmp_path):
+    (tmp_path / "evidence-manifest.json").write_text('{"files": {}}')
+    with pytest.raises(ValueError, match="PUBLIC_MANIFEST_INCOMPLETE"):
+        verify_manifest(tmp_path)

@@ -14,7 +14,6 @@ from .plan import REPO
 TABLES = {
     "candidate": "remediation_candidates",
     "approval": "remediation_approvals",
-    "current_state": "remediation_current_state_snapshots",
     "authorization": "remediation_authorizations",
     "write_intent": "remediation_write_intents",
     "dispatch": "remediation_executor_dispatches",
@@ -39,6 +38,26 @@ def export(root: Path) -> dict[str, Any]:
         if len(rows[table]) != 1:
             raise ValueError("PRODUCT_OBJECT_CARDINALITY:" + table)
         objects[name] = json.loads(rows[table][0]["payload_json"])
+    snapshots = [
+        json.loads(row["payload_json"])
+        for row in rows["remediation_current_state_snapshots"]
+    ]
+
+    def select_snapshot(field: str, expected: str) -> Any:
+        found = [snapshot for snapshot in snapshots if snapshot[field] == expected]
+        if len(found) != 1:
+            raise ValueError("STATE_SNAPSHOT_BINDING")
+        return found[0]
+
+    objects["current_state"] = select_snapshot(
+        "snapshot_id", objects["authorization"]["current_state_snapshot_id"]
+    )
+    objects["write_state"] = select_snapshot(
+        "snapshot_id", objects["write_intent"]["before_state_snapshot_id"]
+    )
+    objects["dispatch_state"] = select_snapshot(
+        "snapshot_sha256", objects["dispatch"]["before_state_sha256"]
+    )
     objects["recovery_windows"] = [
         json.loads(row["payload_json"]) for row in rows["remediation_recovery_windows"]
     ]
@@ -84,6 +103,13 @@ def export(root: Path) -> dict[str, Any]:
         },
         "claim_boundary": "Pinned local minimal Payment configuration-fault recovery only; no production, full-Demo, generalization or exactly-once side-effect claim.",
     }
+    for event_path in sorted((root / "product").glob("*.json")):
+        event = read(event_path)
+        if event["method"] == "GET" and event["status"] == 200:
+            if event["route"].endswith("/baselines"):
+                public["active_baseline"] = event["response"]["items"][0]
+            elif event["route"].endswith("/capabilities"):
+                public["capabilities"] = event["response"]
     diagnosis = read(root / "fault-diagnosis.json")
     public["product_diagnosis"] = diagnosis["diagnosis"]
     public["evidence_reference_commitments"] = diagnosis["index"][
