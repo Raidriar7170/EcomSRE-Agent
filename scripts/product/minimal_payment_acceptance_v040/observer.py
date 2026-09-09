@@ -17,6 +17,7 @@ from ecomsre.product.remediation.execution_contracts import (
     RecoveryPolicyV1,
 )
 from ecomsre.product.remediation.state import TrustedStateBindingV1
+from ecomsre.product.remediation.payment_control import OwnershipWitnessV1
 from .owned import command, digest, save
 
 
@@ -159,6 +160,9 @@ class Observer:
                         non_owned_resources_unchanged=True,
                         observed_at=datetime.now(UTC).isoformat(),
                     )
+                    body = OwnershipWitnessV1.model_validate(
+                        {**body, "signature": "0" * 64}
+                    ).model_dump(mode="json", exclude={"signature"})
                     atomic(
                         self.root / "observer/ownership.json",
                         {**body, "signature": signature(body, self.key)},
