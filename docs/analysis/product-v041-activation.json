@@ -1,0 +1,24 @@
+{
+  "goal_sha256": "c8dd161bef61adac1e08da60409e02ddbccb939ad5b13ad6b89adee1b42ca9d5",
+  "starting_main": "85675083f64e2bf77f8b2564bfdbaca9dd526b26",
+  "starting_tree": "dc628159e60f271fe1bc51a234daf1ed7194cec5",
+  "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f",
+  "activated_at": "2026-09-09T11:26:43.847230+00:00",
+  "status": "IN_PROGRESS",
+  "read_scope": [
+    "Product source, tests, docs, CI",
+    "PR 102 and designated historical PRs",
+    "owned local Minimal Payment runtime"
+  ],
+  "write_scope": [
+    "Goal section 12",
+    "docs/goals",
+    "docs/analysis/product-v041-claim-map.json",
+    "docs/results/product-v041-live-safety"
+  ],
+  "frozen_asset_scope": [
+    "all pre-v041 result evidence",
+    "third_party/opentelemetry-demo"
+  ],
+  "final_repository_scope": "Complete tracked delta from starting_main, frozen evidence and submodule; fresh final SHA-256 verification required."
+}

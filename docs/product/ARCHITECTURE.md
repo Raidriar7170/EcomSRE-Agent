@@ -1,12 +1,12 @@
-# 当前系统架构 · Product v0.3
+# 当前系统架构 · Product v0.4.1
 
-三层结构：环境与证据、确定性诊断、人引导知识演化。
+四层结构：环境与证据、确定性诊断、人引导知识演化、受限恢复。
 [当前结果](STATUS.md)与[限制](LIMITATIONS.md)定义公开能力边界。
 
-![EcomSRE-Agent 当前架构](../assets/ecomsre-v03-architecture.svg)
+![EcomSRE-Agent 当前架构](../assets/ecomsre-v041-architecture.svg)
 
-[Mermaid 源文件](../assets/ecomsre-v03-architecture.mmd) ·
-[离线手册](../interview/ecomsre-agent-v03-handbook.html)
+[Mermaid 源文件](../assets/ecomsre-v041-architecture.mmd) ·
+[离线手册](../interview/ecomsre-agent-v041-handbook.html)
 
 ## A · 环境与证据
 
@@ -66,9 +66,22 @@ Shadow Evaluation → Human Promotion → ACTIVE Extension Registry。
 扩展生效后，新事件命中返回 `EXTENSION_KNOWN`；
 多个扩展同时匹配进入冲突处理，不靠模型任选一个。
 
+## D · Bounded Remediation
+
+`DiagnosisResultV1` → `RemediationCandidateV1` → `OperatorApprovalV1` → `CurrentStateSnapshotV1` → `AttemptAuthorizationV1` → `WriteIntentV1` → isolated Executor → `StepReceiptV1` → `RecoveryWindowV1 × 2` → `RecoveryEvaluationV1`。
+
+Diagnosis action_authority = NONE；Approval ≠ execution authority。LLM does not select target / action / command。Executor has no Docker socket。
+
+[Candidate](../../src/ecomsre/product/remediation/candidate_filter.py)从严格诊断结果生成固定映射；[attempts](../../src/ecomsre/product/remediation/attempts.py)重新读取状态并持久化授权，批准撤销、过期或状态漂移会拒绝。
+[executor](../../src/ecomsre/product/remediation/executor.py)先提交 WriteIntent，再通过独立写通道执行；[recovery](../../src/ecomsre/product/remediation/recovery.py)绑定 Receipt 与两个独立窗口。恢复判定不会重新进入执行器。
+
+默认部署不启用 remediation profile。显式配置的 API 只有读取通道；独立 gateway 持有固定私有控制配置；Executor 通过 Unix socket 调用固定动作，没有网络或 Docker socket。实验控制器负责环境生命周期及故障注入，与 Product 恢复计数分开。
+
+唯一 Runbook 与不确定结果语义见 [REMEDIATION](REMEDIATION.md)。
+
 ## 部署与持久化
 
-[Product Compose](../../docker-compose.product.yml)包含两个 Python 进程和一个持久卷：
+[Product Compose](../../docker-compose.product.yml)默认运行 API 与 Worker 两个 Python 进程；显式 remediation profile 另含 Executor 与 control gateway。SQLite/CAS 数据卷之外，还声明配置、读写 socket 与 control ledger 卷：
 
 - FastAPI：API、鉴权、验证、稳定错误、health / readiness / metrics。
 - Worker：SQLite 租约式后台任务，执行验证、Baseline、诊断。
@@ -83,4 +96,4 @@ Product Compose 仅向 loopback 发布 API，不挂载 Docker socket，
 live 实验的独立控制器不是 Product/Agent 的执行权限。
 
 接口 `/v1`、类型名 `V1`、SQLite schema 和包版本各有兼容性含义，
-不会为公开 v0.3 标签改名。尚无 Kubernetes、HA、多租户或生产规模验证。
+不会随公开展示版本标签改名。尚无 Kubernetes、HA、多租户或生产规模验证。

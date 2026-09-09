@@ -159,3 +159,11 @@ reinterpret the traffic PASS as a measured No-Fault result. A continuation
 requires a separately versioned successor. The public evidence boundary is the
 [formal blocker](../results/product-v02321-formal-blocker.md) and its
 [self-sealed evidence manifest](../analysis/product-v02321-formal-blocker-evidence-manifest.json).
+
+## Default-disabled bounded remediation
+
+Normal Product startup does not enable the remediation profile. Explicit configuration binds API state reads to a read-only Unix channel. The isolated Executor has no Docker socket or general network and receives only the fixed write channel; the control gateway owns the private fixed configuration and single-consumption ledger. See [REMEDIATION](REMEDIATION.md) and [Compose](../../docker-compose.product.yml).
+
+Inspect Candidate, Approval status, Attempt, decision-trace, receipts and recovery through the [documented routes](API.md#bounded-remediation). An Approval does not imply an authorized Attempt, and APPLIED does not imply RECOVERED. For OUTCOME_UNKNOWN preserve the intent/dispatch/receipt evidence and escalate; for VERIFICATION_FAILED / ESCALATE_HUMAN inspect missing or failed business windows without issuing another write.
+
+Cleanup removes only birth-bound owned experiment resources after Baseline restoration. Cleanup success cannot change a failed Product terminal. The Minimal Payment live result is evidence of one local bounded recovery, not a production deployment tutorial or permission to operate an unknown environment.

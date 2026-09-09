@@ -1,6 +1,6 @@
-# Product API · current v0.3 surface
+# Product API · current v0.4.1 surface
 
-Public presentation v0.3 does not rename the stable `/v1` routes or schemas.
+Public presentation v0.4.1 does not rename the stable `/v1` routes or schemas.
 
 The FastAPI application publishes OpenAPI at `/openapi.json`. Reads are public
 on the configured listener. Mutations require `Authorization: Bearer <token>`
@@ -82,3 +82,22 @@ All API errors use:
 
 Request validation is `INVALID_REQUEST`; missing resources use typed not-found
 codes; unexpected failures are `INTERNAL_CONTRACT_FAILURE`.
+
+## Bounded remediation
+
+Every remediation POST requires a configured admin token and Idempotency-Key. A replay is bound to the same semantic request; conflicting reuse is rejected. Approval remains distinct from execution authority.
+
+| Method | Path | Object |
+| --- | --- | --- |
+| GET / POST | `/v1/incidents/{incident_id}/remediation-candidates` | Candidate projection / persisted candidates |
+| GET | `/v1/remediation-candidates/{candidate_id}` | Candidate |
+| POST | `/v1/remediation-candidates/{candidate_id}/approvals` | OperatorApproval |
+| POST | `/v1/remediation-candidates/{candidate_id}/revocations` | Revocation |
+| GET | `/v1/remediation-approvals/{approval_id}` | Current approval status |
+| POST | `/v1/remediation-candidates/{candidate_id}/attempts` | Fresh-state authorization or typed denied Attempt |
+| GET | `/v1/remediation-attempts/{attempt_id}` | Attempt |
+| GET | `/v1/remediation-attempts/{attempt_id}/decision-trace` | Decision events |
+| GET | `/v1/remediation-attempts/{attempt_id}/receipts` | StepReceipt |
+| GET | `/v1/remediation-attempts/{attempt_id}/recovery` | Recovery windows and evaluation |
+
+A denied Attempt may be a successful HTTP response containing `NO_WRITE` and a typed safe error; HTTP status alone is not the authority result. The API has no arbitrary-command or HTTP execute endpoint. Executor runs as a separate process. See [source](../../src/ecomsre/product/remediation/api.py) and [REMEDIATION](REMEDIATION.md).

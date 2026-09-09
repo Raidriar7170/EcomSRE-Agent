@@ -80,3 +80,7 @@ Runtime 决定晋升关键谓词与匹配，人类负责治理；
 也不要将后续成功倒灌为早期实验成功。
 
 完整历史 README 仍可由 Git 历史访问；本页只做索引，不复制 SHA 墙与阶段流水账。
+
+## Product v0.4 / v0.4.1 · 从完整环境负向实验到受限恢复收尾
+
+完整 28 服务 Harness 的负向实验和精确 cleanup 保留为各自历史事实。随后 [PR #102](https://github.com/Raidriar7170/EcomSRE-Agent/pull/102) 在 pinned Minimal Payment 中完成单次状态绑定配置恢复与双窗口 `RECOVERED`；它没有将完整 Harness 失败改写为成功。v0.4.1 通过 [Live Safety Matrix](../results/product-v041-live-safety/README.md)、观察时间分解、claim map 与公开入口更新收尾。历史 PR #95、#97–#101 的 superseded/close 操作在 v0.4.1 完成合并后执行，关闭不等于合并，分支和失败证据保留。

@@ -1,4 +1,4 @@
-# 能力与限制 · Product v0.3
+# 能力与限制 · Product v0.4.1
 
 ## 已证明什么
 
@@ -8,8 +8,7 @@
   `NO_INCIDENT`、No-Fault `FULLY_SUPPORTED`、能力限制 0。
 - 三个 Open-World 窗口形成故障族，Runtime 挖掘两源规则，
   严格 Shadow 通过，一个扩展激活，H1 命中 `EXTENSION_KNOWN`。
-- Product 动作/修复权限为 NONE，Provider / Agent write / Runbook = 0；
-  实验 cleanup = `CLEAN`。
+- Diagnosis 权限始终为 NONE；Product 默认只读。显式开启的受限恢复在一个真实 Payment 配置故障中得到 `RECOVERED`，详见 [结果](../results/product-v040-minimal-payment/live-result.json)。
 - 确定性演示覆盖 API、Worker、Baseline、知识门控和重启持久化。
 
 证据：[当前状态](STATUS.md) ·
@@ -26,8 +25,9 @@
   灾难恢复演练、安全认证或长期稳定性证据。
 - **无 Kubernetes 生产控制平面。** Product 不挂 Docker socket，
   本地实验生命周期是独立授权的控制面。
-- **只读诊断，无自主修复。** Product 写自己的证据与治理 DB，
-  不等于能写被诊断系统；扩展晋升不会获得 Runbook 或 shell 权限。
+- **默认只读，恢复必须显式启用。** 当前只有一个 Payment 配置 Runbook；独立批准和状态绑定后才允许一次固定恢复。扩展晋升不会获得 Runbook 或 shell 权限。
+- **Minimal 健康诊断不等于 NO_INCIDENT。** 缺少 Logs / Runtime / Traces 时仍是 `INSUFFICIENT_EVIDENCE`。
+- **无生产自主自愈或 exactly-once 证明。** 本地单次恢复与安全矩阵不能代表跨环境恢复、所有故障、完整 28 服务 Harness 或全部攻击面；单次 timing 不是平均 MTTD、P95 或 SLO。
 - **本地阈值非普适规律。** 窗口、异常强度、相似度与规则门槛依赖环境，
   短基线 `DEMO_ONLY` 不代表生产校准。
 - **有限健康窗口。** 30/30 不保证长期零误报；

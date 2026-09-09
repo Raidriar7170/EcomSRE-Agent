@@ -9,15 +9,19 @@ def test_readme_exposes_current_product_and_links_preserved_history() -> None:
     readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
 
     for required in (
-        "证据驱动的可靠诊断",
-        "可部署的只读 Product MVP",
-        "开放世界发现与人引导知识演化",
-        "scripts.product.run_product_mvp_demo",
+        "1 · 证据驱动诊断",
+        "2 · 可部署 Product",
+        "3 · 知识演化",
+        "4 · 受限恢复",
+        "v0.4.1",
+        "docs/product/QUICKSTART.md",
         "docs/history/PROJECT_EVOLUTION.md",
         "docs/product/STATUS.md",
         "docs/product/LIMITATIONS.md",
         "docs/results/product-v024-nofault-acceptance-final.json",
-        "docs/results/product-v030-live-knowledge-evolution.json",
+        "docs/analysis/product-v030-family-and-rule-summary.json",
+        "docs/results/product-v040-minimal-payment/live-result.json",
+        "docs/results/product-v041-live-safety/README.md",
         "NO_INCIDENT",
         "EXTENSION_KNOWN",
         "action_authority = NONE",
@@ -36,7 +40,10 @@ def test_readme_exposes_current_product_and_links_preserved_history() -> None:
     ):
         assert forbidden not in lowered
 
-    assert 180 <= len(readme.splitlines()) <= 300
+    # Keep the current state and live evidence visible before the long explanation.
+    opening = "\n".join(readme.splitlines()[:20])
+    assert "v0.4.1" in opening and "Payment" in opening
+    assert "Live Safety Matrix" in opening
     history = (PROJECT_ROOT / "docs/history/PROJECT_EVOLUTION.md").read_text(
         encoding="utf-8"
     )

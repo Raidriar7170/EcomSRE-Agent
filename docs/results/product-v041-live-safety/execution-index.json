@@ -1,0 +1,77 @@
+{
+  "case_executions": [
+    {
+      "case_id": "S0",
+      "source_head": "dc62ba7e48e4d4c9f32464c201ae68a2e273cffd",
+      "started_at": "2026-09-09T11:35:23.776053+00:00",
+      "finished_at": "2026-09-09T11:44:14.311030+00:00",
+      "terminal": "NO_CANDIDATE",
+      "failure_type": null,
+      "source_evidence_sha256": "f35d9fdf05ea592724998970110e4033b107aeb23ce924b19d8cb4e021daf9bc",
+      "cleanup": {
+        "container": 0,
+        "network": 0,
+        "volume": 0
+      }
+    },
+    {
+      "case_id": "S1",
+      "source_head": "89d6503ae44f4feb11203e092be93809e89430be",
+      "started_at": "2026-09-09T11:45:48.580330+00:00",
+      "finished_at": "2026-09-09T11:56:39.877883+00:00",
+      "terminal": "APPROVAL_REVOKED",
+      "failure_type": null,
+      "source_evidence_sha256": "a78f3253cda3ce06f862f19ba70c615ae1c92e8a15eeaf6bf0bb422a81c56c65",
+      "cleanup": {
+        "container": 0,
+        "network": 0,
+        "volume": 0
+      }
+    },
+    {
+      "case_id": "S2",
+      "source_head": "fd8eb7b9bf300614ba2a0a984aa6ade323a337d5",
+      "started_at": "2026-09-09T11:56:58.854371+00:00",
+      "finished_at": "2026-09-09T12:08:00.100280+00:00",
+      "terminal": "NO_LONGER_APPLICABLE",
+      "failure_type": null,
+      "source_evidence_sha256": "dde036a2062d0876ac713f30c89e49ba9735f4937d0189c49dbe5d0de8715d5a",
+      "cleanup": {
+        "container": 0,
+        "network": 0,
+        "volume": 0
+      }
+    },
+    {
+      "case_id": "S3",
+      "source_head": "03f10390dd8e777501ce43d90c5b824556525dc2",
+      "started_at": "2026-09-09T12:09:01.861431+00:00",
+      "finished_at": "2026-09-09T12:21:03.006086+00:00",
+      "terminal": "RECOVERED",
+      "failure_type": null,
+      "source_evidence_sha256": "cc6bc0e0c9d69584c33599364b741244bd8edf5888fe9fd4cca7b8b0d240add8",
+      "cleanup": {
+        "container": 0,
+        "network": 0,
+        "volume": 0
+      }
+    },
+    {
+      "case_id": "S4",
+      "source_head": "f73cf036d39e02c4e756ae215d1e87d29a89984e",
+      "started_at": "2026-09-09T12:22:02.880452+00:00",
+      "finished_at": "2026-09-09T12:34:04.290675+00:00",
+      "terminal": "VERIFICATION_FAILED",
+      "failure_type": null,
+      "source_evidence_sha256": "c70e6a483bbe3734bbc711a95e734582909ce69c8fbe5277659887ad02511c92",
+      "cleanup": {
+        "container": 0,
+        "network": 0,
+        "volume": 0
+      }
+    }
+  ],
+  "live_attempts": 5,
+  "live_reruns": 0,
+  "claim_boundary": "All live executions retained; offline editing/check failures are not additional live trials"
+}
