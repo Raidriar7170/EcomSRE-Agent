@@ -196,6 +196,16 @@ class Owned:
 
     def unchanged(self) -> bool:
         current = inventory()
+        # The built-in none driver lists isolated owned endpoints. Their birth-
+        # bound membership is expected; every unrelated endpoint and all network
+        # configuration fields must still equal the original inventory.
+        for network in current["network"].values():
+            if network.get("Name") == "none":
+                network["Containers"] = {
+                    key: value
+                    for key, value in (network.get("Containers") or {}).items()
+                    if key not in self.births["container"]
+                }
         return all(
             {k: v for k, v in current[kind].items() if k not in self.births[kind]}
             == self.before[kind]

@@ -189,6 +189,11 @@ def run(product_image: str) -> dict[str, Any]:
         def validate() -> None:
             owned.fresh()
             if not owned.unchanged():
+                from .owned import inventory
+
+                snapshot_path = root / "non-owned-drift.json"
+                if not snapshot_path.exists():
+                    save(snapshot_path, inventory())
                 raise ValueError("NON_OWNED_DRIFT")
             for role in sorted(running):
                 row = owned.require_birth("container", ids[role])

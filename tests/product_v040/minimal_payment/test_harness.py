@@ -168,3 +168,34 @@ def test_resource_units_and_unknown_unit_fail_closed():
     assert memory_bytes("1.5kB") == 1500
     with pytest.raises(ValueError):
         memory_bytes("unknown")
+
+
+def test_only_birth_bound_none_network_membership_is_normalized(monkeypatch):
+    owner = object.__new__(Owned)
+    owner.births = {"container": {"owned": {}}, "network": {}, "volume": {}}
+    owner.before = {
+        "container": {},
+        "network": {"none-id": {"Name": "none", "Containers": {}, "Driver": "null"}},
+        "volume": {},
+    }
+    current = {
+        "container": {"owned": {}},
+        "network": {
+            "none-id": {
+                "Name": "none",
+                "Containers": {"owned": {"EndpointID": "owned-endpoint"}},
+                "Driver": "null",
+            }
+        },
+        "volume": {},
+    }
+    monkeypatch.setattr(
+        "scripts.product.minimal_payment_acceptance_v040.owned.inventory",
+        lambda: json.loads(json.dumps(current)),
+    )
+    assert owner.unchanged()
+    current["network"]["none-id"]["Containers"]["unknown"] = {"EndpointID": "external"}
+    assert not owner.unchanged()
+    current["network"]["none-id"]["Containers"].pop("unknown")
+    current["network"]["none-id"]["Driver"] = "bridge"
+    assert not owner.unchanged()
