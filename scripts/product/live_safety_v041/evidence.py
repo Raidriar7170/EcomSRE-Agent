@@ -75,16 +75,12 @@ def collect(root: Path, result: dict[str, Any]) -> None:
     births = [
         json.loads(p.read_bytes()) for p in (root / "births").glob("container-*.json")
     ]
-    # Running network addresses are retained in final private inspect before cleanup.
-    running = root / "running-gateway.json"
-    peers = []
-    if running.exists():
-        peers = [
-            n["IPAddress"]
-            for n in json.loads(running.read_bytes())["NetworkSettings"][
-                "Networks"
-            ].values()
-        ]
+    peers = observed_gateway_peers(root)
+    witness = root / "control/peer-witness.json"
+    if witness.exists():
+        result["gateway_peer_witness_sha256"] = hashlib.sha256(
+            witness.read_bytes()
+        ).hexdigest()
     if any(e["peer"] not in peers or e["document"] != "baseline" for e in product):
         raise ValueError("EXTERNAL_WRITE_ATTRIBUTION_UNKNOWN")
     result["counts"]["external_product_writes"] = len(product)
@@ -124,3 +120,20 @@ def collect(root: Path, result: dict[str, Any]) -> None:
     ):
         raise ValueError("HEALTHY_AUTHORITY_UNEXPECTED")
     result["evidence_status"] = "COLLECTED"
+
+
+def observed_gateway_peers(root: Path) -> set[str]:
+    """Use exact gateway inspect and the fixed read-only NAT-path observation."""
+    running = root / "running-gateway.json"
+    witness = root / "control/peer-witness.json"
+    if not running.exists():
+        if witness.exists():
+            raise ValueError("PEER_WITNESS_WITHOUT_GATEWAY")
+        return set()
+    row = json.loads(running.read_bytes())
+    if not row["Name"].endswith("-remediation-control-gateway"):
+        raise ValueError("PEER_GATEWAY_IDENTITY_MISMATCH")
+    peers = {n["IPAddress"] for n in row["NetworkSettings"]["Networks"].values()}
+    if witness.exists():
+        peers.add(json.loads(witness.read_bytes())["peer"])
+    return peers

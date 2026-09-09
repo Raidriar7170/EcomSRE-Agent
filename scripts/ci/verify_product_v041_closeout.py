@@ -9,10 +9,12 @@ from pathlib import Path
 import re
 from typing import Any
 import xml.etree.ElementTree as ET
+from pydantic import BaseModel
 from ecomsre.product.remediation.approval import OperatorApprovalV1
 from ecomsre.product.remediation.authorization import AttemptAuthorizationV1
 from ecomsre.product.remediation.attempt_contracts import (
     RemediationAttemptV1,
+    RemediationDecisionEventV1,
     WriteIntentV1,
 )
 from ecomsre.product.remediation.contracts import RemediationCandidateV1
@@ -26,7 +28,7 @@ from ecomsre.product.remediation.execution_contracts import (
 
 ROOT = Path(__file__).resolve().parents[2]
 RESULT = ROOT / "docs/results/product-v041-live-safety"
-MODELS = {
+MODELS: dict[str, type[BaseModel]] = {
     "candidate": RemediationCandidateV1,
     "approval": OperatorApprovalV1,
     "attempt": RemediationAttemptV1,
@@ -109,6 +111,18 @@ def verify_case(case: dict[str, Any]) -> None:
         )
         diagnosis = case["fault_diagnosis"]
         require(
+            diagnosis["provider_calls"]
+            == diagnosis["agent_writes"]
+            == diagnosis["runbook_executions"]
+            == 0,
+            "DIAGNOSIS_WRITE_OR_PROVIDER",
+        )
+        require(
+            objects["candidate"][0]["target_logical_service"] == "payment"
+            and objects["candidate"][0]["runbook_id"] == "ROLLBACK_CONFIGURATION",
+            "TARGET_OR_RUNBOOK",
+        )
+        require(
             diagnosis["terminal"] == "CORE_KNOWN"
             and diagnosis["mechanism"] == "CONFIGURATION_ERROR"
             and diagnosis["broad_domain"] == "CONFIGURATION",
@@ -132,6 +146,56 @@ def verify_case(case: dict[str, Any]) -> None:
                 "DENIAL",
             )
             require(case["decision_trace"], "DENIAL_TRACE")
+            previous = "0" * 64
+            denied = False
+            for ordinal, raw_event in enumerate(case["decision_trace"], 1):
+                event = RemediationDecisionEventV1.model_validate(raw_event)
+                require(
+                    event.attempt_id == attempt["attempt_id"]
+                    and event.previous_event_sha256 == previous
+                    and event.ordinal == ordinal,
+                    "TRACE_BINDING",
+                )
+                previous = event.event_sha256
+                if event.outcome == "DENY" and event.reason_code == reason:
+                    denied = True
+            require(denied, "DENIAL_REASON_TRACE")
+            from ecomsre.product.remediation.state import StateObservationV1
+
+            evidence = case["decision_evidence"]
+            refs = {
+                ref
+                for event in case["decision_trace"]
+                for ref in event["evidence_refs"]
+            }
+            require(refs == set(evidence) and bool(refs), "DENIAL_STATE_EVIDENCE")
+            for ref, payload in evidence.items():
+                require(
+                    hashlib.sha256(
+                        json.dumps(
+                            payload,
+                            ensure_ascii=False,
+                            sort_keys=True,
+                            separators=(",", ":"),
+                        ).encode()
+                    ).hexdigest()
+                    == ref,
+                    "DENIAL_CAS_HASH",
+                )
+                state = StateObservationV1.model_validate(payload)
+                require(
+                    state.environment_id == attempt["environment_id"]
+                    and state.target_logical_service == "payment"
+                    and state.environment_owned,
+                    "DENIAL_STATE_BINDING",
+                )
+                if ident == "S2":
+                    require(
+                        not state.fault_still_present
+                        and state.current_configuration_digest
+                        == state.baseline_configuration_digest,
+                        "DENIAL_STATE_NOT_BASELINE",
+                    )
         if ident == "S1":
             require(case["approval_status"]["status"] == "REVOKED", "REVOCATION")
         if ident == "S2":
@@ -233,7 +297,7 @@ def verify_case(case: dict[str, Any]) -> None:
                         for c in case["api_calls"]
                         if c["method"] == "POST" and c["route"].endswith(suffix)
                     ]
-                    groups = {}
+                    groups: dict[str, list[dict[str, Any]]] = {}
                     for call in calls:
                         groups.setdefault(call["key_sha256"], []).append(call)
                     duplicate = [v for v in groups.values() if len(v) >= 2]
@@ -269,7 +333,13 @@ class Document(HTMLParser):
 
 def verify_documents() -> None:
     readme = (ROOT / "README.md").read_text()
-    require("v0.4.1" in readme and "Diagnosis" in readme, "README_VERSION")
+    require(
+        "v0.4.1" in readme and "Diagnosis" in readme and "收尾完成" in readme,
+        "README_VERSION",
+    )
+    require(
+        "收尾完成" in (ROOT / "docs/product/STATUS.md").read_text(), "STATUS_INCOMPLETE"
+    )
     doc = Document()
     doc.feed((ROOT / "docs/interview/ecomsre-agent-v041-handbook.html").read_text())
     require(len(doc.ids) == len(set(doc.ids)), "DUPLICATE_HTML_ID")
@@ -317,6 +387,35 @@ def main() -> None:
     )
     for case in cases:
         verify_case(case)
+    matrix = json.loads((RESULT / "live-safety-matrix.json").read_text())
+    require(matrix["status"] == "PASS", "MATRIX_STATUS")
+    for case in cases:
+        row = next(r for r in matrix["cases"] if r["case_id"] == case["case_id"])
+        require(
+            row["counts"] == case["counts"] and row["terminal"] == case["terminal"],
+            "MATRIX_CASE_DRIFT",
+        )
+    timing = json.loads((RESULT / "timing-summary.json").read_text())
+    from scripts.product.live_safety_v041.summarize import duration
+
+    for case in cases:
+        item = timing["cases"][case["case_id"]]
+        require(
+            item["events"] == case["timeline"] and item["sample_count"] == 1,
+            "TIMING_CASE_DRIFT",
+        )
+        for metric in item["metrics"].values():
+            require(
+                metric
+                == duration(item["events"], metric["start_event"], metric["end_event"]),
+                "TIMING_RECOMPUTATION",
+            )
+    manifest = json.loads((RESULT / "evidence-manifest.json").read_text())
+    for name, expected in manifest["files"].items():
+        require(
+            hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == expected,
+            "MANIFEST_HASH",
+        )
     verify_documents()
     print(
         json.dumps(

@@ -102,6 +102,15 @@ def export_case(root: Path) -> dict[str, Any]:
             obj = objects[kind][0]
             if field in obj:
                 events[event] = utc_event(obj[field], f"objects.{kind}.0.{field}")
+    persisted_candidate_calls = [
+        c for c in candidate_calls if c["response"].get("candidates")
+    ]
+    if persisted_candidate_calls:
+        events["candidate_persisted"] = {
+            **persisted_candidate_calls[0]["ended"],
+            "source": "first Candidate POST response",
+            "semantics": "Persistence observed at API response; includes local transport, not exact commit time. Candidate created_at is diagnosis-anchored and is not used as persistence latency.",
+        }
     if public.get("fault_diagnosis"):
         diagnosis = public["fault_diagnosis"]
         events["diagnosis_completed"] = utc_event(
@@ -159,6 +168,15 @@ def export_case(root: Path) -> dict[str, Any]:
             raise ValueError("CAS_MISMATCH")
         observations[ref] = read(p)
     public["recovery_evidence"] = observations
+    decision_evidence = {}
+    for ref in sorted(
+        {ref for event in public["decision_trace"] for ref in event["evidence_refs"]}
+    ):
+        path = root / "data/objects/sha256" / ref[:2] / (ref + ".json")
+        if sha(path) != ref:
+            raise ValueError("DECISION_CAS_MISMATCH")
+        decision_evidence[ref] = read(path)
+    public["decision_evidence"] = decision_evidence
     raw_windows = [
         read(p) for p in sorted((root / "observer/raw").glob("window-*.json"))
     ]

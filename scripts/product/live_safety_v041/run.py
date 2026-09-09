@@ -704,4 +704,11 @@ if __name__ == "__main__":
     parser.add_argument("--product-image", required=True)
     parser.add_argument("--case", choices=["S0", "S1", "S2", "S3", "S4"], required=True)
     args = parser.parse_args()
-    run(args.product_image, args.case)
+    result = run(args.product_image, args.case)
+    if (
+        result.get("evidence_status") != "COLLECTED"
+        or result.get("failure_type")
+        or not result.get("baseline_file_restored")
+        or not result.get("cleanup", {}).get("clean")
+    ):
+        raise SystemExit(1)

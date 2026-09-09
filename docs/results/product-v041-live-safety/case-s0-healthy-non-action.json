@@ -379,6 +379,7 @@
     "recovery_window": 0,
     "write_intent": 0
   },
+  "decision_evidence": {},
   "decision_trace": [],
   "events": {
     "case_started": {

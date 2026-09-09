@@ -37,6 +37,25 @@
       },
       "source_head": "89d6503ae44f4feb11203e092be93809e89430be",
       "terminal": "APPROVAL_REVOKED"
+    },
+    {
+      "case_id": "S2",
+      "cleanup": "CLEAN",
+      "counts": {
+        "approval": 1,
+        "attempt": 1,
+        "authorization": 0,
+        "candidate": 1,
+        "executor_dispatch": 0,
+        "external_product_writes": 0,
+        "gateway_consumption": 0,
+        "receipt": 0,
+        "recovery_evaluation": 0,
+        "recovery_window": 0,
+        "write_intent": 0
+      },
+      "source_head": "fd8eb7b9bf300614ba2a0a984aa6ade323a337d5",
+      "terminal": "NO_LONGER_APPLICABLE"
     }
   ],
   "claim_boundary": "Five bounded pinned local Payment cases; not all attacks, production or general exactly-once.",

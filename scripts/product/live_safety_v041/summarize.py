@@ -82,7 +82,7 @@ def duration(events: dict[str, Any], start: str, end: str) -> dict[str, Any]:
 
 def summarize() -> None:
     cases = [json.loads(p.read_text()) for p in sorted(OUT.glob("case-s*.json"))]
-    matrix = {
+    matrix: dict[str, Any] = {
         "schema_version": "ecomsre.product.live-safety-matrix.v1",
         "status": "PASS" if len(cases) == 5 else "IN_PROGRESS",
         "cases": [
