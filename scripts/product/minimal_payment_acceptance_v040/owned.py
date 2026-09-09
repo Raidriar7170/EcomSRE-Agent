@@ -96,7 +96,7 @@ def validate_container(
     if any(config["Labels"].get(k) != v for k, v in labels.items()):
         raise ValueError("OWNERSHIP_LABEL_MISMATCH")
     image = images[spec["image"]]
-    if row["Image"] != image["Id"]:
+    if row["Image"] not in {image["Id"], image.get("index_id", image["Id"])}:
         raise ValueError("IMAGE_ID_MISMATCH")
     entry = spec.get("entrypoint", image["Config"].get("Entrypoint")) or []
     cmd = spec.get("command", image["Config"].get("Cmd")) or []

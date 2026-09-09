@@ -52,6 +52,9 @@ def pinned_images(root: Path, product: str) -> dict[str, Any]:
             raise ValueError("IMAGE_PLATFORM_MISMATCH")
         if name != "product" and not row["RepoDigests"]:
             raise ValueError("IMAGE_DIGEST_UNAVAILABLE")
+        index = json.loads(command("docker", "image", "inspect", ref))[0]
+        row["index_id"] = index["Id"]
+        row["runtime_reference"] = row["RepoDigests"][0] if name != "product" else ref
         result[name] = row
     save(root / "images.json", result)
     return result
@@ -67,7 +70,9 @@ def build_plan(
 ) -> dict[str, Any]:
     networks = {n: nonce + "-" + n for n in ("business", "control", "observation")}
     volumes = {n: nonce + "-" + n for n in ("read-socket", "write-socket")}
-    image_ref = {n: row["Id"] for n, row in images.items()}
+    image_ref = {
+        n: row.get("runtime_reference", row["Id"]) for n, row in images.items()
+    }
 
     def service(
         image: str,

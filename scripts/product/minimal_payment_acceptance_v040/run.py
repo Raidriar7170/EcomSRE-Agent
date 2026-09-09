@@ -137,7 +137,7 @@ def run(product_image: str) -> dict[str, Any]:
             )
         for name in plan["volumes"]:
             owned.create_aux("volume", name)
-        image_by_id = {row["Id"]: row for row in images.values()}
+        image_by_id = {row["runtime_reference"]: row for row in images.values()}
         for role, spec in plan["services"].items():
             if command(
                 "docker",
