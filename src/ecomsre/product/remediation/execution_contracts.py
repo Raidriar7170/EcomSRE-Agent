@@ -97,9 +97,9 @@ class RecoveryObservationV1(SealedRemediationModelV1):
     elapsed_ms: float = Field(ge=0, allow_inf_nan=False)
     infrastructure_passed: bool = Field(strict=True)
     endpoint_passed: bool = Field(strict=True)
-    business_observation_kind: Literal["CHECKOUT_PAYMENT_TRAFFIC"] = (
-        "CHECKOUT_PAYMENT_TRAFFIC"
-    )
+    business_observation_kind: Literal[
+        "CHECKOUT_PAYMENT_TRAFFIC", "DIRECT_PAYMENT_TRAFFIC"
+    ] = "CHECKOUT_PAYMENT_TRAFFIC"
     business_requests: int = Field(strict=True, ge=0)
     business_errors: int = Field(strict=True, ge=0)
     configuration_digest: Sha256

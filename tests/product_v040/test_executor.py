@@ -420,3 +420,21 @@ def test_resealed_policy_cannot_change_bound_or_threshold_after_dispatch(
         provider.calls == 0
         and values[4].get(attempt["attempt_id"]).state.value == "APPLIED"
     )
+
+
+@pytest.mark.parametrize(
+    "errors,terminal", [(0, "RECOVERED"), (2, "VERIFICATION_FAILED")]
+)
+def test_direct_payment_provenance_preserves_existing_recovery_policy(
+    executable, errors, terminal
+):
+    values, attempt, adapter, executor, recovery, _ = executable
+    assert executor.run_one(attempt["attempt_id"]).state.value == "APPLIED"
+    provider = FakeRecovery(
+        values,
+        business_observation_kind="DIRECT_PAYMENT_TRAFFIC",
+        business_errors=errors,
+    )
+    result = recovery.verify(attempt["attempt_id"], provider)
+    assert result.state.value == terminal
+    assert adapter.calls == 1 and provider.calls == 2

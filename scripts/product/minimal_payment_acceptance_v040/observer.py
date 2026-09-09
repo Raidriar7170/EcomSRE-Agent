@@ -211,6 +211,7 @@ class Observer:
                     endpoint_passed=all(
                         item["value"]["grpc_code"] == 0 for item in requests
                     ),
+                    business_observation_kind="DIRECT_PAYMENT_TRAFFIC",
                     business_requests=len(requests),
                     business_errors=sum(not item["value"]["ok"] for item in requests),
                     configuration_digest=after[0],
