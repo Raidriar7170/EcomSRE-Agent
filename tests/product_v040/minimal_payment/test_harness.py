@@ -199,3 +199,73 @@ def test_only_birth_bound_none_network_membership_is_normalized(monkeypatch):
     current["network"]["none-id"]["Containers"].pop("unknown")
     current["network"]["none-id"]["Driver"] = "bridge"
     assert not owner.unchanged()
+
+
+def test_harness_windows_bind_exact_end_and_exclude_late_responses():
+    from datetime import UTC, datetime, timedelta
+    from ecomsre.product.remediation.execution_contracts import RecoveryPolicyV1
+    from scripts.product.minimal_payment_acceptance_v040.observer import (
+        window_observation,
+    )
+
+    start = datetime(2026, 9, 9, tzinfo=UTC)
+    end = start + timedelta(seconds=10)
+    policy = RecoveryPolicyV1.build(
+        environment_id="env-" + "1" * 24,
+        baseline_sha256="a" * 64,
+        baseline_configuration_digest="b" * 64,
+        fault_configuration_digest="c" * 64,
+        target_identity_digest="d" * 64,
+        control_identity_sha256="e" * 64,
+        environment_ownership_digest="f" * 64,
+        business_error_ratio_max=0.01,
+        minimum_business_requests=10,
+        window_seconds=10,
+        created_at=start,
+    )
+    probes = [
+        {
+            "at": (start + timedelta(seconds=n / 10)).isoformat(),
+            "value": {"ok": True, "grpc_code": 0},
+        }
+        for n in range(1, 101)
+    ]
+    probes.append(
+        {
+            "at": (end + timedelta(seconds=1)).isoformat(),
+            "value": {"ok": False, "grpc_code": 2},
+        }
+    )
+    value = window_observation(
+        policy=policy,
+        start=start,
+        end=end,
+        elapsed=10001,
+        requests=probes,
+        before=("b" * 64, True),
+        after=("b" * 64, True),
+    )
+    assert value.created_at == value.ended_at == end
+    assert value.business_requests == 100 and value.business_errors == 0
+    assert value.business_observation_kind == "DIRECT_PAYMENT_TRAFFIC"
+    assert value.flag_evaluation_restored
+    value = window_observation(
+        policy=policy,
+        start=start,
+        end=end,
+        elapsed=10001,
+        requests=probes,
+        before=("c" * 64, False),
+        after=("b" * 64, True),
+    )
+    assert not value.flag_evaluation_restored
+    with pytest.raises(ValueError, match="OBSERVATION_WINDOW_DURATION"):
+        window_observation(
+            policy=policy,
+            start=start,
+            end=end + timedelta(seconds=1),
+            elapsed=11000,
+            requests=probes,
+            before=("b" * 64, True),
+            after=("b" * 64, True),
+        )

@@ -53,6 +53,43 @@ def memory_bytes(value: str) -> int:
     raise ValueError("RESOURCE_UNIT_UNKNOWN")
 
 
+def window_observation(
+    *,
+    policy: RecoveryPolicyV1,
+    start: datetime,
+    end: datetime,
+    elapsed: float,
+    requests: list[dict[str, Any]],
+    before: tuple[str, bool],
+    after: tuple[str, bool],
+) -> RecoveryObservationV1:
+    """Project the scheduled observation interval; persistence time stays separate."""
+    if end - start != timedelta(seconds=policy.window_seconds):
+        raise ValueError("OBSERVATION_WINDOW_DURATION")
+    requests = [
+        item for item in requests if start <= datetime.fromisoformat(item["at"]) <= end
+    ]
+    return RecoveryObservationV1.build(
+        environment_id=policy.environment_id,
+        policy_sha256=policy.policy_sha256,
+        started_at=start,
+        ended_at=end,
+        elapsed_ms=elapsed,
+        infrastructure_passed=True,
+        endpoint_passed=all(item["value"]["grpc_code"] == 0 for item in requests),
+        business_observation_kind="DIRECT_PAYMENT_TRAFFIC",
+        business_requests=len(requests),
+        business_errors=sum(not item["value"]["ok"] for item in requests),
+        configuration_digest=after[0],
+        flag_evaluation_restored=before
+        == after
+        == (policy.baseline_configuration_digest, True),
+        non_owned_resources_unchanged=True,
+        environment_ownership_digest=policy.environment_ownership_digest,
+        created_at=end,
+    )
+
+
 class Observer:
     def __init__(
         self,
@@ -205,32 +242,21 @@ class Observer:
                 after = self.current()
                 self.validate()
                 elapsed = (time.monotonic() - mono) * 1000
-                observation = RecoveryObservationV1.build(
-                    environment_id=policy.environment_id,
-                    policy_sha256=policy.policy_sha256,
-                    started_at=start,
-                    ended_at=end,
-                    elapsed_ms=elapsed,
-                    infrastructure_passed=True,
-                    endpoint_passed=all(
-                        item["value"]["grpc_code"] == 0 for item in requests
-                    ),
-                    business_observation_kind="DIRECT_PAYMENT_TRAFFIC",
-                    business_requests=len(requests),
-                    business_errors=sum(not item["value"]["ok"] for item in requests),
-                    configuration_digest=after[0],
-                    flag_evaluation_restored=before
-                    == after
-                    == (policy.baseline_configuration_digest, True),
-                    non_owned_resources_unchanged=True,
-                    environment_ownership_digest=policy.environment_ownership_digest,
-                    created_at=datetime.now(UTC),
+                observation = window_observation(
+                    policy=policy,
+                    start=start,
+                    end=end,
+                    elapsed=elapsed,
+                    requests=requests,
+                    before=before,
+                    after=after,
                 )
                 body = observation.model_dump(mode="json")
                 envelope = {"observation": body, "signature": signature(body, self.key)}
                 save(
                     self.root / "observer/raw" / f"window-{self.window:04d}.json",
                     {
+                        "persisted_at": datetime.now(UTC).isoformat(),
                         "envelope": envelope,
                         "requests": requests,
                         "before": before,

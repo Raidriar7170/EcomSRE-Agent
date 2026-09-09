@@ -145,6 +145,68 @@ def verify(value: dict[str, Any]) -> dict[str, Any]:
         and value["goal_authorization"]["approval_sha256"] == approval.approval_sha256,
         "GOAL_APPROVAL_BINDING",
     )
+    from ecomsre.dta_v2.v22.read_contracts import semantic_sha256_v22
+
+    require(
+        candidate.diagnosis_sha256 == semantic_sha256_v22(value["product_diagnosis"]),
+        "DIAGNOSIS_OBJECT_BINDING",
+    )
+    require(candidate.matched_clause_id == value["matched_clause"], "CLAUSE_BINDING")
+    require(
+        value["goal_authorization"]["goal_sha256"] == value["goal_sha256"],
+        "GOAL_DIGEST_BINDING",
+    )
+    require(
+        approval.candidate_id
+        == candidate.candidate_id
+        == attempt.candidate_id
+        == authorization.candidate_id,
+        "CANDIDATE_ID_BINDING",
+    )
+    require(
+        approval.approval_id
+        == state.approval_id
+        == authorization.approval_id
+        == attempt.approval_id,
+        "APPROVAL_ID_BINDING",
+    )
+    require(
+        authorization.authorization_id
+        == intent.authorization_id
+        == attempt.authorization_id,
+        "AUTHORIZATION_ID_BINDING",
+    )
+    require(
+        intent.write_intent_id
+        == dispatch.write_intent_id
+        == receipt.write_intent_id
+        == attempt.write_intent_id,
+        "WRITE_INTENT_ID_BINDING",
+    )
+    require(
+        attempt.attempt_id
+        == intent.attempt_id
+        == dispatch.attempt_id
+        == receipt.attempt_id
+        == evaluation.attempt_id,
+        "ATTEMPT_ID_BINDING",
+    )
+    require(
+        candidate.baseline_sha256
+        == policy.baseline_sha256
+        == authorization.baseline_sha256
+        == state.baseline_sha256
+        == value["healthy"]["baseline_sha256"],
+        "BASELINE_BINDING",
+    )
+    require(
+        candidate.environment_id
+        == state.environment_id
+        == policy.environment_id
+        == attempt.environment_id,
+        "ENVIRONMENT_BINDING",
+    )
+
     evidence = value["recovery_evidence"]
 
     def resolve(ref: str) -> bytes:
