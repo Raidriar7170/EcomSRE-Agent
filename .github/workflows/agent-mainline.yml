@@ -288,6 +288,9 @@ jobs:
       - name: Product v0.4 offline remediation development verification
         run: PYTHONPATH=src:. uv run --frozen --no-sync python -m scripts.ci.verify_product_v040_development
 
+      - name: Product v0.4 minimal Payment live evidence verification
+        run: PYTHONPATH=src:. uv run --frozen --no-sync python -m scripts.ci.verify_product_v040_minimal_payment
+
       - name: Full repository tests
         env:
           GH_TOKEN: ${{ github.token }}
@@ -322,5 +325,6 @@ jobs:
           scripts/ci
           scripts/live_sandbox
           scripts/product_v022
+          scripts/product/minimal_payment_acceptance_v040
           tests/dta_v21
           tests/phase5b

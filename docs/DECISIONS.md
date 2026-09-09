@@ -1559,3 +1559,20 @@ Provider call or merge.
 - [OTel Demo 3.0.0 release](https://github.com/open-telemetry/opentelemetry-demo/releases/tag/3.0.0)
 - [OTel Demo Docker deployment](https://opentelemetry.io/docs/demo/docker-deployment/)
 - [OTel Demo feature flags](https://opentelemetry.io/docs/demo/feature-flags/)
+
+## DEC-063 — Minimal Payment direct business observation provenance
+
+Status: accepted for the user-activated Product v0.4 minimal Payment Goal.
+
+The pinned Payment gRPC Charge interface directly distinguishes healthy,
+`paymentFailure=100%`, and restored behavior. The minimal environment therefore
+uses `DIRECT_PAYMENT_TRAFFIC` in RecoveryObservationV1. The existing
+`CHECKOUT_PAYMENT_TRAFFIC` default and historical serialized objects remain
+unchanged. Both kinds still require the same policy-bound request counts,
+error-rate threshold, configuration identity, receipt and two non-overlapping
+windows; this adds truthful observation provenance, not a weaker recovery rule.
+
+This decision derives from sections 3.3 and 12 of the
+[active Goal](goals/EcomSRE_Product_v0.4_Minimal_Payment_Live_Acceptance_Goal.md).
+It grants no authority outside that Goal and makes no Checkout or full-Demo
+acceptance claim.

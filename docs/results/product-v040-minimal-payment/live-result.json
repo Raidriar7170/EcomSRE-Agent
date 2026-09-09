@@ -1,0 +1,810 @@
+{
+  "active_baseline": {
+    "active": true,
+    "baseline_id": "base-f8ead9aeaa1936177c86ec5f",
+    "baseline_sha256": "fa4120a0c396ca958ead2654cc8f0d0388fdf147227013b03e4b9e3158039ad0",
+    "build_policy": {
+      "lookback_seconds": 180,
+      "minimum_successful_windows": 5,
+      "mode": "DEMO_ONLY",
+      "schema_version": "ecomsre.product.baseline-build-policy.v1",
+      "warmup_seconds": 180,
+      "window_count": 5
+    },
+    "built_at": "2026-09-09T08:01:22.065511Z",
+    "environment_id": "env-91802a44da70dd68d02e0711",
+    "normal_log_templates": [],
+    "schema_version": "ecomsre.product.environment-baseline.v1",
+    "service_ids": [
+      "svc-65d59fc8543bee433bef2e51"
+    ],
+    "source_capability_sha256": "24d01a5af52c7c8cd818dbdd19783599b86047e6f45b221d08c3c926caab2d49",
+    "successful_windows": 5,
+    "topology_edges": [],
+    "v22_baseline_profile": {
+      "baseline_sha256": "1f9797fca8a60ae5bf769a4ec80a4529af19e39fc9190bca7564b1bff21120fd",
+      "metric_stats": [
+        {
+          "mean": 3.3911953667953667,
+          "metric_kind": "CPU_PERCENT",
+          "service": "payment",
+          "standard_deviation": 0.23284124339824702
+        },
+        {
+          "mean": 0.0,
+          "metric_kind": "ERROR_RATE",
+          "service": "payment",
+          "standard_deviation": 0.0
+        },
+        {
+          "mean": 3.1177500292851885,
+          "metric_kind": "LATENCY_P95_MS",
+          "service": "payment",
+          "standard_deviation": 0.1142801921983563
+        },
+        {
+          "mean": 101365241.32114115,
+          "metric_kind": "MEMORY_BYTES",
+          "service": "payment",
+          "standard_deviation": 2381902.677180039
+        },
+        {
+          "mean": 132.47923824608307,
+          "metric_kind": "REQUEST_SUPPORT",
+          "service": "payment",
+          "standard_deviation": 0.2687755841839192
+        }
+      ],
+      "resource_stats": [
+        {
+          "cpu_p95_percent": 4.48,
+          "memory_slope_bytes_per_second": 29360.13333333333,
+          "service": "payment"
+        }
+      ],
+      "schema_version": "dta-v22.baseline-profile.v1",
+      "trace_stats": []
+    },
+    "window_count": 5
+  },
+  "approval_sha256": "e4cfefd0431c9d0fc60f59dd6153bc9dbcf3f5278a7dd21cc14e8c2b1f927880",
+  "baseline_file_restored": true,
+  "candidate_sha256": "daa62dfb487581bd1a36f08145221929b845eef32880dd6b016b790797ebf322",
+  "capabilities": {
+    "capability_sha256": "24d01a5af52c7c8cd818dbdd19783599b86047e6f45b221d08c3c926caab2d49",
+    "effective_policy_sha256": "42c951a157b0938b305932e89ea68895217f582feb4e345554672fdfd78f897b",
+    "environment_id": "env-91802a44da70dd68d02e0711",
+    "logical_services": [
+      "payment"
+    ],
+    "mechanisms": [
+      {
+        "mechanism": "CONFIGURATION_ERROR",
+        "observable_sources": [
+          "CHANGES",
+          "METRICS"
+        ],
+        "status": "DIAGNOSABLE"
+      },
+      {
+        "mechanism": "CPU_SATURATION",
+        "observable_sources": [
+          "RESOURCES"
+        ],
+        "status": "PARTIALLY_OBSERVABLE"
+      },
+      {
+        "mechanism": "DEPENDENCY_LATENCY",
+        "observable_sources": [
+          "METRICS"
+        ],
+        "status": "PARTIALLY_OBSERVABLE"
+      },
+      {
+        "mechanism": "MEMORY_LEAK",
+        "observable_sources": [
+          "RESOURCES"
+        ],
+        "status": "PARTIALLY_OBSERVABLE"
+      },
+      {
+        "mechanism": "SERVICE_UNAVAILABLE",
+        "observable_sources": [
+          "METRICS"
+        ],
+        "status": "PARTIALLY_OBSERVABLE"
+      }
+    ],
+    "no_incident_eligible": false,
+    "schema_version": "ecomsre.product.environment-capability-matrix.v1",
+    "sources": [
+      {
+        "connector_names": [],
+        "covered_services": [
+          "payment"
+        ],
+        "observable_predicates": [
+          "CHANGE_RECENT_ROLLOUT"
+        ],
+        "source": "CHANGES",
+        "status": "AVAILABLE",
+        "target_complete_coverage": true
+      },
+      {
+        "connector_names": [],
+        "covered_services": [],
+        "observable_predicates": [],
+        "source": "LOGS",
+        "status": "UNAVAILABLE",
+        "target_complete_coverage": false
+      },
+      {
+        "connector_names": [
+          "minimal-prometheus"
+        ],
+        "covered_services": [
+          "payment"
+        ],
+        "observable_predicates": [
+          "METRIC_ERROR_RATE_STRONG",
+          "METRIC_LATENCY_STRONG"
+        ],
+        "source": "METRICS",
+        "status": "AVAILABLE",
+        "target_complete_coverage": false
+      },
+      {
+        "connector_names": [
+          "minimal-prometheus"
+        ],
+        "covered_services": [
+          "payment"
+        ],
+        "observable_predicates": [
+          "RESOURCE_CPU_STRONG",
+          "RESOURCE_MEMORY_GROWTH_STRONG"
+        ],
+        "source": "RESOURCES",
+        "status": "AVAILABLE",
+        "target_complete_coverage": false
+      },
+      {
+        "connector_names": [],
+        "covered_services": [],
+        "observable_predicates": [],
+        "source": "RUNTIME",
+        "status": "UNAVAILABLE",
+        "target_complete_coverage": false
+      },
+      {
+        "connector_names": [],
+        "covered_services": [],
+        "observable_predicates": [],
+        "source": "TRACES",
+        "status": "UNAVAILABLE",
+        "target_complete_coverage": false
+      }
+    ],
+    "verified_at": "2026-09-09T08:01:12.840395Z"
+  },
+  "claim_boundary": "Pinned local minimal Payment configuration-fault recovery only; no production, full-Demo, generalization or exactly-once side-effect claim.",
+  "cleanup": {
+    "clean": true,
+    "non_owned_unchanged": true,
+    "receipts": [
+      {
+        "identity_sha256": "4e7ea4d894f139f0b662fbd51e6dcd2687c685a99493c273fae857e90ddef754",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "f09455ef977a72cba789dacfdfead238e7ef613da392837816b3490007de6096",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "e04fde2764d8b1534d25fc32799c377059c29137e56fa5fe32dc27a4f152009e",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "8f18f19bd1f797f36503cfa2dcab2736a67d54fc5fa92a91e295398efc30a689",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "4426d77314ca5e77a94e25b6336622690013c1156f9bcc8b3f6bbf1b83945fab",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "9e1ae268b9a3672fc5e7dc26012beaa3275c64e820adb91ee848f0c0b1c1d847",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "4da1801e06a158887f1c8f73e36dbc6bdec88821986b87d4d92739ac05d2f6c3",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "00238971d2ab2b144d93ce4a268b0f3000f9104c2068136ad535721cd91d91e8",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "77d44da542935b36e3c246b761ac94986a6482c5a39042deceffc1dee7a51682",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "8346695a5a255415f65bd2e6d9ac856ff8a565dd90172bf0bcc8bc8107b6697e",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "97b309d3e1291f27d04e3da089a1536cd1fd394e49418f49465736077a6663fc",
+        "kind": "network",
+        "removed": true
+      },
+      {
+        "identity_sha256": "d841ab8eb5af80beda45b3d94feadf484a8df36ee3b8b5805c1c83f9403ab5a4",
+        "kind": "network",
+        "removed": true
+      },
+      {
+        "identity_sha256": "31a9dfa7d0d6dda689b1fe0fa7f8093e371b26927f0fb788a3cf8314bdac6c52",
+        "kind": "network",
+        "removed": true
+      },
+      {
+        "identity_sha256": "e7088616de813455bf347cf47333a705051e3ba5905f7787b471b152e877aa10",
+        "kind": "volume",
+        "removed": true
+      },
+      {
+        "identity_sha256": "9c5e0fe2227902020c859de0edaf638acf5b13d29bef9596f9c8f99728d8b419",
+        "kind": "volume",
+        "removed": true
+      }
+    ],
+    "remaining": {
+      "container": 0,
+      "network": 0,
+      "volume": 0
+    }
+  },
+  "compose_sha256": "1db8d7f931454e460fd7f57b8893a0e4d33b72b5c9b3b21b0129e7b13c67d5e9",
+  "diagnosis": {
+    "all_supporting_refs_resolved": true,
+    "domain": "CONFIGURATION",
+    "mechanism": "CONFIGURATION_ERROR",
+    "root": "payment",
+    "terminal": "CORE_KNOWN"
+  },
+  "evidence_reference_commitments": {
+    "capability:v0232:logs:1067a4c6af34162d0b5fd76f": "8c7a685ea285a01126cc5d40e537539e89b1e548ddd62ef11e24760315a2e053",
+    "capability:v0232:runtime:e78b0eba7a5b4e79ce6baa94": "bde57d636b6a99c21a3d317543447abd565cd84555aa51e9826acdbafc0d3883",
+    "capability:v0232:traces:9f0917f6e2747c662e7324b8": "e857dd599160106742f464c6cd862b76be72fbda3d01b1683c7dbffccf52b81b",
+    "e:a:changes:payment:0:ea86bce35341": "6226760a89557fbf53369d005fe386223e57170e463dee8ef4d4a78bd9b3abfc",
+    "e:a:metrics:payment:core:0:ca2144575ecb": "ed8585d266bcafdab4e9bc55681b6a5d35d81195aae3c1b6ee299f4bd9b11ceb",
+    "e:a:metrics:payment:core:1:86da4e28c38e": "ed8585d266bcafdab4e9bc55681b6a5d35d81195aae3c1b6ee299f4bd9b11ceb",
+    "e:a:metrics:payment:core:2:ac4babb34f92": "ed8585d266bcafdab4e9bc55681b6a5d35d81195aae3c1b6ee299f4bd9b11ceb",
+    "e:a:resources:payment:0:6fce82b74a99": "74f7e69beebf20eecd5daab5a8e6a0e90e3bac9d63784ad59d18638737164a8d"
+  },
+  "executor_attempts": 1,
+  "fault": {
+    "configuration_digest": "97acac0414e15519b62a99b50de403ef2a82291fd81d9d476903f047565ac2c3",
+    "confirmed_requests": 30,
+    "expected_payment_failures": 30,
+    "injected_at": "2026-09-09T08:01:56.110579+00:00"
+  },
+  "fault_injections": 1,
+  "final_attempt_sha256": "2936413ec4ace85850d701c5ca4617dcb6adb9efd43e040e16088b425f499047",
+  "final_disposition": "RECOVERED",
+  "finished_at": "2026-09-09T08:05:59.488984+00:00",
+  "gateway_consumptions": 1,
+  "goal_authorization": {
+    "approval_sha256": "e4cfefd0431c9d0fc60f59dd6153bc9dbcf3f5278a7dd21cc14e8c2b1f927880",
+    "authority": "User activation of the saved minimal Payment Goal, sections 0 and 9",
+    "candidate_sha256": "daa62dfb487581bd1a36f08145221929b845eef32880dd6b016b790797ebf322",
+    "codex_autonomous_self_approval": false,
+    "goal_sha256": "290e2f2c7948522f3f642f16696e73fc77c5535374be992e5f2ec2ff5db5337b"
+  },
+  "goal_sha256": "290e2f2c7948522f3f642f16696e73fc77c5535374be992e5f2ec2ff5db5337b",
+  "healthy": {
+    "baseline_sha256": "fa4120a0c396ca958ead2654cc8f0d0388fdf147227013b03e4b9e3158039ad0",
+    "business_errors_after_startup": 0,
+    "business_requests": 194,
+    "product_diagnosis": "INSUFFICIENT_EVIDENCE",
+    "proof": "Active Product Baseline plus real successful direct Payment requests; unavailable telemetry remains explicit."
+  },
+  "healthy_product_diagnosis": {
+    "action_authority": "NONE",
+    "agent_writes": 0,
+    "broad_domain": null,
+    "capability_limitations": [
+      "SOURCE_LOGS_UNAVAILABLE",
+      "SOURCE_RUNTIME_UNAVAILABLE",
+      "SOURCE_TRACES_UNAVAILABLE"
+    ],
+    "contradicting_evidence_refs": [],
+    "core_or_extension_or_open_world": "ABSTAIN",
+    "created_at": "2026-09-09T08:01:35.580370Z",
+    "diagnosis_id": "diag-6feab3bfb6dc62971a832b30",
+    "incident_id": "inc-04b2a22993da64cce0d9d5bc",
+    "mechanism": null,
+    "memory_sha256": "b49730885dc41c1a2aa716bb308a93cccef563196b365f5151d9eb7b3fd0f2a6",
+    "provider_calls": 0,
+    "provisional_report": null,
+    "result_sha256": "8c6262633ff2c8461eb9468d8d8159b7c3c9ebb00357c552af269bae2f538da9",
+    "root_service_ids": [],
+    "runbook_executions": 0,
+    "schema_version": "ecomsre.product.diagnosis-result.v1",
+    "supporting_evidence_refs": [],
+    "terminal": "INSUFFICIENT_EVIDENCE"
+  },
+  "images": {
+    "flagd": {
+      "architecture": "arm64",
+      "index_id": "sha256:32234e63c1d0634883aabd31cbd46802934aaaef0153dfd653b5d1017940bb4e",
+      "os": "linux",
+      "platform_id": "sha256:5115fd9352d58fd41c7be775b33336f5e4b2cef8056bf5982f5c704d13ec590e"
+    },
+    "otel-collector": {
+      "architecture": "arm64",
+      "index_id": "sha256:f2f01157055a9b2aab9df7118e1f1c9abf345e99b23bc7a2bc791db374a7d0f6",
+      "os": "linux",
+      "platform_id": "sha256:1fef9f07f04eb6775b4076ea4f817d6b7b9050e23e52941f0756ba08df798ea6"
+    },
+    "payment": {
+      "architecture": "arm64",
+      "index_id": "sha256:d498c7434d22ff7a82ec86843efd22c93c52cb8c6df4961a7110617b1e08c15f",
+      "os": "linux",
+      "platform_id": "sha256:c9bbe72133e9b6569f8e490441e7a1472f8767d12759b0eaf0af14e91e4a9d45"
+    },
+    "product": {
+      "architecture": "arm64",
+      "index_id": "sha256:722422b0eb3fd7b8762ec31ef1b1d911723b82e51fefce479b48bd1d257651a4",
+      "os": "linux",
+      "platform_id": "sha256:722422b0eb3fd7b8762ec31ef1b1d911723b82e51fefce479b48bd1d257651a4"
+    },
+    "prometheus": {
+      "architecture": "arm64",
+      "index_id": "sha256:3c42b892cf723fa54d2f262c37a0e1f80aa8c8ddb1da7b9b0df9455a35a7f893",
+      "os": "linux",
+      "platform_id": "sha256:2d61f37ba9f2185195dfad94ee500d7ac1986560bac79a77d0a6de182a5bf814"
+    }
+  },
+  "matched_clause": "configuration:change-and-error-metric",
+  "minimal_services": {
+    "api": "Current Product API and persistent repositories",
+    "flagd": "Pinned real feature-flag evaluation",
+    "otel-collector": "Receive real Payment OTLP traces, metrics and logs",
+    "payment": "Pinned real gRPC Charge implementation",
+    "payment-control": "Fixed two-document file transport required by current gateway",
+    "payment-probe": "Fixed synthetic direct Charge caller and measured business metrics",
+    "prometheus": "Historical real business and owned Payment resource metrics",
+    "remediation-control-gateway": "Current guarded single-restore control with signed state evidence",
+    "remediation-executor": "Current independent typed Executor, StepReceipt and Recovery Verifier",
+    "worker": "Current Product Connector, Baseline and Diagnosis jobs"
+  },
+  "objects": {
+    "approval": {
+      "action_authority": "NONE",
+      "approval_id": "appr-5f5900d807614294a5328531",
+      "approval_sha256": "e4cfefd0431c9d0fc60f59dd6153bc9dbcf3f5278a7dd21cc14e8c2b1f927880",
+      "approver": "LOCAL_OPERATOR",
+      "authorization_source": "USER_EXPLICIT_PRODUCT_V040_GOAL_AUTHORIZATION",
+      "candidate_id": "cand-6138e9be6d75e5fe7743143f",
+      "candidate_sha256": "daa62dfb487581bd1a36f08145221929b845eef32880dd6b016b790797ebf322",
+      "created_at": "2026-09-09T08:03:58.187502Z",
+      "decision": "APPROVE",
+      "expires_at": "2026-09-09T08:13:58.187502Z",
+      "issued_at": "2026-09-09T08:03:58.187502Z",
+      "revoked_at": null,
+      "schema_version": "ecomsre.product.operator-approval.v1",
+      "scope": {
+        "maximum_forward_steps": 1,
+        "parameters_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "runbook_id": "ROLLBACK_CONFIGURATION",
+        "target_logical_service": "payment"
+      },
+      "single_use": true
+    },
+    "attempt": {
+      "active_lease_owner": null,
+      "approval_id": "appr-5f5900d807614294a5328531",
+      "approval_sha256": "e4cfefd0431c9d0fc60f59dd6153bc9dbcf3f5278a7dd21cc14e8c2b1f927880",
+      "attempt_id": "attempt-8b67a3cd852746849f0a8b48",
+      "attempt_sha256": "96c800c08f55584e377f4233eb4a491e14e4bfd95b7125e64928b35d080038c7",
+      "authorization_id": "auth-f95ebed40c2248929ea9a50a",
+      "authorization_sha256": "35b03507344dcd51d77cdf9c8608f9fec2f47966f9aeef968cc6f6c59bff4aab",
+      "candidate_id": "cand-6138e9be6d75e5fe7743143f",
+      "candidate_sha256": "daa62dfb487581bd1a36f08145221929b845eef32880dd6b016b790797ebf322",
+      "created_at": "2026-09-09T08:03:58.258644Z",
+      "environment_id": "env-91802a44da70dd68d02e0711",
+      "final_disposition": "RECOVERED",
+      "forward_write_count": 1,
+      "lease_expires_at": null,
+      "lease_generation": 2,
+      "revision": 6,
+      "safe_error_code": null,
+      "schema_version": "ecomsre.product.remediation-attempt.v1",
+      "state": "RECOVERED",
+      "target_logical_service": "payment",
+      "terminal": "RECOVERED",
+      "updated_at": "2026-09-09T08:04:51.304328Z",
+      "write_intent_id": "intent-a713d7be4d8a43fc8e66c345",
+      "write_intent_sha256": "c82c03fbf28ea0a1019677c23afaea70e84342b022342ebf8fc5a74f46219897"
+    },
+    "authorization": {
+      "approval_id": "appr-5f5900d807614294a5328531",
+      "approval_sha256": "e4cfefd0431c9d0fc60f59dd6153bc9dbcf3f5278a7dd21cc14e8c2b1f927880",
+      "authorization_id": "auth-f95ebed40c2248929ea9a50a",
+      "authorization_sha256": "35b03507344dcd51d77cdf9c8608f9fec2f47966f9aeef968cc6f6c59bff4aab",
+      "baseline_sha256": "fa4120a0c396ca958ead2654cc8f0d0388fdf147227013b03e4b9e3158039ad0",
+      "candidate_id": "cand-6138e9be6d75e5fe7743143f",
+      "candidate_sha256": "daa62dfb487581bd1a36f08145221929b845eef32880dd6b016b790797ebf322",
+      "consumed_at": null,
+      "created_at": "2026-09-09T08:03:58.258644Z",
+      "current_state_sha256": "3c72100d9fe964e2101a55fe721f6443a059079fd45fb4e16727e3db7e047c09",
+      "current_state_snapshot_id": "snap-d702853b77804f68b163e88d",
+      "diagnosis_sha256": "ffc793c2da76f7fa898750f09326ec499ab97f3f9c83fcbf9e04ff98eb58aa71",
+      "evidence_bundle_sha256": "2d152d446c74de4d13e56bfd5177453d0671cf2b7033855ba87c40b319ae2bdc",
+      "expires_at": "2026-09-09T08:08:58.258644Z",
+      "issued_at": "2026-09-09T08:03:58.258644Z",
+      "maximum_forward_steps": 1,
+      "parameters_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "registry_sha256": "5722c03cbc94539212a054557ab65b1ecdb145e76e86904689d75df188b588b1",
+      "risk_level": "LOW",
+      "runbook_sha256": "386e542b02e71969d0494ce92440443026c6686c91a297da071e58f2e3fecaed",
+      "schema_version": "ecomsre.product.remediation-authorization.v1",
+      "single_use": true,
+      "target_logical_service": "payment"
+    },
+    "candidate": {
+      "action_authority": "NONE",
+      "admission_sha256": "d9386ada76fd882afcbf7b6f51ad66cfbebc358120edd6ab16afbbabb0602308",
+      "baseline_id": "base-f8ead9aeaa1936177c86ec5f",
+      "baseline_sha256": "fa4120a0c396ca958ead2654cc8f0d0388fdf147227013b03e4b9e3158039ad0",
+      "candidate_id": "cand-6138e9be6d75e5fe7743143f",
+      "candidate_sha256": "daa62dfb487581bd1a36f08145221929b845eef32880dd6b016b790797ebf322",
+      "capability_sha256": "24d01a5af52c7c8cd818dbdd19783599b86047e6f45b221d08c3c926caab2d49",
+      "created_at": "2026-09-09T08:03:22.072888Z",
+      "diagnosis_decision_trace_sha256": "a964bec21fca6f1b74037675bf7c47ee840cf45a8bb59ab3620e2fcaa2303e5c",
+      "diagnosis_id": "diag-f20c0af2e6e58dcd60b455c1",
+      "diagnosis_sha256": "ffc793c2da76f7fa898750f09326ec499ab97f3f9c83fcbf9e04ff98eb58aa71",
+      "eligibility": "ELIGIBLE",
+      "environment_id": "env-91802a44da70dd68d02e0711",
+      "evidence_bundle_sha256": "2d152d446c74de4d13e56bfd5177453d0671cf2b7033855ba87c40b319ae2bdc",
+      "evidence_index_sha256": "fb1c7a094d481a03635a5ee2d6c628b50226adddbb746e526720e8698cead0a7",
+      "executable": false,
+      "identity_map_sha256": "f515916b95dc0fe00fd1bfb61b8397b360f53022bdb28d51326e41a3554f0c76",
+      "incident_id": "inc-d8b13a7888a78653e240bc5f",
+      "incident_sha256": "44a9eb8841351ff1c7e04c2456719a514f2defd57bab5fd82db5434ccbdde6c0",
+      "matched_clause_id": "configuration:change-and-error-metric",
+      "maximum_forward_steps": 1,
+      "memory_sha256": "81624b14f87ab557d69dfbf05b198e0c5b8f49dcdb37a6991a57a67e6ce3fdba",
+      "parameters_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "reason_codes": [],
+      "registry_sha256": "5722c03cbc94539212a054557ab65b1ecdb145e76e86904689d75df188b588b1",
+      "risk_level": "LOW",
+      "runbook_id": "ROLLBACK_CONFIGURATION",
+      "runbook_sha256": "386e542b02e71969d0494ce92440443026c6686c91a297da071e58f2e3fecaed",
+      "schema_version": "ecomsre.product.remediation-candidate.v1",
+      "target_logical_service": "payment"
+    },
+    "current_state": {
+      "active_remediation_count": 0,
+      "approval_id": "appr-5f5900d807614294a5328531",
+      "approval_sha256": "e4cfefd0431c9d0fc60f59dd6153bc9dbcf3f5278a7dd21cc14e8c2b1f927880",
+      "baseline_configuration_digest": "6de2b41b138db7b2545583a369c1ce1b2dd100b8fc2e367880563d7a38b496f7",
+      "baseline_id": "base-f8ead9aeaa1936177c86ec5f",
+      "baseline_sha256": "fa4120a0c396ca958ead2654cc8f0d0388fdf147227013b03e4b9e3158039ad0",
+      "candidate_id": "cand-6138e9be6d75e5fe7743143f",
+      "candidate_sha256": "daa62dfb487581bd1a36f08145221929b845eef32880dd6b016b790797ebf322",
+      "configuration_drift_visible": true,
+      "control_identity_sha256": "0ba2476f89fbec8cc83a7c22e0d7e4f0344358b7bf0ca93ac9aa03b0527b2c5d",
+      "created_at": "2026-09-09T08:03:58.258644Z",
+      "current_configuration_digest": "97acac0414e15519b62a99b50de403ef2a82291fd81d9d476903f047565ac2c3",
+      "environment_id": "env-91802a44da70dd68d02e0711",
+      "environment_ownership_digest": "b34899a4a7bb5fed008620698a456d1073cc87645263c41cd405fea8fa93fe40",
+      "fault_still_present": true,
+      "incident_id": "inc-d8b13a7888a78653e240bc5f",
+      "incident_sha256": "44a9eb8841351ff1c7e04c2456719a514f2defd57bab5fd82db5434ccbdde6c0",
+      "observed_at": "2026-09-09T08:03:58.230498Z",
+      "schema_version": "ecomsre.product.remediation-current-state.v1",
+      "snapshot_id": "snap-d702853b77804f68b163e88d",
+      "snapshot_sha256": "3c72100d9fe964e2101a55fe721f6443a059079fd45fb4e16727e3db7e047c09",
+      "source_observation_refs": [
+        "c0ce8307e86bc88df2f4cde4452d9b2107611cf11c0d788bd03980c4f2b9bb73"
+      ],
+      "target_identity_digest": "085e8dd0b12d4efd8bf9beeaefe0132264c09bdf6daad1e4ed789b7e90832b0c",
+      "target_logical_service": "payment",
+      "trusted_binding_sha256": "125f3c32ede70d3ce60cabf2b3c903e1c735b24b103741f2c8565e7bad3d6a68"
+    },
+    "dispatch": {
+      "attempt_id": "attempt-8b67a3cd852746849f0a8b48",
+      "authorization_sha256": "35b03507344dcd51d77cdf9c8608f9fec2f47966f9aeef968cc6f6c59bff4aab",
+      "before_state_sha256": "52ff1ada0223aeda56e4c2062a59b497b25321fdf8860b5f96987b79beb8a960",
+      "created_at": "2026-09-09T08:03:59.465014Z",
+      "dispatch_sha256": "a89fe37d7b89a6efb2460d9523b8576bc916067f6d0305e82c26ca4861accfeb",
+      "recovery_policy_sha256": "3cd79a4f156946ad5bf3fadd7f9bd75c7c3ab4cb56e3efdd447d91bca7c69c99",
+      "schema_version": "ecomsre.product.executor-dispatch.v1",
+      "write_intent_id": "intent-a713d7be4d8a43fc8e66c345",
+      "write_intent_sha256": "c82c03fbf28ea0a1019677c23afaea70e84342b022342ebf8fc5a74f46219897"
+    },
+    "dispatch_state": {
+      "active_remediation_count": 1,
+      "approval_id": "appr-5f5900d807614294a5328531",
+      "approval_sha256": "e4cfefd0431c9d0fc60f59dd6153bc9dbcf3f5278a7dd21cc14e8c2b1f927880",
+      "baseline_configuration_digest": "6de2b41b138db7b2545583a369c1ce1b2dd100b8fc2e367880563d7a38b496f7",
+      "baseline_id": "base-f8ead9aeaa1936177c86ec5f",
+      "baseline_sha256": "fa4120a0c396ca958ead2654cc8f0d0388fdf147227013b03e4b9e3158039ad0",
+      "candidate_id": "cand-6138e9be6d75e5fe7743143f",
+      "candidate_sha256": "daa62dfb487581bd1a36f08145221929b845eef32880dd6b016b790797ebf322",
+      "configuration_drift_visible": true,
+      "control_identity_sha256": "0ba2476f89fbec8cc83a7c22e0d7e4f0344358b7bf0ca93ac9aa03b0527b2c5d",
+      "created_at": "2026-09-09T08:03:59.464875Z",
+      "current_configuration_digest": "97acac0414e15519b62a99b50de403ef2a82291fd81d9d476903f047565ac2c3",
+      "environment_id": "env-91802a44da70dd68d02e0711",
+      "environment_ownership_digest": "b34899a4a7bb5fed008620698a456d1073cc87645263c41cd405fea8fa93fe40",
+      "fault_still_present": true,
+      "incident_id": "inc-d8b13a7888a78653e240bc5f",
+      "incident_sha256": "44a9eb8841351ff1c7e04c2456719a514f2defd57bab5fd82db5434ccbdde6c0",
+      "observed_at": "2026-09-09T08:03:59.437506Z",
+      "schema_version": "ecomsre.product.remediation-current-state.v1",
+      "snapshot_id": "snap-55bbb422994049e29bba3dd5",
+      "snapshot_sha256": "52ff1ada0223aeda56e4c2062a59b497b25321fdf8860b5f96987b79beb8a960",
+      "source_observation_refs": [
+        "c7104797f3c15f089009c487bf65da7fc515fa295b285ef8229ecebcffa35b28"
+      ],
+      "target_identity_digest": "085e8dd0b12d4efd8bf9beeaefe0132264c09bdf6daad1e4ed789b7e90832b0c",
+      "target_logical_service": "payment",
+      "trusted_binding_sha256": "125f3c32ede70d3ce60cabf2b3c903e1c735b24b103741f2c8565e7bad3d6a68"
+    },
+    "receipt": {
+      "after_state_digest": "6de2b41b138db7b2545583a369c1ce1b2dd100b8fc2e367880563d7a38b496f7",
+      "attempt_id": "attempt-8b67a3cd852746849f0a8b48",
+      "before_state_digest": "97acac0414e15519b62a99b50de403ef2a82291fd81d9d476903f047565ac2c3",
+      "created_at": "2026-09-09T08:03:59.734570Z",
+      "dispatch_sha256": "a89fe37d7b89a6efb2460d9523b8576bc916067f6d0305e82c26ca4861accfeb",
+      "elapsed_ms": 274.26008400016144,
+      "ended_at": "2026-09-09T08:03:59.734570Z",
+      "outcome": "APPLIED",
+      "receipt_id": "receipt-629495d23ebd4138947138c0",
+      "receipt_sha256": "5f7679ca78ae1f79a0f2914e17c94b63fa89d2c55e3970cf6519d9128237d9a8",
+      "safe_error_code": null,
+      "schema_version": "ecomsre.product.step-receipt.v1",
+      "started_at": "2026-09-09T08:03:59.468555Z",
+      "step_id": "RESTORE_BASELINE_CONFIGURATION",
+      "step_ordinal": 1,
+      "supporting_evidence_refs": [
+        "00737cdb1cdae8623bdec51016de458e4f2adb5e72327dcbdef23019d224a55d"
+      ],
+      "target_logical_service": "payment",
+      "write_intent_id": "intent-a713d7be4d8a43fc8e66c345",
+      "write_intent_sha256": "c82c03fbf28ea0a1019677c23afaea70e84342b022342ebf8fc5a74f46219897"
+    },
+    "recovery_evaluation": {
+      "attempt_id": "attempt-8b67a3cd852746849f0a8b48",
+      "created_at": "2026-09-09T08:04:51.287699Z",
+      "evaluation_id": "evaluation-e45acb18681e44918834240f",
+      "evaluation_sha256": "aba0cf2cd63b0257b886e10801217ea7dbaca7e189e419739f7f06b2f33dbdb4",
+      "final_disposition": "RECOVERED",
+      "outcome": "PASS",
+      "policy_sha256": "3cd79a4f156946ad5bf3fadd7f9bd75c7c3ab4cb56e3efdd447d91bca7c69c99",
+      "reason_codes": [],
+      "receipt_sha256s": [
+        "5f7679ca78ae1f79a0f2914e17c94b63fa89d2c55e3970cf6519d9128237d9a8"
+      ],
+      "recovery_window_sha256s": [
+        "b1ab33ee23417697b0a8851fd5872887fa26a9160b745c4273ebf0cdade44a10",
+        "c80eccd4938716269299153bc8dbd8a98eb894562dd36ce807f81787e70ef006"
+      ],
+      "runbook_id": "ROLLBACK_CONFIGURATION",
+      "schema_version": "ecomsre.product.recovery-evaluation.v1",
+      "terminal": "RECOVERED",
+      "verifier_id": "ProductPaymentConfigurationRecoveryVerifier"
+    },
+    "recovery_policy": {
+      "baseline_configuration_digest": "6de2b41b138db7b2545583a369c1ce1b2dd100b8fc2e367880563d7a38b496f7",
+      "baseline_sha256": "fa4120a0c396ca958ead2654cc8f0d0388fdf147227013b03e4b9e3158039ad0",
+      "business_error_ratio_max": 0.01,
+      "control_identity_sha256": "0ba2476f89fbec8cc83a7c22e0d7e4f0344358b7bf0ca93ac9aa03b0527b2c5d",
+      "created_at": "2026-09-09T08:03:39.044096Z",
+      "environment_id": "env-91802a44da70dd68d02e0711",
+      "environment_ownership_digest": "b34899a4a7bb5fed008620698a456d1073cc87645263c41cd405fea8fa93fe40",
+      "fault_configuration_digest": "97acac0414e15519b62a99b50de403ef2a82291fd81d9d476903f047565ac2c3",
+      "minimum_business_requests": 10,
+      "policy_sha256": "3cd79a4f156946ad5bf3fadd7f9bd75c7c3ab4cb56e3efdd447d91bca7c69c99",
+      "schema_version": "ecomsre.product.recovery-policy.v1",
+      "target_identity_digest": "085e8dd0b12d4efd8bf9beeaefe0132264c09bdf6daad1e4ed789b7e90832b0c",
+      "window_seconds": 10
+    },
+    "recovery_windows": [
+      {
+        "attempt_id": "attempt-8b67a3cd852746849f0a8b48",
+        "business_sli_passed": true,
+        "configuration_restored": true,
+        "created_at": "2026-09-09T08:04:26.074743Z",
+        "ended_at": "2026-09-09T08:04:26.074743Z",
+        "endpoint_passed": true,
+        "flag_evaluation_restored": true,
+        "infrastructure_passed": true,
+        "non_owned_resources_unchanged": true,
+        "ordinal": 1,
+        "policy_sha256": "3cd79a4f156946ad5bf3fadd7f9bd75c7c3ab4cb56e3efdd447d91bca7c69c99",
+        "receipt_sha256": "5f7679ca78ae1f79a0f2914e17c94b63fa89d2c55e3970cf6519d9128237d9a8",
+        "schema_version": "ecomsre.product.recovery-window.v1",
+        "started_at": "2026-09-09T08:04:16.074743Z",
+        "supporting_evidence_refs": [
+          "ae5706a3cba2411ef4019d888c79f7b1fe1f248c0d02855b803d1d4a6497c978"
+        ],
+        "window_sha256": "b1ab33ee23417697b0a8851fd5872887fa26a9160b745c4273ebf0cdade44a10"
+      },
+      {
+        "attempt_id": "attempt-8b67a3cd852746849f0a8b48",
+        "business_sli_passed": true,
+        "configuration_restored": true,
+        "created_at": "2026-09-09T08:04:43.722197Z",
+        "ended_at": "2026-09-09T08:04:43.722197Z",
+        "endpoint_passed": true,
+        "flag_evaluation_restored": true,
+        "infrastructure_passed": true,
+        "non_owned_resources_unchanged": true,
+        "ordinal": 2,
+        "policy_sha256": "3cd79a4f156946ad5bf3fadd7f9bd75c7c3ab4cb56e3efdd447d91bca7c69c99",
+        "receipt_sha256": "5f7679ca78ae1f79a0f2914e17c94b63fa89d2c55e3970cf6519d9128237d9a8",
+        "schema_version": "ecomsre.product.recovery-window.v1",
+        "started_at": "2026-09-09T08:04:33.722197Z",
+        "supporting_evidence_refs": [
+          "b6631765bdde93e1e4ac78304764126da9d76a2e76e41e3ae41cf1de5795d0b2"
+        ],
+        "window_sha256": "c80eccd4938716269299153bc8dbd8a98eb894562dd36ce807f81787e70ef006"
+      }
+    ],
+    "write_intent": {
+      "attempt_id": "attempt-8b67a3cd852746849f0a8b48",
+      "attempt_sha256": "5e161dba35795285c3af331384ae21aec05d76cbafd9e0cc112c874f5a62d4a6",
+      "authorization_id": "auth-f95ebed40c2248929ea9a50a",
+      "authorization_sha256": "35b03507344dcd51d77cdf9c8608f9fec2f47966f9aeef968cc6f6c59bff4aab",
+      "before_state_sha256": "d2865e41b21a0085a88091ff30a8ca04e8dd6df20c0ab07a22f372d53728fc20",
+      "before_state_snapshot_id": "snap-f16c095af98548c7a0ef4f57",
+      "committed_at": "2026-09-09T08:03:59.429490Z",
+      "created_at": "2026-09-09T08:03:59.429490Z",
+      "runbook_sha256": "386e542b02e71969d0494ce92440443026c6686c91a297da071e58f2e3fecaed",
+      "schema_version": "ecomsre.product.remediation-write-intent.v1",
+      "status": "COMMITTED",
+      "step_id": "RESTORE_BASELINE_CONFIGURATION",
+      "target_logical_service": "payment",
+      "write_intent_id": "intent-a713d7be4d8a43fc8e66c345",
+      "write_intent_sha256": "c82c03fbf28ea0a1019677c23afaea70e84342b022342ebf8fc5a74f46219897"
+    },
+    "write_state": {
+      "active_remediation_count": 1,
+      "approval_id": "appr-5f5900d807614294a5328531",
+      "approval_sha256": "e4cfefd0431c9d0fc60f59dd6153bc9dbcf3f5278a7dd21cc14e8c2b1f927880",
+      "baseline_configuration_digest": "6de2b41b138db7b2545583a369c1ce1b2dd100b8fc2e367880563d7a38b496f7",
+      "baseline_id": "base-f8ead9aeaa1936177c86ec5f",
+      "baseline_sha256": "fa4120a0c396ca958ead2654cc8f0d0388fdf147227013b03e4b9e3158039ad0",
+      "candidate_id": "cand-6138e9be6d75e5fe7743143f",
+      "candidate_sha256": "daa62dfb487581bd1a36f08145221929b845eef32880dd6b016b790797ebf322",
+      "configuration_drift_visible": true,
+      "control_identity_sha256": "0ba2476f89fbec8cc83a7c22e0d7e4f0344358b7bf0ca93ac9aa03b0527b2c5d",
+      "created_at": "2026-09-09T08:03:59.429364Z",
+      "current_configuration_digest": "97acac0414e15519b62a99b50de403ef2a82291fd81d9d476903f047565ac2c3",
+      "environment_id": "env-91802a44da70dd68d02e0711",
+      "environment_ownership_digest": "b34899a4a7bb5fed008620698a456d1073cc87645263c41cd405fea8fa93fe40",
+      "fault_still_present": true,
+      "incident_id": "inc-d8b13a7888a78653e240bc5f",
+      "incident_sha256": "44a9eb8841351ff1c7e04c2456719a514f2defd57bab5fd82db5434ccbdde6c0",
+      "observed_at": "2026-09-09T08:03:59.397755Z",
+      "schema_version": "ecomsre.product.remediation-current-state.v1",
+      "snapshot_id": "snap-f16c095af98548c7a0ef4f57",
+      "snapshot_sha256": "d2865e41b21a0085a88091ff30a8ca04e8dd6df20c0ab07a22f372d53728fc20",
+      "source_observation_refs": [
+        "94dd222bb6c42c29f61b21dbc0b13d2355f4377a3f643149ced70e45dcabc83f"
+      ],
+      "target_identity_digest": "085e8dd0b12d4efd8bf9beeaefe0132264c09bdf6daad1e4ed789b7e90832b0c",
+      "target_logical_service": "payment",
+      "trusted_binding_sha256": "125f3c32ede70d3ce60cabf2b3c903e1c735b24b103741f2c8565e7bad3d6a68"
+    }
+  },
+  "private_evidence_commitment": "62af212a1bee3d075636205dfc6ac55ade9cf6fbc4cbf1b2390df5161af21352",
+  "product_diagnosis": {
+    "action_authority": "NONE",
+    "agent_writes": 0,
+    "broad_domain": "CONFIGURATION",
+    "capability_limitations": [
+      "SOURCE_LOGS_UNAVAILABLE",
+      "SOURCE_RUNTIME_UNAVAILABLE",
+      "SOURCE_TRACES_UNAVAILABLE"
+    ],
+    "contradicting_evidence_refs": [],
+    "core_or_extension_or_open_world": "CORE",
+    "created_at": "2026-09-09T08:03:22.072888Z",
+    "diagnosis_id": "diag-f20c0af2e6e58dcd60b455c1",
+    "incident_id": "inc-d8b13a7888a78653e240bc5f",
+    "mechanism": "CONFIGURATION_ERROR",
+    "memory_sha256": "81624b14f87ab557d69dfbf05b198e0c5b8f49dcdb37a6991a57a67e6ce3fdba",
+    "provider_calls": 0,
+    "provisional_report": null,
+    "result_sha256": "ffc793c2da76f7fa898750f09326ec499ab97f3f9c83fcbf9e04ff98eb58aa71",
+    "root_service_ids": [
+      "svc-65d59fc8543bee433bef2e51"
+    ],
+    "runbook_executions": 0,
+    "schema_version": "ecomsre.product.diagnosis-result.v1",
+    "supporting_evidence_refs": [
+      "e:a:changes:payment:0:ea86bce35341",
+      "e:a:metrics:payment:core:0:ca2144575ecb"
+    ],
+    "terminal": "CORE_KNOWN"
+  },
+  "provider_calls": 0,
+  "recovery_evidence": {
+    "00737cdb1cdae8623bdec51016de458e4f2adb5e72327dcbdef23019d224a55d": {
+      "baseline_configuration_digest": "6de2b41b138db7b2545583a369c1ce1b2dd100b8fc2e367880563d7a38b496f7",
+      "control_identity_sha256": "0ba2476f89fbec8cc83a7c22e0d7e4f0344358b7bf0ca93ac9aa03b0527b2c5d",
+      "created_at": "2026-09-09T08:03:59.733293Z",
+      "current_configuration_digest": "6de2b41b138db7b2545583a369c1ce1b2dd100b8fc2e367880563d7a38b496f7",
+      "environment_id": "env-91802a44da70dd68d02e0711",
+      "environment_owned": true,
+      "environment_ownership_digest": "b34899a4a7bb5fed008620698a456d1073cc87645263c41cd405fea8fa93fe40",
+      "fault_still_present": false,
+      "local_control_trusted": true,
+      "observation_sha256": "5fd4c83a28fe9bbd5b5e8ad490ee1f2a3fd04d87855a83730556d39dadd4e88f",
+      "observed_at": "2026-09-09T08:03:59.733293Z",
+      "schema_version": "ecomsre.product.remediation-state-observation.v1",
+      "target_identity_digest": "085e8dd0b12d4efd8bf9beeaefe0132264c09bdf6daad1e4ed789b7e90832b0c",
+      "target_logical_service": "payment"
+    },
+    "ae5706a3cba2411ef4019d888c79f7b1fe1f248c0d02855b803d1d4a6497c978": {
+      "business_errors": 0,
+      "business_observation_kind": "DIRECT_PAYMENT_TRAFFIC",
+      "business_requests": 39,
+      "configuration_digest": "6de2b41b138db7b2545583a369c1ce1b2dd100b8fc2e367880563d7a38b496f7",
+      "created_at": "2026-09-09T08:04:26.074743Z",
+      "elapsed_ms": 17441.162666887976,
+      "ended_at": "2026-09-09T08:04:26.074743Z",
+      "endpoint_passed": true,
+      "environment_id": "env-91802a44da70dd68d02e0711",
+      "environment_ownership_digest": "b34899a4a7bb5fed008620698a456d1073cc87645263c41cd405fea8fa93fe40",
+      "flag_evaluation_restored": true,
+      "infrastructure_passed": true,
+      "non_owned_resources_unchanged": true,
+      "observation_sha256": "935cac79e663c84a2ec17d9d796214a23dacc22697b5916e247ecbbc391d2d8c",
+      "policy_sha256": "3cd79a4f156946ad5bf3fadd7f9bd75c7c3ab4cb56e3efdd447d91bca7c69c99",
+      "schema_version": "ecomsre.product.recovery-observation.v1",
+      "started_at": "2026-09-09T08:04:16.074743Z",
+      "target_logical_service": "payment"
+    },
+    "b6631765bdde93e1e4ac78304764126da9d76a2e76e41e3ae41cf1de5795d0b2": {
+      "business_errors": 0,
+      "business_observation_kind": "DIRECT_PAYMENT_TRAFFIC",
+      "business_requests": 39,
+      "configuration_digest": "6de2b41b138db7b2545583a369c1ce1b2dd100b8fc2e367880563d7a38b496f7",
+      "created_at": "2026-09-09T08:04:43.722197Z",
+      "elapsed_ms": 17492.72304191254,
+      "ended_at": "2026-09-09T08:04:43.722197Z",
+      "endpoint_passed": true,
+      "environment_id": "env-91802a44da70dd68d02e0711",
+      "environment_ownership_digest": "b34899a4a7bb5fed008620698a456d1073cc87645263c41cd405fea8fa93fe40",
+      "flag_evaluation_restored": true,
+      "infrastructure_passed": true,
+      "non_owned_resources_unchanged": true,
+      "observation_sha256": "7b3d6aa0b66fb994f93dba65e8d3b8c0c81c9cb8b470b31c01fd37420c9efc84",
+      "policy_sha256": "3cd79a4f156946ad5bf3fadd7f9bd75c7c3ab4cb56e3efdd447d91bca7c69c99",
+      "schema_version": "ecomsre.product.recovery-observation.v1",
+      "started_at": "2026-09-09T08:04:33.722197Z",
+      "target_logical_service": "payment"
+    }
+  },
+  "schema_version": "ecomsre.product.minimal-payment-result.v1",
+  "source_head": "539824ee5c3b2497c890a52a7aaa1fff455b6b8e",
+  "started_at": "2026-09-09T07:54:09.641693+00:00",
+  "terminal": "RECOVERED",
+  "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f"
+}
