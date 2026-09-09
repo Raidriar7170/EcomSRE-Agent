@@ -12,7 +12,7 @@
 
 工程层把它接到 FastAPI、Worker、SQLite 和内容寻址证据库。恢复层继续分权：Diagnosis 没有写权限，Candidate 也不能执行；Approval 后还要重新读取目标和配置状态，绑定一次授权，再提交 WriteIntent，由独立 Executor 执行固定动作。Receipt 证明动作结果，两个业务窗口证明恢复。
 
-可引用的结果是 v0.2.4 健康 30/30 checkout 与 NO_INCIDENT，v0.3 一个 Kafka 故障族与新窗口 H1 命中，以及 v0.4 一次 Payment 恢复，两个窗口各 39 请求、0 错误。v0.4.1 正在补充真实安全拒绝与重复执行证据。它不证明生产自主自愈，也没有跨环境恢复泛化。
+可引用的结果是 v0.2.4 健康 30/30 checkout 与 NO_INCIDENT，v0.3 一个 Kafka 故障族与新窗口 H1 命中，以及 v0.4 一次 Payment 恢复，两个窗口各 39 请求、0 错误。v0.4.1 的五个真实安全案例进一步验证健康、撤销批准和状态漂移保持零写入，重复请求只产生一次恢复，验证证据不足转人工且不重试。它不证明生产自主自愈，也没有跨环境恢复泛化。
 
 ## 四个核心贡献面
 
@@ -28,9 +28,9 @@
 ## 两条简历候选表述
 
 - 将 SRE 研究原型工程化为 FastAPI / Worker / SQLite / CAS Product，使用类型化遥测与证据准入支持确定性诊断，并通过故障族、规则挖掘、Shadow 与人工门控形成环境级知识扩展。
-- 设计并验证 Diagnosis → Candidate → Approval → 状态绑定授权 → 隔离执行 → Receipt → 双窗口验证的受限恢复链路；在本地真实 Payment 配置故障中完成一次固定 Baseline 回滚，两个恢复窗口均为 39 次请求 / 0 错误。
+- 设计并验证 Diagnosis → Candidate → Approval → 状态绑定授权 → 隔离执行 → Receipt → 双窗口验证的受限恢复链路；在本地真实 Payment 配置故障中完成一次固定 Baseline 回滚，两个恢复窗口均为 39 次请求 / 0 错误；进一步通过真实安全矩阵验证撤销批准、状态漂移和重复请求不产生未授权或重复写入。
 
-仅在与实际职责一致时使用“设计”“工程化”“验证”等动词。Safety Matrix 尚未收口前不把其预期结果写进简历。
+仅在与实际职责一致时使用“设计”“工程化”“验证”等动词。39 次请求 / 0 错误引用 PR #102；安全矩阵引用 v0.4.1，二者分开标注。
 
 ## 高频问答
 
@@ -60,7 +60,9 @@
 
 ## Safety Matrix 与时间线
 
-[真实安全矩阵](../results/product-v041-live-safety/README.md)围绕健康、撤销批准、状态漂移、重复请求与验证证据不足。预期零写入案例不能用 fixture 替代 live。结果完成后按 [timing summary](../results/product-v041-live-safety/timing-summary.json)解释诊断、授权、执行与窗口等待的分解。
+[真实安全矩阵](../results/product-v041-live-safety/README.md)围绕健康、撤销批准、状态漂移、重复请求与验证证据不足。S0–S2 实测零写入，S3 重放仍一次恢复，S4 配置已恢复但窗口证据不足，转人工且不再写。按 [timing summary](../results/product-v041-live-safety/timing-summary.json)解释诊断、授权、执行与窗口等待的分解。
+
+S3 观测：故障配置写入确认（fault acknowledgment）到首次失败 1016.632 ms；诊断 Job 262.028 ms；Receipt 到验证恢复 51231.283 ms；故障配置写入确认到验证恢复 179627.167 ms。每项 n=1，包含固定故障确认/调度，非生产 MTTD/SLO。精确 gateway 消费时刻未测量，两项拆分保留 NOT_MEASURED。
 
 ## 代码阅读路线
 

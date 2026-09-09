@@ -1,0 +1,21 @@
+{
+  "desktop": {
+    "viewport": 1440,
+    "scroll": 1440,
+    "idsUnique": true,
+    "externalAssets": []
+  },
+  "print": {
+    "nav": "none"
+  },
+  "mobile": {
+    "viewport": 390,
+    "scroll": 390,
+    "idsUnique": true,
+    "externalAssets": []
+  },
+  "mermaid": "flowchart-v2",
+  "html_sha256": "2e934608b4a78da95cae0af49f051c47b77de9e78f09f417d70c02bdf85f3622",
+  "status": "PASS",
+  "scope": "file:// Chromium; 1440px desktop / 390px mobile / print CSS; local Mermaid parse"
+}

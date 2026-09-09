@@ -1,6 +1,6 @@
 {
   "schema_version": "ecomsre.product.claim-map.v1",
-  "status": "IN_PROGRESS",
+  "status": "COMPLETE",
   "claims": [
     {
       "claim_id": "v024-healthy",
@@ -118,6 +118,69 @@
       "evidence_sha256": "dbcd01e283175fdaeb055701486b7325aeaa01cb773d84b0b17cfd15a5023385",
       "scope": "Current Product v0.4 registry",
       "limitations": "Does not register other actions or grant diagnosis write authority"
+    },
+    {
+      "claim_id": "v041-S0",
+      "public_text": "NO_CANDIDATE; {\"approval\": 0, \"attempt\": 0, \"authorization\": 0, \"candidate\": 0, \"executor_dispatch\": 0, \"external_product_writes\": 0, \"gateway_consumption\": 0, \"receipt\": 0, \"recovery_evaluation\": 0, \"recovery_window\": 0, \"write_intent\": 0}",
+      "source_file": "docs/results/product-v041-live-safety/case-s0-healthy-non-action.json",
+      "source_path_or_object": "terminal; counts; objects; cleanup; healthy_diagnosis; timeline",
+      "evidence_sha256": "f3644644786ab5ec5265e13a8473637b71a156c540b5f8ec95528915d9a6dac3",
+      "scope": "Five isolated pinned local Payment cases, one observation per case",
+      "limitations": "No production, general exactly-once, mean or SLO; exact gateway consumption timestamp absent; trusted local peer attribution only"
+    },
+    {
+      "claim_id": "v041-S1",
+      "public_text": "APPROVAL_REVOKED; {\"approval\": 1, \"attempt\": 1, \"authorization\": 0, \"candidate\": 1, \"executor_dispatch\": 0, \"external_product_writes\": 0, \"gateway_consumption\": 0, \"receipt\": 0, \"recovery_evaluation\": 0, \"recovery_window\": 0, \"write_intent\": 0}",
+      "source_file": "docs/results/product-v041-live-safety/case-s1-revoked-approval.json",
+      "source_path_or_object": "terminal; counts; objects; cleanup; healthy_diagnosis; timeline",
+      "evidence_sha256": "51d6f4175b75661b4af11bc7b4ead05f40d2466a2e6b520b190a299f1b4c3178",
+      "scope": "Five isolated pinned local Payment cases, one observation per case",
+      "limitations": "No production, general exactly-once, mean or SLO; exact gateway consumption timestamp absent; trusted local peer attribution only"
+    },
+    {
+      "claim_id": "v041-S2",
+      "public_text": "NO_LONGER_APPLICABLE; {\"approval\": 1, \"attempt\": 1, \"authorization\": 0, \"candidate\": 1, \"executor_dispatch\": 0, \"external_product_writes\": 0, \"gateway_consumption\": 0, \"receipt\": 0, \"recovery_evaluation\": 0, \"recovery_window\": 0, \"write_intent\": 0}",
+      "source_file": "docs/results/product-v041-live-safety/case-s2-state-drift.json",
+      "source_path_or_object": "terminal; counts; objects; cleanup; healthy_diagnosis; timeline",
+      "evidence_sha256": "202863b0fed22dde0551af67ddef23ad3c72ad708c3c2c05605ced213062c9eb",
+      "scope": "Five isolated pinned local Payment cases, one observation per case",
+      "limitations": "No production, general exactly-once, mean or SLO; exact gateway consumption timestamp absent; trusted local peer attribution only"
+    },
+    {
+      "claim_id": "v041-S3",
+      "public_text": "RECOVERED; {\"approval\": 1, \"attempt\": 1, \"authorization\": 1, \"candidate\": 1, \"executor_dispatch\": 1, \"external_product_writes\": 1, \"gateway_consumption\": 1, \"receipt\": 1, \"recovery_evaluation\": 1, \"recovery_window\": 2, \"write_intent\": 1}",
+      "source_file": "docs/results/product-v041-live-safety/case-s3-idempotent-recovery.json",
+      "source_path_or_object": "terminal; counts; objects; cleanup; healthy_diagnosis; timeline",
+      "evidence_sha256": "9094ef10e7654eb86065df63584cc24d396f4e6ee3359a4b0a3e16083d3b74bb",
+      "scope": "Five isolated pinned local Payment cases, one observation per case",
+      "limitations": "No production, general exactly-once, mean or SLO; exact gateway consumption timestamp absent; trusted local peer attribution only"
+    },
+    {
+      "claim_id": "v041-S4",
+      "public_text": "VERIFICATION_FAILED; {\"approval\": 1, \"attempt\": 1, \"authorization\": 1, \"candidate\": 1, \"executor_dispatch\": 1, \"external_product_writes\": 1, \"gateway_consumption\": 1, \"receipt\": 1, \"recovery_evaluation\": 1, \"recovery_window\": 2, \"write_intent\": 1}",
+      "source_file": "docs/results/product-v041-live-safety/case-s4-verification-failure.json",
+      "source_path_or_object": "terminal; counts; objects; cleanup; healthy_diagnosis; timeline",
+      "evidence_sha256": "071b7234f6d2528290b3468e0529ff80822efa955e205b59bf88d8ef7e078759",
+      "scope": "Five isolated pinned local Payment cases, one observation per case",
+      "limitations": "No production, general exactly-once, mean or SLO; exact gateway consumption timestamp absent; trusted local peer attribution only"
+    },
+    {
+      "claim_id": "v041-live-safety-matrix",
+      "public_text": "Five cases PASS; all unauthorized/duplicate/unknown/alternate/Provider counts 0; 11/3/2 cleanup per case and final 0/0/0",
+      "source_file": "docs/results/product-v041-live-safety/live-safety-matrix.json",
+      "source_path_or_object": "cases; final_owned_resources; safety counters",
+      "evidence_sha256": "9bf3a0541cd216f1536711300e010fd91c62bd21f783d98871bac844e661f17f",
+      "scope": "Five isolated pinned local Payment cases, one observation per case",
+      "limitations": "No production, general exactly-once, mean or SLO; exact gateway consumption timestamp absent; trusted local peer attribution only"
+    },
+    {
+      "claim_id": "v041-timing-summary",
+      "public_text": "All named observed timing values and NOT_MEASURED endpoints; n=1 per metric",
+      "source_file": "docs/results/product-v041-live-safety/timing-summary.json",
+      "source_path_or_object": "cases.*.events; cases.*.metrics",
+      "evidence_sha256": "29eb17310c933ac07755e651d0878aa71450c8d6dac52e66bb36254fa8d1fd81",
+      "scope": "Five isolated pinned local Payment cases, one observation per case",
+      "limitations": "No production, general exactly-once, mean or SLO; exact gateway consumption timestamp absent; trusted local peer attribution only"
     }
   ]
 }

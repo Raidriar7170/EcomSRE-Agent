@@ -4,7 +4,7 @@
 
 *A verifiable SRE Agent that turns typed telemetry into evidence-backed diagnoses, evolves environment-specific knowledge through human-gated evaluation, and executes only separately authorized bounded remediation.*
 
-**当前状态：v0.4.1 收尾进行中 · 单租户本地 Product 原型 · Diagnosis 默认只读 · 一个真实 Payment 受限恢复闭环。**
+**当前状态：v0.4.1 收尾完成 · 单租户本地 Product 原型 · Diagnosis 默认只读 · 一个真实 Payment 受限恢复闭环。**
 
 [快速体验](docs/product/QUICKSTART.md) · [当前状态](docs/product/STATUS.md) · [架构](docs/product/ARCHITECTURE.md) · [受限恢复](docs/product/REMEDIATION.md) · [离线 HTML 手册](docs/interview/ecomsre-agent-v041-handbook.html)
 
@@ -15,7 +15,7 @@
 | v0.2.4 健康验收 | 30/30 checkout 事务；五类证据；`NO_INCIDENT`；能力限制 0 | [健康验收](docs/results/product-v024-nofault-acceptance-final.json) |
 | v0.3 Kafka 知识演化 | P1/P2/P3 三个 Open-World 窗口形成一个故障族；Shadow recall 1.0 / FPR 0.0；H1 命中 `EXTENSION_KNOWN / kafka-queue-backlog / fraud-detection` | [故障族、规则与 H1](docs/analysis/product-v030-family-and-rule-summary.json) |
 | v0.4 Payment 恢复 | `paymentFailure=100%` → `CORE_KNOWN` → 一个固定 Baseline 回滚 → 两个窗口各 39 请求 / 0 错误 → `RECOVERED`；gateway 消费 1 次，cleanup 后 0/0/0 | [真实恢复 JSON](docs/results/product-v040-minimal-payment/live-result.json) |
-| v0.4.1 Live Safety Matrix | 正在验证 S0–S4；以结果包为准 | [安全矩阵](docs/results/product-v041-live-safety/README.md) |
+| v0.4.1 Live Safety Matrix | S0–S2 零写入；S3 重放仍仅一次恢复；S4 验证证据不足转人工、不重试；5/5 CLEAN | [安全矩阵](docs/results/product-v041-live-safety/README.md) |
 
 这些是有界本地结果。Shadow 分母为 3 个正例与 10 个负向/反事实/失败用例，`OTHER_EXTENSION` 分层不可用。v0.4 Minimal 健康状态有 194 次直接 Payment 请求，但健康 Diagnosis 是 `INSUFFICIENT_EVIDENCE`，不能借用 v0.2.4 的 `NO_INCIDENT`。
 

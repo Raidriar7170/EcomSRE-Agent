@@ -546,6 +546,183 @@
         }
       },
       "sample_count": 1
+    },
+    "S4": {
+      "events": {
+        "StepReceipt_persisted": {
+          "clock_scope": "persisted-runtime-utc",
+          "monotonic_ns": "NOT_MEASURED",
+          "semantics": "persisted object timestamp; exact database commit monotonic not instrumented",
+          "source": "objects.receipt.0.created_at",
+          "utc": "2026-09-09T12:32:00.746363Z"
+        },
+        "VERIFICATION_FAILED_persisted": {
+          "clock_scope": "persisted-runtime-utc",
+          "monotonic_ns": "NOT_MEASURED",
+          "semantics": "persisted object timestamp; exact database commit monotonic not instrumented",
+          "source": "objects.recovery_evaluation.0.created_at",
+          "utc": "2026-09-09T12:32:52.126749Z"
+        },
+        "approval_persisted": {
+          "clock_scope": "persisted-runtime-utc",
+          "monotonic_ns": "NOT_MEASURED",
+          "semantics": "persisted object timestamp; exact database commit monotonic not instrumented",
+          "source": "objects.approval.0.issued_at",
+          "utc": "2026-09-09T12:31:58.616582Z"
+        },
+        "approval_response_observed": {
+          "clock_scope": "harness-process",
+          "monotonic_ns": 798786296784500,
+          "utc": "2026-09-09T12:31:58.644714+00:00"
+        },
+        "attempt_request_started": {
+          "clock_scope": "harness-process",
+          "monotonic_ns": 798786296798458,
+          "utc": "2026-09-09T12:31:58.644733+00:00"
+        },
+        "attempt_response_observed": {
+          "clock_scope": "harness-process",
+          "monotonic_ns": 798786769231208,
+          "utc": "2026-09-09T12:31:59.117160+00:00"
+        },
+        "authorization_persisted": {
+          "clock_scope": "persisted-runtime-utc",
+          "monotonic_ns": "NOT_MEASURED",
+          "semantics": "persisted object timestamp; exact database commit monotonic not instrumented",
+          "source": "objects.authorization.0.created_at",
+          "utc": "2026-09-09T12:31:59.082253Z"
+        },
+        "candidate_persisted": {
+          "clock_scope": "harness-process",
+          "monotonic_ns": 798785949871208,
+          "semantics": "Persistence observed at API response; includes local transport, not exact commit time. Candidate created_at is diagnosis-anchored and is not used as persistence latency.",
+          "source": "first Candidate POST response",
+          "utc": "2026-09-09T12:31:58.297798+00:00"
+        },
+        "case_started": {
+          "clock_scope": "harness-process",
+          "monotonic_ns": 798190523826541,
+          "utc": "2026-09-09T12:22:02.880246+00:00"
+        },
+        "cleanup_completed": {
+          "clock_scope": "harness-process",
+          "monotonic_ns": 798911908882250,
+          "utc": "2026-09-09T12:34:04.254958+00:00"
+        },
+        "cleanup_started": {
+          "clock_scope": "harness-process",
+          "monotonic_ns": 798842071415708,
+          "utc": "2026-09-09T12:32:54.418511+00:00"
+        },
+        "current_state_observed": {
+          "clock_scope": "persisted-runtime-utc",
+          "monotonic_ns": "NOT_MEASURED",
+          "semantics": "persisted object timestamp; exact database commit monotonic not instrumented",
+          "source": "state_snapshots.0.observed_at",
+          "utc": "2026-09-09T12:31:59.027976Z"
+        },
+        "diagnosis_completed": {
+          "clock_scope": "persisted-runtime-utc",
+          "monotonic_ns": "NOT_MEASURED",
+          "semantics": "persisted object timestamp; exact database commit monotonic not instrumented",
+          "source": "job_events.SUCCEEDED",
+          "utc": "2026-09-09T12:31:20.953475+00:00"
+        },
+        "diagnosis_job_started": {
+          "clock_scope": "persisted-runtime-utc",
+          "monotonic_ns": "NOT_MEASURED",
+          "semantics": "persisted object timestamp; exact database commit monotonic not instrumented",
+          "source": "job_events.CLAIMED",
+          "utc": "2026-09-09T12:31:20.695773+00:00"
+        },
+        "diagnosis_request_started": {
+          "clock_scope": "harness-process",
+          "monotonic_ns": 798740823901833,
+          "utc": "2026-09-09T12:31:13.172500+00:00"
+        },
+        "diagnosis_response_observed": {
+          "clock_scope": "harness-process",
+          "monotonic_ns": 798761145735166,
+          "utc": "2026-09-09T12:31:33.494035+00:00"
+        },
+        "fault_write_acknowledged": {
+          "clock_scope": "harness-process",
+          "monotonic_ns": 798661692808291,
+          "utc": "2026-09-09T12:29:54.042560+00:00"
+        },
+        "fault_write_started": {
+          "clock_scope": "harness-process",
+          "monotonic_ns": 798661689134083,
+          "utc": "2026-09-09T12:29:54.038886+00:00"
+        },
+        "first_failed_business_request": {
+          "clock_scope": "harness-process",
+          "monotonic_ns": 798662710357875,
+          "utc": "2026-09-09T12:29:55.060093+00:00"
+        },
+        "incident_created": {
+          "clock_scope": "persisted-runtime-utc",
+          "monotonic_ns": "NOT_MEASURED",
+          "semantics": "persisted object timestamp; exact database commit monotonic not instrumented",
+          "source": "persisted Incident.created_at",
+          "utc": "2026-09-09T12:31:16.541885Z"
+        },
+        "recovery_window_1_ended": {
+          "clock_scope": "persisted-runtime-utc",
+          "monotonic_ns": "NOT_MEASURED",
+          "semantics": "persisted object timestamp; exact database commit monotonic not instrumented",
+          "source": "objects.recovery_window.0.ended_at",
+          "utc": "2026-09-09T12:32:26.932929Z"
+        },
+        "recovery_window_1_started": {
+          "clock_scope": "persisted-runtime-utc",
+          "monotonic_ns": "NOT_MEASURED",
+          "semantics": "persisted object timestamp; exact database commit monotonic not instrumented",
+          "source": "objects.recovery_window.0.started_at",
+          "utc": "2026-09-09T12:32:16.932929Z"
+        },
+        "recovery_window_2_ended": {
+          "clock_scope": "persisted-runtime-utc",
+          "monotonic_ns": "NOT_MEASURED",
+          "semantics": "persisted object timestamp; exact database commit monotonic not instrumented",
+          "source": "objects.recovery_window.1.ended_at",
+          "utc": "2026-09-09T12:32:44.602349Z"
+        },
+        "recovery_window_2_started": {
+          "clock_scope": "persisted-runtime-utc",
+          "monotonic_ns": "NOT_MEASURED",
+          "semantics": "persisted object timestamp; exact database commit monotonic not instrumented",
+          "source": "objects.recovery_window.1.started_at",
+          "utc": "2026-09-09T12:32:34.602349Z"
+        },
+        "safe_denial_request_started": {
+          "clock_scope": "harness-process",
+          "monotonic_ns": 798786296798458,
+          "utc": "2026-09-09T12:31:58.644733+00:00"
+        },
+        "terminal_observed": {
+          "clock_scope": "harness-process",
+          "monotonic_ns": 798840800508541,
+          "utc": "2026-09-09T12:32:53.147610+00:00"
+        },
+        "write_intent_committed": {
+          "clock_scope": "persisted-runtime-utc",
+          "monotonic_ns": "NOT_MEASURED",
+          "semantics": "persisted object timestamp; exact database commit monotonic not instrumented",
+          "source": "objects.write_intent.0.committed_at",
+          "utc": "2026-09-09T12:32:00.434433Z"
+        }
+      },
+      "metrics": {
+        "receipt_to_verification_failed_ms": {
+          "clock": "cross-object UTC",
+          "end_event": "VERIFICATION_FAILED_persisted",
+          "sample_count": 1,
+          "start_event": "StepReceipt_persisted",
+          "value_ms": 51380.386
+        }
+      },
+      "sample_count": 1
     }
   },
   "limitations": "No mean, P95 or SLO. UTC reflects persisted object fields and explicitly marked observation times. Missing exact gateway consumption timestamp is NOT_MEASURED. No file mtime or test duration substitutes.",

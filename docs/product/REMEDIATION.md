@@ -37,3 +37,15 @@ WriteIntent 在发送前持久化，gateway 单次消费再发送外部请求；
 ## Claim Boundary
 
 一个 pinned 本地配置故障、一个固定 Runbook。不能外推生产 self-healing、通用 exactly-once、跨环境泛化或所有攻击面覆盖。完整 Harness 的历史失败未被 Minimal 成功改写。cleanup 仅清理 owned 实验资源，不能充当 Product 恢复成功证据。
+
+## v0.4.1 实测安全结果
+
+| Case | 实测终态 | Product 外部写入 | Cleanup |
+| --- | --- | ---: | --- |
+| S0 Healthy | NO_CANDIDATE；健康 Diagnosis INSUFFICIENT_EVIDENCE | 0 | CLEAN |
+| S1 Revoked | APPROVAL_REVOKED / NO_WRITE | 0 | CLEAN |
+| S2 Drift | CONFIGURATION_DRIFT_NOT_VISIBLE / NO_WRITE | 0 | CLEAN |
+| S3 Replay | RECOVERED；相同键返回原对象，第二次 run_one 拒绝 | 1 | CLEAN |
+| S4 Evidence failure | APPLIED；VERIFICATION_FAILED / ESCALATE_HUMAN | 1 | CLEAN |
+
+单次观察的完整时延、时钟语义和缺失项见 [timing 说明](../results/product-v041-live-safety/README.md#observed-timing)。

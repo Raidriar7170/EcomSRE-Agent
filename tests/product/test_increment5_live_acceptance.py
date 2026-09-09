@@ -155,6 +155,7 @@ def test_increment5_compose_examples_docs_and_acceptance_surfaces_exist() -> Non
         "OPERATIONS.md",
         "LIMITATIONS.md",
         "STATUS.md",
+        "REMEDIATION.md",
     }
     assert required_docs == {
         path.name for path in (ROOT / "docs/product").glob("*.md")
@@ -168,8 +169,10 @@ def test_increment5_compose_examples_docs_and_acceptance_surfaces_exist() -> Non
     for required in (
         "uv sync --frozen --python 3.11",
         "scripts.product.run_product_mvp_demo",
-        "SIMULATED HUMAN REVIEW",
-        "不是 Kafka live 结果重现",
+        "模拟人工门控",
+        "不是 Kafka live 复跑",
+        "scripts.product.demo_remediation_v040",
+        "scripts.ci.verify_product_v040_minimal_payment",
     ):
         assert required in quickstart
     for required in (

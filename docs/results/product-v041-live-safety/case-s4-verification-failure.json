@@ -1,0 +1,1766 @@
+{
+  "api_calls": [
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798217146071208,
+        "utc": "2026-09-09T12:22:29.502289+00:00"
+      },
+      "key_sha256": "cdb8693e9f7de6882dec741a79424957ecfa7f455f475ae3a1f956c211f9b54c",
+      "method": "GET",
+      "request_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "response_sha256": "31bf75f4c0a97cc1f7b60df824fa390b3be9ba014f29b63c87c698ba63d9a9fd",
+      "route": "/readyz",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798213715516291,
+        "utc": "2026-09-09T12:22:26.071787+00:00"
+      },
+      "status": 200
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798610611761000,
+        "utc": "2026-09-09T12:29:02.962247+00:00"
+      },
+      "key_sha256": "ae1cf8a081e55c17236cd6100b31e6479195ae6368797e88ca149a95b5a5b678",
+      "method": "POST",
+      "request_sha256": "3e1fb9739bef1c3fb909afab2cd6e10304c52078a4bda4a6081252622bff424c",
+      "response_sha256": "647d2980e45b9638281b1f3333b222e40d909a7c2d1e50591a946adabbf37db4",
+      "route": "/v1/environments",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798607221238083,
+        "utc": "2026-09-09T12:28:59.571779+00:00"
+      },
+      "status": 201
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798613996226500,
+        "utc": "2026-09-09T12:29:06.346671+00:00"
+      },
+      "key_sha256": "233938683caa096b829a54581ac5b21d7585818f895501f5713b735eafa17c6b",
+      "method": "POST",
+      "request_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "response_sha256": "519dede607fa88025b50b881b3f4d57443a7c2e95a9ffa81426f67c30a3e379f",
+      "route": "/v1/environments/env-70e9de01d4dfe814415b7879/verify-jobs",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798610612206458,
+        "utc": "2026-09-09T12:29:02.962703+00:00"
+      },
+      "status": 202
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798617377846958,
+        "utc": "2026-09-09T12:29:09.728237+00:00"
+      },
+      "key_sha256": "507d99deb08d9cbc3a5b91a811b7b0c6efd35a599d356b7ff9a876c5314a2523",
+      "method": "GET",
+      "request_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "response_sha256": "493ee77860d3b9297f7a286cd86693d4fa9d07b2b2f56a7ec5da68fcbd090716",
+      "route": "/v1/jobs/job-8aeea707cc43ed683a157059",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798613996597041,
+        "utc": "2026-09-09T12:29:06.347045+00:00"
+      },
+      "status": 200
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798620756398166,
+        "utc": "2026-09-09T12:29:13.106737+00:00"
+      },
+      "key_sha256": "a4d5febf2a353fd9bccf1027ce6c56f340c91a5b36ebace72fadf940f0d14b31",
+      "method": "GET",
+      "request_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "response_sha256": "b2a3b5c2ca49a19f70bd87bca078b9a02ba282afc4f4a4525506f5f5e44c0d8d",
+      "route": "/v1/environments/env-70e9de01d4dfe814415b7879/capabilities",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798617378347833,
+        "utc": "2026-09-09T12:29:09.728745+00:00"
+      },
+      "status": 200
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798624147974750,
+        "utc": "2026-09-09T12:29:16.498271+00:00"
+      },
+      "key_sha256": "c4b00a3f6f3fc30e2cb661a1b64d077bff74c730a76c907dec02a2feda451274",
+      "method": "POST",
+      "request_sha256": "511d30885801ea273a02451edb63fc486287206b82943c30eedd67d9f3d4afa0",
+      "response_sha256": "73e10a0d93d6db9dc1a0bcb2737beb147a8979730ca897f0b77e92e52c5837f4",
+      "route": "/v1/environments/env-70e9de01d4dfe814415b7879/baseline-jobs",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798620756819916,
+        "utc": "2026-09-09T12:29:13.107169+00:00"
+      },
+      "status": 202
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798627528139041,
+        "utc": "2026-09-09T12:29:19.878381+00:00"
+      },
+      "key_sha256": "7d2c470050a0deb5c53e4c9d6837124f28379941fe3c712c922062f2d91d860b",
+      "method": "GET",
+      "request_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "response_sha256": "17543188846b07ee79206ea4e8c5652f127dd2a5c4b94a614c4daa30b951a642",
+      "route": "/v1/jobs/job-16360f0bc6512b7bba3b00c2",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798624148374625,
+        "utc": "2026-09-09T12:29:16.498674+00:00"
+      },
+      "status": 200
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798630907610625,
+        "utc": "2026-09-09T12:29:23.257805+00:00"
+      },
+      "key_sha256": "7cb2ffb9e1cf8ce8486b8436b2a37129080e2bb75ca7e3e558bf3f0150bd39d8",
+      "method": "GET",
+      "request_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "response_sha256": "ab8eafa20fe4c215c407b24cdc3bd3b471a9b658f44c3b7629c282fd106a86ba",
+      "route": "/v1/environments/env-70e9de01d4dfe814415b7879/baselines",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798627528600000,
+        "utc": "2026-09-09T12:29:19.878850+00:00"
+      },
+      "status": 200
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798634301920291,
+        "utc": "2026-09-09T12:29:26.652067+00:00"
+      },
+      "key_sha256": "6f0b9b0d56686204c67c6f9b16fad2764cda7f18e042fcabde618602f477649c",
+      "method": "POST",
+      "request_sha256": "cf18dac6d4cc34535b8b0d9a3d3a1195e928857a6f838fa18c126a8f1533b0df",
+      "response_sha256": "139b9115de991678ed8b700ae0ae46feb50a373fa55cdda4822de9e7d7e68bd8",
+      "route": "/v1/incidents",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798630910047958,
+        "utc": "2026-09-09T12:29:23.260252+00:00"
+      },
+      "status": 201
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798637685207958,
+        "utc": "2026-09-09T12:29:30.035301+00:00"
+      },
+      "key_sha256": "02117a757955d3588208370d2b16beb10e1140d5b098949afa3fc1583213c07c",
+      "method": "POST",
+      "request_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "response_sha256": "9b41a82eccc0bec0ef392c596f01b2daffdfaad61460465e4a7799ede2d71ab1",
+      "route": "/v1/incidents/inc-2f1caec85ca4c946d3527c50/diagnosis-jobs",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798634302283083,
+        "utc": "2026-09-09T12:29:26.652436+00:00"
+      },
+      "status": 202
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798641071009333,
+        "utc": "2026-09-09T12:29:33.421059+00:00"
+      },
+      "key_sha256": "2908ecfd8dd00cdb6137f9cef3ce85f3be47fb065f530466d5cd050a809e3106",
+      "method": "GET",
+      "request_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "response_sha256": "1820e6e3cfbefde26c1dc0215e21d341c0ca91b336595493e0d73efa48589246",
+      "route": "/v1/jobs/job-ffb100620711aad7c7b21f94",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798637685584833,
+        "utc": "2026-09-09T12:29:30.035688+00:00"
+      },
+      "status": 200
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798644449947250,
+        "utc": "2026-09-09T12:29:36.799948+00:00"
+      },
+      "key_sha256": "3b75e508f50de9cca29ea061a6fdb50fec2b0bd1361aeaae59da1c064db030be",
+      "method": "GET",
+      "request_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "response_sha256": "fec973adc5e27b9c13a6cf05357f5ba895c7a41b701889f897b93a1e49372372",
+      "route": "/v1/incidents/inc-2f1caec85ca4c946d3527c50/diagnosis",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798641071385458,
+        "utc": "2026-09-09T12:29:33.421440+00:00"
+      },
+      "status": 200
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798647854951250,
+        "utc": "2026-09-09T12:29:40.204895+00:00"
+      },
+      "key_sha256": "d7063501dc2846280918b4658567e705ae501b4b26bd768a050d02baabf3f9c2",
+      "method": "GET",
+      "request_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "response_sha256": "a700c71788b4a5e3959879013ed66c6ef67cf9ea5d37a2bcf194b0d89d127c8d",
+      "route": "/v1/incidents/inc-2f1caec85ca4c946d3527c50/evidence",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798644450285666,
+        "utc": "2026-09-09T12:29:36.800289+00:00"
+      },
+      "status": 200
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798651256229958,
+        "utc": "2026-09-09T12:29:43.606133+00:00"
+      },
+      "key_sha256": "0a36757ae642a88f505ce782691a30dc207d33856bd992472dcd04ba418987f0",
+      "method": "GET",
+      "request_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "response_sha256": "e1f8c32f2ab82435f46a5aebbd9badf3dacc23d36b88484d89a8ba02f1049bfd",
+      "route": "/v1/incidents/inc-2f1caec85ca4c946d3527c50/evidence-index",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798647856349000,
+        "utc": "2026-09-09T12:29:40.206298+00:00"
+      },
+      "status": 200
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798661688710166,
+        "utc": "2026-09-09T12:29:54.038458+00:00"
+      },
+      "key_sha256": "afc7a37601b96f5ef77207d5595c0976fccff9fa0badc3de777facc045c9e389",
+      "method": "POST",
+      "request_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "response_sha256": "7dbe1c2ac1e72371ec0c92d840fbde5c7901f308ab5e125bf330b0d6a1dec23a",
+      "route": "/v1/incidents/inc-2f1caec85ca4c946d3527c50/remediation-candidates",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798658301306875,
+        "utc": "2026-09-09T12:29:50.651072+00:00"
+      },
+      "status": 200
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798740823503916,
+        "utc": "2026-09-09T12:31:13.172096+00:00"
+      },
+      "key_sha256": "00e31ad98466ddfa813c3b4dde95a6f5faa88a6106b26b4d55e0f4886e97213c",
+      "method": "POST",
+      "request_sha256": "8f991ff3a922ad0aae0eac3f51c4e07cb122660dab7b2c24a1f86931b5da7a6d",
+      "response_sha256": "b581ad6c930feb78b10415240d3290cf70e29c72c91116b7d0148e535c4ce26e",
+      "route": "/v1/environments/env-70e9de01d4dfe814415b7879/changes",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798737444983166,
+        "utc": "2026-09-09T12:31:09.793633+00:00"
+      },
+      "status": 201
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798744219153125,
+        "utc": "2026-09-09T12:31:16.567685+00:00"
+      },
+      "key_sha256": "1ae82a8d1277443224d0b6d9cdb5ec569d9de9dfb1ac458240f2435519ce8bed",
+      "method": "POST",
+      "request_sha256": "2cdd705172d2028dc4afc446569964d4d2aa77ddb241f38f243e31ae4272a88a",
+      "response_sha256": "e2f0d849a1b69307cce755e32392a9d9e53c0be6ab9a0f74356f9751bfef2de6",
+      "route": "/v1/incidents",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798740823916291,
+        "utc": "2026-09-09T12:31:13.172518+00:00"
+      },
+      "status": 201
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798747617403166,
+        "utc": "2026-09-09T12:31:19.965875+00:00"
+      },
+      "key_sha256": "54638ac23f52f81cc471ed1355a41baa6e1ab2bade16f73f19461155fe087ff8",
+      "method": "POST",
+      "request_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "response_sha256": "d994e9d30fdef853e6dfe1c60a66207ee0816bcd7a74d108b166cc6102e2a391",
+      "route": "/v1/incidents/inc-9aca07e4d7b5971222dee505/diagnosis-jobs",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798744220123958,
+        "utc": "2026-09-09T12:31:16.568670+00:00"
+      },
+      "status": 202
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798751002636208,
+        "utc": "2026-09-09T12:31:23.351084+00:00"
+      },
+      "key_sha256": "1d8d3943de75f4576df6648787c4362a397ae9549fecdf2ca8706c53b3b378e9",
+      "method": "GET",
+      "request_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "response_sha256": "df64f2fbc1f0832a809faae257f1117fb9c6a1ff408e3a5025811e4cf3430c84",
+      "route": "/v1/jobs/job-f7417dc9a26e7e6891f36d34",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798747618365250,
+        "utc": "2026-09-09T12:31:19.966861+00:00"
+      },
+      "status": 200
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798754371429125,
+        "utc": "2026-09-09T12:31:26.719826+00:00"
+      },
+      "key_sha256": "fc62354b3258ce9c687cadaff9c6cfc5f575679cfb8056fa81c7c6a3d6bc9607",
+      "method": "GET",
+      "request_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "response_sha256": "d9ff0c712e3dacacb0cfc282034eef62dbe2abce2126885ddaea5a71d2ba5118",
+      "route": "/v1/incidents/inc-9aca07e4d7b5971222dee505/diagnosis",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798751002930250,
+        "utc": "2026-09-09T12:31:23.351381+00:00"
+      },
+      "status": 200
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798757768699333,
+        "utc": "2026-09-09T12:31:30.117041+00:00"
+      },
+      "key_sha256": "e7e6dd8b9739344594861efd5e7301023f459053a9d2d2a3c48c8c008d08a46c",
+      "method": "GET",
+      "request_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "response_sha256": "6fa10abfe1034d9a8cab78e8088c34e830ce103d0d458f98a9e48e03c0361e04",
+      "route": "/v1/incidents/inc-9aca07e4d7b5971222dee505/evidence",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798754371849041,
+        "utc": "2026-09-09T12:31:26.720250+00:00"
+      },
+      "status": 200
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798761144979541,
+        "utc": "2026-09-09T12:31:33.493279+00:00"
+      },
+      "key_sha256": "d253be33c0ebba8f3919f36923eb60180923bac9ab3e76161f98507c8f4c9d78",
+      "method": "GET",
+      "request_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "response_sha256": "f3cea7a9fff9e5308d21ef08bec00802fa75290c89eb3b1403ef4119296d8359",
+      "route": "/v1/incidents/inc-9aca07e4d7b5971222dee505/evidence-index",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798757769862750,
+        "utc": "2026-09-09T12:31:30.118215+00:00"
+      },
+      "status": 200
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798764599206541,
+        "utc": "2026-09-09T12:31:36.947455+00:00"
+      },
+      "key_sha256": "b55ab3d89111c9e9c17a8bb95ec32423c87c8bf3fa7bbc63a0143c8880c550e4",
+      "method": "GET",
+      "request_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "response_sha256": "ba1e0e6eeb43e2a8c93f499840b0d05e8fb6d44e29d1c8f1401761c42d30e64f",
+      "route": "/v1/incidents/inc-9aca07e4d7b5971222dee505/remediation-candidates",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798761146974875,
+        "utc": "2026-09-09T12:31:33.495277+00:00"
+      },
+      "status": 200
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798785066507625,
+        "utc": "2026-09-09T12:31:57.414443+00:00"
+      },
+      "key_sha256": "c3a69caf495e390ba1da84efcfe64d0b665b7e4654a9e028a354b4c72c3e77d2",
+      "method": "GET",
+      "request_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "response_sha256": "31bf75f4c0a97cc1f7b60df824fa390b3be9ba014f29b63c87c698ba63d9a9fd",
+      "route": "/readyz",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798784678758875,
+        "utc": "2026-09-09T12:31:57.026701+00:00"
+      },
+      "status": 200
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798785949871208,
+        "utc": "2026-09-09T12:31:58.297798+00:00"
+      },
+      "key_sha256": "78ea2c448889adcce3bb05941bb38dc8eb2f34b73676e2ba27b6729e7fa3a98a",
+      "method": "POST",
+      "request_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "response_sha256": "ba1e0e6eeb43e2a8c93f499840b0d05e8fb6d44e29d1c8f1401761c42d30e64f",
+      "route": "/v1/incidents/inc-9aca07e4d7b5971222dee505/remediation-candidates",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798785533751875,
+        "utc": "2026-09-09T12:31:57.881669+00:00"
+      },
+      "status": 200
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798786294967500,
+        "utc": "2026-09-09T12:31:58.642876+00:00"
+      },
+      "key_sha256": "86f2c9f97bfcac89a7903e666cb7e7d936e7e6ab4a46b4d5bfd5b3a1330da3b6",
+      "method": "POST",
+      "request_sha256": "11be43ce705f4cdd59d9b004202fd775f7248f275f5d924bfd50eb0a8c031e28",
+      "response_sha256": "0dde9163ed37aa7dee2950b70d1ce0d4bec9cf9fc213ab12d431f364fa3c916f",
+      "route": "/v1/remediation-candidates/cand-d1d5c6b6d7d53978c426edcf/approvals",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798785950821875,
+        "utc": "2026-09-09T12:31:58.298760+00:00"
+      },
+      "status": 200
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798786768843375,
+        "utc": "2026-09-09T12:31:59.116756+00:00"
+      },
+      "key_sha256": "aef30f8edeac28b4f29bfa51f2e85a4764a98075216fdeeef76c66c841056756",
+      "method": "POST",
+      "request_sha256": "cb71c9b4e64b060b67180916e21b70b1fc919c249b3dc944e268b6d25f54bac3",
+      "response_sha256": "eeae595638230a83e6201a5816ec3147fc059b9e5333e5d2236b41f1bbb02685",
+      "route": "/v1/remediation-candidates/cand-d1d5c6b6d7d53978c426edcf/attempts",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 798786296810291,
+        "utc": "2026-09-09T12:31:58.644748+00:00"
+      },
+      "status": 200
+    }
+  ],
+  "approval_sha256": "0dd53afe1528ece4a75ec0fa33cdded3503207f3e18cc88eb3d4ecf101edf77e",
+  "baseline_file_restored": true,
+  "candidate_sha256": "04aec0fabd1781a84fa45ed2830b8b22de96ca8dce1119d76ff7657219959d30",
+  "case_id": "S4",
+  "cleanup": {
+    "clean": true,
+    "non_owned_unchanged": true,
+    "receipts": [
+      {
+        "identity_sha256": "22c5e82b3138bcabec16494e57ff40931611f827b363be4f9b67affde4670325",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "17157d16f3559d8c72923076eaa387944ea82ef173f34599f620c09558492a4c",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "a154ceb46a7256fef9e3392c3ef816f4be9d23f9f0bd83e68f4e742acad6e9bc",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "0ed5839325448935a22dca1b6723acf9c35103610e55bf828a2663f229ccb450",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "a106504fa4b8cbc15c5e952731ca5e6576bf14af25bf23071c02f1731220a69a",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "f38bdb2f1cfee3386438409f3a4c945d4476df4c5756715272e8c70492f8d3a5",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "28e7620f6d40ec9271575ff6a80aeda8171d3c63b43896d72d10b338d6d7b95b",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "790d2c1a00bb95b182b6b5d356767d15f7355f57a860afa2e3663b21cc218005",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "c46a58b599fde8e72de8f57989bf40f02879d1783321fbedeeeeae34bbe4ea62",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "cf65d4376e4a96b77656bd2d6d5ecdf157f80fa1c93c33617b562fad3dac0eee",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "7bf3c509c5fd7f0faa2d7600220f7c1a38b2475f1a279336500fb8a88cba2099",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "84a3a8f97bfd449d001c214db5c7f32e972593dadddd7786f75e35fd605f13e0",
+        "kind": "network",
+        "removed": true
+      },
+      {
+        "identity_sha256": "ff484bc35d182189c0e68596a0ed84a8be84641d27526e0a1a01492d706725ec",
+        "kind": "network",
+        "removed": true
+      },
+      {
+        "identity_sha256": "cc5fc43c379105a7cdd2a2ee1884a50ada50560e0fece5453bf36cf7c201b285",
+        "kind": "network",
+        "removed": true
+      },
+      {
+        "identity_sha256": "cb631f8eb97678167a21ebaa1c7f0f4a6b78561975372741205e260a8465020d",
+        "kind": "volume",
+        "removed": true
+      },
+      {
+        "identity_sha256": "1d56507a23f18c93b3f6d38edf98610deaf7e753168ff9cae0a005ad1e188322",
+        "kind": "volume",
+        "removed": true
+      }
+    ],
+    "remaining": {
+      "container": 0,
+      "network": 0,
+      "volume": 0
+    }
+  },
+  "collection_errors": [],
+  "compose_sha256": "fa2ed53f000e7e45cb51a64ad38e6b795577b0420cb89fc1c6d4386a91a32b9b",
+  "counts": {
+    "approval": 1,
+    "attempt": 1,
+    "authorization": 1,
+    "candidate": 1,
+    "executor_dispatch": 1,
+    "external_product_writes": 1,
+    "gateway_consumption": 1,
+    "receipt": 1,
+    "recovery_evaluation": 1,
+    "recovery_window": 2,
+    "write_intent": 1
+  },
+  "decision_evidence": {
+    "126d1fc7f128a57e78f18a1de45e6305921aa04c5a0001d85dfd26304c2e9e23": {
+      "baseline_configuration_digest": "6de2b41b138db7b2545583a369c1ce1b2dd100b8fc2e367880563d7a38b496f7",
+      "control_identity_sha256": "9a398d73225ce04e9faf8d06ac27409cc5d4dc5074f580942d11b625dfc259a7",
+      "created_at": "2026-09-09T12:32:00.745189Z",
+      "current_configuration_digest": "6de2b41b138db7b2545583a369c1ce1b2dd100b8fc2e367880563d7a38b496f7",
+      "environment_id": "env-70e9de01d4dfe814415b7879",
+      "environment_owned": true,
+      "environment_ownership_digest": "07b35b747fe2e16c3bab9370a5df2081c3737e552539693637783c801c32142d",
+      "fault_still_present": false,
+      "local_control_trusted": true,
+      "observation_sha256": "b090aa89cef725ec8b9d22a524f0c131cd9b824cfd3f12982f2e13a204ad0de3",
+      "observed_at": "2026-09-09T12:32:00.745189Z",
+      "schema_version": "ecomsre.product.remediation-state-observation.v1",
+      "target_identity_digest": "a6b053da3fc305d81f85bb0fb37dac77de2dfc28c361dd0830912fd936736f67",
+      "target_logical_service": "payment"
+    },
+    "50ae020f9d6cdb348f07ea40da4da7863b51acbcc059369964778ef47b097e2b": {
+      "baseline_configuration_digest": "6de2b41b138db7b2545583a369c1ce1b2dd100b8fc2e367880563d7a38b496f7",
+      "control_identity_sha256": "9a398d73225ce04e9faf8d06ac27409cc5d4dc5074f580942d11b625dfc259a7",
+      "created_at": "2026-09-09T12:32:00.442459Z",
+      "current_configuration_digest": "97acac0414e15519b62a99b50de403ef2a82291fd81d9d476903f047565ac2c3",
+      "environment_id": "env-70e9de01d4dfe814415b7879",
+      "environment_owned": true,
+      "environment_ownership_digest": "07b35b747fe2e16c3bab9370a5df2081c3737e552539693637783c801c32142d",
+      "fault_still_present": true,
+      "local_control_trusted": true,
+      "observation_sha256": "cb875ac4c2665484e49baefe59d3526762a213f2b48485cb759e7dfc6b50b87d",
+      "observed_at": "2026-09-09T12:32:00.442459Z",
+      "schema_version": "ecomsre.product.remediation-state-observation.v1",
+      "target_identity_digest": "a6b053da3fc305d81f85bb0fb37dac77de2dfc28c361dd0830912fd936736f67",
+      "target_logical_service": "payment"
+    },
+    "5daa13e21cf92015f657b00bcd0eb24f359704142eed6b83fd212dc7c2aa4383": {
+      "business_errors": 0,
+      "business_observation_kind": "DIRECT_PAYMENT_TRAFFIC",
+      "business_requests": 0,
+      "configuration_digest": "6de2b41b138db7b2545583a369c1ce1b2dd100b8fc2e367880563d7a38b496f7",
+      "created_at": "2026-09-09T12:32:26.932929Z",
+      "elapsed_ms": 17467.777083045803,
+      "ended_at": "2026-09-09T12:32:26.932929Z",
+      "endpoint_passed": true,
+      "environment_id": "env-70e9de01d4dfe814415b7879",
+      "environment_ownership_digest": "07b35b747fe2e16c3bab9370a5df2081c3737e552539693637783c801c32142d",
+      "flag_evaluation_restored": true,
+      "infrastructure_passed": true,
+      "non_owned_resources_unchanged": true,
+      "observation_sha256": "03eeb273f2e1c4b44b9c0e882608e29567bd19324468871f7ae141fefacce26f",
+      "policy_sha256": "d18789154026fb5b284a6db727589c1407d97070cbdec74c7b1b91c6dcd60cc7",
+      "schema_version": "ecomsre.product.recovery-observation.v1",
+      "started_at": "2026-09-09T12:32:16.932929Z",
+      "target_logical_service": "payment"
+    },
+    "ac282b5963d2d7e0ebf3fe5e4f4326279269101e56cca1ccf80c18d0fefc90fd": {
+      "business_errors": 0,
+      "business_observation_kind": "DIRECT_PAYMENT_TRAFFIC",
+      "business_requests": 0,
+      "configuration_digest": "6de2b41b138db7b2545583a369c1ce1b2dd100b8fc2e367880563d7a38b496f7",
+      "created_at": "2026-09-09T12:32:44.602349Z",
+      "elapsed_ms": 17478.41287497431,
+      "ended_at": "2026-09-09T12:32:44.602349Z",
+      "endpoint_passed": true,
+      "environment_id": "env-70e9de01d4dfe814415b7879",
+      "environment_ownership_digest": "07b35b747fe2e16c3bab9370a5df2081c3737e552539693637783c801c32142d",
+      "flag_evaluation_restored": true,
+      "infrastructure_passed": true,
+      "non_owned_resources_unchanged": true,
+      "observation_sha256": "7e9d4c2a74f0c6b2a87739894770f40ae847aade157bc515b919da59e98ee61d",
+      "policy_sha256": "d18789154026fb5b284a6db727589c1407d97070cbdec74c7b1b91c6dcd60cc7",
+      "schema_version": "ecomsre.product.recovery-observation.v1",
+      "started_at": "2026-09-09T12:32:34.602349Z",
+      "target_logical_service": "payment"
+    }
+  },
+  "decision_trace": [
+    {
+      "attempt_id": "attempt-da099ee7e9ec40908723e264",
+      "attempt_sha256": "ada1619e028212c2cd54471a15a9e9d38594c203af32fac04147c3a9bc8338e9",
+      "created_at": "2026-09-09T12:31:59.083024Z",
+      "elapsed_ms": 65.57729199994355,
+      "event_sha256": "22052ef19380979aeccb4a0e192c5e74e1f85cf4024db8b76563fbb0f9dc4f36",
+      "evidence_refs": [],
+      "gate": "CANDIDATE",
+      "ordinal": 1,
+      "outcome": "PASS",
+      "previous_event_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "reason_code": null,
+      "schema_version": "ecomsre.product.remediation-decision-event.v1",
+      "state": "CANDIDATE_CREATED"
+    },
+    {
+      "attempt_id": "attempt-da099ee7e9ec40908723e264",
+      "attempt_sha256": "ada1619e028212c2cd54471a15a9e9d38594c203af32fac04147c3a9bc8338e9",
+      "created_at": "2026-09-09T12:31:59.083156Z",
+      "elapsed_ms": 65.74345799981529,
+      "event_sha256": "f8e3f682d2d3a7158d65993a5e8b3d163b5c0e1370dba2cc533c713bca64baa5",
+      "evidence_refs": [],
+      "gate": "APPROVAL",
+      "ordinal": 2,
+      "outcome": "PASS",
+      "previous_event_sha256": "22052ef19380979aeccb4a0e192c5e74e1f85cf4024db8b76563fbb0f9dc4f36",
+      "reason_code": null,
+      "schema_version": "ecomsre.product.remediation-decision-event.v1",
+      "state": "APPROVED"
+    },
+    {
+      "attempt_id": "attempt-da099ee7e9ec40908723e264",
+      "attempt_sha256": "ada1619e028212c2cd54471a15a9e9d38594c203af32fac04147c3a9bc8338e9",
+      "created_at": "2026-09-09T12:31:59.083202Z",
+      "elapsed_ms": 65.79195799986337,
+      "event_sha256": "812f5a520a9cd6f4533f4a69f4a2bfa47b844bfac31ffd47f2db9ad238147536",
+      "evidence_refs": [],
+      "gate": "ACTIVE_TRANSACTION",
+      "ordinal": 3,
+      "outcome": "PASS",
+      "previous_event_sha256": "f8e3f682d2d3a7158d65993a5e8b3d163b5c0e1370dba2cc533c713bca64baa5",
+      "reason_code": null,
+      "schema_version": "ecomsre.product.remediation-decision-event.v1",
+      "state": "APPROVED"
+    },
+    {
+      "attempt_id": "attempt-da099ee7e9ec40908723e264",
+      "attempt_sha256": "ada1619e028212c2cd54471a15a9e9d38594c203af32fac04147c3a9bc8338e9",
+      "created_at": "2026-09-09T12:31:59.083234Z",
+      "elapsed_ms": 65.82420799986721,
+      "event_sha256": "9a9f4ddcc77b37dd12ad96fb294dc24b20cb7e6e35615d81c08dccb7373943bc",
+      "evidence_refs": [],
+      "gate": "OWNERSHIP",
+      "ordinal": 4,
+      "outcome": "PASS",
+      "previous_event_sha256": "812f5a520a9cd6f4533f4a69f4a2bfa47b844bfac31ffd47f2db9ad238147536",
+      "reason_code": null,
+      "schema_version": "ecomsre.product.remediation-decision-event.v1",
+      "state": "APPROVED"
+    },
+    {
+      "attempt_id": "attempt-da099ee7e9ec40908723e264",
+      "attempt_sha256": "ada1619e028212c2cd54471a15a9e9d38594c203af32fac04147c3a9bc8338e9",
+      "created_at": "2026-09-09T12:31:59.083262Z",
+      "elapsed_ms": 65.85216699977536,
+      "event_sha256": "972b3200e6dc5789fb078ce244cc5f846b0fbeb3e0cc9ae332dc19969ba3ea81",
+      "evidence_refs": [],
+      "gate": "BASELINE",
+      "ordinal": 5,
+      "outcome": "PASS",
+      "previous_event_sha256": "9a9f4ddcc77b37dd12ad96fb294dc24b20cb7e6e35615d81c08dccb7373943bc",
+      "reason_code": null,
+      "schema_version": "ecomsre.product.remediation-decision-event.v1",
+      "state": "APPROVED"
+    },
+    {
+      "attempt_id": "attempt-da099ee7e9ec40908723e264",
+      "attempt_sha256": "ada1619e028212c2cd54471a15a9e9d38594c203af32fac04147c3a9bc8338e9",
+      "created_at": "2026-09-09T12:31:59.083288Z",
+      "elapsed_ms": 65.87866699965161,
+      "event_sha256": "35d64029c078495dfa8946bce5adcbbafffee2a6438102ca931748042e88042b",
+      "evidence_refs": [],
+      "gate": "DRIFT",
+      "ordinal": 6,
+      "outcome": "PASS",
+      "previous_event_sha256": "972b3200e6dc5789fb078ce244cc5f846b0fbeb3e0cc9ae332dc19969ba3ea81",
+      "reason_code": null,
+      "schema_version": "ecomsre.product.remediation-decision-event.v1",
+      "state": "APPROVED"
+    },
+    {
+      "attempt_id": "attempt-da099ee7e9ec40908723e264",
+      "attempt_sha256": "ada1619e028212c2cd54471a15a9e9d38594c203af32fac04147c3a9bc8338e9",
+      "created_at": "2026-09-09T12:31:59.083312Z",
+      "elapsed_ms": 65.90304199971797,
+      "event_sha256": "3c0a2c99d302e6de1f2bcf36653b48b716727bfe0cf3c97e71ace8a70472aa4d",
+      "evidence_refs": [],
+      "gate": "STATE_BINDING",
+      "ordinal": 7,
+      "outcome": "PASS",
+      "previous_event_sha256": "35d64029c078495dfa8946bce5adcbbafffee2a6438102ca931748042e88042b",
+      "reason_code": null,
+      "schema_version": "ecomsre.product.remediation-decision-event.v1",
+      "state": "STATE_BOUND"
+    },
+    {
+      "attempt_id": "attempt-da099ee7e9ec40908723e264",
+      "attempt_sha256": "ada1619e028212c2cd54471a15a9e9d38594c203af32fac04147c3a9bc8338e9",
+      "created_at": "2026-09-09T12:31:59.083341Z",
+      "elapsed_ms": 65.93166699985886,
+      "event_sha256": "94fe919e75c0892a28d106934cd79bf2f7ddb0ad0ecacfca8c41aba3d9e70161",
+      "evidence_refs": [],
+      "gate": "AUTHORIZATION",
+      "ordinal": 8,
+      "outcome": "PASS",
+      "previous_event_sha256": "3c0a2c99d302e6de1f2bcf36653b48b716727bfe0cf3c97e71ace8a70472aa4d",
+      "reason_code": null,
+      "schema_version": "ecomsre.product.remediation-decision-event.v1",
+      "state": "AUTHORIZED"
+    },
+    {
+      "attempt_id": "attempt-da099ee7e9ec40908723e264",
+      "attempt_sha256": "55fadba04203d07d9121e3c8875e4f077f1432a7b003a5ba93c0f79e279a8e3d",
+      "created_at": "2026-09-09T12:32:00.393310Z",
+      "elapsed_ms": 0.0,
+      "event_sha256": "4810c8f3a79a1e46a18344c8c6bd9f3aaafc14cbad0b5c9c619501323678e4b4",
+      "evidence_refs": [],
+      "gate": "LEASE",
+      "ordinal": 9,
+      "outcome": "PASS",
+      "previous_event_sha256": "94fe919e75c0892a28d106934cd79bf2f7ddb0ad0ecacfca8c41aba3d9e70161",
+      "reason_code": null,
+      "schema_version": "ecomsre.product.remediation-decision-event.v1",
+      "state": "AUTHORIZED"
+    },
+    {
+      "attempt_id": "attempt-da099ee7e9ec40908723e264",
+      "attempt_sha256": "56d03e9c51a12bae31d7795c63bd9c13023511766abb0a5b33341acc32ae9f5e",
+      "created_at": "2026-09-09T12:32:00.434959Z",
+      "elapsed_ms": 0.0,
+      "event_sha256": "4af2959944d63c68405112e62bd844c4977f94c075dcf98ebf6db37cfa2dff3e",
+      "evidence_refs": [],
+      "gate": "WRITE_INTENT",
+      "ordinal": 10,
+      "outcome": "PASS",
+      "previous_event_sha256": "4810c8f3a79a1e46a18344c8c6bd9f3aaafc14cbad0b5c9c619501323678e4b4",
+      "reason_code": null,
+      "schema_version": "ecomsre.product.remediation-decision-event.v1",
+      "state": "WRITE_INTENT_COMMITTED"
+    },
+    {
+      "attempt_id": "attempt-da099ee7e9ec40908723e264",
+      "attempt_sha256": "13143c0ae278c0de13a3ab6da759a67ccad7cf5f46b77460ac38ddc3a843c58b",
+      "created_at": "2026-09-09T12:32:00.472130Z",
+      "elapsed_ms": 0.0,
+      "event_sha256": "fe444c464ad7d57ce4e9ee3b72bd81f0bcc526a4ec39a40e0e786b29101c77bd",
+      "evidence_refs": [
+        "50ae020f9d6cdb348f07ea40da4da7863b51acbcc059369964778ef47b097e2b"
+      ],
+      "gate": "EXECUTOR",
+      "ordinal": 11,
+      "outcome": "PASS",
+      "previous_event_sha256": "4af2959944d63c68405112e62bd844c4977f94c075dcf98ebf6db37cfa2dff3e",
+      "reason_code": null,
+      "schema_version": "ecomsre.product.remediation-decision-event.v1",
+      "state": "EXECUTING"
+    },
+    {
+      "attempt_id": "attempt-da099ee7e9ec40908723e264",
+      "attempt_sha256": "beb88fd0aa0e899d64a6e45ba91605f2a56c4c100c90568ec252080cdf6aa340",
+      "created_at": "2026-09-09T12:32:00.765419Z",
+      "elapsed_ms": 0.0,
+      "event_sha256": "1799192f53d6a97c974d49da0e70ecc82613d95d32224052f2bd94bf1887ac52",
+      "evidence_refs": [
+        "126d1fc7f128a57e78f18a1de45e6305921aa04c5a0001d85dfd26304c2e9e23"
+      ],
+      "gate": "RECEIPT",
+      "ordinal": 12,
+      "outcome": "PASS",
+      "previous_event_sha256": "fe444c464ad7d57ce4e9ee3b72bd81f0bcc526a4ec39a40e0e786b29101c77bd",
+      "reason_code": null,
+      "schema_version": "ecomsre.product.remediation-decision-event.v1",
+      "state": "APPLIED"
+    },
+    {
+      "attempt_id": "attempt-da099ee7e9ec40908723e264",
+      "attempt_sha256": "96b23850d1e30568079b5fcaeca009347d55cf37b57372998229ef233f9a1704",
+      "created_at": "2026-09-09T12:32:00.783480Z",
+      "elapsed_ms": 0.0,
+      "event_sha256": "a51cdb37f40ecf626f41f7ab473b88dec9a0820f559b454400fe34abdd81d67a",
+      "evidence_refs": [],
+      "gate": "VERIFICATION",
+      "ordinal": 13,
+      "outcome": "PASS",
+      "previous_event_sha256": "1799192f53d6a97c974d49da0e70ecc82613d95d32224052f2bd94bf1887ac52",
+      "reason_code": null,
+      "schema_version": "ecomsre.product.remediation-decision-event.v1",
+      "state": "VERIFYING"
+    },
+    {
+      "attempt_id": "attempt-da099ee7e9ec40908723e264",
+      "attempt_sha256": "96b23850d1e30568079b5fcaeca009347d55cf37b57372998229ef233f9a1704",
+      "created_at": "2026-09-09T12:32:34.443645Z",
+      "elapsed_ms": 0.0,
+      "event_sha256": "7400780da282fd7aa1d8c3da5bcdaf0e37adc716cbc91783986948dd3f05c9a1",
+      "evidence_refs": [
+        "5daa13e21cf92015f657b00bcd0eb24f359704142eed6b83fd212dc7c2aa4383"
+      ],
+      "gate": "RECOVERY_WINDOW",
+      "ordinal": 14,
+      "outcome": "PASS",
+      "previous_event_sha256": "a51cdb37f40ecf626f41f7ab473b88dec9a0820f559b454400fe34abdd81d67a",
+      "reason_code": null,
+      "schema_version": "ecomsre.product.remediation-decision-event.v1",
+      "state": "VERIFYING"
+    },
+    {
+      "attempt_id": "attempt-da099ee7e9ec40908723e264",
+      "attempt_sha256": "96b23850d1e30568079b5fcaeca009347d55cf37b57372998229ef233f9a1704",
+      "created_at": "2026-09-09T12:32:52.117035Z",
+      "elapsed_ms": 0.0,
+      "event_sha256": "86fa5e5adca7457c739f072cf5174c16e6892578e656d7ecfb76ead5f68f2598",
+      "evidence_refs": [
+        "ac282b5963d2d7e0ebf3fe5e4f4326279269101e56cca1ccf80c18d0fefc90fd"
+      ],
+      "gate": "RECOVERY_WINDOW",
+      "ordinal": 15,
+      "outcome": "PASS",
+      "previous_event_sha256": "7400780da282fd7aa1d8c3da5bcdaf0e37adc716cbc91783986948dd3f05c9a1",
+      "reason_code": null,
+      "schema_version": "ecomsre.product.remediation-decision-event.v1",
+      "state": "VERIFYING"
+    },
+    {
+      "attempt_id": "attempt-da099ee7e9ec40908723e264",
+      "attempt_sha256": "7908c76ea81c518e966592f1ce81cf8990e426b118e730c8f236948637ac5821",
+      "created_at": "2026-09-09T12:32:52.144350Z",
+      "elapsed_ms": 0.0,
+      "event_sha256": "1c031fb87b2083674b8bed22f8180fc40875908bd729771378532e94fdc697ee",
+      "evidence_refs": [],
+      "gate": "VERIFICATION",
+      "ordinal": 16,
+      "outcome": "PASS",
+      "previous_event_sha256": "86fa5e5adca7457c739f072cf5174c16e6892578e656d7ecfb76ead5f68f2598",
+      "reason_code": null,
+      "schema_version": "ecomsre.product.remediation-decision-event.v1",
+      "state": "VERIFICATION_FAILED"
+    }
+  ],
+  "diagnosis": {
+    "all_supporting_refs_resolved": true,
+    "domain": "CONFIGURATION",
+    "mechanism": "CONFIGURATION_ERROR",
+    "root": "payment",
+    "terminal": "CORE_KNOWN"
+  },
+  "diagnosis_job_events": [
+    {
+      "event_type": "ENQUEUED",
+      "utc": "2026-09-09T12:31:19.937805+00:00"
+    },
+    {
+      "event_type": "CLAIMED",
+      "utc": "2026-09-09T12:31:20.695773+00:00"
+    },
+    {
+      "event_type": "SUCCEEDED",
+      "utc": "2026-09-09T12:31:20.953475+00:00"
+    }
+  ],
+  "events": {
+    "approval_response_observed": {
+      "clock_scope": "harness-process",
+      "monotonic_ns": 798786296784500,
+      "utc": "2026-09-09T12:31:58.644714+00:00"
+    },
+    "attempt_request_started": {
+      "clock_scope": "harness-process",
+      "monotonic_ns": 798786296798458,
+      "utc": "2026-09-09T12:31:58.644733+00:00"
+    },
+    "attempt_response_observed": {
+      "clock_scope": "harness-process",
+      "monotonic_ns": 798786769231208,
+      "utc": "2026-09-09T12:31:59.117160+00:00"
+    },
+    "case_started": {
+      "clock_scope": "harness-process",
+      "monotonic_ns": 798190523826541,
+      "utc": "2026-09-09T12:22:02.880246+00:00"
+    },
+    "cleanup_completed": {
+      "clock_scope": "harness-process",
+      "monotonic_ns": 798911908882250,
+      "utc": "2026-09-09T12:34:04.254958+00:00"
+    },
+    "cleanup_started": {
+      "clock_scope": "harness-process",
+      "monotonic_ns": 798842071415708,
+      "utc": "2026-09-09T12:32:54.418511+00:00"
+    },
+    "diagnosis_request_started": {
+      "clock_scope": "harness-process",
+      "monotonic_ns": 798740823901833,
+      "utc": "2026-09-09T12:31:13.172500+00:00"
+    },
+    "diagnosis_response_observed": {
+      "clock_scope": "harness-process",
+      "monotonic_ns": 798761145735166,
+      "utc": "2026-09-09T12:31:33.494035+00:00"
+    },
+    "fault_write_acknowledged": {
+      "clock_scope": "harness-process",
+      "monotonic_ns": 798661692808291,
+      "utc": "2026-09-09T12:29:54.042560+00:00"
+    },
+    "fault_write_started": {
+      "clock_scope": "harness-process",
+      "monotonic_ns": 798661689134083,
+      "utc": "2026-09-09T12:29:54.038886+00:00"
+    },
+    "first_failed_business_request": {
+      "clock_scope": "harness-process",
+      "monotonic_ns": 798662710357875,
+      "utc": "2026-09-09T12:29:55.060093+00:00"
+    },
+    "terminal_observed": {
+      "clock_scope": "harness-process",
+      "monotonic_ns": 798840800508541,
+      "utc": "2026-09-09T12:32:53.147610+00:00"
+    }
+  },
+  "evidence_status": "COLLECTED",
+  "executor_attempts": 1,
+  "executor_replay": {
+    "actual_run_one_calls": 1,
+    "duplicate_wakeup_result": "REMEDIATION_RECONCILIATION_REQUIRED",
+    "terminal_after": "VERIFICATION_FAILED"
+  },
+  "external_write_audit": [
+    {
+      "clock_scope": "flag-transport-process",
+      "controller": "FAULT_INJECTION",
+      "document": "fault",
+      "document_sha256": "97acac0414e15519b62a99b50de403ef2a82291fd81d9d476903f047565ac2c3",
+      "monotonic_ns": 3370691665079,
+      "stage": "INTENT",
+      "utc": "2026-09-09T12:29:54.039895+00:00"
+    },
+    {
+      "clock_scope": "flag-transport-process",
+      "controller": "FAULT_INJECTION",
+      "document": "fault",
+      "document_sha256": "97acac0414e15519b62a99b50de403ef2a82291fd81d9d476903f047565ac2c3",
+      "monotonic_ns": 3370692971662,
+      "stage": "APPLIED",
+      "utc": "2026-09-09T12:29:54.041199+00:00"
+    },
+    {
+      "clock_scope": "flag-transport-process",
+      "controller": null,
+      "document": "baseline",
+      "document_sha256": "6de2b41b138db7b2545583a369c1ce1b2dd100b8fc2e367880563d7a38b496f7",
+      "monotonic_ns": 3497173563803,
+      "stage": "INTENT",
+      "utc": "2026-09-09T12:32:00.520054+00:00"
+    },
+    {
+      "clock_scope": "flag-transport-process",
+      "controller": null,
+      "document": "baseline",
+      "document_sha256": "6de2b41b138db7b2545583a369c1ce1b2dd100b8fc2e367880563d7a38b496f7",
+      "monotonic_ns": 3497174741761,
+      "stage": "APPLIED",
+      "utc": "2026-09-09T12:32:00.521233+00:00"
+    }
+  ],
+  "external_write_audit_sha256": "f176b4be378f27c32cb347b342029b57ba0847755c045446a9f6b4f7904872e7",
+  "fault": {
+    "configuration_digest": "97acac0414e15519b62a99b50de403ef2a82291fd81d9d476903f047565ac2c3",
+    "confirmed_requests": 30,
+    "expected_payment_failures": 30,
+    "injected_at": "2026-09-09T12:29:54.038894+00:00"
+  },
+  "fault_diagnosis": {
+    "action_authority": "NONE",
+    "agent_writes": 0,
+    "broad_domain": "CONFIGURATION",
+    "capability_limitations": [
+      "SOURCE_LOGS_UNAVAILABLE",
+      "SOURCE_RUNTIME_UNAVAILABLE",
+      "SOURCE_TRACES_UNAVAILABLE"
+    ],
+    "contradicting_evidence_refs": [],
+    "core_or_extension_or_open_world": "CORE",
+    "created_at": "2026-09-09T12:31:19.937805Z",
+    "diagnosis_id": "diag-f7417dc9a26e7e6891f36d34",
+    "incident_id": "inc-9aca07e4d7b5971222dee505",
+    "mechanism": "CONFIGURATION_ERROR",
+    "memory_sha256": "160bc021abf75f7dc1d58410ba3c4e44c850031819a217f734aeb3156afe8eaa",
+    "provider_calls": 0,
+    "provisional_report": null,
+    "result_sha256": "3c5631f4dc45821e6f5e370b7bd9c659cf80f5c95966064456ed429c76a380a8",
+    "root_service_ids": [
+      "svc-1008436a2a262744e3f9ba89"
+    ],
+    "runbook_executions": 0,
+    "schema_version": "ecomsre.product.diagnosis-result.v1",
+    "supporting_evidence_refs": [
+      "e:a:changes:payment:0:710f5a442586",
+      "e:a:metrics:payment:core:0:7e5e87e534dd"
+    ],
+    "terminal": "CORE_KNOWN"
+  },
+  "fault_injections": 1,
+  "final_attempt_sha256": "b2769d0c5995e63b080621cdc7aa7964575158f94cbe0a39cebe8113026f9ab3",
+  "final_disposition": "ESCALATE_HUMAN",
+  "finished_at": "2026-09-09T12:34:04.290675+00:00",
+  "gateway_evidence": {
+    "consumptions": 1,
+    "kind": "PERSISTED_LEDGER",
+    "rows_sha256": "2d6399e9b7b35cb802313bfd62e377c87a63f690688638199250afa5dd174c98"
+  },
+  "gateway_peer_witness_sha256": "e82d863e19339b7e8578ebbdf3741a6134812932dbd7e187c52f3b2bfb18d98b",
+  "goal_sha256": "c8dd161bef61adac1e08da60409e02ddbccb939ad5b13ad6b89adee1b42ca9d5",
+  "healthy": {
+    "baseline_sha256": "3f8e5945f6aa714d82c9bb5dcca51ee7acd430edf6e050e630275f923cd66aa8",
+    "business_errors_after_startup": 0,
+    "business_requests": 194,
+    "product_diagnosis": "INSUFFICIENT_EVIDENCE",
+    "proof": "Active Product Baseline plus real successful direct Payment requests; unavailable telemetry remains explicit."
+  },
+  "healthy_candidate_count": 0,
+  "healthy_diagnosis": {
+    "action_authority": "NONE",
+    "agent_writes": 0,
+    "broad_domain": null,
+    "capability_limitations": [
+      "SOURCE_LOGS_UNAVAILABLE",
+      "SOURCE_RUNTIME_UNAVAILABLE",
+      "SOURCE_TRACES_UNAVAILABLE"
+    ],
+    "contradicting_evidence_refs": [],
+    "core_or_extension_or_open_world": "ABSTAIN",
+    "created_at": "2026-09-09T12:29:30.007443Z",
+    "diagnosis_id": "diag-ffb100620711aad7c7b21f94",
+    "incident_id": "inc-2f1caec85ca4c946d3527c50",
+    "mechanism": null,
+    "memory_sha256": "68c54f086433e9095e1c8aea511ab721a239ae26155c74ec0ab3ee130d2d26d6",
+    "provider_calls": 0,
+    "provisional_report": null,
+    "result_sha256": "10d3d3ce2ba46a2e2e1bb9055682dcdfac0a232ba5a62fa8f2ac2df01a8f9edb",
+    "root_service_ids": [],
+    "runbook_executions": 0,
+    "schema_version": "ecomsre.product.diagnosis-result.v1",
+    "supporting_evidence_refs": [],
+    "terminal": "INSUFFICIENT_EVIDENCE"
+  },
+  "image_source_head": "539824ee5c3b2497c890a52a7aaa1fff455b6b8e",
+  "images": {
+    "flagd": {
+      "Architecture": "arm64",
+      "Id": "sha256:5115fd9352d58fd41c7be775b33336f5e4b2cef8056bf5982f5c704d13ec590e",
+      "Os": "linux",
+      "index_id": "sha256:32234e63c1d0634883aabd31cbd46802934aaaef0153dfd653b5d1017940bb4e"
+    },
+    "otel-collector": {
+      "Architecture": "arm64",
+      "Id": "sha256:1fef9f07f04eb6775b4076ea4f817d6b7b9050e23e52941f0756ba08df798ea6",
+      "Os": "linux",
+      "index_id": "sha256:f2f01157055a9b2aab9df7118e1f1c9abf345e99b23bc7a2bc791db374a7d0f6"
+    },
+    "payment": {
+      "Architecture": "arm64",
+      "Id": "sha256:c9bbe72133e9b6569f8e490441e7a1472f8767d12759b0eaf0af14e91e4a9d45",
+      "Os": "linux",
+      "index_id": "sha256:d498c7434d22ff7a82ec86843efd22c93c52cb8c6df4961a7110617b1e08c15f"
+    },
+    "product": {
+      "Architecture": "arm64",
+      "Id": "sha256:722422b0eb3fd7b8762ec31ef1b1d911723b82e51fefce479b48bd1d257651a4",
+      "Os": "linux",
+      "index_id": "sha256:722422b0eb3fd7b8762ec31ef1b1d911723b82e51fefce479b48bd1d257651a4"
+    },
+    "prometheus": {
+      "Architecture": "arm64",
+      "Id": "sha256:2d61f37ba9f2185195dfad94ee500d7ac1986560bac79a77d0a6de182a5bf814",
+      "Os": "linux",
+      "index_id": "sha256:3c42b892cf723fa54d2f262c37a0e1f80aa8c8ddb1da7b9b0df9455a35a7f893"
+    }
+  },
+  "minimal_services": {
+    "api": "Current Product API and persistent repositories",
+    "flagd": "Pinned real feature-flag evaluation",
+    "otel-collector": "Receive real Payment OTLP traces, metrics and logs",
+    "payment": "Pinned real gRPC Charge implementation",
+    "payment-control": "Fixed two-document file transport required by current gateway",
+    "payment-probe": "Fixed synthetic direct Charge caller and measured business metrics",
+    "prometheus": "Historical real business and owned Payment resource metrics",
+    "remediation-control-gateway": "Current guarded single-restore control with signed state evidence",
+    "remediation-executor": "Current independent typed Executor, StepReceipt and Recovery Verifier",
+    "worker": "Current Product Connector, Baseline and Diagnosis jobs"
+  },
+  "objects": {
+    "approval": [
+      {
+        "action_authority": "NONE",
+        "approval_id": "appr-8b2b401f484b4c18a0a8682c",
+        "approval_sha256": "0dd53afe1528ece4a75ec0fa33cdded3503207f3e18cc88eb3d4ecf101edf77e",
+        "approver": "LOCAL_OPERATOR",
+        "authorization_source": "USER_EXPLICIT_OPERATOR_AUTHORIZATION",
+        "candidate_id": "cand-d1d5c6b6d7d53978c426edcf",
+        "candidate_sha256": "04aec0fabd1781a84fa45ed2830b8b22de96ca8dce1119d76ff7657219959d30",
+        "created_at": "2026-09-09T12:31:58.616582Z",
+        "decision": "APPROVE",
+        "expires_at": "2026-09-09T12:41:58.616582Z",
+        "issued_at": "2026-09-09T12:31:58.616582Z",
+        "revoked_at": null,
+        "schema_version": "ecomsre.product.operator-approval.v1",
+        "scope": {
+          "maximum_forward_steps": 1,
+          "parameters_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "runbook_id": "ROLLBACK_CONFIGURATION",
+          "target_logical_service": "payment"
+        },
+        "single_use": true
+      }
+    ],
+    "attempt": [
+      {
+        "active_lease_owner": null,
+        "approval_id": "appr-8b2b401f484b4c18a0a8682c",
+        "approval_sha256": "0dd53afe1528ece4a75ec0fa33cdded3503207f3e18cc88eb3d4ecf101edf77e",
+        "attempt_id": "attempt-da099ee7e9ec40908723e264",
+        "attempt_sha256": "7908c76ea81c518e966592f1ce81cf8990e426b118e730c8f236948637ac5821",
+        "authorization_id": "auth-1033a28d91774efdb8f033e2",
+        "authorization_sha256": "dbee52c45600cee356c051fa7d0ee0b2993bd20a8d07561fef91512deb369647",
+        "candidate_id": "cand-d1d5c6b6d7d53978c426edcf",
+        "candidate_sha256": "04aec0fabd1781a84fa45ed2830b8b22de96ca8dce1119d76ff7657219959d30",
+        "created_at": "2026-09-09T12:31:59.082253Z",
+        "environment_id": "env-70e9de01d4dfe814415b7879",
+        "final_disposition": "ESCALATE_HUMAN",
+        "forward_write_count": 1,
+        "lease_expires_at": null,
+        "lease_generation": 2,
+        "revision": 6,
+        "safe_error_code": null,
+        "schema_version": "ecomsre.product.remediation-attempt.v1",
+        "state": "VERIFICATION_FAILED",
+        "target_logical_service": "payment",
+        "terminal": "VERIFICATION_FAILED",
+        "updated_at": "2026-09-09T12:32:52.143797Z",
+        "write_intent_id": "intent-a4e0f6a009124300a6c0ef86",
+        "write_intent_sha256": "8fc72955c7dfd164ff798945585eb988175a3bc95236ef2f2699e57a62714f56"
+      }
+    ],
+    "authorization": [
+      {
+        "approval_id": "appr-8b2b401f484b4c18a0a8682c",
+        "approval_sha256": "0dd53afe1528ece4a75ec0fa33cdded3503207f3e18cc88eb3d4ecf101edf77e",
+        "authorization_id": "auth-1033a28d91774efdb8f033e2",
+        "authorization_sha256": "dbee52c45600cee356c051fa7d0ee0b2993bd20a8d07561fef91512deb369647",
+        "baseline_sha256": "3f8e5945f6aa714d82c9bb5dcca51ee7acd430edf6e050e630275f923cd66aa8",
+        "candidate_id": "cand-d1d5c6b6d7d53978c426edcf",
+        "candidate_sha256": "04aec0fabd1781a84fa45ed2830b8b22de96ca8dce1119d76ff7657219959d30",
+        "consumed_at": null,
+        "created_at": "2026-09-09T12:31:59.082253Z",
+        "current_state_sha256": "cd42a398e8eb342cc9686335c2917c738e37d47a9b073c16aeebc3588ad64da0",
+        "current_state_snapshot_id": "snap-135193adaf5f4726962e1538",
+        "diagnosis_sha256": "3c5631f4dc45821e6f5e370b7bd9c659cf80f5c95966064456ed429c76a380a8",
+        "evidence_bundle_sha256": "6fa10abfe1034d9a8cab78e8088c34e830ce103d0d458f98a9e48e03c0361e04",
+        "expires_at": "2026-09-09T12:36:59.082253Z",
+        "issued_at": "2026-09-09T12:31:59.082253Z",
+        "maximum_forward_steps": 1,
+        "parameters_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "registry_sha256": "5722c03cbc94539212a054557ab65b1ecdb145e76e86904689d75df188b588b1",
+        "risk_level": "LOW",
+        "runbook_sha256": "386e542b02e71969d0494ce92440443026c6686c91a297da071e58f2e3fecaed",
+        "schema_version": "ecomsre.product.remediation-authorization.v1",
+        "single_use": true,
+        "target_logical_service": "payment"
+      }
+    ],
+    "candidate": [
+      {
+        "action_authority": "NONE",
+        "admission_sha256": "173aa7b6dc89b02f9d61f4d4ae6ab9ff082ba57609bd16e0e1e836a6fb1c3bac",
+        "baseline_id": "base-16360f0bc6512b7bba3b00c2",
+        "baseline_sha256": "3f8e5945f6aa714d82c9bb5dcca51ee7acd430edf6e050e630275f923cd66aa8",
+        "candidate_id": "cand-d1d5c6b6d7d53978c426edcf",
+        "candidate_sha256": "04aec0fabd1781a84fa45ed2830b8b22de96ca8dce1119d76ff7657219959d30",
+        "capability_sha256": "9c895fe198237d8f305b71ee96f5c1efea2ea4b992a35128290eaeb4d4d158b1",
+        "created_at": "2026-09-09T12:31:19.937805Z",
+        "diagnosis_decision_trace_sha256": "7af83156d43ddfb0bc674776f61d7154a0e8df59749f1ca8946d74eae7f63ee4",
+        "diagnosis_id": "diag-f7417dc9a26e7e6891f36d34",
+        "diagnosis_sha256": "3c5631f4dc45821e6f5e370b7bd9c659cf80f5c95966064456ed429c76a380a8",
+        "eligibility": "ELIGIBLE",
+        "environment_id": "env-70e9de01d4dfe814415b7879",
+        "evidence_bundle_sha256": "6fa10abfe1034d9a8cab78e8088c34e830ce103d0d458f98a9e48e03c0361e04",
+        "evidence_index_sha256": "090d7fcf187d1bd6db74707055cb454d7c7d62f8b5823a5ebd3c866e131951e1",
+        "executable": false,
+        "identity_map_sha256": "15c6fb4fa8bbc71d0ccc50b3cd6db2946302dac0528e4ff00e9ca853e7606b20",
+        "incident_id": "inc-9aca07e4d7b5971222dee505",
+        "incident_sha256": "94a11a3989482920fb6748caedbaa70faeb1806d3ceccec117f51a6d4b46e370",
+        "matched_clause_id": "configuration:change-and-error-metric",
+        "maximum_forward_steps": 1,
+        "memory_sha256": "160bc021abf75f7dc1d58410ba3c4e44c850031819a217f734aeb3156afe8eaa",
+        "parameters_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "reason_codes": [],
+        "registry_sha256": "5722c03cbc94539212a054557ab65b1ecdb145e76e86904689d75df188b588b1",
+        "risk_level": "LOW",
+        "runbook_id": "ROLLBACK_CONFIGURATION",
+        "runbook_sha256": "386e542b02e71969d0494ce92440443026c6686c91a297da071e58f2e3fecaed",
+        "schema_version": "ecomsre.product.remediation-candidate.v1",
+        "target_logical_service": "payment"
+      }
+    ],
+    "executor_dispatch": [
+      {
+        "attempt_id": "attempt-da099ee7e9ec40908723e264",
+        "authorization_sha256": "dbee52c45600cee356c051fa7d0ee0b2993bd20a8d07561fef91512deb369647",
+        "before_state_sha256": "c3d114da754d9698e673f7e2bcfdb728dba4fb8e9c647c65d1a5fa058fb30066",
+        "created_at": "2026-09-09T12:32:00.471670Z",
+        "dispatch_sha256": "c1c9964023243f4f66141fd88a868ccdaaa3528b183b65f42fec7d24f2a486f0",
+        "recovery_policy_sha256": "d18789154026fb5b284a6db727589c1407d97070cbdec74c7b1b91c6dcd60cc7",
+        "schema_version": "ecomsre.product.executor-dispatch.v1",
+        "write_intent_id": "intent-a4e0f6a009124300a6c0ef86",
+        "write_intent_sha256": "8fc72955c7dfd164ff798945585eb988175a3bc95236ef2f2699e57a62714f56"
+      }
+    ],
+    "receipt": [
+      {
+        "after_state_digest": "6de2b41b138db7b2545583a369c1ce1b2dd100b8fc2e367880563d7a38b496f7",
+        "attempt_id": "attempt-da099ee7e9ec40908723e264",
+        "before_state_digest": "97acac0414e15519b62a99b50de403ef2a82291fd81d9d476903f047565ac2c3",
+        "created_at": "2026-09-09T12:32:00.746363Z",
+        "dispatch_sha256": "c1c9964023243f4f66141fd88a868ccdaaa3528b183b65f42fec7d24f2a486f0",
+        "elapsed_ms": 278.78283299969553,
+        "ended_at": "2026-09-09T12:32:00.746363Z",
+        "outcome": "APPLIED",
+        "receipt_id": "receipt-d42db6e9e7c3482cb8cae6b0",
+        "receipt_sha256": "db35137e0d09bf430e7d143c28e76299ce393a506c3ce8e63b734cc7cd1ae59a",
+        "safe_error_code": null,
+        "schema_version": "ecomsre.product.step-receipt.v1",
+        "started_at": "2026-09-09T12:32:00.475631Z",
+        "step_id": "RESTORE_BASELINE_CONFIGURATION",
+        "step_ordinal": 1,
+        "supporting_evidence_refs": [
+          "126d1fc7f128a57e78f18a1de45e6305921aa04c5a0001d85dfd26304c2e9e23"
+        ],
+        "target_logical_service": "payment",
+        "write_intent_id": "intent-a4e0f6a009124300a6c0ef86",
+        "write_intent_sha256": "8fc72955c7dfd164ff798945585eb988175a3bc95236ef2f2699e57a62714f56"
+      }
+    ],
+    "recovery_evaluation": [
+      {
+        "attempt_id": "attempt-da099ee7e9ec40908723e264",
+        "created_at": "2026-09-09T12:32:52.126749Z",
+        "evaluation_id": "evaluation-5e0eb54ccdb947299b8f36ac",
+        "evaluation_sha256": "bc4ab18a7b7edacd445b444867e7f9d101a49f838dc037dbf958ff35fb6e1abf",
+        "final_disposition": "ESCALATE_HUMAN",
+        "outcome": "FAIL",
+        "policy_sha256": "d18789154026fb5b284a6db727589c1407d97070cbdec74c7b1b91c6dcd60cc7",
+        "reason_codes": [
+          "BUSINESS_SLI_FAILED"
+        ],
+        "receipt_sha256s": [
+          "db35137e0d09bf430e7d143c28e76299ce393a506c3ce8e63b734cc7cd1ae59a"
+        ],
+        "recovery_window_sha256s": [
+          "f9b84cf3117c5765880a1e6864fe4634fd2ab28d9daf009ef04c7c7e44a825f5",
+          "f71a78326333c4cdcd036b376b5499349af583e8b38312f3f93c534f70364857"
+        ],
+        "runbook_id": "ROLLBACK_CONFIGURATION",
+        "schema_version": "ecomsre.product.recovery-evaluation.v1",
+        "terminal": "VERIFICATION_FAILED",
+        "verifier_id": "ProductPaymentConfigurationRecoveryVerifier"
+      }
+    ],
+    "recovery_window": [
+      {
+        "attempt_id": "attempt-da099ee7e9ec40908723e264",
+        "business_sli_passed": false,
+        "configuration_restored": true,
+        "created_at": "2026-09-09T12:32:26.932929Z",
+        "ended_at": "2026-09-09T12:32:26.932929Z",
+        "endpoint_passed": true,
+        "flag_evaluation_restored": true,
+        "infrastructure_passed": true,
+        "non_owned_resources_unchanged": true,
+        "ordinal": 1,
+        "policy_sha256": "d18789154026fb5b284a6db727589c1407d97070cbdec74c7b1b91c6dcd60cc7",
+        "receipt_sha256": "db35137e0d09bf430e7d143c28e76299ce393a506c3ce8e63b734cc7cd1ae59a",
+        "schema_version": "ecomsre.product.recovery-window.v1",
+        "started_at": "2026-09-09T12:32:16.932929Z",
+        "supporting_evidence_refs": [
+          "5daa13e21cf92015f657b00bcd0eb24f359704142eed6b83fd212dc7c2aa4383"
+        ],
+        "window_sha256": "f9b84cf3117c5765880a1e6864fe4634fd2ab28d9daf009ef04c7c7e44a825f5"
+      },
+      {
+        "attempt_id": "attempt-da099ee7e9ec40908723e264",
+        "business_sli_passed": false,
+        "configuration_restored": true,
+        "created_at": "2026-09-09T12:32:44.602349Z",
+        "ended_at": "2026-09-09T12:32:44.602349Z",
+        "endpoint_passed": true,
+        "flag_evaluation_restored": true,
+        "infrastructure_passed": true,
+        "non_owned_resources_unchanged": true,
+        "ordinal": 2,
+        "policy_sha256": "d18789154026fb5b284a6db727589c1407d97070cbdec74c7b1b91c6dcd60cc7",
+        "receipt_sha256": "db35137e0d09bf430e7d143c28e76299ce393a506c3ce8e63b734cc7cd1ae59a",
+        "schema_version": "ecomsre.product.recovery-window.v1",
+        "started_at": "2026-09-09T12:32:34.602349Z",
+        "supporting_evidence_refs": [
+          "ac282b5963d2d7e0ebf3fe5e4f4326279269101e56cca1ccf80c18d0fefc90fd"
+        ],
+        "window_sha256": "f71a78326333c4cdcd036b376b5499349af583e8b38312f3f93c534f70364857"
+      }
+    ],
+    "write_intent": [
+      {
+        "attempt_id": "attempt-da099ee7e9ec40908723e264",
+        "attempt_sha256": "55fadba04203d07d9121e3c8875e4f077f1432a7b003a5ba93c0f79e279a8e3d",
+        "authorization_id": "auth-1033a28d91774efdb8f033e2",
+        "authorization_sha256": "dbee52c45600cee356c051fa7d0ee0b2993bd20a8d07561fef91512deb369647",
+        "before_state_sha256": "52ad1ffcc6ce6ec531a8252315954537b9b0ab0daac412ca2af718859ff0f594",
+        "before_state_snapshot_id": "snap-cf909bef3ba441bd8f8def43",
+        "committed_at": "2026-09-09T12:32:00.434433Z",
+        "created_at": "2026-09-09T12:32:00.434433Z",
+        "runbook_sha256": "386e542b02e71969d0494ce92440443026c6686c91a297da071e58f2e3fecaed",
+        "schema_version": "ecomsre.product.remediation-write-intent.v1",
+        "status": "COMMITTED",
+        "step_id": "RESTORE_BASELINE_CONFIGURATION",
+        "target_logical_service": "payment",
+        "write_intent_id": "intent-a4e0f6a009124300a6c0ef86",
+        "write_intent_sha256": "8fc72955c7dfd164ff798945585eb988175a3bc95236ef2f2699e57a62714f56"
+      }
+    ]
+  },
+  "private_evidence_commitment": "a06be89c75bcbb0e6ea30f1f3d0b2491b90ab158426ea4c554eb02f3d502802c",
+  "provider_calls": 0,
+  "recovery_evidence": {
+    "126d1fc7f128a57e78f18a1de45e6305921aa04c5a0001d85dfd26304c2e9e23": {
+      "baseline_configuration_digest": "6de2b41b138db7b2545583a369c1ce1b2dd100b8fc2e367880563d7a38b496f7",
+      "control_identity_sha256": "9a398d73225ce04e9faf8d06ac27409cc5d4dc5074f580942d11b625dfc259a7",
+      "created_at": "2026-09-09T12:32:00.745189Z",
+      "current_configuration_digest": "6de2b41b138db7b2545583a369c1ce1b2dd100b8fc2e367880563d7a38b496f7",
+      "environment_id": "env-70e9de01d4dfe814415b7879",
+      "environment_owned": true,
+      "environment_ownership_digest": "07b35b747fe2e16c3bab9370a5df2081c3737e552539693637783c801c32142d",
+      "fault_still_present": false,
+      "local_control_trusted": true,
+      "observation_sha256": "b090aa89cef725ec8b9d22a524f0c131cd9b824cfd3f12982f2e13a204ad0de3",
+      "observed_at": "2026-09-09T12:32:00.745189Z",
+      "schema_version": "ecomsre.product.remediation-state-observation.v1",
+      "target_identity_digest": "a6b053da3fc305d81f85bb0fb37dac77de2dfc28c361dd0830912fd936736f67",
+      "target_logical_service": "payment"
+    },
+    "5daa13e21cf92015f657b00bcd0eb24f359704142eed6b83fd212dc7c2aa4383": {
+      "business_errors": 0,
+      "business_observation_kind": "DIRECT_PAYMENT_TRAFFIC",
+      "business_requests": 0,
+      "configuration_digest": "6de2b41b138db7b2545583a369c1ce1b2dd100b8fc2e367880563d7a38b496f7",
+      "created_at": "2026-09-09T12:32:26.932929Z",
+      "elapsed_ms": 17467.777083045803,
+      "ended_at": "2026-09-09T12:32:26.932929Z",
+      "endpoint_passed": true,
+      "environment_id": "env-70e9de01d4dfe814415b7879",
+      "environment_ownership_digest": "07b35b747fe2e16c3bab9370a5df2081c3737e552539693637783c801c32142d",
+      "flag_evaluation_restored": true,
+      "infrastructure_passed": true,
+      "non_owned_resources_unchanged": true,
+      "observation_sha256": "03eeb273f2e1c4b44b9c0e882608e29567bd19324468871f7ae141fefacce26f",
+      "policy_sha256": "d18789154026fb5b284a6db727589c1407d97070cbdec74c7b1b91c6dcd60cc7",
+      "schema_version": "ecomsre.product.recovery-observation.v1",
+      "started_at": "2026-09-09T12:32:16.932929Z",
+      "target_logical_service": "payment"
+    },
+    "ac282b5963d2d7e0ebf3fe5e4f4326279269101e56cca1ccf80c18d0fefc90fd": {
+      "business_errors": 0,
+      "business_observation_kind": "DIRECT_PAYMENT_TRAFFIC",
+      "business_requests": 0,
+      "configuration_digest": "6de2b41b138db7b2545583a369c1ce1b2dd100b8fc2e367880563d7a38b496f7",
+      "created_at": "2026-09-09T12:32:44.602349Z",
+      "elapsed_ms": 17478.41287497431,
+      "ended_at": "2026-09-09T12:32:44.602349Z",
+      "endpoint_passed": true,
+      "environment_id": "env-70e9de01d4dfe814415b7879",
+      "environment_ownership_digest": "07b35b747fe2e16c3bab9370a5df2081c3737e552539693637783c801c32142d",
+      "flag_evaluation_restored": true,
+      "infrastructure_passed": true,
+      "non_owned_resources_unchanged": true,
+      "observation_sha256": "7e9d4c2a74f0c6b2a87739894770f40ae847aade157bc515b919da59e98ee61d",
+      "policy_sha256": "d18789154026fb5b284a6db727589c1407d97070cbdec74c7b1b91c6dcd60cc7",
+      "schema_version": "ecomsre.product.recovery-observation.v1",
+      "started_at": "2026-09-09T12:32:34.602349Z",
+      "target_logical_service": "payment"
+    }
+  },
+  "recovery_policy": {
+    "baseline_configuration_digest": "6de2b41b138db7b2545583a369c1ce1b2dd100b8fc2e367880563d7a38b496f7",
+    "baseline_sha256": "3f8e5945f6aa714d82c9bb5dcca51ee7acd430edf6e050e630275f923cd66aa8",
+    "business_error_ratio_max": 0.01,
+    "control_identity_sha256": "9a398d73225ce04e9faf8d06ac27409cc5d4dc5074f580942d11b625dfc259a7",
+    "created_at": "2026-09-09T12:31:36.948266Z",
+    "environment_id": "env-70e9de01d4dfe814415b7879",
+    "environment_ownership_digest": "07b35b747fe2e16c3bab9370a5df2081c3737e552539693637783c801c32142d",
+    "fault_configuration_digest": "97acac0414e15519b62a99b50de403ef2a82291fd81d9d476903f047565ac2c3",
+    "minimum_business_requests": 10,
+    "policy_sha256": "d18789154026fb5b284a6db727589c1407d97070cbdec74c7b1b91c6dcd60cc7",
+    "schema_version": "ecomsre.product.recovery-policy.v1",
+    "target_identity_digest": "a6b053da3fc305d81f85bb0fb37dac77de2dfc28c361dd0830912fd936736f67",
+    "window_seconds": 10
+  },
+  "schema_version": "ecomsre.product.live-safety-case.v1",
+  "service_roles": [
+    "api",
+    "bound-api",
+    "flagd",
+    "otel-collector",
+    "payment",
+    "payment-control",
+    "payment-probe",
+    "prometheus",
+    "remediation-control-gateway",
+    "remediation-executor",
+    "worker"
+  ],
+  "source_evidence_sha256": "c70e6a483bbe3734bbc711a95e734582909ce69c8fbe5277659887ad02511c92",
+  "source_head": "f73cf036d39e02c4e756ae215d1e87d29a89984e",
+  "started_at": "2026-09-09T12:22:02.880452+00:00",
+  "state_snapshots": [
+    {
+      "active_remediation_count": 0,
+      "approval_id": "appr-8b2b401f484b4c18a0a8682c",
+      "approval_sha256": "0dd53afe1528ece4a75ec0fa33cdded3503207f3e18cc88eb3d4ecf101edf77e",
+      "baseline_configuration_digest": "6de2b41b138db7b2545583a369c1ce1b2dd100b8fc2e367880563d7a38b496f7",
+      "baseline_id": "base-16360f0bc6512b7bba3b00c2",
+      "baseline_sha256": "3f8e5945f6aa714d82c9bb5dcca51ee7acd430edf6e050e630275f923cd66aa8",
+      "candidate_id": "cand-d1d5c6b6d7d53978c426edcf",
+      "candidate_sha256": "04aec0fabd1781a84fa45ed2830b8b22de96ca8dce1119d76ff7657219959d30",
+      "configuration_drift_visible": true,
+      "control_identity_sha256": "9a398d73225ce04e9faf8d06ac27409cc5d4dc5074f580942d11b625dfc259a7",
+      "created_at": "2026-09-09T12:31:59.082253Z",
+      "current_configuration_digest": "97acac0414e15519b62a99b50de403ef2a82291fd81d9d476903f047565ac2c3",
+      "environment_id": "env-70e9de01d4dfe814415b7879",
+      "environment_ownership_digest": "07b35b747fe2e16c3bab9370a5df2081c3737e552539693637783c801c32142d",
+      "fault_still_present": true,
+      "incident_id": "inc-9aca07e4d7b5971222dee505",
+      "incident_sha256": "94a11a3989482920fb6748caedbaa70faeb1806d3ceccec117f51a6d4b46e370",
+      "observed_at": "2026-09-09T12:31:59.027976Z",
+      "schema_version": "ecomsre.product.remediation-current-state.v1",
+      "snapshot_id": "snap-135193adaf5f4726962e1538",
+      "snapshot_sha256": "cd42a398e8eb342cc9686335c2917c738e37d47a9b073c16aeebc3588ad64da0",
+      "source_observation_refs": [
+        "33bfebfd1b37bca7c255e295f715460309d46d67445f46fcc7dce09a26492d89"
+      ],
+      "target_identity_digest": "a6b053da3fc305d81f85bb0fb37dac77de2dfc28c361dd0830912fd936736f67",
+      "target_logical_service": "payment",
+      "trusted_binding_sha256": "4ca09ccee7725f98199b126206795917bc85c97108bc3b60c92ed2c35e6528c3"
+    },
+    {
+      "active_remediation_count": 1,
+      "approval_id": "appr-8b2b401f484b4c18a0a8682c",
+      "approval_sha256": "0dd53afe1528ece4a75ec0fa33cdded3503207f3e18cc88eb3d4ecf101edf77e",
+      "baseline_configuration_digest": "6de2b41b138db7b2545583a369c1ce1b2dd100b8fc2e367880563d7a38b496f7",
+      "baseline_id": "base-16360f0bc6512b7bba3b00c2",
+      "baseline_sha256": "3f8e5945f6aa714d82c9bb5dcca51ee7acd430edf6e050e630275f923cd66aa8",
+      "candidate_id": "cand-d1d5c6b6d7d53978c426edcf",
+      "candidate_sha256": "04aec0fabd1781a84fa45ed2830b8b22de96ca8dce1119d76ff7657219959d30",
+      "configuration_drift_visible": true,
+      "control_identity_sha256": "9a398d73225ce04e9faf8d06ac27409cc5d4dc5074f580942d11b625dfc259a7",
+      "created_at": "2026-09-09T12:32:00.434289Z",
+      "current_configuration_digest": "97acac0414e15519b62a99b50de403ef2a82291fd81d9d476903f047565ac2c3",
+      "environment_id": "env-70e9de01d4dfe814415b7879",
+      "environment_ownership_digest": "07b35b747fe2e16c3bab9370a5df2081c3737e552539693637783c801c32142d",
+      "fault_still_present": true,
+      "incident_id": "inc-9aca07e4d7b5971222dee505",
+      "incident_sha256": "94a11a3989482920fb6748caedbaa70faeb1806d3ceccec117f51a6d4b46e370",
+      "observed_at": "2026-09-09T12:32:00.403139Z",
+      "schema_version": "ecomsre.product.remediation-current-state.v1",
+      "snapshot_id": "snap-cf909bef3ba441bd8f8def43",
+      "snapshot_sha256": "52ad1ffcc6ce6ec531a8252315954537b9b0ab0daac412ca2af718859ff0f594",
+      "source_observation_refs": [
+        "825dfd0072304a064e5e55086efb6802b90180f0ffbf0e04256ce06d7220eb7d"
+      ],
+      "target_identity_digest": "a6b053da3fc305d81f85bb0fb37dac77de2dfc28c361dd0830912fd936736f67",
+      "target_logical_service": "payment",
+      "trusted_binding_sha256": "4ca09ccee7725f98199b126206795917bc85c97108bc3b60c92ed2c35e6528c3"
+    },
+    {
+      "active_remediation_count": 1,
+      "approval_id": "appr-8b2b401f484b4c18a0a8682c",
+      "approval_sha256": "0dd53afe1528ece4a75ec0fa33cdded3503207f3e18cc88eb3d4ecf101edf77e",
+      "baseline_configuration_digest": "6de2b41b138db7b2545583a369c1ce1b2dd100b8fc2e367880563d7a38b496f7",
+      "baseline_id": "base-16360f0bc6512b7bba3b00c2",
+      "baseline_sha256": "3f8e5945f6aa714d82c9bb5dcca51ee7acd430edf6e050e630275f923cd66aa8",
+      "candidate_id": "cand-d1d5c6b6d7d53978c426edcf",
+      "candidate_sha256": "04aec0fabd1781a84fa45ed2830b8b22de96ca8dce1119d76ff7657219959d30",
+      "configuration_drift_visible": true,
+      "control_identity_sha256": "9a398d73225ce04e9faf8d06ac27409cc5d4dc5074f580942d11b625dfc259a7",
+      "created_at": "2026-09-09T12:32:00.471513Z",
+      "current_configuration_digest": "97acac0414e15519b62a99b50de403ef2a82291fd81d9d476903f047565ac2c3",
+      "environment_id": "env-70e9de01d4dfe814415b7879",
+      "environment_ownership_digest": "07b35b747fe2e16c3bab9370a5df2081c3737e552539693637783c801c32142d",
+      "fault_still_present": true,
+      "incident_id": "inc-9aca07e4d7b5971222dee505",
+      "incident_sha256": "94a11a3989482920fb6748caedbaa70faeb1806d3ceccec117f51a6d4b46e370",
+      "observed_at": "2026-09-09T12:32:00.442459Z",
+      "schema_version": "ecomsre.product.remediation-current-state.v1",
+      "snapshot_id": "snap-bd725f40c9814169b99b5d52",
+      "snapshot_sha256": "c3d114da754d9698e673f7e2bcfdb728dba4fb8e9c647c65d1a5fa058fb30066",
+      "source_observation_refs": [
+        "50ae020f9d6cdb348f07ea40da4da7863b51acbcc059369964778ef47b097e2b"
+      ],
+      "target_identity_digest": "a6b053da3fc305d81f85bb0fb37dac77de2dfc28c361dd0830912fd936736f67",
+      "target_logical_service": "payment",
+      "trusted_binding_sha256": "4ca09ccee7725f98199b126206795917bc85c97108bc3b60c92ed2c35e6528c3"
+    }
+  ],
+  "terminal": "VERIFICATION_FAILED",
+  "timeline": {
+    "StepReceipt_persisted": {
+      "clock_scope": "persisted-runtime-utc",
+      "monotonic_ns": "NOT_MEASURED",
+      "semantics": "persisted object timestamp; exact database commit monotonic not instrumented",
+      "source": "objects.receipt.0.created_at",
+      "utc": "2026-09-09T12:32:00.746363Z"
+    },
+    "VERIFICATION_FAILED_persisted": {
+      "clock_scope": "persisted-runtime-utc",
+      "monotonic_ns": "NOT_MEASURED",
+      "semantics": "persisted object timestamp; exact database commit monotonic not instrumented",
+      "source": "objects.recovery_evaluation.0.created_at",
+      "utc": "2026-09-09T12:32:52.126749Z"
+    },
+    "approval_persisted": {
+      "clock_scope": "persisted-runtime-utc",
+      "monotonic_ns": "NOT_MEASURED",
+      "semantics": "persisted object timestamp; exact database commit monotonic not instrumented",
+      "source": "objects.approval.0.issued_at",
+      "utc": "2026-09-09T12:31:58.616582Z"
+    },
+    "approval_response_observed": {
+      "clock_scope": "harness-process",
+      "monotonic_ns": 798786296784500,
+      "utc": "2026-09-09T12:31:58.644714+00:00"
+    },
+    "attempt_request_started": {
+      "clock_scope": "harness-process",
+      "monotonic_ns": 798786296798458,
+      "utc": "2026-09-09T12:31:58.644733+00:00"
+    },
+    "attempt_response_observed": {
+      "clock_scope": "harness-process",
+      "monotonic_ns": 798786769231208,
+      "utc": "2026-09-09T12:31:59.117160+00:00"
+    },
+    "authorization_persisted": {
+      "clock_scope": "persisted-runtime-utc",
+      "monotonic_ns": "NOT_MEASURED",
+      "semantics": "persisted object timestamp; exact database commit monotonic not instrumented",
+      "source": "objects.authorization.0.created_at",
+      "utc": "2026-09-09T12:31:59.082253Z"
+    },
+    "candidate_persisted": {
+      "clock_scope": "harness-process",
+      "monotonic_ns": 798785949871208,
+      "semantics": "Persistence observed at API response; includes local transport, not exact commit time. Candidate created_at is diagnosis-anchored and is not used as persistence latency.",
+      "source": "first Candidate POST response",
+      "utc": "2026-09-09T12:31:58.297798+00:00"
+    },
+    "case_started": {
+      "clock_scope": "harness-process",
+      "monotonic_ns": 798190523826541,
+      "utc": "2026-09-09T12:22:02.880246+00:00"
+    },
+    "cleanup_completed": {
+      "clock_scope": "harness-process",
+      "monotonic_ns": 798911908882250,
+      "utc": "2026-09-09T12:34:04.254958+00:00"
+    },
+    "cleanup_started": {
+      "clock_scope": "harness-process",
+      "monotonic_ns": 798842071415708,
+      "utc": "2026-09-09T12:32:54.418511+00:00"
+    },
+    "current_state_observed": {
+      "clock_scope": "persisted-runtime-utc",
+      "monotonic_ns": "NOT_MEASURED",
+      "semantics": "persisted object timestamp; exact database commit monotonic not instrumented",
+      "source": "state_snapshots.0.observed_at",
+      "utc": "2026-09-09T12:31:59.027976Z"
+    },
+    "diagnosis_completed": {
+      "clock_scope": "persisted-runtime-utc",
+      "monotonic_ns": "NOT_MEASURED",
+      "semantics": "persisted object timestamp; exact database commit monotonic not instrumented",
+      "source": "job_events.SUCCEEDED",
+      "utc": "2026-09-09T12:31:20.953475+00:00"
+    },
+    "diagnosis_job_started": {
+      "clock_scope": "persisted-runtime-utc",
+      "monotonic_ns": "NOT_MEASURED",
+      "semantics": "persisted object timestamp; exact database commit monotonic not instrumented",
+      "source": "job_events.CLAIMED",
+      "utc": "2026-09-09T12:31:20.695773+00:00"
+    },
+    "diagnosis_request_started": {
+      "clock_scope": "harness-process",
+      "monotonic_ns": 798740823901833,
+      "utc": "2026-09-09T12:31:13.172500+00:00"
+    },
+    "diagnosis_response_observed": {
+      "clock_scope": "harness-process",
+      "monotonic_ns": 798761145735166,
+      "utc": "2026-09-09T12:31:33.494035+00:00"
+    },
+    "fault_write_acknowledged": {
+      "clock_scope": "harness-process",
+      "monotonic_ns": 798661692808291,
+      "utc": "2026-09-09T12:29:54.042560+00:00"
+    },
+    "fault_write_started": {
+      "clock_scope": "harness-process",
+      "monotonic_ns": 798661689134083,
+      "utc": "2026-09-09T12:29:54.038886+00:00"
+    },
+    "first_failed_business_request": {
+      "clock_scope": "harness-process",
+      "monotonic_ns": 798662710357875,
+      "utc": "2026-09-09T12:29:55.060093+00:00"
+    },
+    "incident_created": {
+      "clock_scope": "persisted-runtime-utc",
+      "monotonic_ns": "NOT_MEASURED",
+      "semantics": "persisted object timestamp; exact database commit monotonic not instrumented",
+      "source": "persisted Incident.created_at",
+      "utc": "2026-09-09T12:31:16.541885Z"
+    },
+    "recovery_window_1_ended": {
+      "clock_scope": "persisted-runtime-utc",
+      "monotonic_ns": "NOT_MEASURED",
+      "semantics": "persisted object timestamp; exact database commit monotonic not instrumented",
+      "source": "objects.recovery_window.0.ended_at",
+      "utc": "2026-09-09T12:32:26.932929Z"
+    },
+    "recovery_window_1_started": {
+      "clock_scope": "persisted-runtime-utc",
+      "monotonic_ns": "NOT_MEASURED",
+      "semantics": "persisted object timestamp; exact database commit monotonic not instrumented",
+      "source": "objects.recovery_window.0.started_at",
+      "utc": "2026-09-09T12:32:16.932929Z"
+    },
+    "recovery_window_2_ended": {
+      "clock_scope": "persisted-runtime-utc",
+      "monotonic_ns": "NOT_MEASURED",
+      "semantics": "persisted object timestamp; exact database commit monotonic not instrumented",
+      "source": "objects.recovery_window.1.ended_at",
+      "utc": "2026-09-09T12:32:44.602349Z"
+    },
+    "recovery_window_2_started": {
+      "clock_scope": "persisted-runtime-utc",
+      "monotonic_ns": "NOT_MEASURED",
+      "semantics": "persisted object timestamp; exact database commit monotonic not instrumented",
+      "source": "objects.recovery_window.1.started_at",
+      "utc": "2026-09-09T12:32:34.602349Z"
+    },
+    "safe_denial_request_started": {
+      "clock_scope": "harness-process",
+      "monotonic_ns": 798786296798458,
+      "utc": "2026-09-09T12:31:58.644733+00:00"
+    },
+    "terminal_observed": {
+      "clock_scope": "harness-process",
+      "monotonic_ns": 798840800508541,
+      "utc": "2026-09-09T12:32:53.147610+00:00"
+    },
+    "write_intent_committed": {
+      "clock_scope": "persisted-runtime-utc",
+      "monotonic_ns": "NOT_MEASURED",
+      "semantics": "persisted object timestamp; exact database commit monotonic not instrumented",
+      "source": "objects.write_intent.0.committed_at",
+      "utc": "2026-09-09T12:32:00.434433Z"
+    }
+  },
+  "timing_boundary": "Single observed case; cross-process durations use persisted UTC. Only matching harness clock scopes use monotonic. Poll observations are not commit times. Gateway ledger has no consumption timestamp; unavailable values remain NOT_MEASURED.",
+  "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f"
+}
