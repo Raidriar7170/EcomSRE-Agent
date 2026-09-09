@@ -113,9 +113,6 @@ def export_case(root: Path) -> dict[str, Any]:
         }
     if public.get("fault_diagnosis"):
         diagnosis = public["fault_diagnosis"]
-        events["diagnosis_completed"] = utc_event(
-            diagnosis["created_at"], "fault_diagnosis.created_at"
-        )
         incident_id = diagnosis["incident_id"]
         inc = next(
             c["response"]
@@ -147,6 +144,8 @@ def export_case(root: Path) -> dict[str, Any]:
         for kind, at in job_events:
             if kind == "CLAIMED":
                 events["diagnosis_job_started"] = utc_event(at, "job_events.CLAIMED")
+            elif kind == "SUCCEEDED":
+                events["diagnosis_completed"] = utc_event(at, "job_events.SUCCEEDED")
     if public["state_snapshots"]:
         snapshot = public["state_snapshots"][0]
         events["current_state_observed"] = utc_event(

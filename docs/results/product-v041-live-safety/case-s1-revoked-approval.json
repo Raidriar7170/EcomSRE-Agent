@@ -1142,8 +1142,8 @@
       "clock_scope": "persisted-runtime-utc",
       "monotonic_ns": "NOT_MEASURED",
       "semantics": "persisted object timestamp; exact database commit monotonic not instrumented",
-      "source": "fault_diagnosis.created_at",
-      "utc": "2026-09-09T11:55:06.170139Z"
+      "source": "job_events.SUCCEEDED",
+      "utc": "2026-09-09T11:55:06.563915+00:00"
     },
     "diagnosis_job_started": {
       "clock_scope": "persisted-runtime-utc",

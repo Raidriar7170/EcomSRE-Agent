@@ -439,6 +439,12 @@ def main() -> None:
     for case in cases:
         verify_timing(case, timing["cases"][case["case_id"]])
     manifest = json.loads((RESULT / "evidence-manifest.json").read_text())
+    required_evidence = {
+        str(p.relative_to(ROOT))
+        for p in RESULT.iterdir()
+        if p.is_file() and p.name != "evidence-manifest.json"
+    } | {"docs/analysis/product-v041-claim-map.json"}
+    require(required_evidence <= set(manifest["files"]), "MANIFEST_INCOMPLETE")
     for name, expected in manifest["files"].items():
         require(
             hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == expected,
