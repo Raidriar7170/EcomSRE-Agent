@@ -81,7 +81,7 @@ Diagnosis action_authority = NONE；Approval ≠ execution authority。LLM does 
 
 ## 部署与持久化
 
-[Product Compose](../../docker-compose.product.yml)包含两个 Python 进程和一个持久卷：
+[Product Compose](../../docker-compose.product.yml)默认运行 API 与 Worker 两个 Python 进程；显式 remediation profile 另含 Executor 与 control gateway。SQLite/CAS 数据卷之外，还声明配置、读写 socket 与 control ledger 卷：
 
 - FastAPI：API、鉴权、验证、稳定错误、health / readiness / metrics。
 - Worker：SQLite 租约式后台任务，执行验证、Baseline、诊断。
@@ -96,4 +96,4 @@ Product Compose 仅向 loopback 发布 API，不挂载 Docker socket，
 live 实验的独立控制器不是 Product/Agent 的执行权限。
 
 接口 `/v1`、类型名 `V1`、SQLite schema 和包版本各有兼容性含义，
-不会为公开 v0.3 标签改名。尚无 Kubernetes、HA、多租户或生产规模验证。
+不会随公开展示版本标签改名。尚无 Kubernetes、HA、多租户或生产规模验证。

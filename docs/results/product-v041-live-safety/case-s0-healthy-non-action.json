@@ -1,0 +1,558 @@
+{
+  "api_calls": [
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 795418132096916,
+        "utc": "2026-09-09T11:35:50.531449+00:00"
+      },
+      "key_sha256": "cdb8693e9f7de6882dec741a79424957ecfa7f455f475ae3a1f956c211f9b54c",
+      "method": "GET",
+      "request_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "response_sha256": "31bf75f4c0a97cc1f7b60df824fa390b3be9ba014f29b63c87c698ba63d9a9fd",
+      "route": "/readyz",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 795414676287791,
+        "utc": "2026-09-09T11:35:47.075692+00:00"
+      },
+      "status": 200
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 795811707245708,
+        "utc": "2026-09-09T11:42:24.101037+00:00"
+      },
+      "key_sha256": "ae1cf8a081e55c17236cd6100b31e6479195ae6368797e88ca149a95b5a5b678",
+      "method": "POST",
+      "request_sha256": "c5754394b3309d029d65a1a21bdcd3d3a63684ea3c2c6ec34a60d62d7e0a5c52",
+      "response_sha256": "1c337c8719b0d92e8f5c4c7ab7693a7ef8d1d77569922c1cdc89c3cd683acbe0",
+      "route": "/v1/environments",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 795808311821375,
+        "utc": "2026-09-09T11:42:20.705664+00:00"
+      },
+      "status": 201
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 795815083608208,
+        "utc": "2026-09-09T11:42:27.477354+00:00"
+      },
+      "key_sha256": "233938683caa096b829a54581ac5b21d7585818f895501f5713b735eafa17c6b",
+      "method": "POST",
+      "request_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "response_sha256": "ff35de990a0cb5b4d2ec3ec6dc6855b31565669dfc7365413ae0f50be033bd12",
+      "route": "/v1/environments/env-36573b2ec9034dc34cac61ff/verify-jobs",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 795811708239375,
+        "utc": "2026-09-09T11:42:24.102042+00:00"
+      },
+      "status": 202
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 795818456293583,
+        "utc": "2026-09-09T11:42:30.849984+00:00"
+      },
+      "key_sha256": "507d99deb08d9cbc3a5b91a811b7b0c6efd35a599d356b7ff9a876c5314a2523",
+      "method": "GET",
+      "request_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "response_sha256": "0247a87757c4d59cd12fdc67a6c01db1d3af00669049064d6fda2a55e81e6b59",
+      "route": "/v1/jobs/job-150e4829899e2afc025b5321",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 795815084561333,
+        "utc": "2026-09-09T11:42:27.478309+00:00"
+      },
+      "status": 200
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 795821822548791,
+        "utc": "2026-09-09T11:42:34.216196+00:00"
+      },
+      "key_sha256": "a4d5febf2a353fd9bccf1027ce6c56f340c91a5b36ebace72fadf940f0d14b31",
+      "method": "GET",
+      "request_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "response_sha256": "e689643a2eec464b60bf1f2a5c2dcceb8ebec4ffafc4e55a20be004864cca084",
+      "route": "/v1/environments/env-36573b2ec9034dc34cac61ff/capabilities",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 795818457323291,
+        "utc": "2026-09-09T11:42:30.851030+00:00"
+      },
+      "status": 200
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 795825191269666,
+        "utc": "2026-09-09T11:42:37.584871+00:00"
+      },
+      "key_sha256": "c4b00a3f6f3fc30e2cb661a1b64d077bff74c730a76c907dec02a2feda451274",
+      "method": "POST",
+      "request_sha256": "511d30885801ea273a02451edb63fc486287206b82943c30eedd67d9f3d4afa0",
+      "response_sha256": "5aa8dc958db99fc66215468add83072495dabd6224d6d7e3d714387ff6007091",
+      "route": "/v1/environments/env-36573b2ec9034dc34cac61ff/baseline-jobs",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 795821823831333,
+        "utc": "2026-09-09T11:42:34.217491+00:00"
+      },
+      "status": 202
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 795828554226416,
+        "utc": "2026-09-09T11:42:40.947784+00:00"
+      },
+      "key_sha256": "7d2c470050a0deb5c53e4c9d6837124f28379941fe3c712c922062f2d91d860b",
+      "method": "GET",
+      "request_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "response_sha256": "0896ca8bca2580ed635e9ca8fc6bf8d7d1379122a2a77ffda25e3b1b09814c96",
+      "route": "/v1/jobs/job-fa4c073ad115e610ff55389d",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 795825192293083,
+        "utc": "2026-09-09T11:42:37.585906+00:00"
+      },
+      "status": 200
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 795831913603416,
+        "utc": "2026-09-09T11:42:44.307107+00:00"
+      },
+      "key_sha256": "7cb2ffb9e1cf8ce8486b8436b2a37129080e2bb75ca7e3e558bf3f0150bd39d8",
+      "method": "GET",
+      "request_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "response_sha256": "e1b425735860eaf01d4cbccb531f1dd07de2af3a66d41a37e1d0d515f62603ec",
+      "route": "/v1/environments/env-36573b2ec9034dc34cac61ff/baselines",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 795828555132541,
+        "utc": "2026-09-09T11:42:40.948698+00:00"
+      },
+      "status": 200
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 795835286693125,
+        "utc": "2026-09-09T11:42:47.680155+00:00"
+      },
+      "key_sha256": "6f0b9b0d56686204c67c6f9b16fad2764cda7f18e042fcabde618602f477649c",
+      "method": "POST",
+      "request_sha256": "32a5a836710dac82d3c7a2d699e8c7fe86609c1873394e0b8dd4438db724bf12",
+      "response_sha256": "1255f033cd570f611827ba29d52b81961c176452db4af43d67ada968481c603e",
+      "route": "/v1/incidents",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 795831918725708,
+        "utc": "2026-09-09T11:42:44.312250+00:00"
+      },
+      "status": 201
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 795838659436041,
+        "utc": "2026-09-09T11:42:51.052854+00:00"
+      },
+      "key_sha256": "02117a757955d3588208370d2b16beb10e1140d5b098949afa3fc1583213c07c",
+      "method": "POST",
+      "request_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "response_sha256": "3745d0af276e3d97a55867dcc2c276c42fd756480f128f636b2cdb78799173a2",
+      "route": "/v1/incidents/inc-2b3416fdadf45fb11f9f88eb/diagnosis-jobs",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 795835287623583,
+        "utc": "2026-09-09T11:42:47.681091+00:00"
+      },
+      "status": 202
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 795842027119583,
+        "utc": "2026-09-09T11:42:54.420482+00:00"
+      },
+      "key_sha256": "2908ecfd8dd00cdb6137f9cef3ce85f3be47fb065f530466d5cd050a809e3106",
+      "method": "GET",
+      "request_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "response_sha256": "b2e2e0d53fe1085f00c55432ca742106b6356bad3818cbab1888c4db06b13066",
+      "route": "/v1/jobs/job-06fa33ec8bd4ddb8b332f787",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 795838660095625,
+        "utc": "2026-09-09T11:42:51.053518+00:00"
+      },
+      "status": 200
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 795845397787625,
+        "utc": "2026-09-09T11:42:57.791109+00:00"
+      },
+      "key_sha256": "3b75e508f50de9cca29ea061a6fdb50fec2b0bd1361aeaae59da1c064db030be",
+      "method": "GET",
+      "request_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "response_sha256": "0a3dcb84bd479185644d463ab95776165c2bee7ec4f5f88b5ea8c36a220a50bb",
+      "route": "/v1/incidents/inc-2b3416fdadf45fb11f9f88eb/diagnosis",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 795842028037541,
+        "utc": "2026-09-09T11:42:54.421413+00:00"
+      },
+      "status": 200
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 795848788227458,
+        "utc": "2026-09-09T11:43:01.181474+00:00"
+      },
+      "key_sha256": "d7063501dc2846280918b4658567e705ae501b4b26bd768a050d02baabf3f9c2",
+      "method": "GET",
+      "request_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "response_sha256": "10d534ce6b4e061d0cf1b87664e7adf9403d82c8b7394cd72e28ac27d373a99f",
+      "route": "/v1/incidents/inc-2b3416fdadf45fb11f9f88eb/evidence",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 795845398596000,
+        "utc": "2026-09-09T11:42:57.791922+00:00"
+      },
+      "status": 200
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 795852171651666,
+        "utc": "2026-09-09T11:43:04.564878+00:00"
+      },
+      "key_sha256": "0a36757ae642a88f505ce782691a30dc207d33856bd992472dcd04ba418987f0",
+      "method": "GET",
+      "request_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "response_sha256": "f456d57276a45f971ed67b48b07f2ed5b34a0d4dc91ae5b7694d63e14d614286",
+      "route": "/v1/incidents/inc-2b3416fdadf45fb11f9f88eb/evidence-index",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 795848791195666,
+        "utc": "2026-09-09T11:43:01.184467+00:00"
+      },
+      "status": 200
+    },
+    {
+      "ended": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 795862721372458,
+        "utc": "2026-09-09T11:43:15.114445+00:00"
+      },
+      "key_sha256": "afc7a37601b96f5ef77207d5595c0976fccff9fa0badc3de777facc045c9e389",
+      "method": "POST",
+      "request_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "response_sha256": "39a9aedba2b3a890a1b4bcdbd33bbe3eb8b32c78815d9fedd4bbee212541f575",
+      "route": "/v1/incidents/inc-2b3416fdadf45fb11f9f88eb/remediation-candidates",
+      "started": {
+        "clock_scope": "harness-process",
+        "monotonic_ns": 795859334140375,
+        "utc": "2026-09-09T11:43:11.727245+00:00"
+      },
+      "status": 200
+    }
+  ],
+  "baseline_file_restored": true,
+  "case_id": "S0",
+  "cleanup": {
+    "clean": true,
+    "non_owned_unchanged": true,
+    "receipts": [
+      {
+        "identity_sha256": "c7781bd5714f4488b1bff59150a69e8b21910149633483e2931bb5d2205d3cb6",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "93cda5a65c7ce48a2ca66b931626fe8ddf0bf89c0b135f9e6b45cd471a5e040f",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "4a6af90834623f92c50f462c279589e8a4929d4a7335e4efc97fb7d5a657d667",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "92e196652716224e47135df36ae58c52c3d56a03ed36621b9391711c83e28cc4",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "eea29927529a423dccd5b0906b17e7a1ab3b7cb3642e78427d5b7eeff4665305",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "76d9f77ad73c7808246855daad4e8975701b3f011a8de8ecabc81ffa5b91b73d",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "08b52dc2242cc7f925a8573b1ca6c0cbee2ad623e10d7ced0549f456bc839bf2",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "8abb89d9f790326ea6bdfa54e1c4fd164453ebfca18195b9f03b33211f48e01d",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "7ee350faa63d8a0274c364efb6c8c85f4a38fa53830311b31d6df78840c0f07d",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "9a5d44d9c428820faf095552a414a07bd4a86ed7dd967272b84974e6a0f3a909",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "25b4ba4848b0e48507a32b51128dd708422acbcfe093fed903ebc29f8a1c7241",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "e06426f8297de422b55147ac5753bc6ccc28fae84bb97ad312475c04bb76745d",
+        "kind": "network",
+        "removed": true
+      },
+      {
+        "identity_sha256": "b8d10dffb825663308ab252bfbc58f8687e0028de0b9e5f92f730dba62eb2e8a",
+        "kind": "network",
+        "removed": true
+      },
+      {
+        "identity_sha256": "06a636bf03fa543ba493ca07825d0215ed0d6ed2c55f811b926c2589b9c7476f",
+        "kind": "network",
+        "removed": true
+      },
+      {
+        "identity_sha256": "150a66d6d70b0ae3f1412870ff94e30edda426e3908aa43d788e431d4c00cd40",
+        "kind": "volume",
+        "removed": true
+      },
+      {
+        "identity_sha256": "6d648bf3bcacd42d37a4c1c7982f5a82cbfcf075eb083c15c4214e5f9f2307bd",
+        "kind": "volume",
+        "removed": true
+      }
+    ],
+    "remaining": {
+      "container": 0,
+      "network": 0,
+      "volume": 0
+    }
+  },
+  "collection_errors": [],
+  "compose_sha256": "1ed673ac43e9664c2ec7d89afa5a7cf1f17a46cf83de80e1e900890a07c713b8",
+  "counts": {
+    "approval": 0,
+    "attempt": 0,
+    "authorization": 0,
+    "candidate": 0,
+    "executor_dispatch": 0,
+    "external_product_writes": 0,
+    "gateway_consumption": 0,
+    "receipt": 0,
+    "recovery_evaluation": 0,
+    "recovery_window": 0,
+    "write_intent": 0
+  },
+  "decision_trace": [],
+  "events": {
+    "case_started": {
+      "clock_scope": "harness-process",
+      "monotonic_ns": 795391376292208,
+      "utc": "2026-09-09T11:35:23.775751+00:00"
+    },
+    "cleanup_completed": {
+      "clock_scope": "harness-process",
+      "monotonic_ns": 795921893004625,
+      "utc": "2026-09-09T11:44:14.285243+00:00"
+    },
+    "cleanup_started": {
+      "clock_scope": "harness-process",
+      "monotonic_ns": 795862722160708,
+      "utc": "2026-09-09T11:43:15.115248+00:00"
+    },
+    "safe_denial": {
+      "clock_scope": "harness-process",
+      "monotonic_ns": 795862722153625,
+      "utc": "2026-09-09T11:43:15.115237+00:00"
+    }
+  },
+  "evidence_status": "COLLECTED",
+  "executor_attempts": 0,
+  "external_write_audit": [],
+  "external_write_audit_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "fault_injections": 0,
+  "finished_at": "2026-09-09T11:44:14.311030+00:00",
+  "gateway_evidence": {
+    "birth_running": false,
+    "birth_sha256": "62ba9cb91187c8e895ad939d4e06d638326faa6a48bed898123f5247f71b8f6b",
+    "consumptions": 0,
+    "kind": "NOT_STARTED_S0"
+  },
+  "goal_sha256": "c8dd161bef61adac1e08da60409e02ddbccb939ad5b13ad6b89adee1b42ca9d5",
+  "healthy": {
+    "baseline_sha256": "8f02c41626cb5a1060129918a5d40b94ea3f07e4b3d0f2571031ee8e8d06b9d0",
+    "business_errors_after_startup": 0,
+    "business_requests": 194,
+    "product_diagnosis": "INSUFFICIENT_EVIDENCE",
+    "proof": "Active Product Baseline plus real successful direct Payment requests; unavailable telemetry remains explicit."
+  },
+  "healthy_candidate_count": 0,
+  "healthy_diagnosis": {
+    "action_authority": "NONE",
+    "agent_writes": 0,
+    "broad_domain": null,
+    "capability_limitations": [
+      "SOURCE_LOGS_UNAVAILABLE",
+      "SOURCE_RUNTIME_UNAVAILABLE",
+      "SOURCE_TRACES_UNAVAILABLE"
+    ],
+    "contradicting_evidence_refs": [],
+    "core_or_extension_or_open_world": "ABSTAIN",
+    "created_at": "2026-09-09T11:42:51.025455Z",
+    "diagnosis_id": "diag-06fa33ec8bd4ddb8b332f787",
+    "incident_id": "inc-2b3416fdadf45fb11f9f88eb",
+    "mechanism": null,
+    "memory_sha256": "cc0da70cc884b46bd59d8804336a35b7c9f0e85a6a2b6719a6e5418a5270e53d",
+    "provider_calls": 0,
+    "provisional_report": null,
+    "result_sha256": "2969f616d91f63315084fd9c8e71e9fc900ecd15a7f6a25ba9c0506ec90a2c8b",
+    "root_service_ids": [],
+    "runbook_executions": 0,
+    "schema_version": "ecomsre.product.diagnosis-result.v1",
+    "supporting_evidence_refs": [],
+    "terminal": "INSUFFICIENT_EVIDENCE"
+  },
+  "image_source_head": "539824ee5c3b2497c890a52a7aaa1fff455b6b8e",
+  "images": {
+    "flagd": {
+      "Architecture": "arm64",
+      "Id": "sha256:5115fd9352d58fd41c7be775b33336f5e4b2cef8056bf5982f5c704d13ec590e",
+      "Os": "linux",
+      "index_id": "sha256:32234e63c1d0634883aabd31cbd46802934aaaef0153dfd653b5d1017940bb4e"
+    },
+    "otel-collector": {
+      "Architecture": "arm64",
+      "Id": "sha256:1fef9f07f04eb6775b4076ea4f817d6b7b9050e23e52941f0756ba08df798ea6",
+      "Os": "linux",
+      "index_id": "sha256:f2f01157055a9b2aab9df7118e1f1c9abf345e99b23bc7a2bc791db374a7d0f6"
+    },
+    "payment": {
+      "Architecture": "arm64",
+      "Id": "sha256:c9bbe72133e9b6569f8e490441e7a1472f8767d12759b0eaf0af14e91e4a9d45",
+      "Os": "linux",
+      "index_id": "sha256:d498c7434d22ff7a82ec86843efd22c93c52cb8c6df4961a7110617b1e08c15f"
+    },
+    "product": {
+      "Architecture": "arm64",
+      "Id": "sha256:722422b0eb3fd7b8762ec31ef1b1d911723b82e51fefce479b48bd1d257651a4",
+      "Os": "linux",
+      "index_id": "sha256:722422b0eb3fd7b8762ec31ef1b1d911723b82e51fefce479b48bd1d257651a4"
+    },
+    "prometheus": {
+      "Architecture": "arm64",
+      "Id": "sha256:2d61f37ba9f2185195dfad94ee500d7ac1986560bac79a77d0a6de182a5bf814",
+      "Os": "linux",
+      "index_id": "sha256:3c42b892cf723fa54d2f262c37a0e1f80aa8c8ddb1da7b9b0df9455a35a7f893"
+    }
+  },
+  "minimal_services": {
+    "api": "Current Product API and persistent repositories",
+    "flagd": "Pinned real feature-flag evaluation",
+    "otel-collector": "Receive real Payment OTLP traces, metrics and logs",
+    "payment": "Pinned real gRPC Charge implementation",
+    "payment-control": "Fixed two-document file transport required by current gateway",
+    "payment-probe": "Fixed synthetic direct Charge caller and measured business metrics",
+    "prometheus": "Historical real business and owned Payment resource metrics",
+    "remediation-control-gateway": "Current guarded single-restore control with signed state evidence",
+    "remediation-executor": "Current independent typed Executor, StepReceipt and Recovery Verifier",
+    "worker": "Current Product Connector, Baseline and Diagnosis jobs"
+  },
+  "objects": {
+    "approval": [],
+    "attempt": [],
+    "authorization": [],
+    "candidate": [],
+    "executor_dispatch": [],
+    "receipt": [],
+    "recovery_evaluation": [],
+    "recovery_window": [],
+    "write_intent": []
+  },
+  "private_evidence_commitment": "88bd560a8faf957d592bd3a470fb69d025090a11583eccbbb431159c661fce51",
+  "provider_calls": 0,
+  "recovery_evidence": {},
+  "schema_version": "ecomsre.product.live-safety-case.v1",
+  "service_roles": [
+    "api",
+    "bound-api",
+    "flagd",
+    "otel-collector",
+    "payment",
+    "payment-control",
+    "payment-probe",
+    "prometheus",
+    "remediation-control-gateway",
+    "remediation-executor",
+    "worker"
+  ],
+  "source_evidence_sha256": "f35d9fdf05ea592724998970110e4033b107aeb23ce924b19d8cb4e021daf9bc",
+  "source_head": "dc62ba7e48e4d4c9f32464c201ae68a2e273cffd",
+  "started_at": "2026-09-09T11:35:23.776053+00:00",
+  "state_snapshots": [],
+  "terminal": "NO_CANDIDATE",
+  "timeline": {
+    "case_started": {
+      "clock_scope": "harness-process",
+      "monotonic_ns": 795391376292208,
+      "utc": "2026-09-09T11:35:23.775751+00:00"
+    },
+    "cleanup_completed": {
+      "clock_scope": "harness-process",
+      "monotonic_ns": 795921893004625,
+      "utc": "2026-09-09T11:44:14.285243+00:00"
+    },
+    "cleanup_started": {
+      "clock_scope": "harness-process",
+      "monotonic_ns": 795862722160708,
+      "utc": "2026-09-09T11:43:15.115248+00:00"
+    },
+    "safe_denial": {
+      "clock_scope": "harness-process",
+      "monotonic_ns": 795862721372458,
+      "utc": "2026-09-09T11:43:15.114445+00:00"
+    },
+    "safe_denial_request_started": {
+      "clock_scope": "harness-process",
+      "monotonic_ns": 795859334140375,
+      "utc": "2026-09-09T11:43:11.727245+00:00"
+    }
+  },
+  "timing_boundary": "Single observed case; cross-process durations use persisted UTC. Only matching harness clock scopes use monotonic. Poll observations are not commit times. Gateway ledger has no consumption timestamp; unavailable values remain NOT_MEASURED.",
+  "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f"
+}

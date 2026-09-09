@@ -2,6 +2,8 @@
 
 四个入口均可从已提交的仓库开始。Demo 使用夹具；verifier 校验保留证据，不重新启动真实实验。
 
+B–D 的共同前提：Python 3.11 与 uv，终端位于仓库根目录，并先运行 `uv sync --frozen --python 3.11`。该命令仅创建仓库局部虚拟环境。A 只需阅读文件。
+
 ## A. 两分钟结果导览
 
 依次打开 [STATUS](STATUS.md)、[v0.2.4 健康](../results/product-v024-nofault-acceptance-final.json)、[v0.3 知识演化](../analysis/product-v030-family-and-rule-summary.json)、[v0.4 Payment](../results/product-v040-minimal-payment/live-result.json)、[v0.4.1 安全矩阵](../results/product-v041-live-safety/README.md)。不同环境和版本的结果不能合并成一个通用成功率。

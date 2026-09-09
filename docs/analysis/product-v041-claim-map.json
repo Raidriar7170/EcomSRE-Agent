@@ -1,0 +1,114 @@
+{
+  "schema_version": "ecomsre.product.claim-map.v1",
+  "status": "IN_PROGRESS",
+  "claims": [
+    {
+      "claim_id": "v024-healthy",
+      "public_text": "30/30 checkout，NO_INCIDENT，能力限制 0，五类证据",
+      "source_file": "docs/results/product-v024-nofault-acceptance-final.json",
+      "source_path_or_object": "traffic; diagnosis; metrics; resources; traces; logs; runtime",
+      "evidence_sha256": "66ee73925a59ad05e3b98769d40a79e7230044ef2f9d2526a0dab7369ad247ac",
+      "scope": "v0.2.4 single healthy checkout window",
+      "limitations": "Not all services or long-term SLO"
+    },
+    {
+      "claim_id": "v030-three-windows",
+      "public_text": "P1/P2/P3 三个 Open-World 窗口形成一个 Fault Family",
+      "source_file": "docs/analysis/product-v030-family-and-rule-summary.json",
+      "source_path_or_object": "review_ready_snapshot.distinct_incident_windows; positive_incident_ids",
+      "evidence_sha256": "e54cf10714acb4fda0656f14035642036b242b87522e86ee5a065e24e806b7ac",
+      "scope": "v0.3 live_005",
+      "limitations": "One environment and learned mechanism"
+    },
+    {
+      "claim_id": "v030-shadow",
+      "public_text": "Shadow recall 1.0 / FPR 0.0",
+      "source_file": "docs/analysis/product-v030-family-and-rule-summary.json",
+      "source_path_or_object": "shadow_evaluation; shadow_unavailable_strata",
+      "evidence_sha256": "e54cf10714acb4fda0656f14035642036b242b87522e86ee5a065e24e806b7ac",
+      "scope": "v0.3 live_005; 3 positives and 10 negative/counterfactual/failure cases",
+      "limitations": "OTHER_EXTENSION unavailable; no population accuracy claim"
+    },
+    {
+      "claim_id": "v030-h1",
+      "public_text": "H1 = EXTENSION_KNOWN / kafka-queue-backlog / fraud-detection",
+      "source_file": "docs/analysis/product-v030-family-and-rule-summary.json",
+      "source_path_or_object": "h1",
+      "evidence_sha256": "e54cf10714acb4fda0656f14035642036b242b87522e86ee5a065e24e806b7ac",
+      "scope": "One new recurrence window",
+      "limitations": "No cross-environment generalization"
+    },
+    {
+      "claim_id": "v040-healthy",
+      "public_text": "194 healthy Payment requests; healthy diagnosis INSUFFICIENT_EVIDENCE",
+      "source_file": "docs/results/product-v040-minimal-payment/live-result.json",
+      "source_path_or_object": "healthy",
+      "evidence_sha256": "5f0a3a54b723b77b9e155fd5f85f912947e7630b846d6a4cfe020286ec902ce9",
+      "scope": "PR #102 pinned Minimal Payment",
+      "limitations": "One local Runbook; not full Harness, production, generalization or exactly-once"
+    },
+    {
+      "claim_id": "v040-fault",
+      "public_text": "Final 30/30 fault probes failed as expected",
+      "source_file": "docs/results/product-v040-minimal-payment/live-result.json",
+      "source_path_or_object": "fault",
+      "evidence_sha256": "5f0a3a54b723b77b9e155fd5f85f912947e7630b846d6a4cfe020286ec902ce9",
+      "scope": "PR #102 pinned Minimal Payment",
+      "limitations": "One local Runbook; not full Harness, production, generalization or exactly-once"
+    },
+    {
+      "claim_id": "v040-write",
+      "public_text": "One gateway restore and APPLIED receipt",
+      "source_file": "docs/results/product-v040-minimal-payment/live-result.json",
+      "source_path_or_object": "gateway_consumptions; objects.receipt",
+      "evidence_sha256": "5f0a3a54b723b77b9e155fd5f85f912947e7630b846d6a4cfe020286ec902ce9",
+      "scope": "PR #102 pinned Minimal Payment",
+      "limitations": "One local Runbook; not full Harness, production, generalization or exactly-once"
+    },
+    {
+      "claim_id": "v040-windows",
+      "public_text": "Two recovery windows each 39 requests / 0 errors; RECOVERED",
+      "source_file": "docs/results/product-v040-minimal-payment/live-result.json",
+      "source_path_or_object": "objects.recovery_windows; terminal",
+      "evidence_sha256": "5f0a3a54b723b77b9e155fd5f85f912947e7630b846d6a4cfe020286ec902ce9",
+      "scope": "PR #102 pinned Minimal Payment",
+      "limitations": "One local Runbook; not full Harness, production, generalization or exactly-once"
+    },
+    {
+      "claim_id": "v040-cleanup",
+      "public_text": "10 containers / 3 networks / 2 volumes removed; remaining 0/0/0",
+      "source_file": "docs/results/product-v040-minimal-payment/live-result.json",
+      "source_path_or_object": "cleanup",
+      "evidence_sha256": "5f0a3a54b723b77b9e155fd5f85f912947e7630b846d6a4cfe020286ec902ce9",
+      "scope": "PR #102 pinned Minimal Payment",
+      "limitations": "One local Runbook; not full Harness, production, generalization or exactly-once"
+    },
+    {
+      "claim_id": "v040-provider",
+      "public_text": "Provider / LLM calls = 0",
+      "source_file": "docs/results/product-v040-minimal-payment/live-result.json",
+      "source_path_or_object": "provider_calls",
+      "evidence_sha256": "5f0a3a54b723b77b9e155fd5f85f912947e7630b846d6a4cfe020286ec902ce9",
+      "scope": "PR #102 pinned Minimal Payment",
+      "limitations": "One local Runbook; not full Harness, production, generalization or exactly-once"
+    },
+    {
+      "claim_id": "pr102-validation",
+      "public_text": "6520 tests passed / 21 skipped / mypy 705 files",
+      "source_file": "docs/analysis/product-v041-pr102-completion-source.json",
+      "source_path_or_object": "body",
+      "evidence_sha256": "3f924e2620bf1300b4a2178317c3356adc01673b84cca1e043ce3eb683cb84ed",
+      "scope": "PR #102 only",
+      "limitations": "Not current v041 test count; never sum counts across versions"
+    },
+    {
+      "claim_id": "v030-shadow-denominator",
+      "public_text": "3 positive and 10 evaluated negative/counterfactual/failure cases; OTHER_EXTENSION unavailable",
+      "source_file": "docs/results/product-v030-live-knowledge-evolution.json",
+      "source_path_or_object": "live_005.shadow_outcomes_by_stratum; live_005.shadow_evaluated_count; live_005.shadow_unavailable_strata",
+      "evidence_sha256": "d15eda57f75154767dc89f1d721450d594be317c12194ff8ec8c1e09abe6d258",
+      "scope": "v0.3 live_005 Shadow only",
+      "limitations": "13 evaluated items, not 13 independent live experiments"
+    }
+  ]
+}
