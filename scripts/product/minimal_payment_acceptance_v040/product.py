@@ -5,6 +5,7 @@ from datetime import UTC, datetime, timedelta
 import json
 from pathlib import Path
 import time
+import subprocess
 from typing import Any
 import httpx
 from ecomsre.product.remediation.attempts import RemediationAttemptRepositoryV1
@@ -56,8 +57,8 @@ def environment_payload(name: str) -> dict[str, Any]:
 
 
 class Product:
-    def __init__(self, root: Path, port: int, admin: str, check: Any):
-        self.root, self.check = root, check
+    def __init__(self, root: Path, port: int, admin: str, check: Any, api_id: str):
+        self.root, self.check, self.api_id = root, check, api_id
         self.client = httpx.Client(
             base_url=f"http://127.0.0.1:{port}",
             headers={"Authorization": "Bearer " + admin},
@@ -72,24 +73,33 @@ class Product:
     def call(self, method: str, route: str, body: Any = None) -> Any:
         self.check()
         self.ordinal += 1
-        response = self.client.request(
-            method,
-            route,
-            json=body,
-            headers={"Idempotency-Key": f"minimal-{self.ordinal}"},
+        raw = subprocess.check_output(
+            ["docker", "exec", "-i", self.api_id, "python", "/api_transport.py"],
+            input=json.dumps(
+                {
+                    "method": method,
+                    "route": route,
+                    "body": body,
+                    "key": f"minimal-{self.ordinal}",
+                }
+            ),
+            text=True,
+            timeout=45,
         )
+        response = json.loads(raw)
         save(
             self.root / "product" / f"{self.ordinal:04d}.json",
             {
                 "method": method,
                 "route": route,
                 "request": body,
-                "status": response.status_code,
-                "response": response.json(),
+                "status": response["status"],
+                "response": response["body"],
             },
         )
-        response.raise_for_status()
-        return response.json()
+        if not 200 <= response["status"] < 300:
+            raise ValueError("PRODUCT_API_ERROR:" + json.dumps(response))
+        return response["body"]
 
     def job(self, route: str, body: Any = None) -> Any:
         value = self.call("POST", route, body)

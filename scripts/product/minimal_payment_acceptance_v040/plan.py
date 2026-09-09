@@ -179,6 +179,12 @@ def build_plan(
             [bind(root / "data", "/var/lib/ecomsre", False)],
         ),
     }
+    services["api"]["volumes"].append(
+        bind(
+            REPO / "scripts/product/minimal_payment_acceptance_v040/api_transport.py",
+            "/api_transport.py",
+        )
+    )
     services["payment"]["environment"] = {
         "PAYMENT_PORT": "50051",
         "FLAGD_HOST": "flagd",
@@ -190,7 +196,9 @@ def build_plan(
         "OTEL_METRIC_EXPORT_INTERVAL": "1000",
         "OTEL_RESOURCE_ATTRIBUTES": "service.name=payment",
     }
-    services["prometheus"]["tmpfs"].append("/prometheus:rw,nosuid,nodev,mode=1777,size=128m")
+    services["prometheus"]["tmpfs"].append(
+        "/prometheus:rw,nosuid,nodev,mode=1777,size=128m"
+    )
     services["payment-control"]["user"] = "0:0"
     services["api"]["environment"] = {
         "ECOMSRE_ADMIN_TOKEN": secrets["admin"],

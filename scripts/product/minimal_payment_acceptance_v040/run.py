@@ -238,7 +238,8 @@ def run(product_image: str) -> dict[str, Any]:
         )
         observer.start()
         wait_http(client, f"http://127.0.0.1:{ports['probe']}/ready")
-        wait_http(client, f"http://127.0.0.1:{ports['api']}/readyz")
+        product = Product(root, ports["api"], keys["admin"], observer.check, ids["api"])
+        product.call("GET", "/readyz")
         wait_http(client, f"http://127.0.0.1:{ports['prometheus']}/-/ready")
         # Healthy business and retention sufficient for the unchanged Baseline API.
         healthy_probes = []
@@ -254,7 +255,6 @@ def run(product_image: str) -> dict[str, Any]:
                 print("healthy-baseline warmup", len(healthy_probes), flush=True)
             time.sleep(2)
         save(root / "healthy-probes.json", healthy_probes)
-        product = Product(root, ports["api"], keys["admin"], observer.check)
         product.prepare(nonce)
         healthy_diagnosis = product.diagnose("healthy-control")
         save(root / "healthy-diagnosis.json", healthy_diagnosis)
