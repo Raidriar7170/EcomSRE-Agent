@@ -190,7 +190,7 @@ def build_plan(
         "OTEL_METRIC_EXPORT_INTERVAL": "1000",
         "OTEL_RESOURCE_ATTRIBUTES": "service.name=payment",
     }
-    services["prometheus"]["tmpfs"].append("/prometheus:rw,nosuid,nodev,size=128m")
+    services["prometheus"]["tmpfs"].append("/prometheus:rw,nosuid,nodev,mode=1777,size=128m")
     services["payment-control"]["user"] = "0:0"
     services["api"]["environment"] = {
         "ECOMSRE_ADMIN_TOKEN": secrets["admin"],
@@ -279,6 +279,7 @@ def build_plan(
             ],
         },
     )
+    (root / "prometheus.json").chmod(0o644)
     return {
         "name": nonce,
         "services": services,
