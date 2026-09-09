@@ -1,0 +1,170 @@
+import json
+import pytest
+from ecomsre.product.contracts import EnvironmentCreateV1
+from scripts.product.minimal_payment_acceptance_v040.plan import build_plan, REASONS
+from scripts.product.minimal_payment_acceptance_v040.product import environment_payload
+from scripts.product.minimal_payment_acceptance_v040.owned import (
+    Owned,
+    validate_container,
+)
+from scripts.product.minimal_payment_acceptance_v040.observer import memory_bytes
+
+
+def test_minimal_dependency_closure_isolated_controls(tmp_path):
+    images = {
+        name: {"Id": "sha256:" + name}
+        for name in ("product", "payment", "flagd", "otel-collector", "prometheus")
+    }
+    ports = {
+        name: 23000 + n
+        for n, name in enumerate(
+            ("api", "probe", "flagd", "control", "prometheus", "observer", "gateway")
+        )
+    }
+    plan = build_plan(
+        tmp_path,
+        "test",
+        images,
+        ports,
+        {"goal": "test"},
+        {k: k * 32 for k in ("read", "write", "observer", "admin")},
+    )
+    assert set(plan["services"]) == set(REASONS)
+    assert plan["services"]["remediation-executor"]["network_mode"] == "none"
+    assert plan["services"]["api"]["networks"] == ["observation"]
+    assert plan["services"]["worker"]["networks"] == ["observation"]
+    assert plan["services"]["payment-control"]["networks"] == ["control"]
+    assert not any("/var/run/docker.sock" in str(s) for s in plan["services"].values())
+    assert all(
+        p["host_ip"] == "127.0.0.1"
+        for s in plan["services"].values()
+        for p in s.get("ports", [])
+    )
+    assert all(
+        m["volume"]["nocopy"]
+        for s in plan["services"].values()
+        for m in s["volumes"]
+        if m["type"] == "volume"
+    )
+
+
+def container_fixture():
+    spec = {
+        "image": "image",
+        "volumes": [
+            {
+                "target": "/config",
+                "source": "/private/config",
+                "type": "bind",
+                "read_only": True,
+            }
+        ],
+    }
+    image = {
+        "Id": "image-id",
+        "Config": {"Entrypoint": ["/node"], "Cmd": ["server.js"]},
+    }
+    row = {
+        "Config": {"Labels": {"goal": "bound"}},
+        "HostConfig": {
+            "Privileged": False,
+            "NetworkMode": "net",
+            "PidMode": "",
+            "ReadonlyRootfs": True,
+            "CapDrop": ["ALL"],
+            "PortBindings": {},
+        },
+        "Image": "image-id",
+        "Path": "/node",
+        "Args": ["server.js"],
+        "Mounts": [
+            {
+                "Type": "bind",
+                "Destination": "/config",
+                "Source": "/private/config",
+                "RW": False,
+            }
+        ],
+        "NetworkSettings": {"Networks": {"net": {"NetworkID": "net-id"}}},
+    }
+    return row, spec, {"image": image}
+
+
+def test_effective_image_default_command_and_semantic_mount():
+    row, spec, images = container_fixture()
+    validate_container(row, spec, {"goal": "bound"}, images, {"net-id"})
+    row["HostConfig"]["UnrelatedDockerDefault"] = None
+    row["Mounts"].reverse()
+    validate_container(row, spec, {"goal": "bound"}, images, {"net-id"})
+
+
+@pytest.mark.parametrize(
+    "field,value", [("Image", "other"), ("Path", "/bin/sh"), ("Args", ["other"])]
+)
+def test_image_and_command_drift_denied(field, value):
+    row, spec, images = container_fixture()
+    row[field] = value
+    with pytest.raises(ValueError):
+        validate_container(row, spec, {"goal": "bound"}, images, {"net-id"})
+
+
+def test_unknown_mount_and_port_denied():
+    row, spec, images = container_fixture()
+    row["Mounts"].append(
+        {
+            "Destination": "/docker",
+            "Type": "bind",
+            "Source": "/var/run/docker.sock",
+            "RW": True,
+        }
+    )
+    with pytest.raises(ValueError, match="MOUNT_SET"):
+        validate_container(row, spec, {"goal": "bound"}, images, {"net-id"})
+    row, spec, images = container_fixture()
+    row["HostConfig"]["PortBindings"] = {
+        "80/tcp": [{"HostIp": "0.0.0.0", "HostPort": "80"}]
+    }
+    with pytest.raises(ValueError, match="PORT_SET"):
+        validate_container(row, spec, {"goal": "bound"}, images, {"net-id"})
+
+
+def test_cleanup_rejects_recreated_or_unknown_resource_before_mutation(
+    monkeypatch, tmp_path
+):
+    owner = object.__new__(Owned)
+    owner.labels = {"goal": "bound"}
+    owner.births = {"container": {"id": {"Id": "id", "Created": "first"}}}
+    owner.fresh = lambda: None
+    calls = []
+
+    def command(*args):
+        calls.append(args)
+        return json.dumps(
+            [{"Id": "id", "Created": "second", "Config": {"Labels": {"goal": "bound"}}}]
+        )
+
+    monkeypatch.setattr(
+        "scripts.product.minimal_payment_acceptance_v040.owned.command", command
+    )
+    with pytest.raises(ValueError, match="BIRTH_IDENTITY_DRIFT"):
+        owner.cleanup()
+    assert all("inspect" in call for call in calls)
+    with pytest.raises(KeyError):
+        owner.require_birth("container", "unknown")
+
+
+def test_real_query_configuration_no_constant_success():
+    payload = EnvironmentCreateV1.model_validate(environment_payload("minimal"))
+    templates = payload.connector_configs[0].settings["query_templates"]
+    assert "rate(payment_probe_errors_total" in templates["error_rate"]
+    assert "rate(payment_probe_requests_total" in templates["error_rate"]
+    assert templates["cpu"].startswith("payment_owned_cpu_percent")
+    assert templates["memory"].startswith("payment_owned_memory_bytes")
+    assert all("vector(0)" not in value for value in templates.values())
+
+
+def test_resource_units_and_unknown_unit_fail_closed():
+    assert memory_bytes("12MiB") == 12 * 1024 * 1024
+    assert memory_bytes("1.5kB") == 1500
+    with pytest.raises(ValueError):
+        memory_bytes("unknown")
