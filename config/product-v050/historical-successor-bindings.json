@@ -12,7 +12,7 @@
     },
     "docs/interview/PROJECT_PITCH.md": {
       "historical_sha256": "aa07c76eee86068fa3407ca2584a189009e801c0d4fe3bfda3430f2c3f4d8c8f",
-      "successor_sha256": "13112cd022bb82ecfe643cecfe0d318d349128dec31ab29a511bd49fb4d24e72"
+      "successor_sha256": "82d75fd9dded08d6c92df40786068c55c60ba7deedf2e401369833d9d8d6cd9d"
     },
     "docs/product/ARCHITECTURE.md": {
       "historical_sha256": "d06cd44a2af449a637004b66a1d5f71e31a065331d05dbc4ce7516fde3a5fbb8",
@@ -28,7 +28,7 @@
     },
     "docs/product/STATUS.md": {
       "historical_sha256": "f6d83224b763d6d74427a72d94c91a7526c1f3385a0691b69f2dbece3ea7040e",
-      "successor_sha256": "6a1ea29c3bfebca0d3333188e06f6aaf38eb7939842325efd1a42d8353503954"
+      "successor_sha256": "31c39c0afb3fd51280d7853c85f10adc0cb9aa15e8b35f1fe1a8418dab417912"
     }
   }
 }

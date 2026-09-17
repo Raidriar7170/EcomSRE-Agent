@@ -68,4 +68,5 @@ writes; the module does not connect to WriteIntent, Authorization or Executor.
 The current evidence is offline fixture evidence. Real Provider credentials and
 dated prices have not been supplied; no new live campaign or learning acceptance
 has run. Fixture normal-entry matching and revocation are engineering checks, not
-proof of a model-learned rule. Review and full regression remain in progress.
+proof of a model-learned rule. Independent boundary review has no open Must Fix. The clean implementation
+commit passed 6584 repository tests, with 21 existing skips; CI is tracked on PR #104.

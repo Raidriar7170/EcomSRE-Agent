@@ -1,5 +1,5 @@
 {
-  "ci_status": "NOT_YET_REQUESTED",
+  "ci_status": "TRACKED_EXTERNALLY_ON_PR_104",
   "commands": [
     {
       "command": "python -m pytest tests/product_v050 -q",
@@ -22,9 +22,20 @@
       "exit_code": 0,
       "name": "mypy",
       "source_files": 731
+    },
+    {
+      "command": ".venv/bin/python -m pytest -q",
+      "commit": "430b8a129ed083103134ab361e0674a2262ce3d8",
+      "elapsed_seconds": 739.74,
+      "exit_code": 0,
+      "log_sha256": "0d18b21c5fc97cea182825cf1750990e44646b8496478890f78b40837d7a8e38",
+      "name": "full_repository",
+      "passed": 6584,
+      "skipped": 21,
+      "warnings": 17
     }
   ],
-  "full_repository_status": "INITIAL_RUN_FAILED_REPAIRS_IN_PROGRESS",
+  "full_repository_status": "PASS",
   "historical_modules": [
     {
       "elapsed_seconds": 0.168,
@@ -196,6 +207,7 @@
       "skipped": 21
     }
   ],
+  "pull_request": "https://github.com/Raidriar7170/EcomSRE-Agent/pull/104",
   "review": {
     "must_fix_open": 0,
     "reviewer": "independent Codex read-only reviewer",

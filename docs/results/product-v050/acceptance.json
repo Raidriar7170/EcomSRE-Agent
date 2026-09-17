@@ -3,7 +3,7 @@
   "code_binding": "offline-checks.json:source_sha256",
   "configuration_binding": "b4d36fd9bc6aeec1954d66a4e3790d40ffc008ee22602a999c3d764bbd1a1182",
   "data_version": "FIXTURE_ONLY; no new live dataset or holdout was created",
-  "engineering_status": "IN_PROGRESS",
+  "engineering_status": "OFFLINE_COMPLETE",
   "fixture_test_count": 43,
   "historical_regression_status": "PASS",
   "holdout_result": "NOT_ATTEMPTED",
@@ -30,7 +30,7 @@
   "review_status": "INDEPENDENT_REVIEW_COMPLETE",
   "schema_version": "ecomsre.product.acceptance.v050",
   "telemetry_mode": "FIXTURE_ONLY",
-  "terminal": "IN_PROGRESS",
+  "terminal": "ECOMSRE_PRODUCT_V050_ENGINEERING_COMPLETE_WITH_LIMITATIONS",
   "usage_and_cost": {
     "actual_usd": 0,
     "basis": "NO_REQUESTS",

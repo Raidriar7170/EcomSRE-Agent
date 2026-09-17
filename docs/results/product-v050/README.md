@@ -1,4 +1,4 @@
-# Product v0.5 — offline delivery evidence (in progress)
+# Product v0.5 — engineering complete with live limitations
 
 The active [Goal](../../goals/EcomSRE_v0.5_Codex_Goal.md) authorizes a bounded real
 investigation/knowledge campaign. The project Provider configuration and dated
@@ -8,7 +8,12 @@ Engineering implements API/Worker investigation, persisted decisions and bounded
 reads; shared model/miner candidate evaluation; Level B resource aggregates;
 development and frozen Shadow boundaries; test-only registry governance and
 revocation; and field-level remediation previews. Current proof is **FIXTURE_ONLY**.
-Full repository and publication checks are still being completed.
+The clean implementation commit passed **6584 tests, 21 skipped** locally; the
+focused source-bound suite passed **43 tests**. The verifier-derived terminal is
+`ECOMSRE_PRODUCT_V050_ENGINEERING_COMPLETE_WITH_LIMITATIONS`.
+Draft [PR #104](https://github.com/Raidriar7170/EcomSRE-Agent/pull/104) carries the
+current GitHub CI status; this package does not manufacture a self-referential CI
+PASS for its own commit. No merge, release or deployment is authorized.
 
 | Evidence layer | Current result |
 | --- | --- |
