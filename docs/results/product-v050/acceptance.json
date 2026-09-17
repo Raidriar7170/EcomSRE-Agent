@@ -1,0 +1,40 @@
+{
+  "base_commit": "550a564d29954e6f3c2395790294e23800231ac4",
+  "code_binding": "offline-checks.json:source_sha256",
+  "configuration_binding": "b4d36fd9bc6aeec1954d66a4e3790d40ffc008ee22602a999c3d764bbd1a1182",
+  "data_version": "FIXTURE_ONLY; no new live dataset or holdout was created",
+  "engineering_status": "IN_PROGRESS",
+  "fixture_test_count": 43,
+  "historical_regression_status": "PASS",
+  "holdout_result": "NOT_ATTEMPTED",
+  "investigation_acceptance": "OFFLINE_PROTOCOL_ONLY",
+  "knowledge_proposal_acceptance": "NOT_ATTEMPTED_WITH_REAL_PROVIDER",
+  "level_b_expression_acceptance": "OFFLINE_UNSEEN_VALUES_AND_NORMAL_MATCHER_VERIFIED",
+  "limitations": [
+    "Project Provider credentials and dated price schedule unavailable",
+    "No real investigation trace, LLM candidate, live incidents or frozen holdout",
+    "No validated/promoted LLM Level B knowledge or new-event reuse",
+    "Case plan remains planned; no frozen live-data manifest exists",
+    "Historical Provider-zero evidence remains unchanged",
+    "Preview has no connection to execution authority"
+  ],
+  "live_episode_count": 0,
+  "new_event_reuse_status": "NOT_ATTEMPTED_WITH_LEARNED_KNOWLEDGE",
+  "new_product_external_writes": 0,
+  "owned_cleanup_status": "NOT_REQUIRED_NO_V050_RUNTIME_CREATED",
+  "promotion_status": "NOT_ATTEMPTED",
+  "provider_request_count": 0,
+  "provider_status": "NOT_CONFIGURED_NOT_ATTEMPTED",
+  "remediation_preview_status": "OFFLINE_PREVIEW_VERIFIED_NO_EXECUTION_AUTHORITY",
+  "reused_event_llm_calls": null,
+  "review_status": "INDEPENDENT_REVIEW_COMPLETE",
+  "schema_version": "ecomsre.product.acceptance.v050",
+  "telemetry_mode": "FIXTURE_ONLY",
+  "terminal": "IN_PROGRESS",
+  "usage_and_cost": {
+    "actual_usd": 0,
+    "basis": "NO_REQUESTS",
+    "requests": 0,
+    "unknown_usage_requests": 0
+  }
+}

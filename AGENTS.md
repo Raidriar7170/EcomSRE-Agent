@@ -15,6 +15,14 @@ invalidates one, stop and propose a new Decision Record.
 
 ## Current state
 
+Current Product status: [STATUS](docs/product/STATUS.md). The user activated
+[Product v0.5 Goal](docs/goals/EcomSRE_v0.5_Codex_Goal.md) on 2026-09-17.
+The historical Phase 0 state below applies only to that consumed campaign;
+it does not prohibit separately authorized Product work. Safety, evidence
+and change discipline remain binding.
+
+### Historical Phase 0 state (preserved)
+
 The project is in `PRE_SMOKE_OFFLINE_REPAIR_READY`.
 
 - The 12 decisions `DEC-001` through `DEC-012` are accepted.

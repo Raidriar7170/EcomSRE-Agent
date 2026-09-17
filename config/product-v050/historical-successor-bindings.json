@@ -1,0 +1,34 @@
+{
+  "authority": "DEC-064; active Product v0.5 Goal; presentation successor only",
+  "base_commit": "550a564d29954e6f3c2395790294e23800231ac4",
+  "files": {
+    ".github/workflows/agent-mainline.yml": {
+      "historical_sha256": "bf66de54c293cc12e04264826c19999a3bbbc24be17d96aa42270709dab09da1",
+      "successor_sha256": "1e50cb3ce5f175814bf5f91da65976a0ba2ca20f6c262d1541059322110794b2"
+    },
+    "README.md": {
+      "historical_sha256": "e125b11cdc7727fa90e031a1a45a731b81f84a3256c58bd913fbd6c057fb314b",
+      "successor_sha256": "c34194ae4ebac9c4389bca4e11ee615e1df01f130e039b7c3a50acd3b10c91df"
+    },
+    "docs/interview/PROJECT_PITCH.md": {
+      "historical_sha256": "aa07c76eee86068fa3407ca2584a189009e801c0d4fe3bfda3430f2c3f4d8c8f",
+      "successor_sha256": "13112cd022bb82ecfe643cecfe0d318d349128dec31ab29a511bd49fb4d24e72"
+    },
+    "docs/product/ARCHITECTURE.md": {
+      "historical_sha256": "d06cd44a2af449a637004b66a1d5f71e31a065331d05dbc4ce7516fde3a5fbb8",
+      "successor_sha256": "27c6b97e70964d449fa7c24abea96f80f5723d0179de7b594c4ee7780999d1a9"
+    },
+    "docs/product/LIMITATIONS.md": {
+      "historical_sha256": "6f5f94f227fe7a59ff3e5a0918eac7d1bc8bc9f7513f097c27e463797108573b",
+      "successor_sha256": "0cb28b277f5ea4d4024d3eb4ece8db2243a9156138025bd35c88f37c8f8835b6"
+    },
+    "docs/product/QUICKSTART.md": {
+      "historical_sha256": "5be47a880028e353a96031f85d423ebbba0a2219bd91be0e2a49b392e032c7bb",
+      "successor_sha256": "b29b45a479ebd584d0d5da02cfbe637d3a224ae05d9cc3944990cba816bc8cf5"
+    },
+    "docs/product/STATUS.md": {
+      "historical_sha256": "f6d83224b763d6d74427a72d94c91a7526c1f3385a0691b69f2dbece3ea7040e",
+      "successor_sha256": "6a1ea29c3bfebca0d3333188e06f6aaf38eb7939842325efd1a42d8353503954"
+    }
+  }
+}

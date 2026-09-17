@@ -80,3 +80,7 @@ S3 观测：故障配置写入确认（fault acknowledgment）到首次失败 10
 完整 28 服务 Harness 的负向实验与精确 cleanup 仍是历史事实；Minimal 成功只建立更窄的 Payment 结果。早期 restored-but-unverified 不能称恢复成功。状态、权限和证据必须分别成立，CI 通过不能替代真实环境证据。
 
 不能声称生产自主自愈、所有故障恢复、跨环境泛化、exactly-once、HA、多租户、Kubernetes 或长期 SLO。见 [演进历史](../history/PROJECT_EVOLUTION.md)。
+
+## v0.5 在研部分的准确讲法
+
+已把默认关闭的模型调查任务接入 Product API/Worker，并实现受限资源表达式与知识治理适配。现在可说明代码如何隔离提议、证据、求值、晋升和动作权限；不能说已通过真实 LLM 知识学习验收。真实 Provider/live 计数仍为 0，fixture 求值和正常入口匹配只证明工程路径。旧 Payment 成果保持原有固定回滚范围，新增局部计划仅是只读预览。

@@ -10,10 +10,10 @@ from typing import Any
 from ecomsre.product.errors import ProductError, not_found
 from ecomsre.product.ids import new_product_id
 from ecomsre.product.jobs.contracts import (
-    ProductJobRecordV1,
     ProductJobStatusV1,
     ProductJobTypeV1,
 )
+from ecomsre.product.jobs.contracts_v050 import ProductJobRecordV050 as ProductJobRecordV1, InvestigationJobTypeV050
 from ecomsre.product.incidents.diagnosis_pipeline_v02322 import (
     DiagnosisPublicFailureProjectionV02322,
 )
@@ -30,7 +30,7 @@ class JobRepositoryV1:
 
     def enqueue(
         self,
-        job_type: ProductJobTypeV1,
+        job_type: ProductJobTypeV1 | InvestigationJobTypeV050,
         payload: dict[str, Any],
         *,
         idempotency_key: str | None = None,

@@ -39,3 +39,38 @@ PYTHONPATH=src:. uv run --frozen --no-sync python -m scripts.ci.verify_product_v
 真实环境接入另见 [CONNECTORS](CONNECTORS.md)、[BASELINES](BASELINES.md) 和 [OPERATIONS](OPERATIONS.md)。默认 Product 不启用恢复 profile；Minimal live 结果不是生产部署教程。私有锁、授权和原始证据不随公开仓库提供。
 
 [离线 HTML 手册](../interview/ecomsre-agent-v041-handbook.html)下载后可直接以 file:// 打开，无外部运行依赖；[旧 v03 手册](../interview/ecomsre-agent-v03-handbook.html)继续保留。
+
+## v0.5 默认关闭的调查与离线检查
+
+在仓库已有环境中执行（不发 Provider 请求、不启动 Docker）：
+
+```bash
+PYTHONPATH=src:. python -m scripts.product_v050.preflight --data-root .local/product-v050
+PYTHONPATH=src:. python -m scripts.product_v050.run_offline_checks --output .local/product-v050/offline-checks.json
+```
+
+第一个命令只检查配置存在性和既有只读账本，不输出 key；第二个运行
+`tests/product_v050` 并保留安全的逐测试结果与源码绑定。
+`FIXTURE_ONLY` 不等于真实模型或 live 验收。
+
+真实请求前，需要为**本项目**配置 `ECOMSRE_LLM_BASE_URL`、
+`ECOMSRE_LLM_API_KEY`、`ECOMSRE_LLM_MODEL` 和
+`ECOMSRE_PRODUCT_PROVIDER_PRICE_FILE`，不可从其他应用提取凭据。价格文件符合
+`PriceSchedule`：`provider_profile`、`model`、`as_of`、`source`、
+`input_usd_per_million`、`output_usd_per_million`；价格须覆盖网关附加费用。
+返回 snapshot 仅允许 exact model 或价格表显式列出的 `accepted_response_models`。
+未知价格或未知模型不能继续付费调用。保持同一活动 campaign 数据根目录，
+不通过重建数据库绕过 200 请求 / USD 20 总预算。
+
+分别开启 `ECOMSRE_PRODUCT_INVESTIGATION_ENABLED=true` 与
+`ECOMSRE_PRODUCT_KNOWLEDGE_PROPOSER_ENABLED=true` 后，在既有 Product server/Worker 中：
+
+- `POST /v1/incidents/{id}/investigation-jobs`：父诊断完成后创建幂等调查任务。
+- `GET /v1/incidents/{id}/investigation`：读取独立的调查记录，父诊断不变。
+- `POST /v1/environments/{id}/knowledge-proposal-jobs`：请求体是已完成 discovery
+  事件 ID 数组；只创建候选，不执行晋升。
+- `POST /v1/knowledge-candidates/{id}/revocations`：认证后的新候选撤销入口。
+
+恢复预览的库入口是 `ecomsre.product.remediation.planner.propose_preview`，
+只返回无执行权限的 `PlanPreview`。本节不提供启动新 live campaign 或恢复写入命令；
+当前未配置 Provider，真实路径未验证，活动预算和冻结案例要求仍有效。

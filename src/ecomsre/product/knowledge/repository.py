@@ -1615,6 +1615,8 @@ class KnowledgeRepositoryV1:
                         "The registration is not active.",
                         status_code=409,
                     )
+                if json.loads(row["payload_json"]).get("schema_version") == "ecomsre.product.compiled-knowledge.v050":
+                    raise ProductError("SUCCESSOR_REVOCATION_REQUIRED", "Use the v0.5 knowledge-candidate revocation endpoint.", status_code=409)
                 registry = EnvironmentExtensionRegistryEntryV1.model_validate_json(
                     row["payload_json"]
                 )
@@ -1697,6 +1699,8 @@ class KnowledgeRepositoryV1:
             ).fetchall()
         values = []
         for row in rows:
+            if json.loads(row["payload_json"]).get("schema_version") == "ecomsre.product.compiled-knowledge.v050":
+                continue
             registry = EnvironmentExtensionRegistryEntryV1.model_validate_json(
                 row["payload_json"]
             )
@@ -1710,6 +1714,17 @@ class KnowledgeRepositoryV1:
                 )
             )
         return tuple(values)
+
+
+    def active_investigation_extensions(self, environment_id: str):
+        from ecomsre.product.knowledge.candidates_v050 import CompiledKnowledge
+        with self.store.connect() as connection:
+            rows = connection.execute(
+                "SELECT payload_json FROM environment_extension_registrations WHERE environment_id=? AND status='ACTIVE' ORDER BY registration_id",
+                (environment_id,),
+            ).fetchall()
+        return tuple(CompiledKnowledge.model_validate_json(row[0]) for row in rows
+                     if json.loads(row[0]).get("schema_version") == "ecomsre.product.compiled-knowledge.v050")
 
 
 __all__ = (

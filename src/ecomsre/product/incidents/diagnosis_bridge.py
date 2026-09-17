@@ -272,6 +272,7 @@ class ProductDiagnosisBridgeV1:
                 memory=memory,
                 generic_anomalies=anomalies,
                 raw_outcomes=acquisition.raw_outcomes,
+                snapshots=acquisition.snapshots,
             )
             extension_match_count = len(extension_matches)
             if len(extension_matches) > 1:

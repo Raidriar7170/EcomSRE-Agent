@@ -16,7 +16,8 @@ from ecomsre.product.contracts import (
     EnvironmentRecordV1,
     HealthResultV1,
 )
-from ecomsre.product.jobs.contracts import ProductJobRecordV1, ProductJobTypeV1
+from ecomsre.product.jobs.contracts import ProductJobTypeV1
+from ecomsre.product.jobs.contracts_v050 import ProductJobRecordV050 as ProductJobRecordV1, InvestigationJobTypeV050
 from ecomsre.product.pilot.baseline_audit_v021 import BaselineReadinessAuditV021
 from ecomsre.product.pilot.baseline_readiness_v023 import (
     ProductBaselineReadinessAuditV023,
@@ -444,3 +445,69 @@ def get_job(request: Request, job_id: str) -> ProductJobRecordV1:
 
 
 __all__ = ("router",)
+
+
+@router.post("/v1/incidents/{incident_id}/investigation-jobs",
+             dependencies=[Depends(require_mutation_auth)],
+             response_model=ProductJobRecordV1, status_code=202)
+def create_investigation_job(request: Request, incident_id: str) -> ProductJobRecordV1:
+    from ecomsre.product.errors import ProductError
+
+    if not request.app.state.settings.investigation.enabled:
+        raise ProductError("INVESTIGATION_DISABLED", "Investigation is disabled.", status_code=409)
+    request.app.state.incidents.get(incident_id)
+    request.app.state.diagnoses.get(incident_id)
+    return request.app.state.jobs.enqueue(
+        InvestigationJobTypeV050.INVESTIGATION, {"incident_id": incident_id},
+        idempotency_key="investigation:" + incident_id,
+    )
+
+
+@router.get("/v1/incidents/{incident_id}/investigation")
+def get_investigation(request: Request, incident_id: str):
+    from ecomsre.product.errors import ProductError
+    from ecomsre.product.investigation.repository import InvestigationRepository
+
+    request.app.state.incidents.get(incident_id)
+    result = InvestigationRepository(request.app.state.store, request.app.state.object_store).get(incident_id)
+    if result is None:
+        raise ProductError("INVESTIGATION_NOT_FOUND", "No investigation exists.", status_code=404)
+    return result
+
+
+@router.post("/v1/environments/{environment_id}/knowledge-proposal-jobs",
+             dependencies=[Depends(require_mutation_auth)],
+             response_model=ProductJobRecordV1, status_code=202)
+def create_knowledge_proposal_job(request: Request, environment_id: str, incident_ids: list[str]) -> ProductJobRecordV1:
+    from ecomsre.product.errors import ProductError
+    from ecomsre.dta_v2.v22.read_contracts import semantic_sha256_v22
+    from ecomsre.product.investigation.repository import InvestigationRepository
+    from ecomsre.product.knowledge.evolution_v050 import KnowledgeEvolutionV050
+
+    if not request.app.state.settings.knowledge_proposer_enabled:
+        raise ProductError("KNOWLEDGE_PROPOSER_DISABLED", "Knowledge proposer is disabled.", status_code=409)
+    evolution = KnowledgeEvolutionV050(request.app.state.knowledge,
+        InvestigationRepository(request.app.state.store, request.app.state.object_store))
+    try:
+        view = evolution.discovery_view(environment_id, incident_ids)
+    except ValueError:
+        raise ProductError("INVALID_DISCOVERY_SET", "Distinct completed same-environment investigations required.") from None
+    payload = {"environment_id": environment_id, "incident_ids": sorted(set(incident_ids))}
+    return request.app.state.jobs.enqueue(InvestigationJobTypeV050.KNOWLEDGE_PROPOSAL, payload,
+        idempotency_key="knowledge:"+semantic_sha256_v22(view))
+
+
+@router.post("/v1/knowledge-candidates/{registration_id}/revocations",
+             dependencies=[Depends(require_mutation_auth)])
+def revoke_investigation_candidate(request: Request, registration_id: str):
+    from ecomsre.product.errors import ProductError
+    from ecomsre.product.investigation.repository import InvestigationRepository
+    from ecomsre.product.knowledge.evolution_v050 import KnowledgeEvolutionV050
+
+    evolution = KnowledgeEvolutionV050(request.app.state.knowledge,
+        InvestigationRepository(request.app.state.store, request.app.state.object_store))
+    try:
+        evolution.revoke(registration_id)
+    except ValueError:
+        raise ProductError("REGISTRATION_NOT_ACTIVE", "An active v0.5 candidate is required.", status_code=409) from None
+    return {"registration_id": registration_id, "status": "REVOKED", "action_authority": "NONE"}

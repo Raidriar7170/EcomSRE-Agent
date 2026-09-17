@@ -97,3 +97,7 @@ live 实验的独立控制器不是 Product/Agent 的执行权限。
 
 接口 `/v1`、类型名 `V1`、SQLite schema 和包版本各有兼容性含义，
 不会随公开展示版本标签改名。尚无 Kubernetes、HA、多租户或生产规模验证。
+
+## v0.5 默认关闭的调查后续任务
+
+原 Diagnosis → 独立 Investigation job → Provider 非执行提议 → Runtime 有界读取 → CAS/SQLite 调查记录。父诊断不变。跨事件候选走共享确定性求值器、开发检查、冻结 Shadow 与独立测试注册治理；正常 Diagnosis 可加载新表达式。具体职责和限制见 [v0.5 设计](../analysis/product-v050-design.md)。恢复 planner 仅返回预览，没有到 WriteIntent/Executor 的连接。
