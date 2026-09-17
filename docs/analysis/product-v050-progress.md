@@ -231,3 +231,50 @@ repository and extension matcher; separate preview module under remediation.
   unknown. No Docker runtime created, cleanup NOT_REQUIRED, new Product writes 0.
 - Same Draft PR #104 only. No merge, release, model switch, skill comparison,
   expanded recovery authority, evidence deletion or fresh campaign budget.
+
+## Provider 404 unblock continuation (2026-09-17)
+
+Active scoped contract: ../goals/EcomSRE_v0.5_Provider_404_Unblock.md; starting clean
+HEAD fe57dee4895d966e6d9c270c4e6ec6cc00a57d72, same worktree/ledger/Draft PR #104.
+Old attempts1–3 and continuation-01 preserved. No R1–R4/evaluator changes.
+
+- Inspected original four ledger projections. Old body, Content-Type and request
+  IDs are not recoverable. Current official base/path/model and dotenv/Worker
+  configuration agree; related proxy environment variables absent. No secret hash
+  or key printed. Historical credential byte identity was not retained.
+- Added Product-only bounded single-read error projection, scrubbed JSON messages,
+  allowed headers, method/path/payload shape, unknown-cost retention and dedicated
+  no-incident diagnostic entry. Reused frozen transport; no retries/redirects.
+- P1 Responses text succeeded before prompt changes; P2 ack boolean function also
+  passed. Thus historical404 is not reproduced and its root cause remains unknown.
+  Sub-budget2calls, gross reservation11244microusd, reported-token upper205microusd.
+- Appended Product attempts4/5/6. Attempt4: prose refs and protocol errors; attempt5:
+  mixed windows and incomplete evidence. Provider prompt clarifies existing field
+  constraints; Runtime still rejects them. Attempt6: 6 accepted model-selected
+  reads and4 complete read→observation→model-followup transitions. Both sessions
+  ended at3callcap. Same fixture capture; no independent-incident denominator.
+- Knowledge3calls:2protocol-invalid,1schema-valid CPU mean proposal rejected for
+  absent verified deployable dependency. No accepted candidate or learning claim.
+- Cumulative24requests, committed upper232264microusd, reported upper136815,
+  unknown reservations95449; invoice unknown. Remaining176requests/USD19.767736/
+  12liveepisodes. All20newrequests included, no cost reset or omitted failures.
+- Offline repair iterations retained: initial mypy annotations, Ruff semicolon,
+  HTTP200 overwrite and bool/int ack equality (review-found; fixed). System Python
+  SQLite read-only inspection could not open the active DB; project .venv reader
+  succeeded without changing DB permissions/settings. No extra Provider requests.
+- Independent review additionally required deriving roundtrip rather than trusting
+  report labels. Added request/decision/observation/followup bindings and tamper
+  rejection for fabricated acceptance, zero reads, detached calls and missing data.
+- Read-only Docker inspection found zero running containers. No Docker started.
+  User clarification pending on section2 no-Docker scope versus original Goal's
+  post-entry live authorization. Independent live/holdout/promotion/reuse remain
+  NOT_ATTEMPTED; recovery preview only, new Product writes0, cleanup not required.
+- Current source-bound checks and final fixed-HEAD full regression/CI follow.
+  Final write scope additionally includes the unblock Goal, Product diagnostic
+  module, probe/smoke scripts, their tests, new verifier and appended result package;
+  prior result packages and historical assets stay frozen. No merge/release.
+
+- Final focused source-bound suite: 91 passed; Ruff passed; focused mypy14files.
+  Independent reviewer confirmed Must Fix0 and independently derived4 complete
+  roundtrips with6tamper regressions. Final tracked source will now be committed
+  before full regression, with no concurrent source or HEAD changes during tests.

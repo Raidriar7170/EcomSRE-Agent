@@ -300,6 +300,9 @@ jobs:
       - name: Product v0.5 continuation evidence
         run: PYTHONPATH=src:. uv run --frozen --no-sync python -m scripts.ci.verify_product_v050_continuation
 
+      - name: Product v0.5 Provider unblock evidence
+        run: PYTHONPATH=src:. uv run --frozen --no-sync python -m scripts.ci.verify_product_v050_provider_unblock
+
       - name: Full repository tests
         env:
           GH_TOKEN: ${{ github.token }}

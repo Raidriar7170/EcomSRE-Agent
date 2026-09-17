@@ -1,0 +1,1738 @@
+[
+  {
+    "accounted_microusd": null,
+    "api_style": null,
+    "body_truncated": null,
+    "completed_at": "2026-09-17T20:44:59.640190+00:00",
+    "error_code": "PROVIDER_TRANSPORT_FAILED",
+    "http_status": null,
+    "kind": "HISTORICAL",
+    "latency_ms": 398.6986249801703,
+    "ledger_key": "inv-5d94388d0cfe930220b32754:0",
+    "method": null,
+    "missing_http_metadata": "UNRECOVERABLE_NOT_RETAINED; endpoint can only be reconstructed from historical dispatch code",
+    "ordinal": 1,
+    "payload_shape": null,
+    "proposal_sha256": null,
+    "provider_error_code": null,
+    "provider_error_type": null,
+    "proxy_environment_present": null,
+    "request_id": null,
+    "requested_model": "gpt-5.4-mini-2026-03-17",
+    "reserved_microusd": 31486,
+    "response_body_kind": null,
+    "response_content_type": null,
+    "retained_payload_sha256": "d3c2fe3574b748106c69cf4e9b0975b9fbf7e650b0e889e82de325b85f7a2ddb",
+    "sanitized_error_message": null,
+    "schema_validation_errors": null,
+    "stage": null,
+    "started_at": null,
+    "state": "FAILED",
+    "status": null,
+    "target_host": null,
+    "target_path": null,
+    "task_view_sha256": "f6ec4e14e1e88ce2f33e1977c82a4b24c8c6653b69bf162da301da1f2b0c47d6",
+    "transport_exception_type": null,
+    "usage": null,
+    "usage_status": "UNKNOWN"
+  },
+  {
+    "accounted_microusd": null,
+    "api_style": null,
+    "body_truncated": null,
+    "completed_at": "2026-09-17T20:46:07.202785+00:00",
+    "error_code": "PROVIDER_HTTP_404",
+    "http_status": 404,
+    "kind": "HISTORICAL",
+    "latency_ms": 296.98733298573643,
+    "ledger_key": "inv-06ee12a573850e2c67204f5d:0",
+    "method": null,
+    "missing_http_metadata": "UNRECOVERABLE_NOT_RETAINED; endpoint can only be reconstructed from historical dispatch code",
+    "ordinal": 2,
+    "payload_shape": null,
+    "proposal_sha256": null,
+    "provider_error_code": null,
+    "provider_error_type": null,
+    "proxy_environment_present": null,
+    "request_id": null,
+    "requested_model": "gpt-5.4-mini-2026-03-17",
+    "reserved_microusd": 31486,
+    "response_body_kind": null,
+    "response_content_type": null,
+    "retained_payload_sha256": "1cb1e6319a5eb36195a56b0594f34ede888196304fba3f36d8b7a65d2c0d1549",
+    "sanitized_error_message": null,
+    "schema_validation_errors": null,
+    "stage": null,
+    "started_at": null,
+    "state": "FAILED",
+    "status": null,
+    "target_host": null,
+    "target_path": null,
+    "task_view_sha256": "bbeca510a63c4c66c083c0d2d0af9abdba15ccc1d818e429fd176fb05843585e",
+    "transport_exception_type": null,
+    "usage": null,
+    "usage_status": "UNKNOWN"
+  },
+  {
+    "accounted_microusd": null,
+    "api_style": null,
+    "body_truncated": null,
+    "completed_at": null,
+    "error_code": null,
+    "http_status": 200,
+    "kind": "HISTORICAL",
+    "latency_ms": 668.1129999924451,
+    "ledger_key": "v050-provider-metadata-probe-01",
+    "method": null,
+    "missing_http_metadata": "UNRECOVERABLE_NOT_RETAINED; endpoint can only be reconstructed from historical dispatch code",
+    "ordinal": 3,
+    "payload_shape": null,
+    "proposal_sha256": null,
+    "provider_error_code": null,
+    "provider_error_type": null,
+    "proxy_environment_present": null,
+    "request_id": null,
+    "requested_model": "gpt-5.4-mini-2026-03-17",
+    "reserved_microusd": 1000,
+    "response_body_kind": null,
+    "response_content_type": null,
+    "retained_payload_sha256": "76cc8e42a39d4b94755dab962d264840b75630233ffd4589541df482dee857af",
+    "sanitized_error_message": null,
+    "schema_validation_errors": null,
+    "stage": null,
+    "started_at": null,
+    "state": "METADATA_PROBE_RETAINED",
+    "status": null,
+    "target_host": null,
+    "target_path": null,
+    "task_view_sha256": null,
+    "transport_exception_type": null,
+    "usage": null,
+    "usage_status": "UNKNOWN"
+  },
+  {
+    "accounted_microusd": null,
+    "api_style": "responses",
+    "body_truncated": null,
+    "completed_at": "2026-09-17T20:49:06.588784+00:00",
+    "error_code": "PROVIDER_HTTP_404",
+    "http_status": 404,
+    "kind": "HISTORICAL",
+    "latency_ms": 630.3997909999453,
+    "ledger_key": "inv-ee4def7956f3a21635461105:0",
+    "method": null,
+    "missing_http_metadata": "UNRECOVERABLE_NOT_RETAINED; endpoint can only be reconstructed from historical dispatch code",
+    "ordinal": 4,
+    "payload_shape": null,
+    "proposal_sha256": null,
+    "provider_error_code": null,
+    "provider_error_type": null,
+    "proxy_environment_present": null,
+    "request_id": null,
+    "requested_model": "gpt-5.4-mini-2026-03-17",
+    "reserved_microusd": 31477,
+    "response_body_kind": null,
+    "response_content_type": null,
+    "retained_payload_sha256": "c311fa8b5030b2340ba2aa8082c54a85e3534eb9c3ceb976e511f40998de4c8f",
+    "sanitized_error_message": null,
+    "schema_validation_errors": null,
+    "stage": null,
+    "started_at": null,
+    "state": "FAILED",
+    "status": null,
+    "target_host": null,
+    "target_path": null,
+    "task_view_sha256": "855ccd18d905ad7345f189b314808be9ecb9eb3b5099f1505d334f7af4349a7f",
+    "transport_exception_type": null,
+    "usage": null,
+    "usage_status": "UNKNOWN"
+  },
+  {
+    "accounted_microusd": 30,
+    "api_style": "responses",
+    "body_truncated": null,
+    "completed_at": "2026-09-17T23:36:55.131006+00:00",
+    "error_code": null,
+    "http_status": 200,
+    "kind": "MINIMAL_PROBE",
+    "latency_ms": 2364.0258330269717,
+    "ledger_key": "provider-unblock-20260917:text:responses",
+    "method": "POST",
+    "missing_http_metadata": "SUCCESS_HEADERS_NOT_CAPTURED_BY_FIRST_PROBE_VERSION; not retried to fill them",
+    "ordinal": 5,
+    "payload_shape": {
+      "input": {
+        "serialized_length": 19,
+        "type": "str"
+      },
+      "max_output_tokens": {
+        "serialized_length": 3,
+        "type": "int"
+      },
+      "model": {
+        "serialized_length": 25,
+        "type": "str"
+      },
+      "reasoning": {
+        "serialized_length": 18,
+        "type": "dict"
+      },
+      "service_tier": {
+        "serialized_length": 9,
+        "type": "str"
+      },
+      "store": {
+        "serialized_length": 5,
+        "type": "bool"
+      }
+    },
+    "proposal_sha256": null,
+    "provider_error_code": null,
+    "provider_error_type": null,
+    "proxy_environment_present": false,
+    "request_id": null,
+    "requested_model": "gpt-5.4-mini-2026-03-17",
+    "reserved_microusd": 5502,
+    "response_body_kind": null,
+    "response_content_type": null,
+    "retained_payload_sha256": "75250210dc6fe562f97d43cbf95571d601882d6c3039060e6a975e994de6c3a3",
+    "sanitized_error_message": null,
+    "schema_validation_errors": null,
+    "stage": "text",
+    "started_at": "2026-09-17T23:36:52.766966+00:00",
+    "state": "COMPLETED",
+    "status": "PASS",
+    "target_host": "api.openai.com",
+    "target_path": "/v1/responses",
+    "task_view_sha256": null,
+    "transport_exception_type": null,
+    "usage": {
+      "input_tokens": 10,
+      "output_tokens": 5
+    },
+    "usage_status": "REPORTED"
+  },
+  {
+    "accounted_microusd": 175,
+    "api_style": "responses",
+    "body_truncated": null,
+    "completed_at": "2026-09-17T23:38:01.499085+00:00",
+    "error_code": null,
+    "http_status": 200,
+    "kind": "MINIMAL_PROBE",
+    "latency_ms": 1480.8196250232868,
+    "ledger_key": "provider-unblock-20260917:function:responses",
+    "method": "POST",
+    "ordinal": 6,
+    "payload_shape": {
+      "input": {
+        "serialized_length": 24,
+        "type": "str"
+      },
+      "max_output_tokens": {
+        "serialized_length": 3,
+        "type": "int"
+      },
+      "model": {
+        "serialized_length": 25,
+        "type": "str"
+      },
+      "parallel_tool_calls": {
+        "serialized_length": 5,
+        "type": "bool"
+      },
+      "reasoning": {
+        "serialized_length": 18,
+        "type": "dict"
+      },
+      "service_tier": {
+        "serialized_length": 9,
+        "type": "str"
+      },
+      "store": {
+        "serialized_length": 5,
+        "type": "bool"
+      },
+      "tool_choice": {
+        "serialized_length": 35,
+        "type": "dict"
+      },
+      "tools": {
+        "serialized_length": 221,
+        "type": "list"
+      }
+    },
+    "proposal_sha256": null,
+    "provider_error_code": null,
+    "provider_error_type": null,
+    "proxy_environment_present": false,
+    "request_id": "req_47fcb8fe671e40888d40ddb645c8e17a",
+    "requested_model": "gpt-5.4-mini-2026-03-17",
+    "reserved_microusd": 5742,
+    "response_body_kind": null,
+    "response_content_type": "application/json",
+    "retained_payload_sha256": "da740b25de60077326fdae25bada4beaa6f81e9d214c1c74516b195e69771c87",
+    "sanitized_error_message": null,
+    "schema_validation_errors": null,
+    "stage": "function",
+    "started_at": "2026-09-17T23:38:00.018257+00:00",
+    "state": "COMPLETED",
+    "status": "PASS",
+    "target_host": "api.openai.com",
+    "target_path": "/v1/responses",
+    "task_view_sha256": null,
+    "transport_exception_type": null,
+    "usage": {
+      "input_tokens": 125,
+      "output_tokens": 18
+    },
+    "usage_status": "REPORTED"
+  },
+  {
+    "accounted_microusd": 7145,
+    "api_style": "responses",
+    "body_truncated": null,
+    "completed_at": "2026-09-17T23:38:41.867253+00:00",
+    "error_code": null,
+    "http_status": 200,
+    "kind": "PRODUCT_SMOKE",
+    "latency_ms": 6617.965291952714,
+    "ledger_key": "inv-a70240f673672fad60cc3d33:0",
+    "method": "POST",
+    "ordinal": 7,
+    "payload_shape": {
+      "input": {
+        "serialized_length": 9142,
+        "type": "list"
+      },
+      "instructions": {
+        "serialized_length": 611,
+        "type": "str"
+      },
+      "max_output_tokens": {
+        "serialized_length": 4,
+        "type": "int"
+      },
+      "model": {
+        "serialized_length": 25,
+        "type": "str"
+      },
+      "parallel_tool_calls": {
+        "serialized_length": 5,
+        "type": "bool"
+      },
+      "reasoning": {
+        "serialized_length": 20,
+        "type": "dict"
+      },
+      "service_tier": {
+        "serialized_length": 9,
+        "type": "str"
+      },
+      "store": {
+        "serialized_length": 5,
+        "type": "bool"
+      },
+      "tool_choice": {
+        "serialized_length": 47,
+        "type": "dict"
+      },
+      "tools": {
+        "serialized_length": 3269,
+        "type": "list"
+      }
+    },
+    "proposal_sha256": "464543ffb5e0dd6e6eb64a4356634b2b1240a725fba1cc6918a3b0d959bb31fb",
+    "provider_error_code": null,
+    "provider_error_type": null,
+    "proxy_environment_present": false,
+    "request_id": "req_0aa2ce5530d144749c9bfe3113bf14b1",
+    "requested_model": "gpt-5.4-mini-2026-03-17",
+    "reserved_microusd": 31477,
+    "response_body_kind": null,
+    "response_content_type": "application/json",
+    "retained_payload_sha256": "3dc6ccb2cfdc251e0804d96e83331467c22b0837621dcd4a10a9d963d8f9bb19",
+    "sanitized_error_message": null,
+    "schema_validation_errors": null,
+    "stage": null,
+    "started_at": "2026-09-17T23:38:35.249269+00:00",
+    "state": "COMPLETED",
+    "status": null,
+    "target_host": "api.openai.com",
+    "target_path": "/v1/responses",
+    "task_view_sha256": "d7eac50d2a56fc33438f6251cd9968e866dda03eb0107a910489ecb952ff0110",
+    "transport_exception_type": null,
+    "usage": {
+      "input_tokens": 3616,
+      "output_tokens": 985
+    },
+    "usage_status": "REPORTED"
+  },
+  {
+    "accounted_microusd": 7042,
+    "api_style": "responses",
+    "body_truncated": null,
+    "completed_at": "2026-09-17T23:38:49.402698+00:00",
+    "error_code": null,
+    "http_status": 200,
+    "kind": "PRODUCT_SMOKE",
+    "latency_ms": 7523.134167015087,
+    "ledger_key": "inv-a70240f673672fad60cc3d33:1",
+    "method": "POST",
+    "ordinal": 8,
+    "payload_shape": {
+      "input": {
+        "serialized_length": 9166,
+        "type": "list"
+      },
+      "instructions": {
+        "serialized_length": 611,
+        "type": "str"
+      },
+      "max_output_tokens": {
+        "serialized_length": 4,
+        "type": "int"
+      },
+      "model": {
+        "serialized_length": 25,
+        "type": "str"
+      },
+      "parallel_tool_calls": {
+        "serialized_length": 5,
+        "type": "bool"
+      },
+      "reasoning": {
+        "serialized_length": 20,
+        "type": "dict"
+      },
+      "service_tier": {
+        "serialized_length": 9,
+        "type": "str"
+      },
+      "store": {
+        "serialized_length": 5,
+        "type": "bool"
+      },
+      "tool_choice": {
+        "serialized_length": 47,
+        "type": "dict"
+      },
+      "tools": {
+        "serialized_length": 3269,
+        "type": "list"
+      }
+    },
+    "proposal_sha256": "27f0d8e40546a94436039842a53160e07e3f4c51d74faab3d87bd3a085f26341",
+    "provider_error_code": null,
+    "provider_error_type": null,
+    "proxy_environment_present": false,
+    "request_id": "req_02ff732d055d4c33ad191f04cc615342",
+    "requested_model": "gpt-5.4-mini-2026-03-17",
+    "reserved_microusd": 31495,
+    "response_body_kind": null,
+    "response_content_type": "application/json",
+    "retained_payload_sha256": "25ce6db127341e5babe2bd276217d93dbdcc04ca087b7e445417686d2351151f",
+    "sanitized_error_message": null,
+    "schema_validation_errors": null,
+    "stage": null,
+    "started_at": "2026-09-17T23:38:41.879537+00:00",
+    "state": "COMPLETED",
+    "status": null,
+    "target_host": "api.openai.com",
+    "target_path": "/v1/responses",
+    "task_view_sha256": "e4875bda280c632bc9a22c621ad3a6813eea5658e2242d0700125ae51f9c6ee2",
+    "transport_exception_type": null,
+    "usage": {
+      "input_tokens": 3623,
+      "output_tokens": 961
+    },
+    "usage_status": "REPORTED"
+  },
+  {
+    "accounted_microusd": 7055,
+    "api_style": "responses",
+    "body_truncated": null,
+    "completed_at": "2026-09-17T23:38:59.014401+00:00",
+    "error_code": "PROVIDER_PROTOCOL_INVALID",
+    "http_status": 200,
+    "kind": "PRODUCT_SMOKE",
+    "latency_ms": 9450.217166973744,
+    "ledger_key": "inv-b1f41d4d1a3f68bcc9b0ba88:0",
+    "method": "POST",
+    "ordinal": 9,
+    "payload_shape": {
+      "input": {
+        "serialized_length": 9142,
+        "type": "list"
+      },
+      "instructions": {
+        "serialized_length": 611,
+        "type": "str"
+      },
+      "max_output_tokens": {
+        "serialized_length": 4,
+        "type": "int"
+      },
+      "model": {
+        "serialized_length": 25,
+        "type": "str"
+      },
+      "parallel_tool_calls": {
+        "serialized_length": 5,
+        "type": "bool"
+      },
+      "reasoning": {
+        "serialized_length": 20,
+        "type": "dict"
+      },
+      "service_tier": {
+        "serialized_length": 9,
+        "type": "str"
+      },
+      "store": {
+        "serialized_length": 5,
+        "type": "bool"
+      },
+      "tool_choice": {
+        "serialized_length": 47,
+        "type": "dict"
+      },
+      "tools": {
+        "serialized_length": 3269,
+        "type": "list"
+      }
+    },
+    "proposal_sha256": null,
+    "provider_error_code": null,
+    "provider_error_type": null,
+    "proxy_environment_present": false,
+    "request_id": "req_8064d1f59ad542a898522d3b39be564d",
+    "requested_model": "gpt-5.4-mini-2026-03-17",
+    "reserved_microusd": 31477,
+    "response_body_kind": null,
+    "response_content_type": "application/json",
+    "retained_payload_sha256": "81414df74084aa1be911962806c64b7222072122d060088fc9c9a063e2437664",
+    "sanitized_error_message": null,
+    "schema_validation_errors": null,
+    "stage": null,
+    "started_at": "2026-09-17T23:38:49.564147+00:00",
+    "state": "FAILED",
+    "status": null,
+    "target_host": "api.openai.com",
+    "target_path": "/v1/responses",
+    "task_view_sha256": "146dda4cdba1a3831e02c16a2e1865b95288971d5690b7587bcd4fab233876a0",
+    "transport_exception_type": null,
+    "usage": {
+      "input_tokens": 3616,
+      "output_tokens": 965
+    },
+    "usage_status": "REPORTED"
+  },
+  {
+    "accounted_microusd": 7026,
+    "api_style": "responses",
+    "body_truncated": null,
+    "completed_at": "2026-09-17T23:39:05.268247+00:00",
+    "error_code": null,
+    "http_status": 200,
+    "kind": "PRODUCT_SMOKE",
+    "latency_ms": 6242.561624967493,
+    "ledger_key": "inv-b1f41d4d1a3f68bcc9b0ba88:1",
+    "method": "POST",
+    "ordinal": 10,
+    "payload_shape": {
+      "input": {
+        "serialized_length": 9167,
+        "type": "list"
+      },
+      "instructions": {
+        "serialized_length": 611,
+        "type": "str"
+      },
+      "max_output_tokens": {
+        "serialized_length": 4,
+        "type": "int"
+      },
+      "model": {
+        "serialized_length": 25,
+        "type": "str"
+      },
+      "parallel_tool_calls": {
+        "serialized_length": 5,
+        "type": "bool"
+      },
+      "reasoning": {
+        "serialized_length": 20,
+        "type": "dict"
+      },
+      "service_tier": {
+        "serialized_length": 9,
+        "type": "str"
+      },
+      "store": {
+        "serialized_length": 5,
+        "type": "bool"
+      },
+      "tool_choice": {
+        "serialized_length": 47,
+        "type": "dict"
+      },
+      "tools": {
+        "serialized_length": 3269,
+        "type": "list"
+      }
+    },
+    "proposal_sha256": "b6cd2d35555e3123405fe5401546bda50541f5ba5d4a157544acf2c700542e43",
+    "provider_error_code": null,
+    "provider_error_type": null,
+    "proxy_environment_present": false,
+    "request_id": "req_12d9d9edf9bf4d38a198f346294277ec",
+    "requested_model": "gpt-5.4-mini-2026-03-17",
+    "reserved_microusd": 31496,
+    "response_body_kind": null,
+    "response_content_type": "application/json",
+    "retained_payload_sha256": "f440e0a82a1167f5467a3b753e6eaa29d55e5ef7cfca62177298a686afcf7a44",
+    "sanitized_error_message": null,
+    "schema_validation_errors": null,
+    "stage": null,
+    "started_at": "2026-09-17T23:38:59.025663+00:00",
+    "state": "COMPLETED",
+    "status": null,
+    "target_host": "api.openai.com",
+    "target_path": "/v1/responses",
+    "task_view_sha256": "2023d508fd924a8346249bddc4b7a51715e319cd8e6500bd2c41829cf78265a2",
+    "transport_exception_type": null,
+    "usage": {
+      "input_tokens": 3620,
+      "output_tokens": 958
+    },
+    "usage_status": "REPORTED"
+  },
+  {
+    "accounted_microusd": 6835,
+    "api_style": "responses",
+    "body_truncated": null,
+    "completed_at": "2026-09-17T23:39:12.264338+00:00",
+    "error_code": null,
+    "http_status": 200,
+    "kind": "PRODUCT_SMOKE",
+    "latency_ms": 6984.966957999859,
+    "ledger_key": "inv-b1f41d4d1a3f68bcc9b0ba88:2",
+    "method": "POST",
+    "ordinal": 11,
+    "payload_shape": {
+      "input": {
+        "serialized_length": 9166,
+        "type": "list"
+      },
+      "instructions": {
+        "serialized_length": 611,
+        "type": "str"
+      },
+      "max_output_tokens": {
+        "serialized_length": 4,
+        "type": "int"
+      },
+      "model": {
+        "serialized_length": 25,
+        "type": "str"
+      },
+      "parallel_tool_calls": {
+        "serialized_length": 5,
+        "type": "bool"
+      },
+      "reasoning": {
+        "serialized_length": 20,
+        "type": "dict"
+      },
+      "service_tier": {
+        "serialized_length": 9,
+        "type": "str"
+      },
+      "store": {
+        "serialized_length": 5,
+        "type": "bool"
+      },
+      "tool_choice": {
+        "serialized_length": 47,
+        "type": "dict"
+      },
+      "tools": {
+        "serialized_length": 3269,
+        "type": "list"
+      }
+    },
+    "proposal_sha256": "9ef4adf9f1e5749a1059285d69a0b40d02ab8cbe81048ab14e274dfaa670fd70",
+    "provider_error_code": null,
+    "provider_error_type": null,
+    "proxy_environment_present": false,
+    "request_id": "req_88b7c8931e63412aa2ab3170e6ac0aa5",
+    "requested_model": "gpt-5.4-mini-2026-03-17",
+    "reserved_microusd": 31495,
+    "response_body_kind": null,
+    "response_content_type": "application/json",
+    "retained_payload_sha256": "f7c7667374625d96aca38e8f5799a563b7bc31cfae2c9036fb7172eaeadb8209",
+    "sanitized_error_message": null,
+    "schema_validation_errors": null,
+    "stage": null,
+    "started_at": "2026-09-17T23:39:05.279344+00:00",
+    "state": "COMPLETED",
+    "status": null,
+    "target_host": "api.openai.com",
+    "target_path": "/v1/responses",
+    "task_view_sha256": "57d6f6ab909a4682129530424ebd8dc572a7c87948e2ec322eb3be9298d0735c",
+    "transport_exception_type": null,
+    "usage": {
+      "input_tokens": 3623,
+      "output_tokens": 915
+    },
+    "usage_status": "REPORTED"
+  },
+  {
+    "accounted_microusd": 16287,
+    "api_style": "responses",
+    "body_truncated": null,
+    "completed_at": "2026-09-17T23:39:27.313524+00:00",
+    "error_code": "PROVIDER_PROTOCOL_INVALID",
+    "http_status": 200,
+    "kind": "PRODUCT_SMOKE",
+    "latency_ms": 14986.762708984315,
+    "ledger_key": "knowledge:env-c12e74bc2c8cf47ef3d60526:job-3a427acc8a3f845fe7b169cd",
+    "method": "POST",
+    "ordinal": 12,
+    "payload_shape": {
+      "input": {
+        "serialized_length": 19300,
+        "type": "list"
+      },
+      "instructions": {
+        "serialized_length": 611,
+        "type": "str"
+      },
+      "max_output_tokens": {
+        "serialized_length": 4,
+        "type": "int"
+      },
+      "model": {
+        "serialized_length": 25,
+        "type": "str"
+      },
+      "parallel_tool_calls": {
+        "serialized_length": 5,
+        "type": "bool"
+      },
+      "reasoning": {
+        "serialized_length": 18,
+        "type": "dict"
+      },
+      "service_tier": {
+        "serialized_length": 9,
+        "type": "str"
+      },
+      "store": {
+        "serialized_length": 5,
+        "type": "bool"
+      },
+      "tool_choice": {
+        "serialized_length": 47,
+        "type": "dict"
+      },
+      "tools": {
+        "serialized_length": 4301,
+        "type": "list"
+      }
+    },
+    "proposal_sha256": null,
+    "provider_error_code": null,
+    "provider_error_type": null,
+    "proxy_environment_present": false,
+    "request_id": "req_b4b81ada0f6a443c880f2d4ed63f3543",
+    "requested_model": "gpt-5.4-mini-2026-03-17",
+    "reserved_microusd": 39868,
+    "response_body_kind": null,
+    "response_content_type": "application/json",
+    "retained_payload_sha256": "9b06587fffc2e1dc84b1e4dfb0fbe67d7519e14c6d015b7f706cf707266e2e7d",
+    "sanitized_error_message": null,
+    "schema_validation_errors": null,
+    "stage": null,
+    "started_at": "2026-09-17T23:39:12.326701+00:00",
+    "state": "FAILED",
+    "status": null,
+    "target_host": "api.openai.com",
+    "target_path": "/v1/responses",
+    "task_view_sha256": "51fd796662f4ef3e0fdd770e0034d60ff8a68eb828699b875a31c64909357d0a",
+    "transport_exception_type": null,
+    "usage": {
+      "input_tokens": 6350,
+      "output_tokens": 2561
+    },
+    "usage_status": "REPORTED"
+  },
+  {
+    "accounted_microusd": 7020,
+    "api_style": "responses",
+    "body_truncated": null,
+    "completed_at": "2026-09-17T23:42:12.615665+00:00",
+    "error_code": null,
+    "http_status": 200,
+    "kind": "PRODUCT_SMOKE",
+    "latency_ms": 6572.37420801539,
+    "ledger_key": "inv-5a76f7667b8cf544d4a5c571:0",
+    "method": "POST",
+    "ordinal": 13,
+    "payload_shape": {
+      "input": {
+        "serialized_length": 9142,
+        "type": "list"
+      },
+      "instructions": {
+        "serialized_length": 1587,
+        "type": "str"
+      },
+      "max_output_tokens": {
+        "serialized_length": 4,
+        "type": "int"
+      },
+      "model": {
+        "serialized_length": 25,
+        "type": "str"
+      },
+      "parallel_tool_calls": {
+        "serialized_length": 5,
+        "type": "bool"
+      },
+      "reasoning": {
+        "serialized_length": 20,
+        "type": "dict"
+      },
+      "service_tier": {
+        "serialized_length": 9,
+        "type": "str"
+      },
+      "store": {
+        "serialized_length": 5,
+        "type": "bool"
+      },
+      "tool_choice": {
+        "serialized_length": 47,
+        "type": "dict"
+      },
+      "tools": {
+        "serialized_length": 3269,
+        "type": "list"
+      }
+    },
+    "proposal_sha256": "178f22a54fff5271e32f618a64f141551e58439d3b5acc6020c72d96789a6e6b",
+    "provider_error_code": null,
+    "provider_error_type": null,
+    "proxy_environment_present": false,
+    "request_id": "req_dd96a51cc73c4094b7be3352b1dc8d5e",
+    "requested_model": "gpt-5.4-mini-2026-03-17",
+    "reserved_microusd": 32209,
+    "response_body_kind": null,
+    "response_content_type": "application/json",
+    "retained_payload_sha256": "00d6b1aae33a10092a5feaea85528d6e1ae641e86e1164b6010df41e8412a68e",
+    "sanitized_error_message": null,
+    "schema_validation_errors": null,
+    "stage": null,
+    "started_at": "2026-09-17T23:42:06.043271+00:00",
+    "state": "COMPLETED",
+    "status": null,
+    "target_host": "api.openai.com",
+    "target_path": "/v1/responses",
+    "task_view_sha256": "13493575d11e32a77a9e549b8c5e2e49bb13eecb22a51326aee552cb2e9591fd",
+    "transport_exception_type": null,
+    "usage": {
+      "input_tokens": 3803,
+      "output_tokens": 926
+    },
+    "usage_status": "REPORTED"
+  },
+  {
+    "accounted_microusd": 8244,
+    "api_style": "responses",
+    "body_truncated": null,
+    "completed_at": "2026-09-17T23:42:19.867470+00:00",
+    "error_code": null,
+    "http_status": 200,
+    "kind": "PRODUCT_SMOKE",
+    "latency_ms": 7239.015917002689,
+    "ledger_key": "inv-5a76f7667b8cf544d4a5c571:1",
+    "method": "POST",
+    "ordinal": 14,
+    "payload_shape": {
+      "input": {
+        "serialized_length": 8619,
+        "type": "list"
+      },
+      "instructions": {
+        "serialized_length": 1587,
+        "type": "str"
+      },
+      "max_output_tokens": {
+        "serialized_length": 4,
+        "type": "int"
+      },
+      "model": {
+        "serialized_length": 25,
+        "type": "str"
+      },
+      "parallel_tool_calls": {
+        "serialized_length": 5,
+        "type": "bool"
+      },
+      "reasoning": {
+        "serialized_length": 20,
+        "type": "dict"
+      },
+      "service_tier": {
+        "serialized_length": 9,
+        "type": "str"
+      },
+      "store": {
+        "serialized_length": 5,
+        "type": "bool"
+      },
+      "tool_choice": {
+        "serialized_length": 47,
+        "type": "dict"
+      },
+      "tools": {
+        "serialized_length": 3269,
+        "type": "list"
+      }
+    },
+    "proposal_sha256": "b2a9545cde4697291351ddcb02131ef967748cc24a809396798903c714688d33",
+    "provider_error_code": null,
+    "provider_error_type": null,
+    "proxy_environment_present": false,
+    "request_id": "req_b7f108c783a8463f9fd20b38f679fc3f",
+    "requested_model": "gpt-5.4-mini-2026-03-17",
+    "reserved_microusd": 31817,
+    "response_body_kind": null,
+    "response_content_type": "application/json",
+    "retained_payload_sha256": "3589188e3a1e3c5ebfe7ce538c6d8053a28d5e14412b0d484cbb431fe244455a",
+    "sanitized_error_message": null,
+    "schema_validation_errors": null,
+    "stage": null,
+    "started_at": "2026-09-17T23:42:12.628427+00:00",
+    "state": "COMPLETED",
+    "status": null,
+    "target_host": "api.openai.com",
+    "target_path": "/v1/responses",
+    "task_view_sha256": "33d8287b03bc16886592d2b622c9379360d2fd8f14393cc786164c6a032a380d",
+    "transport_exception_type": null,
+    "usage": {
+      "input_tokens": 3642,
+      "output_tokens": 1225
+    },
+    "usage_status": "REPORTED"
+  },
+  {
+    "accounted_microusd": 7713,
+    "api_style": "responses",
+    "body_truncated": null,
+    "completed_at": "2026-09-17T23:42:28.059683+00:00",
+    "error_code": null,
+    "http_status": 200,
+    "kind": "PRODUCT_SMOKE",
+    "latency_ms": 8025.158708973322,
+    "ledger_key": "inv-7e9ce825f13f242ddaf40d88:0",
+    "method": "POST",
+    "ordinal": 15,
+    "payload_shape": {
+      "input": {
+        "serialized_length": 9142,
+        "type": "list"
+      },
+      "instructions": {
+        "serialized_length": 1587,
+        "type": "str"
+      },
+      "max_output_tokens": {
+        "serialized_length": 4,
+        "type": "int"
+      },
+      "model": {
+        "serialized_length": 25,
+        "type": "str"
+      },
+      "parallel_tool_calls": {
+        "serialized_length": 5,
+        "type": "bool"
+      },
+      "reasoning": {
+        "serialized_length": 20,
+        "type": "dict"
+      },
+      "service_tier": {
+        "serialized_length": 9,
+        "type": "str"
+      },
+      "store": {
+        "serialized_length": 5,
+        "type": "bool"
+      },
+      "tool_choice": {
+        "serialized_length": 47,
+        "type": "dict"
+      },
+      "tools": {
+        "serialized_length": 3269,
+        "type": "list"
+      }
+    },
+    "proposal_sha256": "d9416bcf7c78feca94d965106a64999af809c22e220654b8572902e5695ff5de",
+    "provider_error_code": null,
+    "provider_error_type": null,
+    "proxy_environment_present": false,
+    "request_id": "req_14a2ec64b5094d58a6d20df41d94d847",
+    "requested_model": "gpt-5.4-mini-2026-03-17",
+    "reserved_microusd": 32209,
+    "response_body_kind": null,
+    "response_content_type": "application/json",
+    "retained_payload_sha256": "a455bad2fe2ae4fd14cf8bb97943e7b3bf3eab988dc8a086ef0ab24a8981a7ad",
+    "sanitized_error_message": null,
+    "schema_validation_errors": null,
+    "stage": null,
+    "started_at": "2026-09-17T23:42:20.034493+00:00",
+    "state": "COMPLETED",
+    "status": null,
+    "target_host": "api.openai.com",
+    "target_path": "/v1/responses",
+    "task_view_sha256": "294a806d46470a65ea6ffb2737ba788a027208cf79251bb996b53150e25cb90d",
+    "transport_exception_type": null,
+    "usage": {
+      "input_tokens": 3785,
+      "output_tokens": 1083
+    },
+    "usage_status": "REPORTED"
+  },
+  {
+    "accounted_microusd": 8032,
+    "api_style": "responses",
+    "body_truncated": null,
+    "completed_at": "2026-09-17T23:42:35.548116+00:00",
+    "error_code": null,
+    "http_status": 200,
+    "kind": "PRODUCT_SMOKE",
+    "latency_ms": 7475.626458006445,
+    "ledger_key": "inv-7e9ce825f13f242ddaf40d88:1",
+    "method": "POST",
+    "ordinal": 16,
+    "payload_shape": {
+      "input": {
+        "serialized_length": 8619,
+        "type": "list"
+      },
+      "instructions": {
+        "serialized_length": 1587,
+        "type": "str"
+      },
+      "max_output_tokens": {
+        "serialized_length": 4,
+        "type": "int"
+      },
+      "model": {
+        "serialized_length": 25,
+        "type": "str"
+      },
+      "parallel_tool_calls": {
+        "serialized_length": 5,
+        "type": "bool"
+      },
+      "reasoning": {
+        "serialized_length": 20,
+        "type": "dict"
+      },
+      "service_tier": {
+        "serialized_length": 9,
+        "type": "str"
+      },
+      "store": {
+        "serialized_length": 5,
+        "type": "bool"
+      },
+      "tool_choice": {
+        "serialized_length": 47,
+        "type": "dict"
+      },
+      "tools": {
+        "serialized_length": 3269,
+        "type": "list"
+      }
+    },
+    "proposal_sha256": "55975a04351bc73f6574e9dbce7347e54332bc6e4a0ffe70f0c994220be5a203",
+    "provider_error_code": null,
+    "provider_error_type": null,
+    "proxy_environment_present": false,
+    "request_id": "req_f45a2248a7724cb2af5c8a7a6481f091",
+    "requested_model": "gpt-5.4-mini-2026-03-17",
+    "reserved_microusd": 31817,
+    "response_body_kind": null,
+    "response_content_type": "application/json",
+    "retained_payload_sha256": "b48fb07aeaef4148ca88213d193694c0b327f89fdff9c5923e8156a1371ea340",
+    "sanitized_error_message": null,
+    "schema_validation_errors": null,
+    "stage": null,
+    "started_at": "2026-09-17T23:42:28.072461+00:00",
+    "state": "COMPLETED",
+    "status": null,
+    "target_host": "api.openai.com",
+    "target_path": "/v1/responses",
+    "task_view_sha256": "8307ca5385af384e089c37ef0bb865f8e6dfda5f677bd732c3aaa3efe4fe2b2e",
+    "transport_exception_type": null,
+    "usage": {
+      "input_tokens": 3623,
+      "output_tokens": 1181
+    },
+    "usage_status": "REPORTED"
+  },
+  {
+    "accounted_microusd": 10245,
+    "api_style": "responses",
+    "body_truncated": null,
+    "completed_at": "2026-09-17T23:42:43.029561+00:00",
+    "error_code": null,
+    "http_status": 200,
+    "kind": "PRODUCT_SMOKE",
+    "latency_ms": 7417.783250042703,
+    "ledger_key": "knowledge:env-7c3157e9cec2f37bf987a8c5:job-66f2573d94853a76a0e35c37",
+    "method": "POST",
+    "ordinal": 17,
+    "payload_shape": {
+      "input": {
+        "serialized_length": 19991,
+        "type": "list"
+      },
+      "instructions": {
+        "serialized_length": 1419,
+        "type": "str"
+      },
+      "max_output_tokens": {
+        "serialized_length": 4,
+        "type": "int"
+      },
+      "model": {
+        "serialized_length": 25,
+        "type": "str"
+      },
+      "parallel_tool_calls": {
+        "serialized_length": 5,
+        "type": "bool"
+      },
+      "reasoning": {
+        "serialized_length": 18,
+        "type": "dict"
+      },
+      "service_tier": {
+        "serialized_length": 9,
+        "type": "str"
+      },
+      "store": {
+        "serialized_length": 5,
+        "type": "bool"
+      },
+      "tool_choice": {
+        "serialized_length": 47,
+        "type": "dict"
+      },
+      "tools": {
+        "serialized_length": 4301,
+        "type": "list"
+      }
+    },
+    "proposal_sha256": "79edf7a2f9fa919346273872c2471262e1dd8ede463d6c0fc060d829d700397a",
+    "provider_error_code": null,
+    "provider_error_type": null,
+    "proxy_environment_present": false,
+    "request_id": "req_514804377b9b47798ac02c0812882773",
+    "requested_model": "gpt-5.4-mini-2026-03-17",
+    "reserved_microusd": 40992,
+    "response_body_kind": null,
+    "response_content_type": "application/json",
+    "retained_payload_sha256": "dd8cc42abb6f44d8911fa5322c65d32c95238aa3e1346d94b2c7d8d60394c23b",
+    "sanitized_error_message": null,
+    "schema_validation_errors": null,
+    "stage": null,
+    "started_at": "2026-09-17T23:42:35.611747+00:00",
+    "state": "COMPLETED",
+    "status": null,
+    "target_host": "api.openai.com",
+    "target_path": "/v1/responses",
+    "task_view_sha256": "f43ad49f7af7b393ecbd9dcb76132437212ba8d839aa63ad1cd05e645368feb1",
+    "transport_exception_type": null,
+    "usage": {
+      "input_tokens": 7077,
+      "output_tokens": 1097
+    },
+    "usage_status": "REPORTED"
+  },
+  {
+    "accounted_microusd": 5188,
+    "api_style": "responses",
+    "body_truncated": null,
+    "completed_at": "2026-09-17T23:44:01.890424+00:00",
+    "error_code": null,
+    "http_status": 200,
+    "kind": "PRODUCT_SMOKE",
+    "latency_ms": 4454.558291996364,
+    "ledger_key": "inv-41ee22038f81ac39668d6640:0",
+    "method": "POST",
+    "ordinal": 18,
+    "payload_shape": {
+      "input": {
+        "serialized_length": 9142,
+        "type": "list"
+      },
+      "instructions": {
+        "serialized_length": 1818,
+        "type": "str"
+      },
+      "max_output_tokens": {
+        "serialized_length": 4,
+        "type": "int"
+      },
+      "model": {
+        "serialized_length": 25,
+        "type": "str"
+      },
+      "parallel_tool_calls": {
+        "serialized_length": 5,
+        "type": "bool"
+      },
+      "reasoning": {
+        "serialized_length": 20,
+        "type": "dict"
+      },
+      "service_tier": {
+        "serialized_length": 9,
+        "type": "str"
+      },
+      "store": {
+        "serialized_length": 5,
+        "type": "bool"
+      },
+      "tool_choice": {
+        "serialized_length": 47,
+        "type": "dict"
+      },
+      "tools": {
+        "serialized_length": 3269,
+        "type": "list"
+      }
+    },
+    "proposal_sha256": "eee0173e80d40eae7179fb5f79f29b21e0f0955866b9c3b92b83c9ae94ef42e3",
+    "provider_error_code": null,
+    "provider_error_type": null,
+    "proxy_environment_present": false,
+    "request_id": "req_28a74c8cf7e8470fa79858c3094fabea",
+    "requested_model": "gpt-5.4-mini-2026-03-17",
+    "reserved_microusd": 32382,
+    "response_body_kind": null,
+    "response_content_type": "application/json",
+    "retained_payload_sha256": "be40cc9a572a603daa9b7130c11c6b45602af035c18e218637f20a00975b7020",
+    "sanitized_error_message": null,
+    "schema_validation_errors": null,
+    "stage": null,
+    "started_at": "2026-09-17T23:43:57.435855+00:00",
+    "state": "COMPLETED",
+    "status": null,
+    "target_host": "api.openai.com",
+    "target_path": "/v1/responses",
+    "task_view_sha256": "d9a4253c4d3c1517cae503dcfe4a5b303c5a15296917ba059e4856b0b590319d",
+    "transport_exception_type": null,
+    "usage": {
+      "input_tokens": 3833,
+      "output_tokens": 514
+    },
+    "usage_status": "REPORTED"
+  },
+  {
+    "accounted_microusd": 5816,
+    "api_style": "responses",
+    "body_truncated": null,
+    "completed_at": "2026-09-17T23:44:06.768473+00:00",
+    "error_code": null,
+    "http_status": 200,
+    "kind": "PRODUCT_SMOKE",
+    "latency_ms": 4855.88024999015,
+    "ledger_key": "inv-41ee22038f81ac39668d6640:1",
+    "method": "POST",
+    "ordinal": 19,
+    "payload_shape": {
+      "input": {
+        "serialized_length": 9209,
+        "type": "list"
+      },
+      "instructions": {
+        "serialized_length": 1818,
+        "type": "str"
+      },
+      "max_output_tokens": {
+        "serialized_length": 4,
+        "type": "int"
+      },
+      "model": {
+        "serialized_length": 25,
+        "type": "str"
+      },
+      "parallel_tool_calls": {
+        "serialized_length": 5,
+        "type": "bool"
+      },
+      "reasoning": {
+        "serialized_length": 20,
+        "type": "dict"
+      },
+      "service_tier": {
+        "serialized_length": 9,
+        "type": "str"
+      },
+      "store": {
+        "serialized_length": 5,
+        "type": "bool"
+      },
+      "tool_choice": {
+        "serialized_length": 47,
+        "type": "dict"
+      },
+      "tools": {
+        "serialized_length": 3269,
+        "type": "list"
+      }
+    },
+    "proposal_sha256": "dae4a0b4ca8421d7af773b17c540fccfb9ee08c4315aba0ce8db45801711cc8a",
+    "provider_error_code": null,
+    "provider_error_type": null,
+    "proxy_environment_present": false,
+    "request_id": "req_cda153097c404fa99a9bdfeccc914026",
+    "requested_model": "gpt-5.4-mini-2026-03-17",
+    "reserved_microusd": 32433,
+    "response_body_kind": null,
+    "response_content_type": "application/json",
+    "retained_payload_sha256": "daf1f65e3303587dbe5b2e8ce95e7c7d846000f02dbb0b41083e2257cfaa337b",
+    "sanitized_error_message": null,
+    "schema_validation_errors": null,
+    "stage": null,
+    "started_at": "2026-09-17T23:44:01.912574+00:00",
+    "state": "COMPLETED",
+    "status": null,
+    "target_host": "api.openai.com",
+    "target_path": "/v1/responses",
+    "task_view_sha256": "42da5bcc9a5a80c5f8ebd61f0f2de3348e6d11a420a235ad54d2b3fb8062a867",
+    "transport_exception_type": null,
+    "usage": {
+      "input_tokens": 3890,
+      "output_tokens": 644
+    },
+    "usage_status": "REPORTED"
+  },
+  {
+    "accounted_microusd": 5894,
+    "api_style": "responses",
+    "body_truncated": null,
+    "completed_at": "2026-09-17T23:44:11.888883+00:00",
+    "error_code": null,
+    "http_status": 200,
+    "kind": "PRODUCT_SMOKE",
+    "latency_ms": 5097.413207986392,
+    "ledger_key": "inv-41ee22038f81ac39668d6640:2",
+    "method": "POST",
+    "ordinal": 20,
+    "payload_shape": {
+      "input": {
+        "serialized_length": 9928,
+        "type": "list"
+      },
+      "instructions": {
+        "serialized_length": 1818,
+        "type": "str"
+      },
+      "max_output_tokens": {
+        "serialized_length": 4,
+        "type": "int"
+      },
+      "model": {
+        "serialized_length": 25,
+        "type": "str"
+      },
+      "parallel_tool_calls": {
+        "serialized_length": 5,
+        "type": "bool"
+      },
+      "reasoning": {
+        "serialized_length": 20,
+        "type": "dict"
+      },
+      "service_tier": {
+        "serialized_length": 9,
+        "type": "str"
+      },
+      "store": {
+        "serialized_length": 5,
+        "type": "bool"
+      },
+      "tool_choice": {
+        "serialized_length": 47,
+        "type": "dict"
+      },
+      "tools": {
+        "serialized_length": 3269,
+        "type": "list"
+      }
+    },
+    "proposal_sha256": "851eb40d791e4dfa05c3006bb74fb44b067c8408378dca74a6ac91c692101f87",
+    "provider_error_code": null,
+    "provider_error_type": null,
+    "proxy_environment_present": false,
+    "request_id": "req_2338e4f8ea2147568d588b251bb24c0e",
+    "requested_model": "gpt-5.4-mini-2026-03-17",
+    "reserved_microusd": 32972,
+    "response_body_kind": null,
+    "response_content_type": "application/json",
+    "retained_payload_sha256": "4daebd67f8519605909e3d02c33c182f7addce5e8847932edad48a2363e034df",
+    "sanitized_error_message": null,
+    "schema_validation_errors": null,
+    "stage": null,
+    "started_at": "2026-09-17T23:44:06.791449+00:00",
+    "state": "COMPLETED",
+    "status": null,
+    "target_host": "api.openai.com",
+    "target_path": "/v1/responses",
+    "task_view_sha256": "667f8f518f7066ac87a07d76c569d6afd5f608d143bdb2bf48f9accf7cc6fcd1",
+    "transport_exception_type": null,
+    "usage": {
+      "input_tokens": 4156,
+      "output_tokens": 617
+    },
+    "usage_status": "REPORTED"
+  },
+  {
+    "accounted_microusd": 5401,
+    "api_style": "responses",
+    "body_truncated": null,
+    "completed_at": "2026-09-17T23:44:17.007655+00:00",
+    "error_code": null,
+    "http_status": 200,
+    "kind": "PRODUCT_SMOKE",
+    "latency_ms": 4953.824500029441,
+    "ledger_key": "inv-913e1cff60902997bd997618:0",
+    "method": "POST",
+    "ordinal": 21,
+    "payload_shape": {
+      "input": {
+        "serialized_length": 9142,
+        "type": "list"
+      },
+      "instructions": {
+        "serialized_length": 1818,
+        "type": "str"
+      },
+      "max_output_tokens": {
+        "serialized_length": 4,
+        "type": "int"
+      },
+      "model": {
+        "serialized_length": 25,
+        "type": "str"
+      },
+      "parallel_tool_calls": {
+        "serialized_length": 5,
+        "type": "bool"
+      },
+      "reasoning": {
+        "serialized_length": 20,
+        "type": "dict"
+      },
+      "service_tier": {
+        "serialized_length": 9,
+        "type": "str"
+      },
+      "store": {
+        "serialized_length": 5,
+        "type": "bool"
+      },
+      "tool_choice": {
+        "serialized_length": 47,
+        "type": "dict"
+      },
+      "tools": {
+        "serialized_length": 3269,
+        "type": "list"
+      }
+    },
+    "proposal_sha256": "09c96ec286d57811b79a89e06e95ae70c483f61948bad370d15f649592b46d17",
+    "provider_error_code": null,
+    "provider_error_type": null,
+    "proxy_environment_present": false,
+    "request_id": "req_0d0abb33a20c4779b6b988c3edec1e12",
+    "requested_model": "gpt-5.4-mini-2026-03-17",
+    "reserved_microusd": 32382,
+    "response_body_kind": null,
+    "response_content_type": "application/json",
+    "retained_payload_sha256": "d4132311fa6172c31c75821ae09a6cd4cb90c9f4f9046f221bf579acb16ed6a1",
+    "sanitized_error_message": null,
+    "schema_validation_errors": null,
+    "stage": null,
+    "started_at": "2026-09-17T23:44:12.053811+00:00",
+    "state": "COMPLETED",
+    "status": null,
+    "target_host": "api.openai.com",
+    "target_path": "/v1/responses",
+    "task_view_sha256": "caf605f253451784b831bd4a3fd8b6763a27aaf4291d837e8ccfbf96b28073c2",
+    "transport_exception_type": null,
+    "usage": {
+      "input_tokens": 3847,
+      "output_tokens": 559
+    },
+    "usage_status": "REPORTED"
+  },
+  {
+    "accounted_microusd": 5827,
+    "api_style": "responses",
+    "body_truncated": null,
+    "completed_at": "2026-09-17T23:44:21.614491+00:00",
+    "error_code": null,
+    "http_status": 200,
+    "kind": "PRODUCT_SMOKE",
+    "latency_ms": 4586.5015420131385,
+    "ledger_key": "inv-913e1cff60902997bd997618:1",
+    "method": "POST",
+    "ordinal": 22,
+    "payload_shape": {
+      "input": {
+        "serialized_length": 9209,
+        "type": "list"
+      },
+      "instructions": {
+        "serialized_length": 1818,
+        "type": "str"
+      },
+      "max_output_tokens": {
+        "serialized_length": 4,
+        "type": "int"
+      },
+      "model": {
+        "serialized_length": 25,
+        "type": "str"
+      },
+      "parallel_tool_calls": {
+        "serialized_length": 5,
+        "type": "bool"
+      },
+      "reasoning": {
+        "serialized_length": 20,
+        "type": "dict"
+      },
+      "service_tier": {
+        "serialized_length": 9,
+        "type": "str"
+      },
+      "store": {
+        "serialized_length": 5,
+        "type": "bool"
+      },
+      "tool_choice": {
+        "serialized_length": 47,
+        "type": "dict"
+      },
+      "tools": {
+        "serialized_length": 3269,
+        "type": "list"
+      }
+    },
+    "proposal_sha256": "00719ea26e09c6e1b03a42320cd9a8f674e6e39889a95ef618e42a464f127fcd",
+    "provider_error_code": null,
+    "provider_error_type": null,
+    "proxy_environment_present": false,
+    "request_id": "req_84590f8d95c54c5083b07851936c45e5",
+    "requested_model": "gpt-5.4-mini-2026-03-17",
+    "reserved_microusd": 32433,
+    "response_body_kind": null,
+    "response_content_type": "application/json",
+    "retained_payload_sha256": "ef512dcae93a5f8d8957be542e56f9e64a7ebf681b69e86f7bbd5b78ac08abd0",
+    "sanitized_error_message": null,
+    "schema_validation_errors": null,
+    "stage": null,
+    "started_at": "2026-09-17T23:44:17.027973+00:00",
+    "state": "COMPLETED",
+    "status": null,
+    "target_host": "api.openai.com",
+    "target_path": "/v1/responses",
+    "task_view_sha256": "8efe221c91640e2ddc7996be243aa64fe498a8535ebbf117e0214fcfae095da5",
+    "transport_exception_type": null,
+    "usage": {
+      "input_tokens": 3911,
+      "output_tokens": 643
+    },
+    "usage_status": "REPORTED"
+  },
+  {
+    "accounted_microusd": 5733,
+    "api_style": "responses",
+    "body_truncated": null,
+    "completed_at": "2026-09-17T23:44:26.287321+00:00",
+    "error_code": null,
+    "http_status": 200,
+    "kind": "PRODUCT_SMOKE",
+    "latency_ms": 4653.308290988207,
+    "ledger_key": "inv-913e1cff60902997bd997618:2",
+    "method": "POST",
+    "ordinal": 23,
+    "payload_shape": {
+      "input": {
+        "serialized_length": 9276,
+        "type": "list"
+      },
+      "instructions": {
+        "serialized_length": 1818,
+        "type": "str"
+      },
+      "max_output_tokens": {
+        "serialized_length": 4,
+        "type": "int"
+      },
+      "model": {
+        "serialized_length": 25,
+        "type": "str"
+      },
+      "parallel_tool_calls": {
+        "serialized_length": 5,
+        "type": "bool"
+      },
+      "reasoning": {
+        "serialized_length": 20,
+        "type": "dict"
+      },
+      "service_tier": {
+        "serialized_length": 9,
+        "type": "str"
+      },
+      "store": {
+        "serialized_length": 5,
+        "type": "bool"
+      },
+      "tool_choice": {
+        "serialized_length": 47,
+        "type": "dict"
+      },
+      "tools": {
+        "serialized_length": 3269,
+        "type": "list"
+      }
+    },
+    "proposal_sha256": "6c68595651260fb9616a47a05612598ddbbc4a8ea820109475cb52373a6eb201",
+    "provider_error_code": null,
+    "provider_error_type": null,
+    "proxy_environment_present": false,
+    "request_id": "req_8013996f6e604ab6adcf6d6c7ded26e3",
+    "requested_model": "gpt-5.4-mini-2026-03-17",
+    "reserved_microusd": 32483,
+    "response_body_kind": null,
+    "response_content_type": "application/json",
+    "retained_payload_sha256": "9fa3fa2743a8c66ef87350f4c11eb64caecf30dd32443d49224aa357d7f359b0",
+    "sanitized_error_message": null,
+    "schema_validation_errors": null,
+    "stage": null,
+    "started_at": "2026-09-17T23:44:21.633995+00:00",
+    "state": "COMPLETED",
+    "status": null,
+    "target_host": "api.openai.com",
+    "target_path": "/v1/responses",
+    "task_view_sha256": "e05ea2b54607f88423be4921e63afeb682de4a59eb2ffb39c371a3ed081ed332",
+    "transport_exception_type": null,
+    "usage": {
+      "input_tokens": 3954,
+      "output_tokens": 615
+    },
+    "usage_status": "REPORTED"
+  },
+  {
+    "accounted_microusd": 10107,
+    "api_style": "responses",
+    "body_truncated": null,
+    "completed_at": "2026-09-17T23:44:34.328602+00:00",
+    "error_code": "PROVIDER_PROTOCOL_INVALID",
+    "http_status": 200,
+    "kind": "PRODUCT_SMOKE",
+    "latency_ms": 7959.7860829671845,
+    "ledger_key": "knowledge:env-269883248aa568ae5e573fb3:job-7b68c2ba57349f10adc0d6d2",
+    "method": "POST",
+    "ordinal": 24,
+    "payload_shape": {
+      "input": {
+        "serialized_length": 18413,
+        "type": "list"
+      },
+      "instructions": {
+        "serialized_length": 1419,
+        "type": "str"
+      },
+      "max_output_tokens": {
+        "serialized_length": 4,
+        "type": "int"
+      },
+      "model": {
+        "serialized_length": 25,
+        "type": "str"
+      },
+      "parallel_tool_calls": {
+        "serialized_length": 5,
+        "type": "bool"
+      },
+      "reasoning": {
+        "serialized_length": 18,
+        "type": "dict"
+      },
+      "service_tier": {
+        "serialized_length": 9,
+        "type": "str"
+      },
+      "store": {
+        "serialized_length": 5,
+        "type": "bool"
+      },
+      "tool_choice": {
+        "serialized_length": 47,
+        "type": "dict"
+      },
+      "tools": {
+        "serialized_length": 4301,
+        "type": "list"
+      }
+    },
+    "proposal_sha256": null,
+    "provider_error_code": null,
+    "provider_error_type": null,
+    "proxy_environment_present": false,
+    "request_id": "req_b83675eadca94962ab554b118d6507bd",
+    "requested_model": "gpt-5.4-mini-2026-03-17",
+    "reserved_microusd": 39809,
+    "response_body_kind": null,
+    "response_content_type": "application/json",
+    "retained_payload_sha256": "b45b655eda00e4d264c2e2e02355033dd86b061e9d8942f6b50b8282508a5339",
+    "sanitized_error_message": null,
+    "schema_validation_errors": [
+      {
+        "location": [
+          "expression"
+        ],
+        "type": "value_error"
+      }
+    ],
+    "stage": null,
+    "started_at": "2026-09-17T23:44:26.368782+00:00",
+    "state": "FAILED",
+    "status": null,
+    "target_host": "api.openai.com",
+    "target_path": "/v1/responses",
+    "task_view_sha256": "0ec3d1164ba660a3d4f73b4c972243e95e439ab4d5257265d7837c9f9c8bcf71",
+    "transport_exception_type": null,
+    "usage": {
+      "input_tokens": 7001,
+      "output_tokens": 1079
+    },
+    "usage_status": "REPORTED"
+  }
+]

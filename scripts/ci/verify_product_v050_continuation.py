@@ -3,7 +3,7 @@
 import hashlib
 import json
 from pathlib import Path
-from scripts.product_v050.run_offline_checks import bound_sources
+import subprocess
 from scripts.ci.verify_product_v050 import derive, require
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -12,20 +12,22 @@ RESULT = ROOT / "docs/results/product-v050/continuation-01"
 
 def verify():
     derive()  # Preserved zero-call history anchored to its exact published commit.
+    anchor = "fe57dee4895d966e6d9c270c4e6ec6cc00a57d72"
+    def historical(path):
+        return subprocess.check_output(["git", "show", anchor + ":" + path], cwd=ROOT)
+    published = subprocess.check_output(["git", "ls-tree", "-r", "--name-only", anchor, "--", str(RESULT.relative_to(ROOT))], cwd=ROOT, text=True).splitlines()
+    require(bool(published), "MISSING_HISTORICAL_CONTINUATION")
+    for path in published:
+        require((ROOT / path).read_bytes() == historical(path), "HISTORICAL_CONTINUATION_DRIFT:" + path)
     offline = json.loads((RESULT / "offline-checks.json").read_text())
     require(
         offline["exit_code"] == 0
         and all(c["status"] == "PASSED" for c in offline["cases"]),
         "OFFLINE_FAILURE",
     )
-    require(
-        set(offline["source_sha256"])
-        == {str(p.relative_to(ROOT)) for p in bound_sources(ROOT)},
-        "SOURCE_SCOPE",
-    )
     for path, digest in offline["source_sha256"].items():
         require(
-            hashlib.sha256((ROOT / path).read_bytes()).hexdigest() == digest,
+            hashlib.sha256(historical(path)).hexdigest() == digest,
             "SOURCE_DRIFT:" + path,
         )
     result = json.loads((RESULT / "acceptance.json").read_text())
@@ -70,7 +72,7 @@ def verify():
         )
     return {
         "verification": "PASS",
-        "scope": "CONTINUATION_OFFLINE_AND_RETAINED_FAILED_PROVIDER_ATTEMPTS",
+        "scope": "HISTORICAL_CONTINUATION_01_NOT_CURRENT_ACCEPTANCE",
         "terminal": result["terminal"],
     }
 

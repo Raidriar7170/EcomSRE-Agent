@@ -23,7 +23,7 @@ from scripts.product_v050.preflight import inspect
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--execute", action="store_true")
-    parser.add_argument("--attempt", type=int, choices=(1, 2, 3), default=1)
+    parser.add_argument("--attempt", type=int, choices=(1, 2, 3, 4, 5, 6), default=1)
     parser.add_argument(
         "--api-style",
         choices=("chat_completions", "responses"),
@@ -63,7 +63,16 @@ def main():
         return
     if preflight["pricing_status"] != "CONFIGURED_NOT_PROVIDER_VERIFIED":
         raise ValueError("SMOKE_PREFLIGHT_FAILED")
-    out = root / "continuation-01"
+    if args.attempt >= 4:
+        import sqlite3
+        from scripts.product_v050.provider_unblock import PREFIX
+        with sqlite3.connect((root / "product.sqlite3").as_uri() + "?mode=ro", uri=True) as c:
+            for stage in ("text", "function"):
+                gate = c.execute("SELECT state,payload_json FROM investigation_provider_calls_v050 WHERE call_key=?",
+                                 (PREFIX + stage + ":" + args.api_style,)).fetchone()
+                if gate is None or gate[0] != "COMPLETED" or json.loads(gate[1]).get("status") != "PASS":
+                    raise ValueError("SMOKE_MINIMAL_PROVIDER_GATE_REQUIRED")
+    out = root / ("provider-unblock" if args.attempt >= 4 else "continuation-01")
     out.mkdir(parents=True, exist_ok=True)
     marker = out / (
         "smoke-started.json"
@@ -199,7 +208,7 @@ def main():
                     json.dumps(
                         {
                             "knowledge_job_status": job["status"],
-                            "error_code": job.get("error_code"),
+                            "error_code": job.get("safe_error_code"),
                         }
                     ),
                     flush=True,

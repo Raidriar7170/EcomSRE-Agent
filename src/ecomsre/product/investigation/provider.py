@@ -3,6 +3,8 @@
 import hashlib
 import json
 import math
+import os
+from urllib.parse import urlsplit
 import time
 from datetime import UTC, datetime
 from typing import Any, TypeVar
@@ -12,7 +14,6 @@ from pydantic import BaseModel, ValidationError
 from ecomsre.model.gateway import (
     OpenAICompatibleConfig,
     OpenAICompatibleTransport,
-    StdlibOpenAICompatibleTransport,
 )
 from ecomsre.dta_v2.v22.read_contracts import semantic_sha256_v22
 from ecomsre.product.errors import ProductError
@@ -32,6 +33,39 @@ SYSTEM = (
     "scores, approval, registration IDs or authority. Supply short audit rationales, "
     "not hidden chain of thought. New hypotheses use null IDs."
 )
+
+
+TASK_CONTRACTS = {
+    "investigate": (
+        " Every support/against item MUST be copied verbatim from an observation.evidence_ref; "
+        "never write explanatory sentences there. Put prose only in mechanism/rationale. "
+        "Use a target from view.targets and exact observation.window as claim_window; "
+        "all cited observations must cover that same target and window. Empty, failed or "
+        "truncated records cannot support or refute a hypothesis. A READ uses a legal_reads "
+        "action_id verbatim, result=null and hypotheses=[]: describe the reason for the read "
+        "in rationale without attaching premature evidence claims. After the read, hypotheses "
+        "may cite its actual evidence_ref and exact window. Never cite SUCCESS_EMPTY as negative "
+        "evidence. When observations leave competing explanations "
+        "and a legal read could discriminate, select that read before concluding; choose the "
+        "read yourself, or abstain if none can help. PROVISIONAL_SUPPORTED additionally "
+        "requires a numeric prediction_test on supporting RESOURCES data for the SAME "
+        "hypothesis, matching sampling_window_seconds and available sample count; it never "
+        "proves causality. Other terminal results may be UNRESOLVED/OBSERVABILITY_GAP. "
+        "Honor last_validation_error by correcting the actual field, not repeating the decision."
+    ),
+    "propose_detection_knowledge": (
+        " This task expects KnowledgeProposal, not InvestigationDecision. Use PATTERN_ONLY; "
+        "name is a lowercase hyphenated identifier; target is the logical service string. "
+        "member_incidents contains the supplied sessions' incident_id strings. predicates "
+        "must be copied from predicate_catalog (1 to 3), never prose. supporting_refs and "
+        "counter_evidence_refs contain only exact observation.evidence_ref strings. Use "
+        "two evidence sources (predicates plus optional RESOURCES expression). An expression "
+        "uses the exact numeric field/operator/unit/window schema and snapshot_sha256 as "
+        "threshold_provenance. If expression uses supplemental RESOURCES, copy that "
+        "observation's resource_dependency and sampling window. Do not invent independence, "
+        "causal support, promotion or acceptance; deterministic governance can reject you."
+    ),
+}
 
 
 class StructuredProvider:
@@ -55,7 +89,8 @@ class StructuredProvider:
             raise ValueError("unsupported Provider API style")
         self.api_style = api_style
         self.config, self.prices, self.repository = config, prices, repository
-        self.transport = transport or StdlibOpenAICompatibleTransport()
+        from ecomsre.product.investigation.http_diagnostics import ProductDiagnosticTransport
+        self.transport = transport or ProductDiagnosticTransport()
         self.evidence_mode = "LIVE_PROVIDER" if transport is None else "FIXTURE_ONLY"
 
     def complete(
@@ -69,11 +104,12 @@ class StructuredProvider:
         fence: JobLeaseFenceV1 | None = None,
     ) -> T:
         output_cap = 4096
+        instructions = SYSTEM + TASK_CONTRACTS.get(task, "")
         payload: dict[str, Any] = {
             "model": self.config.model,
             "service_tier": "default",
             "messages": [
-                {"role": "system", "content": SYSTEM},
+                {"role": "system", "content": instructions},
                 {"role": "user", "content": json.dumps({"task": task, "view": view})},
             ],
             "tools": [
@@ -97,7 +133,7 @@ class StructuredProvider:
         if self.api_style == "responses":
             payload = {
                 "model": self.config.model, "service_tier": "default", "store": False,
-                "instructions": SYSTEM,
+                "instructions": instructions,
                 "input": [{"role": "user", "content": json.dumps({"task": task, "view": view})}],
                 "tools": [{"type": "function", "name": "submit_proposal", "strict": False,
                            "description": "Non-actionable structured proposal",
@@ -122,19 +158,29 @@ class StructuredProvider:
             "payload": payload,
             "pricing": self.prices.model_dump(mode="json"),
             "provider_base_url": self.config.base_url,
-            "prompt_version": "product-v050.1",
+            "prompt_version": "product-v050.3-read-shape-clarification",
         }
         previous = self.repository.reserve(key, binding, reserve, fence=fence)
         if previous is not None:
             return schema.model_validate(previous["proposal"])
         started = time.monotonic()
+        target_url = self.config.base_url + ("/responses" if self.api_style == "responses" else "/chat/completions")
+        target = urlsplit(target_url)
         ledger: dict[str, Any] = {
             "api_style": self.api_style,
+            "attempt_id": key,
+            "started_at": datetime.now(UTC).isoformat(),
+            "method": "POST",
+            "target_host": target.hostname if target.hostname == "api.openai.com" else None,
+            "target_path": target.path if target.hostname == "api.openai.com" else None,
+            "payload_shape": {k: {"type": type(v).__name__, "serialized_length": len(json.dumps(v))} for k, v in payload.items()},
+            "proxy_environment_present": any(os.environ.get(k) for k in ("HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "http_proxy", "https_proxy", "all_proxy")),
+            "reserved_microusd": reserve,
             "requested_model": self.config.model,
             "pricing": self.prices.model_dump(mode="json"),
             "reasoning": reasoning,
             "snapshot": None,
-            "prompt_version": "product-v050.1",
+            "prompt_version": "product-v050.3-read-shape-clarification",
             "task_view_sha256": semantic_sha256_v22({"task": task, "view": view}),
             "evidence_mode": self.evidence_mode,
         }
@@ -142,7 +188,7 @@ class StructuredProvider:
         state = "FAILED"
         try:
             response: Any = self.transport.post_json(
-                url=self.config.base_url + ("/responses" if self.api_style == "responses" else "/chat/completions"),
+                url=target_url,
                 headers={
                     "Authorization": "Bearer " + self.config.api_key,
                     "Content-Type": "application/json",
@@ -270,31 +316,37 @@ class StructuredProvider:
             raise ProductError(
                 "PROVIDER_TIMEOUT", "Provider timeout; dispatch will not repeat."
             ) from None
-        except (ValueError, KeyError, TypeError, AttributeError, ValidationError):
+        except ValidationError as exc:
+            ledger["error_code"] = "PROVIDER_PROTOCOL_INVALID"
+            # Schema location/type only: no model input, context or exception text.
+            def property_names(value):
+                if isinstance(value, dict):
+                    return set(value.get("properties", {})) | set().union(*(property_names(v) for v in value.values()))
+                if isinstance(value, list):
+                    return set().union(*(property_names(v) for v in value))
+                return set()
+            allowed_fields = property_names(schema.model_json_schema())
+            ledger["schema_validation_errors"] = [
+                {"location": [part if type(part) is int or part in allowed_fields else "UNKNOWN_FIELD" for part in e["loc"]], "type": e["type"]}
+                for e in exc.errors(include_input=False, include_context=False, include_url=False)[:20]
+            ]
+            raise ProductError("PROVIDER_PROTOCOL_INVALID", "Structured schema validation failed.") from None
+        except (ValueError, KeyError, TypeError, AttributeError):
             ledger["error_code"] = "PROVIDER_PROTOCOL_INVALID"
             raise ProductError(
                 "PROVIDER_PROTOCOL_INVALID", "Invalid structured response."
             ) from None
         except ConnectionError as exc:
-            import urllib.error
-            import re
-            cause = exc.__cause__
-            code = "PROVIDER_TRANSPORT_FAILED"
-            if isinstance(cause, urllib.error.HTTPError):
-                ledger["http_status"] = cause.code
-                code = "PROVIDER_HTTP_" + str(cause.code)
-                try:
-                    error = json.loads(cause.read(4096)).get("error", {})
-                    for field in ("code", "type"):
-                        value = error.get(field)
-                        if isinstance(value, str) and re.fullmatch(r"[a-zA-Z0-9_]{1,80}", value):
-                            ledger["provider_error_" + field] = value
-                except (ValueError, AttributeError, OSError):
-                    pass
+            from ecomsre.product.investigation.http_diagnostics import http_failure
+            diagnostic = http_failure(exc, secret=self.config.api_key)
+            ledger.update(diagnostic)
+            code = ("PROVIDER_HTTP_" + str(diagnostic["http_status"]) if diagnostic["http_status"] is not None else "PROVIDER_TRANSPORT_FAILED")
             ledger["error_code"] = code
             raise ProductError(code, "Provider request failed; safe error retained.") from None
         finally:
+            ledger.update(getattr(self.transport, "last_response", {}))
             ledger["latency_ms"] = (time.monotonic() - started) * 1000
             ledger["completed_at"] = datetime.now(UTC).isoformat()
             ledger["usage_status"] = "unknown" if charge is None else "reported"
+            ledger["accounted_microusd"] = charge
             self.repository.settle(key, ledger, charge, state)

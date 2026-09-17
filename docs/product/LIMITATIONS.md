@@ -1,6 +1,6 @@
 # 能力与限制 · Product v0.4.1
 
-Current v0.5 continuation: [review repairs and retained Provider failures](../results/product-v050/continuation-01/README.md). Project configuration and pricing are resolved; generation interfaces returned HTTP404. Four cumulative requests include one metadata probe; no real model decision, live episode or learned knowledge. Earlier zero-call results below remain historical.
+Current v0.5 [Provider unblock](../results/product-v050/provider-unblock/README.md): minimal text/function and replay tool roundtrips succeeded on the unchanged model. Cumulative requests 24; no independent live/holdout/promotion/learned reuse. Historical404 root cause remains undetermined.
 
 ## 已证明什么
 
@@ -65,4 +65,4 @@ C1 的无关 Logs / Traces 缺口仍被保留。
 
 ## v0.5 当前增量限制
 
-真实 Provider 配置与价格已确认，但生成接口返回 HTTP404；没有成功的 LLM 调查行为、独立 live 事故或模型知识有效性实测。学习/复用证据仍为 FIXTURE_ONLY，4 次真实 Provider 请求及其失败单独保留。读取为固定连接器模板与两个历史窗口；自由日志文本不进入模型。Level B 仅为 CPU/memory gauges、单个派生条件和有限谓词合取，不支持任意字段、跨源组合或可执行代码。候选只支持 PATTERN_ONLY，一次开发检查和一次冻结评估，没有自动修订活动。唯一新增恢复能力是无执行权限的预览。
+真实 Provider 配置与价格已确认，最小生成及回放工具往返已成功；仍没有独立 live 事故或模型知识有效性实测。学习/复用证据仍为 FIXTURE_ONLY，24 次累计 Provider 请求及全部失败单独保留。读取为固定连接器模板与两个历史窗口；自由日志文本不进入模型。Level B 仅为 CPU/memory gauges、单个派生条件和有限谓词合取，不支持任意字段、跨源组合或可执行代码。候选只支持 PATTERN_ONLY，一次开发检查和一次冻结评估，没有自动修订活动。唯一新增恢复能力是无执行权限的预览。
