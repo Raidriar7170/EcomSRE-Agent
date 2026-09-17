@@ -41,6 +41,7 @@ class StructuredProvider:
         prices: PriceSchedule,
         repository: InvestigationRepository,
         transport: OpenAICompatibleTransport | None = None,
+        *, api_style: str = "chat_completions",
     ):
         if config.model != prices.model:
             raise ProductError(
@@ -50,6 +51,9 @@ class StructuredProvider:
             raise ProductError(
                 "PROVIDER_PRICE_DATE_INVALID", "Pricing date is in the future."
             )
+        if api_style not in {"chat_completions", "responses"}:
+            raise ValueError("unsupported Provider API style")
+        self.api_style = api_style
         self.config, self.prices, self.repository = config, prices, repository
         self.transport = transport or StdlibOpenAICompatibleTransport()
         self.evidence_mode = "LIVE_PROVIDER" if transport is None else "FIXTURE_ONLY"
@@ -67,6 +71,7 @@ class StructuredProvider:
         output_cap = 4096
         payload: dict[str, Any] = {
             "model": self.config.model,
+            "service_tier": "default",
             "messages": [
                 {"role": "system", "content": SYSTEM},
                 {"role": "user", "content": json.dumps({"task": task, "view": view})},
@@ -89,6 +94,18 @@ class StructuredProvider:
             "max_completion_tokens": output_cap,
             "reasoning_effort": reasoning,
         }
+        if self.api_style == "responses":
+            payload = {
+                "model": self.config.model, "service_tier": "default", "store": False,
+                "instructions": SYSTEM,
+                "input": [{"role": "user", "content": json.dumps({"task": task, "view": view})}],
+                "tools": [{"type": "function", "name": "submit_proposal", "strict": False,
+                           "description": "Non-actionable structured proposal",
+                           "parameters": schema.model_json_schema()}],
+                "tool_choice": {"type": "function", "name": "submit_proposal"},
+                "parallel_tool_calls": False, "max_output_tokens": output_cap,
+                "reasoning": {"effort": reasoning},
+            }
         # UTF-8 byte count bounds ordinary BPE token count conservatively. Include
         # a fixed protocol overhead; refuse unbounded prompts before reserving.
         prompt_bytes = len(json.dumps(payload, ensure_ascii=True).encode())
@@ -112,6 +129,7 @@ class StructuredProvider:
             return schema.model_validate(previous["proposal"])
         started = time.monotonic()
         ledger: dict[str, Any] = {
+            "api_style": self.api_style,
             "requested_model": self.config.model,
             "pricing": self.prices.model_dump(mode="json"),
             "reasoning": reasoning,
@@ -123,8 +141,8 @@ class StructuredProvider:
         charge = None
         state = "FAILED"
         try:
-            response = self.transport.post_json(
-                url=self.config.base_url + "/chat/completions",
+            response: Any = self.transport.post_json(
+                url=self.config.base_url + ("/responses" if self.api_style == "responses" else "/chat/completions"),
                 headers={
                     "Authorization": "Bearer " + self.config.api_key,
                     "Content-Type": "application/json",
@@ -132,10 +150,28 @@ class StructuredProvider:
                 payload=payload,
                 timeout_seconds=90,
             )
+            original_response_sha256 = semantic_sha256_v22(dict(response))
+            if self.api_style == "responses":
+                output = response.get("output", [])
+                ledger["response_status"] = response.get("status")
+                response_incomplete = response.get("status") != "completed" or response.get("error") is not None or any(
+                    item.get("status") != "completed" for item in output
+                    if isinstance(item, dict) and item.get("type") == "function_call"
+                )
+                response_functions = [{"function": {"name": item.get("name"), "arguments": item.get("arguments")}}
+                             for item in output if isinstance(item, dict) and item.get("type") == "function_call"]
+                refusal = any(part.get("type") == "refusal" for item in output if isinstance(item, dict)
+                              for part in item.get("content", []) if isinstance(part, dict))
+                raw_usage = response.get("usage") or {}
+                response = {"model": response.get("model"), "id": response.get("id"),
+                    "service_tier": response.get("service_tier"),
+                    "usage": {"prompt_tokens": raw_usage.get("input_tokens"), "completion_tokens": raw_usage.get("output_tokens")},
+                    "choices": [{"finish_reason": "length" if response.get("status") == "incomplete" else "invalid" if response_incomplete else "tool_calls",
+                                 "message": {"refusal": refusal, "tool_calls": response_functions}}]}
             # Compatible gateways may return hidden reasoning in extra fields.
             # Retain an audit projection and response digest, never that content.
             audit: dict[str, Any] = {
-                "response_sha256": semantic_sha256_v22(dict(response)),
+                "response_sha256": original_response_sha256,
                 "model": response.get("model"),
                 "id": response.get("id"),
                 "choices": [],
@@ -187,6 +223,9 @@ class StructuredProvider:
                 inp, out = usage.get("prompt_tokens"), usage.get("completion_tokens")
                 if type(inp) is int and type(out) is int and inp >= 0 and out >= 0:
                     ledger["usage"] = {"input_tokens": inp, "output_tokens": out}
+                    ledger["cost_basis"] = "REPORTED_TOKENS_AT_UPPER_RATES_NOT_INVOICE"
+                    ledger["requested_service_tier"] = "default"
+                    ledger["returned_service_tier"] = response.get("service_tier")
                     charge = math.ceil(
                         inp * self.prices.input_usd_per_million
                         + out * self.prices.output_usd_per_million
@@ -204,6 +243,8 @@ class StructuredProvider:
             choice = choices[0]
             if choice.get("finish_reason") == "length":
                 raise ProductError("PROVIDER_TRUNCATED", "Output token cap reached.")
+            if choice.get("finish_reason") == "invalid":
+                raise ProductError("PROVIDER_RESPONSE_NOT_COMPLETED", "Response or function call is not completed.")
             message = choice.get("message", {})
             if message.get("refusal"):
                 raise ProductError("PROVIDER_REFUSED", "Provider refused this task.")
@@ -234,11 +275,24 @@ class StructuredProvider:
             raise ProductError(
                 "PROVIDER_PROTOCOL_INVALID", "Invalid structured response."
             ) from None
-        except ConnectionError:
-            ledger["error_code"] = "PROVIDER_TRANSPORT_FAILED"
-            raise ProductError(
-                "PROVIDER_TRANSPORT_FAILED", "Provider transport failed."
-            ) from None
+        except ConnectionError as exc:
+            import urllib.error
+            import re
+            cause = exc.__cause__
+            code = "PROVIDER_TRANSPORT_FAILED"
+            if isinstance(cause, urllib.error.HTTPError):
+                ledger["http_status"] = cause.code
+                code = "PROVIDER_HTTP_" + str(cause.code)
+                try:
+                    error = json.loads(cause.read(4096)).get("error", {})
+                    for field in ("code", "type"):
+                        value = error.get(field)
+                        if isinstance(value, str) and re.fullmatch(r"[a-zA-Z0-9_]{1,80}", value):
+                            ledger["provider_error_" + field] = value
+                except (ValueError, AttributeError, OSError):
+                    pass
+            ledger["error_code"] = code
+            raise ProductError(code, "Provider request failed; safe error retained.") from None
         finally:
             ledger["latency_ms"] = (time.monotonic() - started) * 1000
             ledger["completed_at"] = datetime.now(UTC).isoformat()

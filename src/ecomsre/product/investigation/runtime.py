@@ -27,7 +27,8 @@ def configured_provider(repository: InvestigationRepository) -> StructuredProvid
             "PROVIDER_NOT_CONFIGURED", "Provider and dated price schedule are required."
         )
     prices = PriceSchedule.model_validate_json(Path(price_path).read_bytes())
-    return StructuredProvider(config, prices, repository)
+    return StructuredProvider(config, prices, repository,
+                              api_style=os.environ.get("ECOMSRE_PRODUCT_PROVIDER_API_STYLE", "chat_completions"))
 
 
 def validate_hypothesis_evidence(hypothesis, refs):
@@ -93,6 +94,22 @@ def check_predictions(hypotheses, observations):
     return checked
 
 
+def supported_hypotheses(hypotheses, checked):
+    """Support and the checked observable prediction belong to the same claim.
+
+    A TRUE number is not causal confirmation. Only referenced supporting evidence
+    may establish that hypothesis; alternatives remain part of the result.
+    """
+    predictions = {p["hypothesis_id"]: p for p in checked}
+    return [
+        h["hypothesis_id"] for h in hypotheses
+        if h["support"]
+        and (p := predictions[h["hypothesis_id"]])["status"] == "TRUE"
+        and p.get("evidence_refs")
+        and set(p["evidence_refs"]).issubset(h["support"])
+    ]
+
+
 def run_investigation(
     *,
     incident,
@@ -156,6 +173,9 @@ def run_investigation(
     def stop(status: str, reason: str):
         session["checked_predictions"] = check_predictions(
             session["hypotheses"], session["observations"]
+        )
+        session["supported_hypothesis_ids"] = supported_hypotheses(
+            session["hypotheses"], session["checked_predictions"]
         )
         session.update(status=status, stop_reason=reason)
         save()
@@ -248,15 +268,13 @@ def run_investigation(
                         or new_product_id("hyp"),
                     }
                 )
-            if decision.result == "PROVISIONAL_SUPPORTED" and not any(
-                h["support"] for h in new_hypotheses
+            if len({h["hypothesis_id"] for h in new_hypotheses}) != len(new_hypotheses):
+                raise ValueError("DUPLICATE_HYPOTHESIS_ID")
+            if decision.result == "PROVISIONAL_SUPPORTED" and not supported_hypotheses(
+                new_hypotheses,
+                check_predictions(new_hypotheses, session["observations"]),
             ):
-                raise ValueError("SUPPORT_REQUIRED")
-            if decision.result == "PROVISIONAL_SUPPORTED" and not any(
-                p["status"] == "TRUE"
-                for p in check_predictions(new_hypotheses, session["observations"])
-            ):
-                raise ValueError("CHECKED_PREDICTION_REQUIRED")
+                raise ValueError("SAME_HYPOTHESIS_CHECKED_SUPPORT_REQUIRED")
             if len(new_hypotheses) > config.max_hypotheses:
                 raise ValueError("HYPOTHESIS_LIMIT")
         except ValueError as exc:

@@ -145,3 +145,64 @@ repository and extension matcher; separate preview module under remediation.
 - Original checkout retains its two pre-existing tracked document edits; fixed
   upstream HEAD remains 1755859a9de82c2e5e225be68abc401a5ebf2b4f. Worktree is retained
   for the Draft PR. No merge, tag, release or deployment.
+
+## Continuation 01 — activated 2026-09-17 (in progress)
+
+- Active supplement: `docs/goals/EcomSRE_v0.5_PR104_Review_and_Continuation.md`.
+  Start HEAD cd086826b23b728c6527b8b6981aeffef489c4e7; same Draft PR #104,
+  same worktree and `.local/product-v050` data root; no budget reset.
+- Prior acceptance/preflight/checks remain unchanged historical zero-call evidence.
+- R1 reproduced: two failed assertions showed cross-hypothesis support splicing
+  and missing supported IDs. Runtime now binds support and numeric test refs to
+  the same hypothesis. FALSE/UNKNOWN/wrong scope cannot claim support.
+- R2 regression removes initial resource acquisition, then follows selected read,
+  CAS persistence, candidate dependency, development and normal zero-call reuse.
+  Runtime now binds supplemental observations to incident/environment/capability,
+  canonical query/window and optional parent diagnosis; the same finite dependency
+  drives deterministic new-event reads. Fixture insertion tests matcher plumbing,
+  not actual governance promotion. Negative/tamper coverage continues.
+- R3 numeric FALSE counterexamples retain exact scope and refs; empty, failed,
+  truncated or wrong-window observations stay UNKNOWN. No complete log-absence
+  claim is supported by these query templates.
+- R4 cross-candidate prior exposure counterexample failed before repair. Existing
+  SQLite now holds immutable harness episode splits, immutable incident bindings,
+  exposure before proposer dispatch, global discovery/development/consumed-holdout
+  exclusion and independent episode denominator checks. Failure/restart retains
+  exposure. Split roles never enter model inputs.
+- Independent review identified missing supplemental commit fence, target-less
+  cache lookup and repeated-episode denominator; repaired with focused regressions.
+  Current v050 tests: 62 passed; focused mypy: 16 source files. Follow-up review
+  pending. Initial adapter iterations also retained failures: inconsistent fixture
+  snapshot/memory removal, window selection mismatch, uncommitted split transaction,
+  and misplaced fence signature; fixed before any paid call.
+- Explicit project provider.env exists/readable and contains all three Provider
+  variables. Current shell had not loaded them. Exact configured model remains
+  gpt-5.4-mini-2026-03-17 on official direct API; no credential was printed.
+  Added literal allowlisted dotenv loader; no shell evaluation or other credentials.
+- Official model page checked 2026-09-17 lists snapshot and USD0.75 input / USD4.50
+  output per million tokens; cache input USD0.075. Standard non-regional text only,
+  no hosted tools; upper accounting conservatively charges all input uncached and
+  is not an invoice. Explicit price file added; standard service tier pinned.
+- Read-only smoke preflight passes; API/Worker same-process environment and feature
+  switches verified. Before dispatch: requests 0/200, cost commitment USD0/20,
+  live episodes 0/12. Smoke uses replay fixtures, never live-incident denominators.
+
+### Retained real Provider attempts
+
+- Chat smoke attempt 1: PROVIDER_TRANSPORT_FAILED before read/decision; added safe
+  HTTP classification, not raw response logging. Attempt 2 on a new replay event:
+  HTTP404. Both terminal sessions and unknown reservations retained.
+- Exact configured-model metadata GET returned HTTP200 and matching identity;
+  conservatively recorded as one more request, not an inference or incident.
+- Official Responses function-calling contract checked; explicit bounded adapter
+  added with same model, rates, ledger, store=false and no hidden reasoning. New
+  attempt 3 also returned HTTP404. CLI choice rejection before this dispatch is
+  retained as an engineering failure with zero additional requests.
+- Cumulative 4 requests: 3 generation attempts + 1 metadata; all usage unknown,
+  upper commitment USD0.095449, remaining USD19.904551 / 196 requests / 12 live
+  episodes. No successful smoke => no paid batch or local live campaign started.
+- Precise API generation-access/configuration clarification requested while
+  completing independent offline closure. No silent model switch, key leakage,
+  new campaign budget, session overwrite or external Product write.
+- Existing Product/v040/v041 regression: 316 passed. Current v050: 63 passed.
+  Product/new scripts mypy: 170 files. Final full repository/CI still pending.

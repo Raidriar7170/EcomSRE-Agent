@@ -14,6 +14,9 @@ from ecomsre.product.knowledge.expressions import (
 )
 
 
+from ecomsre.product.knowledge.observations_v050 import ResourceDependency
+
+
 class KnowledgeProposal(StrictModel):
     name: str = Field(pattern=r"^[a-z][a-z0-9-]{0,79}$")
     kind: Literal["PATTERN_ONLY", "MECHANISM_SUPPORTED"]
@@ -24,6 +27,7 @@ class KnowledgeProposal(StrictModel):
     member_incidents: list[str] = Field(min_length=2, max_length=12)
     predicates: list[str] = Field(min_length=1, max_length=3)
     expression: DerivedExpression | None
+    resource_dependency: ResourceDependency | None = Field(default=None, exclude_if=lambda v: v is None)
     supporting_refs: list[str] = Field(min_length=1, max_length=24)
     counter_evidence_refs: list[str] = Field(max_length=24)
     confusable_patterns: list[str] = Field(min_length=1, max_length=5)
@@ -32,6 +36,12 @@ class KnowledgeProposal(StrictModel):
 
     @model_validator(mode="after")
     def bounded_compilation(self):
+        if self.resource_dependency is not None and (
+            self.expression is None
+            or self.expression.window_seconds != self.resource_dependency.sampling_window_seconds
+            or self.expression.minimum_samples > self.resource_dependency.sample_count
+        ):
+            raise ValueError("resource dependency does not satisfy expression sampling")
         if len(set(self.member_incidents)) != len(self.member_incidents):
             raise ValueError("repeated incidents are not independent members")
         if len(set(self.predicates)) != len(self.predicates):
@@ -87,9 +97,16 @@ def evaluate_candidate(
     memory,
     anomalies,
     observations: list[dict[str, Any]],
+    incident_end=None,
 ) -> ExpressionOutcome:
     """The same compiled predicate/expression evaluation in Shadow and diagnosis."""
     proposal = candidate.proposal
+    if proposal.resource_dependency is not None:
+        from ecomsre.product.knowledge.observations_v050 import select_dependency
+        if incident_end is None:
+            return ExpressionOutcome(status="UNKNOWN", value=None, reason="DEPENDENCY_EVENT_WINDOW_MISSING")
+        selected = select_dependency(proposal.resource_dependency, incident_end=incident_end, observations=observations, target=target)
+        observations = [o for o in observations if o["source"] != "RESOURCES"] + selected
     if target != proposal.target:
         return ExpressionOutcome(status="FALSE", value=None, reason="TARGET_MISMATCH")
     refs: set[str] = set()

@@ -1,5 +1,7 @@
 # 能力与限制 · Product v0.4.1
 
+Current v0.5 continuation: [review repairs and retained Provider failures](../results/product-v050/continuation-01/README.md). Project configuration and pricing are resolved; generation interfaces returned HTTP404. Four cumulative requests include one metadata probe; no real model decision, live episode or learned knowledge. Earlier zero-call results below remain historical.
+
 ## 已证明什么
 
 一个有界本地 OpenTelemetry Demo 多服务环境中：

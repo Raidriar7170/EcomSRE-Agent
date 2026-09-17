@@ -265,7 +265,7 @@ def run_one_job(
                     environment=environments.get(investigated.environment_id),
                     identities=services.get_map(investigated.environment_id),
                     capabilities=capabilities.get(investigated.environment_id),
-                    backend=read_backend, objects=object_store,
+                    backend=read_backend, objects=object_store, fence=fence,
                     initial_evidence=diagnoses.evidence(investigated.incident_id),
                 ),
                 repository=InvestigationRepository(store, object_store),
@@ -411,6 +411,15 @@ def run_one_job(
 
                 seal_acquisition_v0233 = seal_formal_acquisition_v0233
             derived_extensions = knowledge.active_investigation_extensions(incident.environment_id)
+            supplemental_reads = None
+            if any(c.proposal.resource_dependency is not None for c in derived_extensions):
+                from ecomsre.product.investigation.reads import InvestigationReads
+                supplemental_reads = InvestigationReads(
+                    incident=incident, environment=environments.get(incident.environment_id),
+                    identities=services.get_map(incident.environment_id),
+                    capabilities=capabilities.get(incident.environment_id),
+                    backend=read_backend, objects=object_store, fence=fence,
+                )
             result = handle_incident_diagnosis(
                 job,
                 incidents,
@@ -424,6 +433,7 @@ def run_one_job(
                     ProductExtensionMatcherV1(
                         knowledge.active_extensions(incident.environment_id),
                         derived_registrations=derived_extensions,
+                        supplemental_reads=supplemental_reads,
                         capability_sha256=incident.source_capability_sha256 if derived_extensions else None,
                     )
                 ),

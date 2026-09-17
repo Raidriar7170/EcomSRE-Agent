@@ -112,3 +112,5 @@ action/remediation authority = `NONE`，cleanup = `CLEAN`。
 本节是 DEC-064 的新作用域；上文保留既有人工门控路径。Investigation 轨迹可供 LLM 提议 PATTERN_ONLY 候选，需绑定真实请求和完整 discovery 快照；fixture 不能冒充 LLM 来源。既有 miner 使用相同候选池和求值路径。Level B 支持资源 gauge 聚合/比值，未知覆盖不补零。开发检查与独立冻结评估分开，缺控制样本拒绝晋升。晋升仅由独立 harness 在新测试注册库按 Goal 条件执行，模型没有该工具。
 
 本次尚无真实模型候选、holdout、晋升或复发结果；已实现的 fixture 匹配与撤销不能称为学习成功。见 [实现边界](../analysis/product-v050-design.md)。
+
+The [v0.5 continuation](../results/product-v050/continuation-01/README.md) binds supplemental resource query requirements and uses them during deterministic new-event reads. Harness-owned episode splits precede proposer exposure; cross-candidate/revision exposure and duplicate episode denominators fail closed. Current validation is fixture-only; actual model candidate, holdout and promotion were not attempted after Provider smoke failed.

@@ -458,3 +458,43 @@ def test_unknown_model_suffix_invalidates_campaign_cost_bound(tmp_path):
     assert second.value.code == "PROVIDER_COST_BOUND_INVALID"
     assert repo.accounting()["request_count"] == 1
     assert repo.accounting()["unknown_usage_requests"] == 1
+
+
+def test_responses_adapter_preserves_model_usage_and_discards_reasoning(tmp_path):
+    repo=repository(tmp_path)
+    def post_json(**kwargs):
+        assert kwargs['url']=='https://example.test/v1/responses'
+        assert kwargs['payload']['store'] is False
+        assert kwargs['payload']['model']=='gpt-5.4'
+        assert kwargs['payload']['service_tier']=='default'
+        return {'id':'fixture-response','model':'gpt-5.4','status':'completed',
+                'usage':{'input_tokens':100,'output_tokens':20},
+                'output':[{'type':'reasoning','text':'HIDDEN_SENTINEL'},
+                          {'type':'function_call','status':'completed','name':'submit_proposal','arguments':decision().model_dump_json()}]}
+    provider=StructuredProvider(OpenAICompatibleConfig('https://example.test/v1','fixture','gpt-5.4'),
+        PriceSchedule(provider_profile='fixture',model='gpt-5.4',as_of='2026-09-17',source='fixture',
+                      input_usd_per_million=3,output_usd_per_million=15),repo,
+        SimpleNamespace(post_json=post_json),api_style='responses')
+    assert provider.complete(key='responses-fixture',task='investigate',view={},schema=InvestigationDecision)==decision()
+    with repo.store.connect() as c:
+        raw=c.execute('SELECT payload_json FROM investigation_provider_calls_v050').fetchone()[0]
+    assert 'HIDDEN_SENTINEL' not in raw
+    assert repo.accounting()['known_cost_microusd']==600
+
+
+@pytest.mark.parametrize('status,error,call_status',[('failed',{'code':'server_error'},'in_progress'),
+    ('in_progress',None,'in_progress'),('cancelled',None,'completed'),('completed',None,'in_progress')])
+def test_responses_incomplete_function_is_not_committed(tmp_path,status,error,call_status):
+    repo=repository(tmp_path)
+    response={'id':'incomplete','model':'gpt-5.4','status':status,'error':error,
+              'usage':{'input_tokens':100,'output_tokens':20},
+              'output':[{'type':'function_call','status':call_status,'name':'submit_proposal',
+                         'arguments':decision().model_dump_json()}]}
+    provider=StructuredProvider(OpenAICompatibleConfig('https://example.test/v1','fixture','gpt-5.4'),
+        PriceSchedule(provider_profile='fixture',model='gpt-5.4',as_of='2026-09-17',source='fixture',
+                      input_usd_per_million=3,output_usd_per_million=15),repo,
+        SimpleNamespace(post_json=lambda **kwargs:response),api_style='responses')
+    with pytest.raises(ProductError) as caught:
+        provider.complete(key='partial',task='investigate',view={},schema=InvestigationDecision)
+    assert caught.value.code=='PROVIDER_RESPONSE_NOT_COMPLETED'
+    assert repo.accounting()['known_cost_microusd']==600

@@ -1,5 +1,7 @@
 # 当前状态 · Product v0.4.1
 
+Current v0.5 continuation: [review repairs and retained Provider failures](../results/product-v050/continuation-01/README.md). Project configuration and pricing are resolved; generation interfaces returned HTTP404. Four cumulative requests include one metadata probe; no real model decision, live episode or learned knowledge. Earlier zero-call results below remain historical.
+
 **收尾完成；v0.4 的真实 Payment 恢复已合并。单租户本地 Product 原型。**
 
 ## Diagnosis authority

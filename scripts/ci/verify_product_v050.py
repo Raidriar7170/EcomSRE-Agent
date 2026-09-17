@@ -3,11 +3,13 @@
 import argparse
 import hashlib
 import json
+import subprocess
 from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[2]
 RESULT = ROOT / "docs/results/product-v050"
+HISTORICAL_HEAD = "cd086826b23b728c6527b8b6981aeffef489c4e7"
 PREFIX = "ECOMSRE_PRODUCT_V050_"
 
 
@@ -25,20 +27,16 @@ def derive() -> dict[str, Any]:
         len({c["id"] for c in offline["cases"]}) == len(offline["cases"]),
         "DUPLICATE_TEST",
     )
-    from scripts.product_v050.run_offline_checks import bound_sources
-
-    require(
-        set(offline["source_sha256"])
-        == {str(p.relative_to(ROOT)) for p in bound_sources(ROOT)},
-        "INCOMPLETE_SOURCE_BINDING",
-    )
+    # This package is the preserved zero-call stage, not current source evidence.
+    # Anchor every historical artifact to its published commit before reading it.
+    for path in ["offline-checks.json", "preflight.json", "checks.json", "acceptance.json"]:
+        relative = "docs/results/product-v050/" + path
+        original = subprocess.check_output(["git", "show", HISTORICAL_HEAD + ":" + relative], cwd=ROOT)
+        require((ROOT / relative).read_bytes() == original, "HISTORICAL_ARTIFACT_DRIFT:" + relative)
     for path, digest in offline["source_sha256"].items():
-        resolved = (ROOT / path).resolve()
-        require(resolved.is_relative_to(ROOT), "SOURCE_ESCAPE")
-        require(
-            hashlib.sha256(resolved.read_bytes()).hexdigest() == digest,
-            "SOURCE_DRIFT:" + path,
-        )
+        require(not Path(path).is_absolute() and ".." not in Path(path).parts, "SOURCE_ESCAPE")
+        original = subprocess.check_output(["git", "show", HISTORICAL_HEAD + ":" + path], cwd=ROOT)
+        require(hashlib.sha256(original).hexdigest() == digest, "HISTORICAL_SOURCE_DRIFT:" + path)
     preflight = json.loads((RESULT / "preflight.json").read_text())
     require(
         preflight["provider_status"] == "NOT_CONFIGURED"
@@ -122,9 +120,7 @@ def main() -> None:
     args = parser.parse_args()
     expected = derive()
     if args.write:
-        (RESULT / "acceptance.json").write_text(
-            json.dumps(expected, indent=2, sort_keys=True) + "\n"
-        )
+        raise ValueError("Historical acceptance is immutable; write continuation evidence separately")
     else:
         require(
             json.loads((RESULT / "acceptance.json").read_text()) == expected,
@@ -135,7 +131,7 @@ def main() -> None:
             {
                 "verification": "PASS",
                 "terminal": expected["terminal"],
-                "scope": "OFFLINE_PACKAGE_ONLY_NOT_LIVE_ACCEPTANCE",
+                "scope": "HISTORICAL_OFFLINE_PACKAGE_NOT_CURRENT_OR_LIVE_ACCEPTANCE",
             },
             sort_keys=True,
         )

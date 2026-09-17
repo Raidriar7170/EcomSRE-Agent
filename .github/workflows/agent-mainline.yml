@@ -297,6 +297,9 @@ jobs:
       - name: Product v0.5 offline package verification
         run: PYTHONPATH=src:. uv run --frozen --no-sync python -m scripts.ci.verify_product_v050
 
+      - name: Product v0.5 continuation evidence
+        run: PYTHONPATH=src:. uv run --frozen --no-sync python -m scripts.ci.verify_product_v050_continuation
+
       - name: Full repository tests
         env:
           GH_TOKEN: ${{ github.token }}

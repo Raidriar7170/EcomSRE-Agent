@@ -68,3 +68,5 @@ v0.4.1 既有通道中，LLM 是可选的非权威命名/解释层，不选择�
 ## v0.5 开发增量（尚未完成实测验收）
 
 默认关闭的调查与知识提议任务已接入 Product API/Worker；模型可从合法读取目录中选择证据并提出假设，Runtime 保留证据校验、预算和正式诊断权限。新增 Level B 资源聚合表达式、独立验证适配和只读局部恢复预览。当前仅有离线 fixture 证据；真实 Provider 请求与 live episode 均为 0，不能宣称完成了 LLM 学习或新事件复用。见 [设计与边界](docs/analysis/product-v050-design.md)、[执行进度](docs/analysis/product-v050-progress.md)。
+
+Product v0.5 [PR #104 continuation](docs/results/product-v050/continuation-01/README.md) repairs evidence binding and supplemental-read reuse. Real generation smoke is blocked by HTTP404; no live learning success is claimed. Earlier zero-call evidence is preserved.

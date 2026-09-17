@@ -74,3 +74,7 @@ PYTHONPATH=src:. python -m scripts.product_v050.run_offline_checks --output .loc
 恢复预览的库入口是 `ecomsre.product.remediation.planner.propose_preview`，
 只返回无执行权限的 `PlanPreview`。本节不提供启动新 live campaign 或恢复写入命令；
 当前未配置 Provider，真实路径未验证，活动预算和冻结案例要求仍有效。
+
+### v0.5 continuation checks
+
+See [continuation evidence](../results/product-v050/continuation-01/README.md). `PYTHONPATH=src:. .venv/bin/python -m scripts.product_v050.provider_smoke` loads only the explicit project dotenv and dated pricing, then performs read-only preflight. It does not send requests without `--execute`; consumed smoke attempts must not be rerun. `PYTHONPATH=src:. .venv/bin/python -m scripts.ci.verify_product_v050_continuation` verifies the current source-bound result.

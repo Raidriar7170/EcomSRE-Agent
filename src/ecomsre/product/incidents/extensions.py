@@ -114,7 +114,10 @@ class ProductExtensionMatcherV1:
         registrations: tuple[ProductExtensionRegistrationV1, ...] = (),
         *, derived_registrations: tuple[CompiledKnowledge, ...] = (),
         capability_sha256: str | None = None,
+        supplemental_reads=None,
     ) -> None:
+        self.supplemental_observations: list[dict[str, Any]] = []
+        self._supplemental_reads = supplemental_reads
         self._derived_registrations = derived_registrations
         self._capability_sha256 = capability_sha256
         self._registrations = tuple(
@@ -161,12 +164,17 @@ class ProductExtensionMatcherV1:
                 if decision.admitted
             )
         observations = snapshot_observations(snapshots, memory) if self._derived_registrations else []
+        if self._supplemental_reads is not None:
+            from ecomsre.product.knowledge.observations_v050 import acquire_dependencies
+            self.supplemental_observations = acquire_dependencies(self._derived_registrations, self._supplemental_reads)
+            observations += self.supplemental_observations
         for candidate in self._derived_registrations:
             if candidate.capability_sha256 != self._capability_sha256:
                 continue
             for target in candidate_services:
                 outcome = evaluate_candidate(candidate, target=target, memory=memory,
-                                             anomalies=generic_anomalies, observations=observations)
+                                             anomalies=generic_anomalies, observations=observations,
+                                             incident_end=self._supplemental_reads.incident.diagnosis_observed_at if self._supplemental_reads else None)
                 if outcome.status == "TRUE":
                     matches.append(ProductExtensionMatchV1(
                         registration_id=candidate.registration_id, mechanism_slug=candidate.proposal.name,

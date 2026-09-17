@@ -10,6 +10,7 @@ from pathlib import Path
 from datetime import UTC, datetime
 from typing import Any, Literal
 
+from ecomsre.product.knowledge import split_v050
 from ecomsre.product.investigation.contracts import StrictModel
 
 from ecomsre.dta_v2.v22.read_contracts import semantic_sha256_v22
@@ -47,6 +48,10 @@ def evaluation_bindings() -> dict[str, str]:
         "knowledge/compiler.py",
         "investigation/contracts.py",
         "investigation/provider.py",
+        "investigation/reads.py",
+        "knowledge/observations_v050.py",
+        "knowledge/split_v050.py",
+        "incidents/extensions.py",
     ]
     return {
         path: hashlib.sha256((product / path).read_bytes()).hexdigest()
@@ -61,6 +66,8 @@ class IncompleteValidation(StrictModel):
     gate_passed: Literal[False] = False
     reason_codes: tuple[str, ...]
     outcomes: tuple[ShadowCaseOutcomeV1, ...]
+
+
 
 
 class KnowledgeEvolutionV050:
@@ -82,6 +89,14 @@ class KnowledgeEvolutionV050:
                     source_request_key TEXT PRIMARY KEY, environment_id TEXT NOT NULL,
                     discovery_sha256 TEXT NOT NULL, reason TEXT NOT NULL, created_at TEXT NOT NULL);
             """)
+
+        split_v050.initialize(self.store)
+
+    def freeze_split(self, environment_id, episodes):
+        split_v050.freeze_split(self.store, environment_id, episodes)
+
+    def bind_episode(self, incident_id, episode_id):
+        split_v050.bind_episode(self.store, self.knowledge._incident(incident_id), episode_id)
 
     def enroll_fresh_test_environment(self, environment_id: str) -> None:
         """Harness-only enrollment before the first incident or registration."""
@@ -117,12 +132,20 @@ class KnowledgeEvolutionV050:
         if len(set(incident_ids)) < 2 or len(incident_ids) > 12:
             raise ValueError("multiple distinct discovery incidents required")
         with self.store.connect() as c:
+            c.execute("BEGIN IMMEDIATE")
             freezes = c.execute(
                 "SELECT freeze_json FROM knowledge_candidate_pool_v050 WHERE freeze_json IS NOT NULL"
             ).fetchall()
-        heldout_ids = {i for row in freezes for i in json.loads(row[0])["cases"]}
-        if set(incident_ids) & heldout_ids:
-            raise ValueError("frozen evaluation events cannot enter discovery")
+            heldout_ids = {i for row in freezes for i in json.loads(row[0])["cases"]}
+            if set(incident_ids) & heldout_ids:
+                raise ValueError("frozen evaluation events cannot enter discovery")
+            # A split-bound event must never cross roles, even under a new candidate.
+            bound = [i for i in incident_ids if c.execute(
+                "SELECT 1 FROM knowledge_episode_incidents_v050 WHERE incident_id=?", (i,)
+            ).fetchone()]
+            split_v050.require_roles(c, bound, {"DISCOVERY", "DEVELOPMENT"})
+            split_v050.expose(c, incident_ids, "DISCOVERY_VIEW")
+            c.execute("COMMIT")
         sessions = []
         for incident_id in sorted(set(incident_ids)):
             session = self.investigations.get(incident_id)
@@ -132,6 +155,14 @@ class KnowledgeEvolutionV050:
                 or session["status"] == "RUNNING"
             ):
                 raise ValueError("completed same-environment investigations required")
+            instance = self.knowledge._incident(incident_id)
+            if session["parent_diagnosis_id"] != self.knowledge._diagnosis(incident_id).diagnosis_id:
+                raise ValueError("investigation parent diagnosis differs")
+            from ecomsre.product.knowledge.observations_v050 import load_observations
+            bound_observations = {o["evidence_ref"]: o for o in load_observations(instance, self.investigations.objects)}
+            for observation in session["observations"]:
+                if observation["evidence_ref"].startswith("investigation:") and bound_observations.get(observation["evidence_ref"]) != observation:
+                    raise ValueError("investigation projection differs from bound CAS observation")
             # Deliberate allowlist: no case labels, truth, private records or controller state.
             sessions.append(
                 {
@@ -171,6 +202,11 @@ class KnowledgeEvolutionV050:
         key: str,
         fence=None,
     ):
+        with self.store.connect() as c:
+            c.execute("BEGIN IMMEDIATE")
+            split_v050.require_roles(c, incident_ids, {"DISCOVERY", "DEVELOPMENT"})
+            split_v050.expose(c, incident_ids, "PROPOSER_DISPATCH")
+            c.execute("COMMIT")
         view = self.discovery_view(environment_id, incident_ids)
         proposal = provider.complete(
             key=key,
@@ -410,6 +446,19 @@ class KnowledgeEvolutionV050:
             raise ValueError(
                 "threshold provenance must bind the supplied discovery snapshot"
             )
+        if proposal.expression is not None and proposal.resource_dependency is None and any(
+            ref.startswith("investigation:") for ref in proposal.supporting_refs
+        ):
+            raise ValueError("supplemental resource expression requires a deployable dependency")
+        if proposal.resource_dependency is not None:
+            from ecomsre.product.knowledge.observations_v050 import load_observations, select_dependency
+            for member in proposal.member_incidents:
+                instance = self.knowledge._incident(member)
+                bound = load_observations(instance, self.investigations.objects)
+                selected = select_dependency(proposal.resource_dependency,
+                                             incident_end=instance.diagnosis_observed_at, observations=bound, target=proposal.target)
+                if not selected or not set(proposal.supporting_refs).intersection(o["evidence_ref"] for o in selected):
+                    raise ValueError("candidate has no verified deployable observation dependency")
         if origin == "LLM":
             with self.store.connect() as c:
                 row = c.execute(
@@ -423,6 +472,8 @@ class KnowledgeEvolutionV050:
                 != proposal.model_dump(mode="json")
             ):
                 raise ValueError("candidate lacks a matching completed model response")
+            with self.store.connect() as c:
+                split_v050.require_independent(c, proposal.member_incidents)
             provenance = json.loads(row["payload_json"])
             if provenance.get("evidence_mode") != "LIVE_PROVIDER" or provenance.get(
                 "task_view_sha256"
@@ -522,6 +573,9 @@ class KnowledgeEvolutionV050:
                 i for item in frozen for i in json.loads(item[0])["cases"]
             }:
                 raise ValueError("holdout cannot enter development")
+            candidate_for_split = CompiledKnowledge.model_validate_json(row["payload_json"])
+            if candidate_for_split.origin == "LLM":
+                split_v050.require_roles(c, incident_ids, {"DISCOVERY", "DEVELOPMENT"})
             # Reserve before evaluation; interrupted work remains consumed.
             c.execute(
                 "INSERT INTO knowledge_development_v050 VALUES (?,?)",
@@ -553,14 +607,17 @@ class KnowledgeEvolutionV050:
                 for item in evidence.objects
                 if "connector_result" in item.payload
             }
+            from ecomsre.product.knowledge.observations_v050 import load_observations
+            supplemental = load_observations(material.incident, self.investigations.objects)
             outcome = evaluate_candidate(
                 candidate,
+                incident_end=material.incident.diagnosis_observed_at,
                 target=candidate.proposal.target,
                 memory=material.runtime_input.memory,
                 anomalies=material.runtime_input.generic_anomalies,
                 observations=snapshot_observations(
                     snapshots.values(), material.runtime_input.memory
-                ),
+                ) + supplemental,
             )
             outcomes.append(
                 {
@@ -610,6 +667,11 @@ class KnowledgeEvolutionV050:
                     )
                 if set(cases) & set(json.loads(development[0])["incident_ids"]):
                     raise ValueError("holdout overlaps development")
+                if set(cases) & split_v050.exposed_incidents(c):
+                    raise ValueError("holdout overlaps globally exposed incident or episode")
+                if candidate.origin == "LLM":
+                    split_v050.require_roles(c, cases, {"HOLDOUT"})
+                    split_v050.require_independent(c, cases)
                 for incident_id, stratum in cases.items():
                     ShadowEvaluationStratumV1(stratum)
                     if (
@@ -621,7 +683,14 @@ class KnowledgeEvolutionV050:
                     "SELECT request_sha256 FROM investigation_provider_calls_v050 WHERE call_key=?",
                     (candidate.source_request_key,),
                 ).fetchone()
+                from ecomsre.product.knowledge.observations_v050 import load_observations
+                supplemental_hashes = {
+                    i: semantic_sha256_v22(load_observations(self.knowledge._incident(i), self.investigations.objects))
+                    for i in cases
+                }
                 manifest = {
+                    "supplemental_sha256": supplemental_hashes,
+                    "split_sha256": split_v050.split_digest(c, candidate.environment_id),
                     "evaluator_and_protocol_sha256": evaluation_bindings(),
                     "source_request_sha256": None if source is None else source[0],
                     "diagnosis_hashes": {
@@ -670,6 +739,10 @@ class KnowledgeEvolutionV050:
             ).fetchone()
         if manifest["source_request_sha256"] != (None if source is None else source[0]):
             raise ValueError("frozen model request changed")
+        with self.store.connect() as c:
+            if manifest["split_sha256"] != split_v050.split_digest(c, candidate.environment_id):
+                raise ValueError("frozen episode split differs")
+            split_v050.expose(c, manifest["cases"], "HOLDOUT_CONSUMED")
         outcomes = []
         for incident_id, label in sorted(manifest["cases"].items()):
             material = self.knowledge._shadow_runtime_material(incident_id)
@@ -691,14 +764,19 @@ class KnowledgeEvolutionV050:
                 for item in evidence.objects
                 if "connector_result" in item.payload
             }
+            from ecomsre.product.knowledge.observations_v050 import load_observations
+            supplemental = load_observations(material.incident, self.investigations.objects)
+            if semantic_sha256_v22(supplemental) != manifest["supplemental_sha256"][incident_id]:
+                raise ValueError("frozen supplemental observations changed")
             observations = snapshot_observations(
                 snapshots.values(), material.runtime_input.memory
-            )
+            ) + supplemental
             outcome = evaluate_candidate(
                 candidate,
                 target=candidate.proposal.target,
                 memory=material.runtime_input.memory,
                 anomalies=material.runtime_input.generic_anomalies,
+                incident_end=material.incident.diagnosis_observed_at,
                 observations=observations,
             )
             stratum = ShadowEvaluationStratumV1(label)
@@ -718,8 +796,8 @@ class KnowledgeEvolutionV050:
                 else (),
                 "available_evidence_refs": tuple(
                     sorted(
-                        r.evidence_ref
-                        for r in material.runtime_input.memory.evidence_refs
+                        {r.evidence_ref for r in material.runtime_input.memory.evidence_refs}
+                        | {o["evidence_ref"] for o in observations}
                     )
                 ),
                 "required_sources": candidate.proposal.required_sources,

@@ -70,7 +70,11 @@ class InvestigationReads:
         backend: ProductReadBackendV1,
         objects: ContentAddressedObjectStoreV1,
         initial_evidence: EvidenceBundleV1 | None = None,
+        fence=None,
     ) -> None:
+        self.fence = fence
+        self.parent_diagnosis_id = initial_evidence.diagnosis_id if initial_evidence else None
+        self.capability_sha256 = capabilities.capability_sha256
         self.incident, self.environment = incident, environment
         self.identities, self.backend, self.objects = identities, backend, objects
         self.entries: dict[str, tuple[Any, ConnectorWindowV1]] = {}
@@ -183,19 +187,8 @@ class InvestigationReads:
             },
             window=window,
         )
-        # Persist the typed observation; only its allowlisted projection goes to model.
-        stored = self.objects.put_json(result.model_dump(mode="json"))
-        return {
-            "evidence_ref": "investigation:" + stored.object_sha256,
-            "object_sha256": stored.object_sha256,
-            "source": result.source.value,
-            "targets": list(action.target_services),
-            "window": window.model_dump(mode="json"),
-            "status": result.status.value,
-            "truncated": result.truncated,
-            "covered_services": list(result.covered_services),
-            "records": [
-                project_record(r.model_dump(mode="json")) for r in result.records
-            ],
-            "cached": False,
-        }
+        from ecomsre.product.knowledge.observations_v050 import save_observation
+        return save_observation(incident=self.incident, action=action, window=window,
+                                result=result, objects=self.objects,
+                                capability_sha256=self.capability_sha256, fence=self.fence,
+                                parent_diagnosis_id=self.parent_diagnosis_id)

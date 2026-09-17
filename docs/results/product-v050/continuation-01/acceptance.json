@@ -1,0 +1,35 @@
+{
+  "engineering_status": "REGRESSION_IN_PROGRESS",
+  "holdout_result": "NOT_ATTEMPTED",
+  "independent_live_incidents": 0,
+  "investigation_acceptance": "SMOKE_FAILED_BEFORE_MODEL_SELECTED_READ",
+  "knowledge_proposal_acceptance": "NOT_ATTEMPTED_SMOKE_FAILED",
+  "level_b_expression_acceptance": "FIXTURE_SUPPLEMENTAL_DEPENDENCY_AND_NORMAL_ZERO_CALL_MATCH",
+  "limitations": [
+    "No successful generation response; no real LLM decision or knowledge proposal",
+    "No live episode, frozen live dataset, holdout, learned promotion or learned recurrence",
+    "Replay instances share one fixture capture; not independent accidents",
+    "Actual invoice cost unavailable; all unknown usage reservations retained"
+  ],
+  "live_episode_count": 0,
+  "new_event_reuse_status": "NOT_ATTEMPTED_WITH_LEARNED_KNOWLEDGE",
+  "new_product_external_writes": 0,
+  "owned_cleanup_status": "NOT_REQUIRED_NO_V050_RUNTIME_CREATED",
+  "previous_acceptance": "../acceptance.json",
+  "promotion_status": "NOT_ATTEMPTED",
+  "provider_request_count": 4,
+  "provider_status": "MODEL_METADATA_AVAILABLE_GENERATION_HTTP_404",
+  "remediation_preview_status": "PREVIEW_ONLY_NONE_AUTHORITY",
+  "reused_event_llm_calls": null,
+  "schema_version": "ecomsre.product.continuation.v050.1",
+  "starting_head": "cd086826b23b728c6527b8b6981aeffef489c4e7",
+  "telemetry_mode": "LIVE_PROVIDER_REPLAY_TELEMETRY_ATTEMPTED_NO_MODEL_DECISION",
+  "terminal": "IN_PROGRESS",
+  "usage_and_cost": {
+    "actual_usd": null,
+    "committed_upper_microusd": 95449,
+    "remaining_request_budget": 196,
+    "remaining_upper_microusd": 19904551,
+    "unknown_usage_requests": 4
+  }
+}

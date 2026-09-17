@@ -488,6 +488,12 @@ class ProductDiagnosisBridgeV1:
             }
             for observation in acquisition.capability_observations_v0232
         )
+        observations.extend(
+            {"evidence_ref": o["evidence_ref"], "source": o["source"],
+             "action_id": "supplemental:" + o["object_sha256"][:24],
+             "payload": {"supplemental_observation": o}}
+            for o in getattr(self._extension_matcher, "supplemental_observations", ())
+        )
         return result, tuple(observations), trace
 
 
