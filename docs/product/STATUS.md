@@ -1,4 +1,4 @@
-# 当前状态 · Product v0.4.1
+# 当前状态 · Product v0.5 有限交付
 
 Current v0.5 continuation: [review repairs and retained Provider failures](../results/product-v050/continuation-01/README.md). Project configuration and pricing are resolved; generation interfaces returned HTTP404. Four cumulative requests include one metadata probe; no real model decision, live episode or learned knowledge. Earlier zero-call results below remain historical.
 
@@ -47,4 +47,4 @@ v0.3 Shadow 为 3 个正例、10 个负向/反事实/失败用例，`OTHER_EXTEN
 
 ## v0.5 活动开发状态
 
-[v0.5 Goal](../goals/EcomSRE_v0.5_Codex_Goal.md) 已激活，当前工程及离线验证完成，终态为 `ECOMSRE_PRODUCT_V050_ENGINEERING_COMPLETE_WITH_LIMITATIONS`，没有完整实测验收 PASS。新增调查、知识候选和恢复预览默认关闭/只读。真实 Provider 与价格配置缺失，Provider 请求 0、live episode 0；历史 Product 调用数不改写。进度见 [记录](../analysis/product-v050-progress.md)。
+[v0.5 Goal](../goals/EcomSRE_v0.5_Codex_Goal.md) 已激活，当前工程及离线验证完成，终态为 `ECOMSRE_PRODUCT_V050_ENGINEERING_COMPLETE_WITH_LIMITATIONS`，没有完整实测验收 PASS。新增调查、知识候选和恢复预览默认关闭/只读。项目 Provider 与价格配置已确认；累计 Provider 请求 4（含元数据查询 1），生成接口返回 HTTP404，live episode 0；历史 Product 调用数不改写。进度见 [记录](../analysis/product-v050-progress.md)。

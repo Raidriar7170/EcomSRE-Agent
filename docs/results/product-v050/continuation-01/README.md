@@ -78,3 +78,20 @@ The smoke command without `--execute` is read-only and does not request inferenc
 Consumed attempts are create-once; do not rerun them or delete markers. The first
 verifier anchors the historical package to its published commit; the continuation
 verifier checks current source-bound tests and appended failed-request evidence.
+
+## Bounded terminal and verification boundary
+
+`ECOMSRE_PRODUCT_V050_ENGINEERING_COMPLETE_WITH_LIMITATIONS` preserves the original
+limited terminal; it is not acceptance PASS. Missing real generation access stops
+smoke before paid batches, independent live events, proposer, holdout or promotion.
+Unblock requires a working generation interface for this exact authorized project
+credential/model, then resume the same retained ledger and budget.
+
+[checks.json](checks.json) distinguishes clean pre-followup full-suite evidence
+(6608 passed, 21 skipped) from the current 67 source-bound fixture checks. Final
+repairs also reject wrong-source results before projection, verify nonempty parent
+diagnoses at save/load, and serialize development checks plus durable reservation
+against competing freeze writers. The no-parent pre-diagnosis path remains valid.
+The independent reviewer reports no open Must Fix in the reviewed boundaries.
+Final exact-head CI must be green on Draft PR #104 before task closure; CI identity
+is linked at the PR rather than recursively embedded in its own commit.

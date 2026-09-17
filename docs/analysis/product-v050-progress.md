@@ -206,3 +206,28 @@ repository and extension matcher; separate preview module under remediation.
   new campaign budget, session overwrite or external Product write.
 - Existing Product/v040/v041 regression: 316 passed. Current v050: 63 passed.
   Product/new scripts mypy: 170 files. Final full repository/CI still pending.
+
+### Continuation bounded closeout
+
+- Clean commit eec6ef5: full repository 6608 passed / 21 skipped / 17 warnings
+  (643.19 s); full mainline mypy 734 files; 24 CI verifier modules passed.
+- Final independent inspection found the development check/reservation race and
+  unchecked supplemental parent/source claims. Added competing-writer and wrong-
+  source/parent regressions first (2 failing tests), then fixed with BEGIN IMMEDIATE
+  through durable reservation, source equality before CAS/projection, and parent
+  diagnosis ownership at save/load. Null parent remains valid before diagnosis.
+  Follow-up continuation tests 19 passed; complete v050 67 passed; 2 changed typed
+  source files and repository Ruff passed. Final full-suite/CI verification follows
+  on the exact published head; no real experiment was repeated for these checks.
+- Read/write scopes extend the original declaration to the continuation Goal,
+  scripts/ci/verify_product_v050_history.py and verify_product_v050_continuation.py.
+  Four previous v050 result files and the original Goal are frozen at cd086826;
+  original 1330 historical assets remain protected against starting main.
+- Terminal: ECOMSRE_PRODUCT_V050_ENGINEERING_COMPLETE_WITH_LIMITATIONS. R1/R2/R3/R4
+  repaired within documented finite-query semantics; real generation remains
+  blocked by HTTP404. No model-selected read, knowledge candidate, independent
+  live case, holdout, promotion or learned-rule recurrence succeeded/was attempted.
+  Same 4 cumulative requests and USD0.095449 reserved upper remain; actual invoice
+  unknown. No Docker runtime created, cleanup NOT_REQUIRED, new Product writes 0.
+- Same Draft PR #104 only. No merge, release, model switch, skill comparison,
+  expanded recovery authority, evidence deletion or fresh campaign budget.

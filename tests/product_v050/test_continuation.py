@@ -271,7 +271,32 @@ def test_r2_supplemental_resource_dependency_reaches_development_and_normal_reus
         assert any(
             r.startswith("investigation:") for r in result["supporting_evidence_refs"]
         )
-        from ecomsre.product.knowledge.observations_v050 import load_observations
+        import json
+        from ecomsre.product.knowledge.observations_v050 import load_observations, save_observation
+        from ecomsre.dta_v2.v22.action_catalog import EvidenceActionV22
+        from ecomsre.product.connectors.base import ConnectorQueryResultV1, ConnectorWindowV1
+        with app.state.store.connect() as c:
+            original_digest = c.execute("SELECT object_sha256 FROM supplemental_observations_v050 WHERE incident_id=?", (first,)).fetchone()[0]
+        envelope = json.loads(app.state.object_store.read_bytes(original_digest))
+        action = EvidenceActionV22.model_validate_json(json.dumps(envelope["action"]))
+        observed = ConnectorQueryResultV1.model_validate_json(json.dumps(envelope["result"]))
+        window = ConnectorWindowV1.model_validate_json(json.dumps(envelope["window"]))
+        arguments = dict(incident=incident, action=action, window=window, result=observed,
+                         objects=app.state.object_store, capability_sha256=incident.source_capability_sha256)
+        with pytest.raises(ValueError, match="QUERY_RESULT_MISMATCH"):
+            save_observation(**(arguments | {"result": observed.model_copy(update={"source": type(observed.source)("LOGS")})}))
+        wrong_parent = client.get(f"/v1/incidents/{second}/diagnosis").json()["diagnosis_id"]
+        with pytest.raises(ValueError, match="PARENT_BINDING"):
+            save_observation(**arguments, parent_diagnosis_id=wrong_parent)
+        forged = dict(envelope, parent_diagnosis_id=wrong_parent)
+        forged_digest = app.state.object_store.put_json(forged).object_sha256
+        with app.state.store.connect() as c:
+            c.execute("UPDATE supplemental_observations_v050 SET object_sha256=? WHERE incident_id=?", (forged_digest, first))
+        with pytest.raises(ValueError, match="PARENT_BINDING"):
+            load_observations(incident, app.state.object_store)
+        with app.state.store.connect() as c:
+            c.execute("UPDATE supplemental_observations_v050 SET object_sha256=? WHERE incident_id=?", (original_digest, first))
+        assert load_observations(incident, app.state.object_store)
         with app.state.store.connect() as c:
             digest = c.execute("SELECT object_sha256 FROM supplemental_observations_v050 WHERE incident_id=?", (first,)).fetchone()[0]
             c.execute("UPDATE supplemental_observations_v050 SET object_sha256=? WHERE incident_id=?", (digest, recurrence))
@@ -313,7 +338,7 @@ def test_r3_empty_failed_or_wrong_scope_is_never_a_counterexample(mutation):
     assert check_predictions([h], [resource(**mutation)])[0]["status"] == "UNKNOWN"
 
 
-def test_r4_cross_candidate_seen_incident_cannot_become_holdout(tmp_path):
+def test_r4_cross_candidate_seen_incident_cannot_become_holdout(tmp_path, monkeypatch):
     import json
     from fastapi.testclient import TestClient
     from ecomsre.product.app import create_app
@@ -382,6 +407,51 @@ def test_r4_cross_candidate_seen_incident_cannot_become_holdout(tmp_path):
                 )
         with pytest.raises(ValueError, match="exposed"):
             evo.freeze("b", {seen: "POSITIVE_INCIDENT"})
+
+        # A competing freeze writer must be excluded before the first check and
+        # remain excluded until the development reservation is durable.
+        import sqlite3
+        from contextlib import contextmanager
+        original_connect = app.state.store.connect
+        with original_connect() as c:
+            c.execute("DELETE FROM knowledge_development_v050 WHERE registration_id='a'")
+        competing_writes = []
+
+        class RacingConnection:
+            def __init__(self, connection):
+                self.connection = connection
+
+            def execute(self, sql, *args):
+                if sql.startswith("SELECT freeze_json"):
+                    with original_connect() as competing:
+                        competing.execute("PRAGMA busy_timeout=0")
+                        try:
+                            competing.execute("BEGIN IMMEDIATE")
+                        except sqlite3.OperationalError as exc:
+                            assert "locked" in str(exc)
+                            competing_writes.append("BLOCKED")
+                        else:
+                            competing.execute("UPDATE knowledge_candidate_pool_v050 SET freeze_json=? WHERE registration_id='b'", (json.dumps({"cases": [seen]}),))
+                            competing.execute("COMMIT")
+                            competing_writes.append("FROZEN")
+                return self.connection.execute(sql, *args)
+
+        @contextmanager
+        def racing_connect():
+            with original_connect() as c:
+                yield RacingConnection(c)
+
+        def interrupted(_):
+            raise RuntimeError("evaluation interrupted after reservation")
+
+        monkeypatch.setattr(app.state.store, "connect", racing_connect)
+        monkeypatch.setattr(app.state.knowledge, "_shadow_runtime_material", interrupted)
+        with pytest.raises(RuntimeError, match="evaluation interrupted"):
+            evo.check_development("a", [seen])
+        assert competing_writes == ["BLOCKED"]
+        with original_connect() as c:
+            saved = c.execute("SELECT payload_json FROM knowledge_development_v050 WHERE registration_id='a'").fetchone()
+            assert json.loads(saved[0])["incident_ids"] == [seen]
 
 
 def test_r4_episode_alias_failed_dispatch_and_restart_retain_exposure(
@@ -524,7 +594,7 @@ def test_r2_expired_worker_cannot_link_observation(tmp_path):
     ensure_table(repo.store)
     window = SimpleNamespace(model_dump=lambda **kw: WINDOW)
     result = SimpleNamespace(
-        window=window, requested_services=("payment",), model_dump=lambda **kw: {}
+        source=SimpleNamespace(value="METRICS"), window=window, requested_services=("payment",), model_dump=lambda **kw: {}
     )
     action = SimpleNamespace(
         source=SimpleNamespace(value="METRICS"),

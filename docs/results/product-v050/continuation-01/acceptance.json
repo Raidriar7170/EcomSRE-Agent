@@ -1,5 +1,5 @@
 {
-  "engineering_status": "REGRESSION_IN_PROGRESS",
+  "engineering_status": "COMPLETE_OFFLINE_WITH_PROVIDER_LIMITATION",
   "holdout_result": "NOT_ATTEMPTED",
   "independent_live_incidents": 0,
   "investigation_acceptance": "SMOKE_FAILED_BEFORE_MODEL_SELECTED_READ",
@@ -24,7 +24,7 @@
   "schema_version": "ecomsre.product.continuation.v050.1",
   "starting_head": "cd086826b23b728c6527b8b6981aeffef489c4e7",
   "telemetry_mode": "LIVE_PROVIDER_REPLAY_TELEMETRY_ATTEMPTED_NO_MODEL_DECISION",
-  "terminal": "IN_PROGRESS",
+  "terminal": "ECOMSRE_PRODUCT_V050_ENGINEERING_COMPLETE_WITH_LIMITATIONS",
   "usage_and_cost": {
     "actual_usd": null,
     "committed_upper_microusd": 95449,

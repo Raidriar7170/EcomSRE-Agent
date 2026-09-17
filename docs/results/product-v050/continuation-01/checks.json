@@ -1,0 +1,152 @@
+{
+  "claims": {
+    "learned_reuse": false,
+    "new_product_external_writes": 0,
+    "real_holdout": false,
+    "real_learning": false
+  },
+  "final_exact_head_ci": "REQUIRED_AT_PR_HEAD; results are linked in PR to avoid recursive commit identity",
+  "focused_final": {
+    "evidence": "offline-checks.json",
+    "exit_code": 0,
+    "passed": 67,
+    "scope": "all current v050 source-bound fixture tests including final source/parent/transaction repairs"
+  },
+  "full_repository": {
+    "command": "python -m pytest -q",
+    "elapsed_seconds": 643.19,
+    "exit_code": 0,
+    "passed": 6608,
+    "scope": "clean pre-followup commit; final followup covered by focused regressions and required exact-head CI",
+    "skipped": 21,
+    "tested_clean_commit": "eec6ef5d407eb8b887cea57d63e4fa1f951e465a",
+    "warnings": 17
+  },
+  "historical_ci_verifiers": [
+    {
+      "exit_code": 0,
+      "module": "scripts.ci.verify_dta_v22_pr_a"
+    },
+    {
+      "exit_code": 0,
+      "module": "scripts.ci.verify_dta_v22_pr_b"
+    },
+    {
+      "exit_code": 0,
+      "module": "scripts.ci.verify_dta_v22_pr_c"
+    },
+    {
+      "exit_code": 0,
+      "module": "scripts.ci.verify_product_v040_development"
+    },
+    {
+      "exit_code": 0,
+      "module": "scripts.ci.verify_product_v040_minimal_payment"
+    },
+    {
+      "exit_code": 0,
+      "module": "scripts.ci.verify_product_v050_history"
+    },
+    {
+      "exit_code": 0,
+      "module": "scripts.ci.verify_product_v050"
+    },
+    {
+      "exit_code": 0,
+      "module": "scripts.ci.verify_product_v050_continuation"
+    },
+    {
+      "exit_code": 0,
+      "module": "scripts.ci.verify_product_mvp_v01_historical_bindings"
+    },
+    {
+      "exit_code": 0,
+      "module": "scripts.ci.verify_dta_v221_historical_practical_results"
+    },
+    {
+      "exit_code": 0,
+      "module": "scripts.ci.verify_dta_v221_study_manifest"
+    },
+    {
+      "exit_code": 0,
+      "module": "scripts.ci.verify_dta_v221_study_results"
+    },
+    {
+      "exit_code": 0,
+      "module": "scripts.ci.verify_dta_v226_real_fault_result"
+    },
+    {
+      "exit_code": 0,
+      "module": "scripts.ci.verify_phase5b_execution_historical_bindings"
+    },
+    {
+      "exit_code": 0,
+      "module": "scripts.ci.verify_product_v02_history"
+    },
+    {
+      "exit_code": 0,
+      "module": "scripts.ci.verify_product_v02_blocked_result"
+    },
+    {
+      "exit_code": 0,
+      "module": "scripts.ci.verify_product_v021_increment1"
+    },
+    {
+      "exit_code": 0,
+      "module": "scripts.ci.verify_product_v022_increment1"
+    },
+    {
+      "exit_code": 0,
+      "module": "scripts.ci.verify_product_v022_schema_probe_blocker"
+    },
+    {
+      "exit_code": 0,
+      "module": "scripts.ci.verify_product_v0221_schema_blocker"
+    },
+    {
+      "exit_code": 0,
+      "module": "scripts.ci.verify_product_v0222_increment5"
+    },
+    {
+      "exit_code": 0,
+      "module": "scripts.ci.verify_product_v0231_result"
+    },
+    {
+      "exit_code": 0,
+      "module": "scripts.ci.verify_product_v02323_increment5"
+    },
+    {
+      "exit_code": 0,
+      "module": "scripts.ci.verify_product_v0233_terminal"
+    }
+  ],
+  "independent_review": {
+    "mode": "READ_ONLY_CODE_AND_FIXTURE_REVIEW",
+    "real_acceptance_substitution": false,
+    "scope": "same-hypothesis binding, supplemental evidence persistence and normal reuse, scoped negative evidence, global exposure and transactional reservation, Provider partial responses"
+  },
+  "must_fix_open": 0,
+  "mypy": {
+    "exit_code": 0,
+    "followup_source_files_rechecked": 2,
+    "source_files": 734
+  },
+  "preserved_failures": [
+    "initial cross-hypothesis binding regressions",
+    "initial supplemental dependency integration failures",
+    "cross-candidate holdout exposure regression",
+    "Responses non-completed-output regressions",
+    "competing freeze and source mismatch followup regressions",
+    "all four real Provider attempts; usage and invoice unknown"
+  ],
+  "prior_product_regression": {
+    "exit_code": 0,
+    "passed": 316,
+    "warnings": 15
+  },
+  "ruff": {
+    "exit_code": 0,
+    "scope": "repository"
+  },
+  "schema_version": "ecomsre.product.continuation-checks.v050.1"
+}

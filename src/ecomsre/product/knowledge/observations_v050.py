@@ -58,6 +58,19 @@ def projection(envelope, digest):
     )
 
 
+def require_parent_binding(incident, parent_diagnosis_id, store):
+    # Deterministic reads before the first diagnosis have no parent yet.
+    if parent_diagnosis_id is None:
+        return
+    with store.connect() as c:
+        parent = c.execute(
+            "SELECT incident_id FROM diagnosis_results WHERE diagnosis_id=?",
+            (parent_diagnosis_id,),
+        ).fetchone()
+    if parent is None or parent["incident_id"] != incident.incident_id:
+        raise ValueError("SUPPLEMENTAL_PARENT_BINDING_MISMATCH")
+
+
 def save_observation(
     *,
     incident,
@@ -70,10 +83,11 @@ def save_observation(
     parent_diagnosis_id=None,
 ):
     dependency = dependency_for(incident, action, window)
-    if result.window != window or tuple(result.requested_services) != tuple(
+    if result.source != action.source or result.window != window or tuple(result.requested_services) != tuple(
         action.target_services
     ):
         raise ValueError("SUPPLEMENTAL_QUERY_RESULT_MISMATCH")
+    require_parent_binding(incident, parent_diagnosis_id, objects.metadata_store)
     envelope = dict(
         schema_version="ecomsre.product.supplemental-observation.v050",
         incident_id=incident.incident_id,
@@ -127,6 +141,7 @@ def load_observations(incident, objects):
             or envelope["capability_sha256"] != incident.source_capability_sha256
         ):
             raise ValueError("SUPPLEMENTAL_EVENT_BINDING_MISMATCH")
+        require_parent_binding(incident, envelope["parent_diagnosis_id"], objects.metadata_store)
         from ecomsre.dta_v2.v22.action_catalog import EvidenceActionV22
 
         action = EvidenceActionV22.model_validate_json(json.dumps(envelope["action"]))

@@ -555,6 +555,7 @@ class KnowledgeEvolutionV050:
         if not 1 <= len(set(incident_ids)) <= 12:
             raise ValueError("bounded distinct development cases required")
         with self.store.connect() as c:
+            c.execute("BEGIN IMMEDIATE")
             row = c.execute(
                 "SELECT * FROM knowledge_candidate_pool_v050 WHERE registration_id=?",
                 (registration_id,),
@@ -589,6 +590,7 @@ class KnowledgeEvolutionV050:
                     ),
                 ),
             )
+            c.execute("COMMIT")
         candidate = CompiledKnowledge.model_validate_json(row["payload_json"])
         outcomes = []
         for incident_id in sorted(set(incident_ids)):
