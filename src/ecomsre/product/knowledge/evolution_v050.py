@@ -176,13 +176,20 @@ class KnowledgeEvolutionV050:
                     )
                 }
             )
+            from ecomsre.product.knowledge.observations_v050 import dependency_catalog
+            sessions[-1]["dependency_catalog_status"] = (
+                "RETAINED" if "read_catalog" in session else "NOT_RETAINED_LEGACY_SESSION"
+            )
+            sessions[-1]["deployable_resource_dependencies"] = dependency_catalog(
+                instance, session.get("read_catalog", []), list(bound_observations.values())
+            )
         payload = {
             "sessions": sessions,
             "predicate_catalog": sorted(
                 ["core:" + k.value for k in _CORE_SOURCE]
                 + ["ga:" + k.value for k in _ANOMALY_SOURCE]
             ),
-            "proposal_constraints": "PATTERN_ONLY; use snapshot_sha256 for threshold_provenance. Do not infer causality.",
+            "proposal_constraints": "PATTERN_ONLY; use snapshot_sha256 for threshold_provenance. Do not infer causality. Only BOUND_OBSERVATION dependencies supply supporting_refs. LEGAL_NOT_COLLECTED requires a new investigation; initial resource snapshots do not establish supplemental query bindings. Fields outside feature_catalog are unsupported.",
             "feature_catalog": {
                 "source": "RESOURCES",
                 "fields": {"cpu_percent": "PERCENT", "memory_bytes": "BYTES"},

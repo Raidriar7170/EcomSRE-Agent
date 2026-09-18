@@ -1,0 +1,227 @@
+{
+  "actual_invoice_usd": null,
+  "authorization": "ACTIVATED_ORIGINAL_OWNED_LOCAL_SCOPE",
+  "containers_created": 22,
+  "containers_started": 0,
+  "daemon_identity_unchanged": true,
+  "dependency_rejection_diagnosis": {
+    "initial_resource_observed": true,
+    "initial_window_seconds": 10,
+    "input_gap": "NO_EXPLICIT_DEPLOYABLE_DEPENDENCY_CATALOG",
+    "proposed_query_window_seconds": 30,
+    "rejection_correct": true,
+    "repair": "BOUND_OBSERVATION / COLLECTED_INCOMPLETE / LEGAL_NOT_COLLECTED; legacy catalog NOT_RETAINED",
+    "supplemental_reads": 0,
+    "verified_dependency_present": false
+  },
+  "fault_injections": 0,
+  "holdout": "NOT_ATTEMPTED",
+  "independent_discovery_count": 0,
+  "investigation": "NOT_ATTEMPTED_PRESTART_SAFETY_GATE",
+  "knowledge": "NO_NEW_MODEL_CANDIDATE",
+  "live_episode_count": 0,
+  "network_events_available": false,
+  "network_observations": [
+    {
+      "configuration_sha256": "02fdd7075a3414bd1d40ed38bd8357675ffafafb47803a812045d1a4f61cd9a7",
+      "created_at": "2026-09-18T02:40:45.546291875Z",
+      "identity_sha256": "9ad9239cdc197e8c6e82c9a25145ac2526288a2948ec7159d1202b39bad4914a",
+      "name": "bridge",
+      "stage": "before"
+    },
+    {
+      "configuration_sha256": "02fdd7075a3414bd1d40ed38bd8357675ffafafb47803a812045d1a4f61cd9a7",
+      "created_at": "2026-09-18T02:47:02.554986041Z",
+      "identity_sha256": "e1a1c16da34a7c47a83eba72991ba53c279f729f47c55152ed0c1c0cc932cc14",
+      "name": "bridge",
+      "stage": "prestart"
+    },
+    {
+      "configuration_sha256": "02fdd7075a3414bd1d40ed38bd8357675ffafafb47803a812045d1a4f61cd9a7",
+      "created_at": "2026-09-18T02:53:41.856689958Z",
+      "identity_sha256": "47afec686f12fed038720a5d030c4b5924161a1e11ed552e2c6aac204c118e9f",
+      "name": "bridge",
+      "stage": "after_cleanup"
+    }
+  ],
+  "network_recreation_cause": "UNKNOWN",
+  "new_event_reuse": "NOT_ATTEMPTED",
+  "new_product_external_writes": 0,
+  "new_provider_requests": 0,
+  "old_volume_count": 3,
+  "old_volumes_unchanged": true,
+  "owned_cleanup": {
+    "clean": false,
+    "non_owned_unchanged": false,
+    "receipts": [
+      {
+        "identity_sha256": "57d08b8c960334ab849736db69c7eda2952c688db08fcbdad2f1d9bfbe88f331",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "c7e32e48a6e6c8a8d80d2d052e4a934f2b6ba6bb2d0aae163266bdb54bcf6ec3",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "4cc6bbd6f143a2188b4b6f052330c925753af0ac4f794729e4fd3b84934276aa",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "6c446827b2e46cf5f8500dce77a9d8c8a302066cd4e66c1aed9ed599fbd9063e",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "17e39e6dfba3a32304e3ea16ea68ee6ebfa5a7a1432f5f5ae449581d61471659",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "a81fa046d8417467b1bb326d065cbaec5c3365bdf888165de097e36b7e30e9f0",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "69f60d2dde4f89064825da6799b7dc7c4c8f4458cecf40c0bc6262bae7a46614",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "09f75e613fbca0ef1c9ab6a8b8d00ca41887970994bbf82d5a2da4c4753c2d4b",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "49247065fc7fe94ac80ec8531700fb15564ceef8b4e439e66c5d92281b646468",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "4eb9dcab3630d7d7d9ff1b14eab51113d41a100cb9af0a14af7fa59a4741a0e3",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "55e6334887b64f50715ee937f9d9a3d8931d9d45d5cdaacc5c953378fadd3223",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "d5beace07b3d3c0ad2799ea31ff434f7a34f76986de7fa5a161a6b6beb64403f",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "15c755c4253b678caa429d17ca3e72cd7558d5673f03aff159b584d9b7362d17",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "9ca97ff6be75b442daf38a3202fa213584544d8a10d2384d0af0d7b813c88a85",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "0919aa5b393708757ae8db0223570d5c23f7df93f4f3b3428ad294ebabd80b1c",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "c8c1beec41de29b035e55b66dccad3cbe920b535c101389b954c2f6ff9cd4983",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "943b8154dc5b8a4ba5e1146297ce2b14f27e1d4fb7902831a36511fee7e0b839",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "50b05a8a7e4ee4ed372a37e517195de8400fd5ca8f10d84e22ac039a177c31ab",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "2b1b36271feb4e7c62ac1eda61490ed3a9a20cbe64b305027d2b907a8397a42a",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "cca4278ea880d67b01a51118082bd9a4b9a21d69fafa58e0410fb4247afbb38a",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "d04e13c62507de7fd9f67b23a1c222a88a7c53521f3f8d14988e1de90eb411a8",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "643a34aeccf04de35f86e98e4af2c1959502dd05bcf2bf2f565959ce35bb3af3",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "3cfb864cc2013cb7ce80fdae38299e470aba4f1a015acd6ebbbe7de685919784",
+        "kind": "network",
+        "removed": true
+      },
+      {
+        "identity_sha256": "37f6ddba561ea37c76d3957aebf893df09086da3f0c5aaba8dd32b4225e818cc",
+        "kind": "volume",
+        "removed": true
+      },
+      {
+        "identity_sha256": "4eda9301262b4471b8161caee1d6697922a60a9332b4c7f320b5d8528bb07a54",
+        "kind": "volume",
+        "removed": true
+      },
+      {
+        "identity_sha256": "2ac1d6f7a5f8ca9d015192a1044ba67e67a688b95edd182c5112e531237267a5",
+        "kind": "volume",
+        "removed": true
+      },
+      {
+        "identity_sha256": "3c8a419f6ce3635c4ceb31d9711a8589ddcad78095f0fd11d20aed4a09026c64",
+        "kind": "volume",
+        "removed": true
+      },
+      {
+        "identity_sha256": "3fc11a2197bbc702a3dd022093c604ec92fe8f640e9d8038e7679805e86d0e9d",
+        "kind": "volume",
+        "removed": true
+      }
+    ],
+    "remaining": {
+      "container": 0,
+      "network": 0,
+      "volume": 0
+    }
+  },
+  "promotion": "NOT_ATTEMPTED",
+  "provider": {
+    "committed_upper_microusd": 232264,
+    "cost_cap_usd": 20,
+    "dispatches_in_this_command": 0,
+    "docker_mutations": 0,
+    "ledger_status": "READ",
+    "live_episode_cap": 12,
+    "model": "gpt-5.4-mini-2026-03-17",
+    "pricing_status": "CONFIGURED_NOT_PROVIDER_VERIFIED",
+    "provider_request_count": 24,
+    "provider_status": "CONFIGURED_NOT_TESTED",
+    "reported_cost_microusd": 136815,
+    "request_cap": 200,
+    "schema_version": "ecomsre.product.preflight.v050",
+    "unknown_usage_requests": 4
+  },
+  "raw_inspect_public": false,
+  "reused_event_llm_calls": null,
+  "review_must_fix_open": 0,
+  "schema_version": "ecomsre.product.live-resume.v050",
+  "terminal": "ECOMSRE_PRODUCT_V050_BLOCKED_SAFETY",
+  "user_action": "Identify/confirm Docker bridge recreation and authorize a fresh preflight baseline only after environment identity is stable; do not change credentials or model"
+}

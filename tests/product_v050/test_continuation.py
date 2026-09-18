@@ -217,6 +217,10 @@ def test_r2_supplemental_resource_dependency_reaches_development_and_normal_reus
         assert resources and all(
             o["evidence_ref"].startswith("investigation:") for o in resources
         )
+        for item in view["sessions"]:
+            assert item["dependency_catalog_status"] == "RETAINED"
+            assert any(d["availability"] == "BOUND_OBSERVATION" and d["supporting_refs"]
+                       for d in item["deployable_resource_dependencies"])
         # The dependency is runtime-authored from the selected query, not a free URL.
         dependency = resources[0]["resource_dependency"]
         sample = resources[0]["records"][0]

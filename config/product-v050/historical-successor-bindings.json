@@ -4,11 +4,11 @@
   "files": {
     ".github/workflows/agent-mainline.yml": {
       "historical_sha256": "bf66de54c293cc12e04264826c19999a3bbbc24be17d96aa42270709dab09da1",
-      "successor_sha256": "e70208a84e9fd4d4f814a1192bef1a43fbd7539e55c06b7b9c7e4b0cbc02049a"
+      "successor_sha256": "81d6044789480a5d384e759d35a07e0562b8ead962fe28115c16e1f8c8e9001a"
     },
     "README.md": {
       "historical_sha256": "e125b11cdc7727fa90e031a1a45a731b81f84a3256c58bd913fbd6c057fb314b",
-      "successor_sha256": "79670a80aa80cd19328523d0f739f6b5f75dfa5edf9e2ee2abd8069096d287e5"
+      "successor_sha256": "49f603197566aba0000c8d5832dfe9e66760bdaddfd2561bc68804bdcc6929e0"
     },
     "docs/interview/PROJECT_PITCH.md": {
       "historical_sha256": "aa07c76eee86068fa3407ca2584a189009e801c0d4fe3bfda3430f2c3f4d8c8f",
@@ -20,7 +20,7 @@
     },
     "docs/product/LIMITATIONS.md": {
       "historical_sha256": "6f5f94f227fe7a59ff3e5a0918eac7d1bc8bc9f7513f097c27e463797108573b",
-      "successor_sha256": "34378b5fce4b5aea47cb0823266e9269b7dbb2fbea38a9507593e5c5ab3b0d17"
+      "successor_sha256": "978e8edf015b53b30721b76f3a79ec5a7f3aae7139118707c761000f17e5e6f5"
     },
     "docs/product/QUICKSTART.md": {
       "historical_sha256": "5be47a880028e353a96031f85d423ebbba0a2219bd91be0e2a49b392e032c7bb",
@@ -28,7 +28,7 @@
     },
     "docs/product/STATUS.md": {
       "historical_sha256": "f6d83224b763d6d74427a72d94c91a7526c1f3385a0691b69f2dbece3ea7040e",
-      "successor_sha256": "b5b1138c356564e822c47b6ff8293c2eaf7e629232b01a9c48dafd81a7792d72"
+      "successor_sha256": "abc44a8e34c7f225a139f0a63b53491a1a5339fc324eacc32e4b20e85526638f"
     }
   }
 }

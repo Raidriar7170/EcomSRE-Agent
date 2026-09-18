@@ -1,10 +1,10 @@
-"""Current source checks plus retained, bounded Provider-unblock observations."""
+"""Immutable f91cb91 Provider-unblock history; not current live acceptance."""
 
 import hashlib
 import json
+import subprocess
 from pathlib import Path
 
-from scripts.product_v050.run_offline_checks import bound_sources
 from scripts.ci.verify_product_v050 import require
 from scripts.ci.verify_product_v050_continuation import verify as verify_history
 
@@ -14,11 +14,17 @@ RESULT = ROOT / 'docs/results/product-v050/provider-unblock'
 
 def verify():
     verify_history()
+    anchor = 'f91cb9140d5b012d39c9ec99dd1800049dd203c4'
+    def historical(path):
+        return subprocess.check_output(['git','show',anchor+':'+path],cwd=ROOT)
+    published = subprocess.check_output(['git','ls-tree','-r','--name-only',anchor,'--',str(RESULT.relative_to(ROOT))],cwd=ROOT,text=True).splitlines()
+    require(bool(published), 'MISSING_UNBLOCK_HISTORY')
+    for path in published:
+        require((ROOT/path).read_bytes() == historical(path), 'UNBLOCK_HISTORY_DRIFT:'+path)
     offline = json.loads((RESULT / 'offline-checks.json').read_text())
     require(offline['exit_code'] == 0 and all(c['status'] == 'PASSED' for c in offline['cases']), 'OFFLINE_FAILURE')
-    require(set(offline['source_sha256']) == {str(p.relative_to(ROOT)) for p in bound_sources(ROOT)}, 'SOURCE_SCOPE')
     for path, digest in offline['source_sha256'].items():
-        require(hashlib.sha256((ROOT/path).read_bytes()).hexdigest() == digest, 'SOURCE_DRIFT:'+path)
+        require(hashlib.sha256(historical(path)).hexdigest() == digest, 'HISTORICAL_SOURCE_DRIFT:'+path)
     report = json.loads((RESULT / 'result.json').read_text())
     calls = json.loads((RESULT / 'calls.json').read_text())
     sessions = json.loads((RESULT / 'smoke-traces.json').read_text())

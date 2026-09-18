@@ -207,3 +207,34 @@ def acquire_dependencies(candidates, reads):
                 observations.append(reads.read(key))
                 break
     return observations
+
+
+def dependency_catalog(incident, catalog, observations):
+    """Describe finite reads and bound evidence separately; never create support."""
+    from datetime import datetime
+
+    rows = []
+    for entry in catalog:
+        if entry["source"] != "RESOURCES" or len(entry["targets"]) != 1:
+            continue
+        target = entry["targets"][0]
+        if target not in incident.candidate_logical_services:
+            raise ValueError("DEPENDENCY_CATALOG_TARGET_MISMATCH")
+        end = datetime.fromisoformat(entry["window"]["ended_at"].replace("Z", "+00:00"))
+        dependency = ResourceDependency(
+            window_offset_seconds=int((incident.diagnosis_observed_at - end).total_seconds()),
+            sampling_window_seconds=entry["template"]["sampling_window_seconds"],
+            sample_count=entry["template"]["sample_count"],
+        )
+        selected = select_dependency(dependency, incident_end=incident.diagnosis_observed_at,
+                                     observations=observations, target=target)
+        supported = [o for o in selected if o["status"] == "SUCCESS_NONEMPTY"
+                     and not o["truncated"] and target in o["covered_services"]]
+        rows.append(dict(
+            action_id=entry["action_id"], source="RESOURCES", target=target,
+            fields={"cpu_percent": "PERCENT", "memory_bytes": "BYTES"},
+            dependency=dependency.model_dump(mode="json"), window=entry["window"],
+            availability="BOUND_OBSERVATION" if supported else "COLLECTED_INCOMPLETE" if selected else "LEGAL_NOT_COLLECTED",
+            supporting_refs=[o["evidence_ref"] for o in supported],
+        ))
+    return rows

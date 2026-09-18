@@ -1,6 +1,6 @@
 # 能力与限制 · Product v0.4.1
 
-Current v0.5 [Provider unblock](../results/product-v050/provider-unblock/README.md): minimal text/function and replay tool roundtrips succeeded on the unchanged model. Cumulative requests 24; no independent live/holdout/promotion/learned reuse. Historical404 root cause remains undetermined.
+Current v0.5 [Live resume](../results/product-v050/live-resume/README.md): local authorization is active, but default Docker bridge identity drift blocked startup. All 28 newly owned resources were removed; global CLEAN is not claimed. No new Provider request or independent live episode. Historical generation and replay success remain preserved.
 
 ## 已证明什么
 

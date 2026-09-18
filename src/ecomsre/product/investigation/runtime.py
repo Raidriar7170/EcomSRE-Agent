@@ -154,6 +154,7 @@ def run_investigation(
         "status": "RUNNING",
         "hypotheses": [],
         "observations": list(reads.initial_observations),
+        "read_catalog": catalog,
         "decisions": [],
         "provider_calls": 0,
         "read_count": 0,

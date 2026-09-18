@@ -27,6 +27,7 @@ def bound_sources(root: Path) -> list[Path]:
         | set(root.glob("scripts/product_v050/*.py"))
         | {root / "scripts/ci/verify_product_v050_continuation.py",
            root / "scripts/ci/verify_product_v050_provider_unblock.py",
+           root / "scripts/ci/verify_product_v050_live_resume.py",
            root / "config/product-v050/openai-gpt54-mini-prices-20260917.json"}
         | {
             root / "src/ecomsre/product/knowledge/expressions.py",

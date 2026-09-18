@@ -1,6 +1,6 @@
 # 当前状态 · Product v0.5 有限交付
 
-Current v0.5 [Provider unblock](../results/product-v050/provider-unblock/README.md): minimal text/function and replay tool roundtrips succeeded on the unchanged model. Cumulative requests 24; no independent live/holdout/promotion/learned reuse. Historical404 root cause remains undetermined.
+Current v0.5 [Live resume](../results/product-v050/live-resume/README.md): local authorization is active, but default Docker bridge identity drift blocked startup. All 28 newly owned resources were removed; global CLEAN is not claimed. No new Provider request or independent live episode. Historical generation and replay success remain preserved.
 
 **收尾完成；v0.4 的真实 Payment 恢复已合并。单租户本地 Product 原型。**
 
@@ -47,4 +47,4 @@ v0.3 Shadow 为 3 个正例、10 个负向/反事实/失败用例，`OTHER_EXTEN
 
 ## v0.5 活动开发状态
 
-[v0.5 Goal](../goals/EcomSRE_v0.5_Codex_Goal.md) 已激活，当前工程及离线验证完成，终态为 `ECOMSRE_PRODUCT_V050_ENGINEERING_COMPLETE_WITH_LIMITATIONS`，没有完整实测验收 PASS。新增调查、知识候选和恢复预览默认关闭/只读。项目 Provider 与价格配置已确认；累计 Provider 请求 24，最小生成/function 与回放工具往返已成功，live episode 0；历史 Product 调用数不改写。进度见 [记录](../analysis/product-v050-progress.md)。
+[v0.5 Goal](../goals/EcomSRE_v0.5_Codex_Goal.md) 已激活，当前本地续跑在启动前触发非 owned 网络身份漂移，终态为 `ECOMSRE_PRODUCT_V050_BLOCKED_SAFETY`，没有完整实测验收 PASS。新增调查、知识候选和恢复预览默认关闭/只读。项目 Provider 与价格配置已确认；累计 Provider 请求 24，最小生成/function 与回放工具往返已成功，live episode 0；历史 Product 调用数不改写。进度见 [记录](../analysis/product-v050-progress.md)。

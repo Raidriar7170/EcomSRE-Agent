@@ -278,3 +278,37 @@ Old attempts1–3 and continuation-01 preserved. No R1–R4/evaluator changes.
   Independent reviewer confirmed Must Fix0 and independently derived4 complete
   roundtrips with6tamper regressions. Final tracked source will now be committed
   before full regression, with no concurrent source or HEAD changes during tests.
+
+## 2026-09-18 — activated Live Resume Amendment; prestart safety block
+
+- Authority: user explicitly restored original owned local Docker/live scope;
+  no Product LLM Docker socket/shell/recovery-write grant. Same PR #104 and
+  original data root/ledger, starting at f91cb91.
+- Read/write scope: Product investigation/knowledge projection, bounded v050
+  harness/tests, current status/progress/CI and new live-resume evidence. Frozen:
+  upstream1755859, historical DTA/Product results, original zero-call,
+  continuation-01 and provider-unblock packages; no old marker/session edited.
+  Final repository scope remains this worktree against original main550a564d.
+- Actual dependency rejection: initial resource data existed (10 seconds), but
+  both member sessions had zero supplemental reads. Claimed 30-second dependency
+  was not acquired/bound. Added a finite learning input catalog distinguishing
+  bound, incomplete and legal-uncollected reads; no candidate/evaluator relaxation.
+  Initial new regression failed on missing catalog, then 25 focused checks passed.
+- New owned22-service cachedARM64 subset prepared and created, never started.
+  Retained prestart validator failures led to narrow Compose/creation/Desktop
+  representation fixes, covered by five focused tests. Partial-create discovery
+  and bounded startup timeout reviewed/fixed before mutation.
+- Real blocker: default bridge Id/Created changed at02:47:02UTC and again by
+  cleanup02:53:41UTC. Daemon identity and other bridge fields unchanged; cause
+  unknown; bounded network event query empty. No automatic baseline refresh.
+- Birth-bound cleanup removed22containers+1network+5volumes. Ownedremaining0/0/0;
+  original3volumes unchanged; non_owned_unchanged=false, clean=false. No CLEAN claim.
+- Provider requests added0; cumulative24; token-price upper136815microusd plus
+  retained unknown95449 = commitment232264. Actual invoice unknown. Independent
+  episodes0, faultinjection0, Product external/recovery writes0. No new candidate,
+  independent validation, promotion or reuse. Prepared Product live driver unexecuted.
+- Reviewer: dependency projection and prestart safety conclusion MustFix0;
+  independently confirmed counts and drift from private records, no secret/raw
+  inspection publication. User clarification about network recreation/fresh
+  preflight pending. Terminal ECOMSRE_PRODUCT_V050_BLOCKED_SAFETY, not another
+  engineering-completion or acceptance PASS. See results/product-v050/live-resume.
