@@ -176,3 +176,28 @@ def snapshot_observations(snapshots, memory) -> list[dict[str, Any]]:
             }
         )
     return observations
+
+
+def candidate_components(candidate, *, memory, anomalies, observations, incident_end):
+    """Explain each conjunct on the same inputs, including short-circuited ones."""
+    from ecomsre.product.knowledge.observations_v050 import select_dependency
+    target = candidate.proposal.target
+    predicates = []
+    for predicate in candidate.proposal.predicates:
+        _, source, _ = _predicate_parts(predicate)
+        kind = predicate.split(':', 1)[1]
+        covered = any(o['source'] == source.value and o['status'] == 'SUCCESS_NONEMPTY'
+            and not o['truncated'] and target in o['covered_services'] for o in observations)
+        present = any(p.service == target and
+            (p.predicate_kind.value if predicate.startswith('core:') else p.kind.value) == kind
+            and (predicate.startswith('core:') or p.strength.value == 'STRONG')
+            for p in (memory.predicates if predicate.startswith('core:') else anomalies))
+        predicates.append(dict(predicate=predicate, status='UNKNOWN' if not covered else 'TRUE' if present else 'FALSE'))
+    expression = None
+    if candidate.proposal.expression is not None:
+        selected = observations
+        if candidate.proposal.resource_dependency is not None:
+            selected = select_dependency(candidate.proposal.resource_dependency,
+                incident_end=incident_end, observations=observations, target=target)
+        expression = evaluate_expression(candidate.proposal.expression,target=target,observations=selected).model_dump(mode='json')
+    return dict(predicates=predicates, expression=expression)

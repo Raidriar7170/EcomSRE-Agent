@@ -103,6 +103,10 @@ class StructuredProvider:
         reasoning: str = "medium",
         fence: JobLeaseFenceV1 | None = None,
     ) -> T:
+        from ecomsre.product.knowledge.drafts_v050 import TASK, PROTOCOL, strict_schema
+        draft_protocol = task == TASK
+        prompt_version = PROTOCOL if draft_protocol else "product-v050.3-read-shape-clarification"
+        parameters = strict_schema(schema) if draft_protocol else schema.model_json_schema()
         output_cap = 4096
         instructions = SYSTEM + TASK_CONTRACTS.get(task, "")
         payload: dict[str, Any] = {
@@ -118,7 +122,8 @@ class StructuredProvider:
                     "function": {
                         "name": "submit_proposal",
                         "description": "Non-actionable structured proposal",
-                        "parameters": schema.model_json_schema(),
+                        "parameters": parameters,
+                        **({"strict": True} if draft_protocol else {}),
                     },
                 }
             ],
@@ -135,9 +140,9 @@ class StructuredProvider:
                 "model": self.config.model, "service_tier": "default", "store": False,
                 "instructions": instructions,
                 "input": [{"role": "user", "content": json.dumps({"task": task, "view": view})}],
-                "tools": [{"type": "function", "name": "submit_proposal", "strict": False,
+                "tools": [{"type": "function", "name": "submit_proposal", "strict": draft_protocol,
                            "description": "Non-actionable structured proposal",
-                           "parameters": schema.model_json_schema()}],
+                           "parameters": parameters}],
                 "tool_choice": {"type": "function", "name": "submit_proposal"},
                 "parallel_tool_calls": False, "max_output_tokens": output_cap,
                 "reasoning": {"effort": reasoning},
@@ -145,7 +150,7 @@ class StructuredProvider:
         # UTF-8 byte count bounds ordinary BPE token count conservatively. Include
         # a fixed protocol overhead; refuse unbounded prompts before reserving.
         prompt_bytes = len(json.dumps(payload, ensure_ascii=True).encode())
-        if prompt_bytes > 96_000:
+        if prompt_bytes > (192_000 if draft_protocol else 96_000):
             raise ProductError(
                 "PROVIDER_INPUT_TOO_LARGE", "Bounded prompt size exceeded."
             )
@@ -158,7 +163,7 @@ class StructuredProvider:
             "payload": payload,
             "pricing": self.prices.model_dump(mode="json"),
             "provider_base_url": self.config.base_url,
-            "prompt_version": "product-v050.3-read-shape-clarification",
+            "prompt_version": prompt_version,
         }
         previous = self.repository.reserve(key, binding, reserve, fence=fence)
         if previous is not None:
@@ -180,7 +185,7 @@ class StructuredProvider:
             "pricing": self.prices.model_dump(mode="json"),
             "reasoning": reasoning,
             "snapshot": None,
-            "prompt_version": "product-v050.3-read-shape-clarification",
+            "prompt_version": prompt_version,
             "task_view_sha256": semantic_sha256_v22({"task": task, "view": view}),
             "evidence_mode": self.evidence_mode,
         }
@@ -302,6 +307,9 @@ class StructuredProvider:
             function = calls[0].get("function", {})
             if function.get("name") != "submit_proposal":
                 raise ProductError("PROVIDER_PROTOCOL_INVALID", "Unknown function.")
+            if draft_protocol:
+                from ecomsre.product.knowledge.drafts_v050 import safe_parameters
+                ledger["draft_parameter_diagnostics"] = safe_parameters(function["arguments"], view)
             proposal = schema.model_validate_json(function["arguments"])
             ledger["proposal"] = proposal.model_dump(mode="json")
             state = "COMPLETED"

@@ -122,6 +122,14 @@ class InvestigationRepository:
                         "PROVIDER_COST_BOUND_INVALID",
                         "Prior usage invalidated the cost bound.",
                     )
+                if key.startswith("knowledge-draft-v050.1:"):
+                    # One explicitly authorized continuation, shared across environments.
+                    n, committed = connection.execute(
+                        "SELECT COUNT(*),COALESCE(SUM(COALESCE(charged_microusd,reserved_microusd)),0) "
+                        "FROM investigation_provider_calls_v050 WHERE call_key LIKE 'knowledge-draft-v050.1:%'"
+                    ).fetchone()
+                    if n >= 6 or committed + reserve > 1_000_000:
+                        raise ProductError("BUDGET_EXHAUSTED", "Draft continuation sublimit reached.")
                 if key.startswith("knowledge:"):
                     prefix = ":".join(key.split(":")[:2]) + ":%"
                     proposal_count = connection.execute(

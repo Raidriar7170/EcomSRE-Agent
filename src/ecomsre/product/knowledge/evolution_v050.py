@@ -22,6 +22,7 @@ from ecomsre.product.knowledge.candidates_v050 import (
     CompiledKnowledge,
     KnowledgeProposal,
     evaluate_candidate,
+    candidate_components,
     snapshot_observations,
 )
 from ecomsre.product.knowledge.contracts import (
@@ -67,6 +68,7 @@ def evaluation_bindings() -> dict[str, str]:
         "investigation/reads.py",
         "knowledge/observations_v050.py",
         "knowledge/split_v050.py",
+        "knowledge/drafts_v050.py",
         "incidents/extensions.py",
     ]
     return {
@@ -101,6 +103,8 @@ class KnowledgeEvolutionV050:
                     state TEXT NOT NULL, freeze_json TEXT, evaluation_json TEXT);
                 CREATE TABLE IF NOT EXISTS knowledge_development_v050 (
                     registration_id TEXT PRIMARY KEY, payload_json TEXT NOT NULL);
+                CREATE TABLE IF NOT EXISTS knowledge_draft_provenance_v050 (
+                    source_request_key TEXT PRIMARY KEY, payload_json TEXT NOT NULL);
                 CREATE TABLE IF NOT EXISTS knowledge_rejections_v050 (
                     source_request_key TEXT PRIMARY KEY, environment_id TEXT NOT NULL,
                     discovery_sha256 TEXT NOT NULL, reason TEXT NOT NULL, created_at TEXT NOT NULL);
@@ -432,6 +436,7 @@ class KnowledgeEvolutionV050:
         origin: str,
         source_request_key: str | None,
         discovery: dict[str, Any],
+        draft_view_binding: dict[str, Any] | None = None,
         fence=None,
     ):
         """Both candidate origins enter identical compilation and later Shadow paths."""
@@ -496,12 +501,22 @@ class KnowledgeEvolutionV050:
                     "SELECT state,payload_json FROM investigation_provider_calls_v050 WHERE call_key=?",
                     (source_request_key,),
                 ).fetchone()
-            if (
-                row is None
-                or row["state"] != "COMPLETED"
-                or json.loads(row["payload_json"]).get("proposal")
-                != proposal.model_dump(mode="json")
-            ):
+            if row is None or row["state"] != "COMPLETED":
+                raise ValueError("candidate lacks a completed model response")
+            provenance = json.loads(row["payload_json"])
+            task, bound_view = "propose_detection_knowledge", discovery
+            if draft_view_binding is not None:
+                from ecomsre.product.knowledge.drafts_v050 import (
+                    TASK, PROTOCOL, KnowledgeDraft, compile_draft, draft_view,
+                )
+                task, bound_view = TASK, draft_view_binding
+                if draft_view(discovery, bound_view.get("feedback")) != bound_view:
+                    raise ValueError("draft mapping differs from persisted discovery")
+                raw_draft = KnowledgeDraft.model_validate(provenance.get("proposal"))
+                reconstructed, context = compile_draft(raw_draft, bound_view)
+                if reconstructed != proposal or provenance.get("prompt_version") != PROTOCOL:
+                    raise ValueError("draft canonical reconstruction differs")
+            elif provenance.get("proposal") != proposal.model_dump(mode="json"):
                 raise ValueError("candidate lacks a matching completed model response")
             with self.store.connect() as c:
                 split_v050.require_independent(c, proposal.member_incidents)
@@ -509,7 +524,7 @@ class KnowledgeEvolutionV050:
             if provenance.get("evidence_mode") != "LIVE_PROVIDER" or provenance.get(
                 "task_view_sha256"
             ) != semantic_sha256_v22(
-                {"task": "propose_detection_knowledge", "view": discovery}
+                {"task": task, "view": bound_view}
             ):
                 raise ValueError("model response lacks live discovery-view binding")
         incident = self.knowledge._incident(proposal.member_incidents[0])
@@ -562,6 +577,17 @@ class KnowledgeEvolutionV050:
                             "DUPLICATE_KNOWLEDGE_CANDIDATE",
                             "An equivalent candidate is already recorded.",
                         )
+                if draft_view_binding is not None:
+                    if origin != "LLM":
+                        raise ValueError("draft provenance requires live model origin")
+                    c.execute("INSERT INTO knowledge_draft_provenance_v050 VALUES (?,?)", (
+                        source_request_key, json.dumps(dict(
+                            protocol=PROTOCOL, raw_draft=raw_draft.model_dump(mode="json"),
+                            draft_sha256=semantic_sha256_v22(raw_draft.model_dump(mode="json")),
+                            mapping_snapshot_sha256=semantic_sha256_v22(bound_view),
+                            compiler_sha256=evaluation_bindings()["knowledge/drafts_v050.py"],
+                            canonical_sha256=semantic_sha256_v22(proposal.model_dump(mode="json")),
+                            comparison_context=context))))
                 c.execute(
                     "INSERT INTO knowledge_candidate_pool_v050 VALUES (?,?,?,?,'DRAFT',NULL,NULL)",
                     (
@@ -657,6 +683,11 @@ class KnowledgeEvolutionV050:
                     "incident_id": incident_id,
                     "runtime_input_sha256": material.runtime_input.runtime_input_sha256,
                     "outcome": outcome.model_dump(mode="json"),
+                    "components": candidate_components(candidate,
+                        memory=material.runtime_input.memory,
+                        anomalies=material.runtime_input.generic_anomalies,
+                        incident_end=material.incident.diagnosis_observed_at,
+                        observations=snapshot_observations(snapshots.values(), material.runtime_input.memory) + supplemental),
                 }
             )
         result = {
