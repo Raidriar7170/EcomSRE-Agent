@@ -147,12 +147,13 @@ class KnowledgeEvolutionV050:
                 raise
 
     def discovery_view(
-        self, environment_id: str, incident_ids: list[str]
+        self, environment_id: str, incident_ids: list[str], *, record_exposure: bool = True
     ) -> dict[str, Any]:
         if len(set(incident_ids)) < 2 or len(incident_ids) > 12:
             raise ValueError("multiple distinct discovery incidents required")
         with self.store.connect() as c:
-            c.execute("BEGIN IMMEDIATE")
+            if record_exposure:
+                c.execute("BEGIN IMMEDIATE")
             freezes = c.execute(
                 "SELECT freeze_json FROM knowledge_candidate_pool_v050 WHERE freeze_json IS NOT NULL"
             ).fetchall()
@@ -164,8 +165,9 @@ class KnowledgeEvolutionV050:
                 "SELECT 1 FROM knowledge_episode_incidents_v050 WHERE incident_id=?", (i,)
             ).fetchone()]
             split_v050.require_roles(c, bound, {"DISCOVERY", "DEVELOPMENT"})
-            split_v050.expose(c, incident_ids, "DISCOVERY_VIEW")
-            c.execute("COMMIT")
+            if record_exposure:
+                split_v050.expose(c, incident_ids, "DISCOVERY_VIEW")
+                c.execute("COMMIT")
         sessions = []
         for incident_id in sorted(set(incident_ids)):
             session = self.investigations.get(incident_id)
@@ -510,11 +512,29 @@ class KnowledgeEvolutionV050:
                     TASK, PROTOCOL, KnowledgeDraft, compile_draft, draft_view,
                 )
                 task, bound_view = TASK, draft_view_binding
-                if draft_view(discovery, bound_view.get("feedback")) != bound_view:
-                    raise ValueError("draft mapping differs from persisted discovery")
-                raw_draft = KnowledgeDraft.model_validate(provenance.get("proposal"))
-                reconstructed, context = compile_draft(raw_draft, bound_view)
-                if reconstructed != proposal or provenance.get("prompt_version") != PROTOCOL:
+                protocol = PROTOCOL
+                raw_draft: KnowledgeDraft
+                from ecomsre.product.knowledge.drafts_v050 import (
+                    SCOPED_PROTOCOL, SCOPED_TASK, ScopedKnowledgeDraft,
+                    scoped_view, scoped_model_view, compile_scoped_draft,
+                )
+                if bound_view.get("protocol") == SCOPED_PROTOCOL:
+                    protocol, task = SCOPED_PROTOCOL, SCOPED_TASK
+                    if bound_view["request_key"] != source_request_key or scoped_view(
+                        discovery, request_key=source_request_key,
+                        target=bound_view["target"], members=list(bound_view["members"].values()),
+                        feedback=bound_view.get("feedback"),
+                    ) != bound_view:
+                        raise ValueError("draft mapping differs from persisted discovery")
+                    raw_draft = ScopedKnowledgeDraft.model_validate(provenance.get("proposal"))
+                    reconstructed, context = compile_scoped_draft(raw_draft, bound_view)
+                    bound_view = scoped_model_view(bound_view)
+                else:
+                    if draft_view(discovery, bound_view.get("feedback")) != bound_view:
+                        raise ValueError("draft mapping differs from persisted discovery")
+                    raw_draft = KnowledgeDraft.model_validate(provenance.get("proposal"))
+                    reconstructed, context = compile_draft(raw_draft, bound_view)
+                if reconstructed != proposal or provenance.get("prompt_version") != protocol:
                     raise ValueError("draft canonical reconstruction differs")
             elif provenance.get("proposal") != proposal.model_dump(mode="json"):
                 raise ValueError("candidate lacks a matching completed model response")
@@ -582,9 +602,9 @@ class KnowledgeEvolutionV050:
                         raise ValueError("draft provenance requires live model origin")
                     c.execute("INSERT INTO knowledge_draft_provenance_v050 VALUES (?,?)", (
                         source_request_key, json.dumps(dict(
-                            protocol=PROTOCOL, raw_draft=raw_draft.model_dump(mode="json"),
+                            protocol=protocol, raw_draft=raw_draft.model_dump(mode="json"),
                             draft_sha256=semantic_sha256_v22(raw_draft.model_dump(mode="json")),
-                            mapping_snapshot_sha256=semantic_sha256_v22(bound_view),
+                            mapping_snapshot_sha256=semantic_sha256_v22(draft_view_binding),
                             compiler_sha256=evaluation_bindings()["knowledge/drafts_v050.py"],
                             canonical_sha256=semantic_sha256_v22(proposal.model_dump(mode="json")),
                             comparison_context=context))))

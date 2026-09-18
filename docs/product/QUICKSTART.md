@@ -86,3 +86,11 @@ PYTHONPATH=src:. uv run --frozen --no-sync python -m scripts.ci.verify_product_v
 ```
 
 只校验已保留的 5 个独立本地事件和失败候选，不启动 Docker 或请求 Provider。预期终态为 `ECOMSRE_PRODUCT_V050_NO_VALIDATED_LLM_KNOWLEDGE`，不是学习成功。
+
+可行性只读检查（需要本机已有 v0.5 私有 SQLite/CAS；不发送 Provider 请求、不启动 Docker）：
+
+```sh
+PYTHONPATH=src:. .venv/bin/python -m scripts.product_v050.knowledge_feasibility
+```
+
+最新轮的实际结果与已耗尽的语义尝试边界见 [知识可行性证据](../results/product-v050/knowledge-feasibility/README.md)。不要将离线审计命令当作重新抽样授权。

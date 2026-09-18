@@ -125,8 +125,10 @@ def save_observation(
 
 
 def load_observations(incident, objects):
-    ensure_table(objects.metadata_store)
     with objects.metadata_store.connect() as c:
+        # Reading retained observations must never create or migrate a table.
+        if not c.execute("SELECT 1 FROM sqlite_master WHERE name='supplemental_observations_v050'").fetchone():
+            return []
         rows = c.execute(
             "SELECT query_sha256,object_sha256 FROM supplemental_observations_v050 WHERE incident_id=?",
             (incident.incident_id,),

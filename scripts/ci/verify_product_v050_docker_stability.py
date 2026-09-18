@@ -424,12 +424,96 @@ def verify_repair():
     )
     for path, digest in offline["source_sha256"].items():
         require(
-            hashlib.sha256((ROOT / path).read_bytes()).hexdigest() == digest,
-            "REPAIR_CURRENT_SOURCE:" + path,
+            hashlib.sha256(subprocess.check_output(
+                ["git", "show", "3ae84ab4bda5054ccfbfde74e9c655a416e312e4:" + path], cwd=ROOT
+            )).hexdigest() == digest,
+            "REPAIR_HISTORICAL_SOURCE:" + path,
         )
     return verify_repair_claims(
         report, json.loads((directory / "calls.json").read_text())
     )
+
+
+def verify_feasibility_claims(report, calls, protocol, matrix):
+    require(report['terminal'] == 'ECOMSRE_PRODUCT_V050_NO_VALIDATED_LLM_KNOWLEDGE', 'FEASIBILITY_TERMINAL')
+    require(len(calls) == report['new_requests'] == 3, 'FEASIBILITY_CALL_COUNT')
+    require(protocol['max_semantic_attempts'] == 3 and protocol['request_cap'] == 6
+            and protocol['committed_cap_microusd'] == 2000000, 'FEASIBILITY_CAPS')
+    require(protocol['reasoning'] == 'medium' and protocol['max_output_tokens'] == 8192, 'FEASIBILITY_OUTPUT_BUDGET')
+    require([r['role'] for r in protocol['roster']] == ['DISCOVERY'] * 3 + ['DEVELOPMENT'] * 2, 'FEASIBILITY_ROLES')
+    require([(r['incident_id'], r['role']) for r in matrix['rows']] ==
+            [(r['incident_id'], r['role']) for r in protocol['roster']], 'FEASIBILITY_ROSTER')
+    require(protocol['development_ids'] == [r['incident_id'] for r in protocol['roster'] if r['role'] == 'DEVELOPMENT'], 'FEASIBILITY_DEVELOPMENT_ROLES')
+    previous = protocol['budget_before']['committed_upper_microusd']
+    for index, call in enumerate(calls):
+        result = call['result']
+        require(call['call_key'] == result['key'] == f'knowledge-draft-v050.2:proposal:{index}', 'FEASIBILITY_REQUEST_BINDING')
+        require(call['actual_model'] == call['requested_model'] == protocol['model']
+                and call['reasoning'] == 'medium' and call['max_output_tokens'] == 8192, 'FEASIBILITY_MODEL')
+        require(call['state'] == 'COMPLETED' and call['http_status'] == 200
+                and call['response_status'] == 'completed' and call['incomplete_details'] is None, 'FEASIBILITY_COMPLETION')
+        usage = call['usage']
+        cost = (usage['input_tokens'] * 750000 + usage['output_tokens'] * 4500000 + 999999) // 1000000
+        require(cost == call['charged_microusd'] == call['accounted_microusd']
+                and cost <= call['reserved_microusd'], 'FEASIBILITY_COST')
+        previous += cost
+        require(result['budget_after']['committed_upper_microusd'] == previous
+                and result['budget_after']['provider_request_count'] == 55 + index, 'FEASIBILITY_LEDGER')
+        require(result['old_history_unchanged'] and result['schema_valid']
+                and not result['development_passed'] and not result['independent_validation_eligible']
+                and result['new_live_episodes'] == result['new_product_recovery_writes'] == 0, 'FEASIBILITY_BOUNDARY')
+        require(call['model_selection']['target'] == protocol['target']
+                and call['model_selection']['member_incidents'] == ['I01', 'I02', 'I03', 'I04', 'I05']
+                and call['model_selection']['expression'] is None, 'FEASIBILITY_SELECTION')
+    require(sum(c['result']['schema_valid'] for c in calls) == report['schema_valid'] == 3, 'FEASIBILITY_SCHEMA_COUNT')
+    require(sum(c['result']['admitted'] for c in calls) == report['admitted'] == 1
+            and sum(c['result']['development_evaluated'] for c in calls) == report['development_evaluated'] == 1, 'FEASIBILITY_ADMISSION_COUNT')
+    require(calls[0]['result']['error_code'] == 'TWO_SOURCES_REQUIRED'
+            and calls[2]['result']['error_code'] == 'DUPLICATE_KNOWLEDGE_CANDIDATE', 'FEASIBILITY_REJECTIONS')
+    require(calls[1]['model_selection']['predicates'] == calls[2]['model_selection']['predicates'], 'FEASIBILITY_DUPLICATE')
+    predicates = calls[1]['model_selection']['predicates']
+    outcomes = calls[1]['result']['development']['outcomes']
+    require(len(outcomes) == len(matrix['rows'])
+            and len({r['incident_id'] for r in outcomes}) == len(outcomes)
+            and calls[1]['result']['development']['incident_ids'] == sorted(r['incident_id'] for r in matrix['rows']), 'FEASIBILITY_OUTCOME_DENOMINATOR')
+    require({r['incident_id'] for r in outcomes} == {r['incident_id'] for r in matrix['rows']}, 'FEASIBILITY_EVALUATION_MEMBERS')
+    truth = {}
+    for row in matrix['rows']:
+        target = next(t for t in row['targets'] if t['target'] == protocol['target'])
+        states = {p['predicate']: p['status'] for p in target['predicates']}
+        selected = [states[p] for p in predicates]
+        status = 'FALSE' if 'FALSE' in selected else ('UNKNOWN' if 'UNKNOWN' in selected else 'TRUE')
+        outcome = next(o for o in outcomes if o['incident_id'] == row['incident_id'])
+        require(outcome['components']['predicates'] == [{'predicate': p, 'status': states[p]} for p in predicates]
+                and outcome['outcome']['status'] == status, 'FEASIBILITY_EVALUATOR_REPLAY')
+        truth[row['incident_id']] = status == 'TRUE'
+    require(sum(truth.values()) == report['seen_true'] == 1 and report['seen_denominator'] == 5, 'FEASIBILITY_SEEN_RATE')
+    require(sum(truth[i] for i in protocol['development_ids']) == report['development_true'] == 1
+            and report['development_denominator'] == len(protocol['development_ids']) == 2, 'FEASIBILITY_DEVELOPMENT_RATE')
+    require(previous == report['committed_upper_microusd'] == 918501
+            and report['reported_cost_microusd'] + report['unknown_reservation_microusd'] == previous
+            and previous - protocol['budget_before']['committed_upper_microusd'] == report['round_committed_microusd'] == 78920
+            and report['cumulative_requests'] == 57, 'FEASIBILITY_TOTAL_BUDGET')
+    require(all(report[k] == 0 for k in ['frozen', 'independent_validation', 'promoted', 'new_event_reuse', 'new_live_episodes', 'product_recovery_writes']), 'FEASIBILITY_NO_PROMOTION')
+    require(report['old_history_unchanged'] and report['d_precheck']['mutations'] == 0
+            and not report['d_precheck']['new_baseline_admitted'], 'FEASIBILITY_HISTORY')
+    return {'verification': 'PASS', 'schema_valid': 3, 'admitted': 1, 'development': '1/2', 'independent_validation': 'NOT_ATTEMPTED'}
+
+
+def verify_feasibility():
+    directory = ROOT / 'docs/results/product-v050/knowledge-feasibility'
+    report, calls, protocol, matrix = [json.loads((directory / n).read_text()) for n in
+                                       ['result.json', 'calls.json', 'protocol.json', 'feasibility.json']]
+    for name, digest in report['artifacts_sha256'].items():
+        require(hashlib.sha256((directory / name).read_bytes()).hexdigest() == digest, 'FEASIBILITY_ARTIFACT:' + name)
+    for path, digest in protocol['sources'].items():
+        relative = path if path.startswith(('src/', 'scripts/')) else 'src/ecomsre/product/' + path
+        require(hashlib.sha256((ROOT / relative).read_bytes()).hexdigest() == digest, 'FEASIBILITY_EXECUTED_SOURCE:' + relative)
+    offline = json.loads((directory / 'offline-checks.json').read_text())
+    require(offline['exit_code'] == 0 and all(c['status'] == 'PASSED' for c in offline['cases']), 'FEASIBILITY_OFFLINE')
+    for path, digest in offline['source_sha256'].items():
+        require(hashlib.sha256((ROOT / path).read_bytes()).hexdigest() == digest, 'FEASIBILITY_CURRENT_SOURCE:' + path)
+    return verify_feasibility_claims(report, calls, protocol, matrix)
 
 
 def verify():
@@ -458,7 +542,7 @@ def verify():
             for name in ["result.json", "calls.json", "live-traces.json"]
         )
     )
-    return {"historical": historical, "knowledge_contract_repair": verify_repair()}
+    return {"historical": historical, "knowledge_contract_repair": verify_repair(), "knowledge_feasibility": verify_feasibility()}
 
 
 def verify_private_repair():

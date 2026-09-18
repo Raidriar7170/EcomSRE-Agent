@@ -364,3 +364,9 @@ Old attempts1–3 and continuation-01 preserved. No R1–R4/evaluator changes.
 - Terminal remains ECOMSRE_PRODUCT_V050_NO_VALIDATED_LLM_KNOWLEDGE. Cumulative54requests/839581microusd commitment; invoiceunknown;5liveepisodes. Oldcalls/sessions/episodes/rejections unchanged. NewProduct recoverywrites0; no resources created.
 - Frozen run source13b19b6 retained separately from post-replay guard repair. Current tests/review/CI recorded in the small result pack, not retroactively attached to old model outputs.
 - Delivery192d95b: local full regression6690passed/21skipped in659.26s. CI35385729676 failed the existing exact-successor check because README/STATUS/LIMITATIONS bindings were stale. Updated only those three successor digests in the already allowed config/product-v050/historical-successor-bindings.json; historical hashes, allowed path set and verifier remain unchanged. Focused historical verification passes. This metadata-only successor correction is included in final write scope; no model/live rerun.
+
+## 2026-09-18 受约束提议开发终态
+
+当前 [可行性与受约束提议轮](../results/product-v050/knowledge-feasibility/README.md) 复用原 5 个已见事件：新增 3 次请求，3 个 schema-valid 草稿，1 个准入候选，1 次实际开发求值；原 Development 仅 1/2，未冻结、独立验证、晋升或复用。累计 57 次请求、USD 0.918501 承诺，终态仍为 `NO_VALIDATED_LLM_KNOWLEDGE`。本轮没有新增 live episode 或 Product 恢复写入；旧 live-02 clean=true 与 live-01 BLOCKED_SAFETY / clean=false 保留。
+
+完成零请求可行性矩阵、实际发送的专属任务说明/短句柄 enum、聚合诊断和 8192 output 的同步预留。新协议 v050.2 的 3 次语义尝试已消耗，费用 USD 0.078920；D 仅只读预检，未新增实验。旧结果与累计预留保持。独立 Reviewer 从 CAS 重算 1/5 已见、1/2 Development，Must Fix 0。

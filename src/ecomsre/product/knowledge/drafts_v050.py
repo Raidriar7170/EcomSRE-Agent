@@ -285,3 +285,472 @@ def safe_parameters(arguments, view):
 
     walk(data, [])
     return {"status": "SANITIZED_PARAMETERS_ONLY", "fields": result}
+
+
+# Explicit successor; v050.1 functions and retained outputs remain replayable.
+SCOPED_PROTOCOL = "knowledge-draft-v050.2"
+SCOPED_TASK = "propose_detection_draft_v050_2"
+
+
+class ScopedKnowledgeDraft(KnowledgeDraft):
+    binding_id: str
+
+
+def scoped_view(old, *, request_key, target, members, feedback=None):
+    """Canonical request-bound mapping; no truth-based or value-based selection."""
+    from copy import deepcopy
+
+    if "evidence_catalog" not in old:
+        discovery = old
+        old = draft_view(discovery)
+        observations = {
+            o["evidence_ref"]: o
+            for session in discovery["sessions"]
+            for o in session["observations"]
+        }
+        for row in old["evidence_catalog"].values():
+            observation = observations[row["evidence_ref"]]
+            row["requested_services"] = observation.get(
+                "targets", observation["covered_services"]
+            )
+            row["record_count"] = observation.get(
+                "record_count", len(observation["records"])
+            )
+            row["object_sha256"] = observation.get("object_sha256")
+    members = sorted(members)
+    if len(members) != len(set(members)) or len(members) < 2:
+        raise ValueError("DISTINCT_SCOPE_MEMBERS_REQUIRED")
+    member_map = {f"I{i:02}": m for i, m in enumerate(members, 1)}
+    evidence, comparison, gaps, dependencies = {}, {}, [], {}
+    for alias, row in sorted(old["evidence_catalog"].items()):
+        if row["incident_id"] not in members:
+            continue
+        if row["snapshot"] != old["snapshot_sha256"]:
+            raise ValueError("SOURCE_SNAPSHOT_MISMATCH")
+        for service in sorted(row["services"]):
+            bound = deepcopy(row)
+            bound["records"] = [
+                r for r in row["records"] if r.get("service") == service
+            ]
+            bound["services"] = [service]
+            bound["allowed_target_services"] = (
+                [service] if service in row["allowed_target_services"] else []
+            )
+            bound["original_alias"] = alias
+            if not bound["allowed_target_services"]:
+                continue
+            catalog, prefix = (
+                (evidence, "E") if service == target else (comparison, "C")
+            )
+            catalog[f"{prefix}{len(catalog) + 1:02}"] = bound
+        requested = set(row.get("requested_services", row["services"])) | set(
+            row["services"]
+        )
+        missing = sorted(requested - set(row["allowed_target_services"]))
+        if missing or not row["allowed_target_services"]:
+            gaps.append(
+                dict(
+                    member=next(
+                        k for k, v in member_map.items() if v == row["incident_id"]
+                    ),
+                    services=missing,
+                    source=row["source"],
+                    status=row["status"],
+                    truncated=row["truncated"],
+                    covered_services=row["covered_services"],
+                    window=row["window"],
+                    record_count=row.get("record_count", len(row["records"])),
+                    reason="NOT_ADMISSIBLE_TARGET_EVIDENCE",
+                )
+            )
+    for alias, row in sorted(old["dependency_catalog"].items()):
+        if row["incident_id"] not in members or row["target"] != target:
+            continue
+        if row["snapshot"] != old["snapshot_sha256"]:
+            raise ValueError("SOURCE_SNAPSHOT_MISMATCH")
+        if row["availability"] == "BOUND_OBSERVATION":
+            dependencies[f"D{len(dependencies) + 1:02}"] = dict(
+                deepcopy(row), original_alias=alias
+            )
+        else:
+            gaps.append(
+                dict(
+                    member=next(
+                        k for k, v in member_map.items() if v == row["incident_id"]
+                    ),
+                    source="RESOURCES",
+                    dependency=row["dependency"],
+                    availability=row["availability"],
+                    reason="DEPENDENCY_NOT_COLLECTED_OR_INCOMPLETE",
+                )
+            )
+    view = dict(
+        protocol=SCOPED_PROTOCOL,
+        request_key=request_key,
+        snapshot_sha256=old["snapshot_sha256"],
+        target=target,
+        members=member_map,
+        target_evidence=evidence,
+        comparison_evidence=comparison,
+        dependencies=dependencies,
+        gaps=gaps,
+        predicate_catalog=old["predicate_catalog"],
+        feature_catalog=old["feature_catalog"],
+        feedback=feedback,
+    )
+    view["binding_id"] = sha(view)
+    return view
+
+
+def _require_scoped_binding(view):
+    if sha({k: v for k, v in view.items() if k != "binding_id"}) != view["binding_id"]:
+        raise ValueError("SCOPED_BINDING_MISMATCH")
+
+
+def scoped_model_view(view):
+    """Deterministic per-service projection; full numeric samples retained once."""
+    _require_scoped_binding(view)
+    import json
+
+    def project(row):
+        from collections import Counter
+        import json
+
+        # Identical records are represented by a lossless value + multiplicity.
+        counts = Counter(
+            json.dumps(r, sort_keys=True, separators=(",", ":")) for r in row["records"]
+        )
+        return dict(
+            member=next(
+                k for k, v in view["members"].items() if v == row["incident_id"]
+            ),
+            service=row["services"][0],
+            source=row["source"],
+            window=row["window"],
+            status=row["status"],
+            truncated=row["truncated"],
+            covered_services=row["covered_services"],
+            records=_factor_records(
+                [dict(value=json.loads(r), count=n) for r, n in sorted(counts.items())]
+            ),
+        )
+
+    result = dict(
+        protocol=view["protocol"],
+        binding_id=view["binding_id"],
+        scope=dict(
+            target=view["target"],
+            members=list(view["members"]),
+            selection="RUNTIME_SCOPE_FROM_NORMAL_PRODUCT_IDENTITIES; NOT_MODEL_TARGET_DISCOVERY",
+        ),
+        target_evidence={k: project(v) for k, v in view["target_evidence"].items()},
+        comparison_evidence={
+            k: project(v) for k, v in view["comparison_evidence"].items()
+        },
+        dependencies={
+            k: dict(
+                member=next(
+                    i for i, m in view["members"].items() if m == v["incident_id"]
+                ),
+                target=v["target"],
+                dependency=v["dependency"],
+                supporting_handles=[
+                    i
+                    for i, e in view["target_evidence"].items()
+                    if e["evidence_ref"] in v["supporting_refs"]
+                ],
+            )
+            for k, v in view["dependencies"].items()
+        },
+        gaps=view["gaps"],
+        predicate_catalog=view["predicate_catalog"],
+        feature_catalog=view["feature_catalog"],
+        feedback=view["feedback"],
+    )
+
+    # Window dictionary removes repeated timestamps without losing alignment.
+    windows = {}
+    for section in ("target_evidence", "comparison_evidence"):
+        for row in result[section].values():
+            encoded = json.dumps(row["window"], sort_keys=True)
+            if encoded not in windows:
+                windows[encoded] = f"W{len(windows) + 1:02}"
+            row["window"] = windows[encoded]
+    gaps = []
+    for original in result["gaps"]:
+        row = dict(original)
+        if "window" in row:
+            encoded = json.dumps(row["window"], sort_keys=True)
+            if encoded not in windows:
+                windows[encoded] = f"W{len(windows) + 1:02}"
+            row["window"] = windows[encoded]
+        gaps.append(row)
+    result["windows"] = {alias: json.loads(value) for value, alias in windows.items()}
+    columns = sorted({k for row in gaps for k in row})
+    result["gaps"] = {
+        "columns": columns,
+        "rows": [[row.get(k) for k in columns] for row in gaps],
+        "null_means": "FIELD_NOT_APPLICABLE; NEVER_HEALTHY_OR_ZERO",
+    }
+    return result
+
+
+def scoped_schema(view):
+    """The exact schema sent on the wire; empty catalogs use maxItems=0."""
+    _require_scoped_binding(view)
+    schema = strict_schema(ScopedKnowledgeDraft)
+    schema["properties"]["binding_id"]["enum"] = [view["binding_id"]]
+    props = schema["$defs"]["CandidateDraft"]["properties"]
+    props["target"]["enum"] = [view["target"]]
+
+    def choices(node, values):
+        if values:
+            node["items"] = {"type": "string", "enum": list(values)}
+        else:
+            node.pop("minItems", None)
+            node["maxItems"] = 0
+
+    choices(props["member_incidents"], view["members"])
+    props["member_incidents"]["minItems"] = len(view["members"])
+    props["member_incidents"]["maxItems"] = len(view["members"])
+    choices(props["predicates"], view["predicate_catalog"])
+    for field in ("target_support", "target_counterevidence"):
+        choices(props[field], view["target_evidence"])
+    # Each comparison alternative binds service and handle together.
+    alternatives = []
+    comparison_services = sorted(
+        {r["services"][0] for r in view["comparison_evidence"].values()}
+    )
+    for service in comparison_services:
+        from copy import deepcopy
+
+        node = deepcopy(schema["$defs"]["Comparison"])
+        node["properties"]["evidence_alias"]["enum"] = [
+            a
+            for a, r in view["comparison_evidence"].items()
+            if r["services"] == [service]
+        ]
+        node["properties"]["service"]["enum"] = [service]
+        alternatives.append(node)
+    if alternatives:
+        props["comparison_context"]["items"] = {"anyOf": alternatives}
+    else:
+        props["comparison_context"]["maxItems"] = 0
+    dep = schema["$defs"]["DraftExpression"]["properties"]["dependency_aliases"]
+    choices(dep, view["dependencies"])
+    # A scoped Level B task needs a common collected semantic for EVERY member.
+    semantics = {sha(r["dependency"]) for r in view["dependencies"].values()}
+    complete = any(
+        {
+            r["incident_id"]
+            for r in view["dependencies"].values()
+            if sha(r["dependency"]) == s
+        }
+        == set(view["members"].values())
+        for s in semantics
+    )
+    if not complete:
+        props["expression"] = {"type": "null"}
+
+    def enum_count(x):
+        if isinstance(x, dict):
+            return len(x.get("enum", [])) + sum(
+                enum_count(v) for k, v in x.items() if k != "enum"
+            )
+        if isinstance(x, list):
+            return sum(map(enum_count, x))
+        return 0
+
+    if enum_count(schema) > 1000:
+        raise ValueError("SCHEMA_SCOPE_REQUIRES_BOUNDED_SELECTION")
+    return schema
+
+
+def diagnose_scoped_draft(data, view):
+    """Read-only aggregate diagnostics; never repair or register model content."""
+    _require_scoped_binding(view)
+    issues = []
+
+    def issue(path, code):
+        issues.append(dict(path=path, code=code))
+
+    if not isinstance(data, dict):
+        return [dict(path="", code="OBJECT_REQUIRED")]
+    from copy import deepcopy
+
+    data = deepcopy(data)
+    raw = data.get("candidate")
+    if isinstance(raw, dict):
+        for field in (
+            "member_incidents",
+            "target_support",
+            "target_counterevidence",
+            "predicates",
+        ):
+            value = raw.get(field)
+            if not isinstance(value, list) or any(
+                not isinstance(v, str) for v in value
+            ):
+                issue("candidate." + field, "STRING_ARRAY_REQUIRED")
+                raw[field] = []
+        value = raw.get("comparison_context")
+        if not isinstance(value, list) or any(
+            not isinstance(v, dict)
+            or not isinstance(v.get("evidence_alias"), str)
+            or not isinstance(v.get("service"), str)
+            for v in value
+        ):
+            issue("candidate.comparison_context", "COMPARISON_SHAPE_INVALID")
+            raw["comparison_context"] = []
+        expr = raw.get("expression")
+        if expr is not None:
+            if not isinstance(expr, dict):
+                issue("candidate.expression", "EXPRESSION_OBJECT_REQUIRED")
+                raw["expression"] = None
+            else:
+                aliases = expr.get("dependency_aliases")
+                if not isinstance(aliases, list) or any(
+                    not isinstance(v, str) for v in aliases
+                ):
+                    issue(
+                        "candidate.expression.dependency_aliases",
+                        "STRING_ARRAY_REQUIRED",
+                    )
+                    expr["dependency_aliases"] = []
+    if data.get("binding_id") != view["binding_id"]:
+        issue("binding_id", "SCOPED_BINDING_MISMATCH")
+    draft = data.get("candidate")
+    if not isinstance(draft, dict):
+        if data.get("disposition") == "CANDIDATE":
+            issue("candidate", "CANDIDATE_MISSING")
+        return issues
+    if data.get("disposition") != "CANDIDATE":
+        issue("candidate", "ABSTENTION_WITH_CANDIDATE")
+    if draft.get("target") != view["target"]:
+        issue("candidate.target", "TARGET_SCOPE_MISMATCH")
+    members = draft.get("member_incidents", [])
+    if set(members) != set(view["members"]) or len(members) != len(set(members)):
+        issue("candidate.member_incidents", "MEMBER_SCOPE_MISMATCH")
+    for field in ("target_support", "target_counterevidence"):
+        for n, alias in enumerate(draft.get(field, [])):
+            row = view["target_evidence"].get(alias)
+            if row is None:
+                issue(f"candidate.{field}.{n}", "UNKNOWN_TARGET_EVIDENCE")
+            elif row["incident_id"] not in [
+                view["members"][i] for i in members if i in view["members"]
+            ]:
+                issue(f"candidate.{field}.{n}", "EVIDENCE_MEMBER_MISMATCH")
+    for n, item in enumerate(draft.get("comparison_context", [])):
+        row = view["comparison_evidence"].get(item.get("evidence_alias"))
+        if row is None or item.get("service") not in row["services"]:
+            issue(f"candidate.comparison_context.{n}", "COMPARISON_SERVICE_MISMATCH")
+    for n, predicate in enumerate(draft.get("predicates", [])):
+        if predicate not in view["predicate_catalog"]:
+            issue(f"candidate.predicates.{n}", "UNKNOWN_PREDICATE")
+    expr = draft.get("expression")
+    if expr:
+        if (
+            scoped_schema(view)["$defs"]["CandidateDraft"]["properties"][
+                "expression"
+            ].get("type")
+            == "null"
+        ):
+            issue("candidate.expression", "EXPRESSION_UNAVAILABLE_IN_SCOPE")
+        aliases = expr.get("dependency_aliases", [])
+        if len(set(aliases)) != len(aliases):
+            issue("candidate.expression.dependency_aliases", "DUPLICATE_DEPENDENCY")
+        rows = []
+        for n, alias in enumerate(aliases):
+            row = view["dependencies"].get(alias)
+            if row is None:
+                issue(
+                    f"candidate.expression.dependency_aliases.{n}", "UNKNOWN_DEPENDENCY"
+                )
+            else:
+                rows.append(row)
+                support = {
+                    view["target_evidence"][a]["evidence_ref"]
+                    for a in draft.get("target_support", [])
+                    if a in view["target_evidence"]
+                }
+                if not support.intersection(row["supporting_refs"]):
+                    issue(
+                        f"candidate.expression.dependency_aliases.{n}",
+                        "DEPENDENCY_NOT_SUPPORTED",
+                    )
+        if {r["incident_id"] for r in rows} != set(view["members"].values()) or len(
+            rows
+        ) != len(view["members"]):
+            issue(
+                "candidate.expression.dependency_aliases", "DEPENDENCY_MEMBER_MISMATCH"
+            )
+        if len({sha(r["dependency"]) for r in rows}) > 1:
+            issue(
+                "candidate.expression.dependency_aliases",
+                "DEPENDENCY_SEMANTICS_MISMATCH",
+            )
+        try:
+            # Validate unit algebra even if unrelated reference fields are wrong.
+            DerivedExpression(
+                **{k: v for k, v in expr.items() if k != "dependency_aliases"},
+                threshold_provenance=view["snapshot_sha256"],
+                window_seconds=rows[0]["dependency"]["sampling_window_seconds"]
+                if rows
+                else 10,
+                minimum_samples=rows[0]["dependency"]["sample_count"] if rows else 2,
+            )
+        except ValueError:
+            issue("candidate.expression", "UNIT_MISMATCH")
+    try:
+        from ecomsre.product.knowledge.compiler import _predicate_parts
+
+        sources = {
+            _predicate_parts(p)[1].value
+            for p in draft.get("predicates", [])
+            if p in view["predicate_catalog"]
+        }
+        if expr:
+            sources.add("RESOURCES")
+        if len(sources) < 2 and draft.get("predicates") != ["core:RUNTIME_NOT_RUNNING"]:
+            issue("candidate.predicates", "TWO_SOURCES_REQUIRED")
+    except ValueError:
+        issue("candidate.predicates", "INVALID_PREDICATE")
+    return issues
+
+
+def compile_scoped_draft(draft, view):
+    issues = diagnose_scoped_draft(draft.model_dump(mode="json"), view)
+    if issues:
+        raise ValueError(";".join(i["code"] for i in issues))
+    data = draft.model_dump(mode="json", exclude={"binding_id"})
+    if data["candidate"] is None:
+        raise ValueError(data["disposition"])
+    data["candidate"]["member_incidents"] = [
+        view["members"][i] for i in data["candidate"]["member_incidents"]
+    ]
+    legacy = dict(
+        snapshot_sha256=view["snapshot_sha256"],
+        evidence_catalog=view["target_evidence"] | view["comparison_evidence"],
+        dependency_catalog=view["dependencies"],
+    )
+    return compile_draft(KnowledgeDraft.model_validate(data), legacy)
+
+
+def _factor_records(records):
+    """Lossless deterministic compression: shared fields plus per-row differences."""
+    if not records:
+        return dict(shared={}, rows=[])
+    values = [r["value"] for r in records]
+    common = {
+        k: v for k, v in values[0].items() if all(k in r and r[k] == v for r in values)
+    }
+    return dict(
+        shared=common,
+        rows=[
+            dict(
+                value={k: v for k, v in r["value"].items() if k not in common},
+                count=r["count"],
+            )
+            for r in records
+        ],
+    )

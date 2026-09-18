@@ -175,7 +175,10 @@ def test_strict_schema_objects_all_required_and_no_extras():
     walk(strict_schema(KnowledgeDraft))
 
 
-def test_draft_provenance_reconstructs_live_bound_response(tmp_path, monkeypatch):
+@pytest.mark.parametrize("scoped", [False, True])
+def test_draft_provenance_reconstructs_live_bound_response(
+    tmp_path, monkeypatch, scoped
+):
     # Fixture ledger only; no actual model or learning claim.
     import json
     from datetime import UTC, datetime
@@ -262,12 +265,41 @@ def test_draft_provenance_reconstructs_live_bound_response(tmp_path, monkeypatch
                 inapplicable_conditions=["missing"],
             ),
         )
-        proposal, _ = compile_draft(draft, view)
+        if scoped:
+            from ecomsre.product.knowledge.drafts_v050 import (
+                SCOPED_TASK,
+                SCOPED_PROTOCOL,
+                ScopedKnowledgeDraft,
+                scoped_view,
+                scoped_model_view,
+                compile_scoped_draft,
+            )
+
+            scoped_binding = scoped_view(
+                discovery,
+                request_key="fixture-draft-good",
+                target="payment",
+                members=[first, second],
+            )
+            data = draft.model_dump(mode="json")
+            data["binding_id"] = scoped_binding["binding_id"]
+            data["candidate"]["member_incidents"] = list(scoped_binding["members"])
+            data["candidate"]["target_support"] = list(
+                scoped_binding["target_evidence"]
+            )[:24]
+            draft = ScopedKnowledgeDraft.model_validate(data)
+            view = scoped_binding
+            TASK, PROTOCOL = SCOPED_TASK, SCOPED_PROTOCOL
+            proposal, _ = compile_scoped_draft(draft, view)
+        else:
+            proposal, _ = compile_draft(draft, view)
         valid = dict(
             proposal=draft.model_dump(mode="json"),
             evidence_mode="LIVE_PROVIDER",
             prompt_version=PROTOCOL,
-            task_view_sha256=sha({"task": TASK, "view": view}),
+            task_view_sha256=sha(
+                {"task": TASK, "view": scoped_model_view(view) if scoped else view}
+            ),
         )
         for i, mutation in enumerate(
             ("raw", "canonical", "mapping", "protocol", "mode", "view")
@@ -282,7 +314,13 @@ def test_draft_provenance_reconstructs_live_bound_response(tmp_path, monkeypatch
             if mutation == "canonical":
                 candidate = proposal.model_copy(update={"name": "changed"})
             if mutation == "mapping":
-                next(iter(binding["evidence_catalog"].values()))["source"] = "CHANGES"
+                next(
+                    iter(
+                        binding[
+                            "target_evidence" if scoped else "evidence_catalog"
+                        ].values()
+                    )
+                )["source"] = "CHANGES"
             if mutation == "protocol":
                 payload["prompt_version"] = "other"
             if mutation == "mode":

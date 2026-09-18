@@ -130,6 +130,14 @@ class InvestigationRepository:
                     ).fetchone()
                     if n >= 6 or committed + reserve > 1_000_000:
                         raise ProductError("BUDGET_EXHAUSTED", "Draft continuation sublimit reached.")
+                if key.startswith("knowledge-draft-v050.2:"):
+                    n, committed = connection.execute(
+                        "SELECT COUNT(*),COALESCE(SUM(COALESCE(charged_microusd,reserved_microusd)),0) "
+                        "FROM investigation_provider_calls_v050 WHERE call_key LIKE 'knowledge-draft-v050.2:%'"
+                    ).fetchone()
+                    semantic = connection.execute("SELECT COUNT(*) FROM investigation_provider_calls_v050 WHERE call_key LIKE 'knowledge-draft-v050.2:proposal:%'").fetchone()[0]
+                    if n >= 6 or committed + reserve > 2_000_000 or (':proposal:' in key and semantic >= 3):
+                        raise ProductError("BUDGET_EXHAUSTED", "Scoped draft continuation sublimit reached.")
                 if key.startswith("knowledge:"):
                     prefix = ":".join(key.split(":")[:2]) + ":%"
                     proposal_count = connection.execute(

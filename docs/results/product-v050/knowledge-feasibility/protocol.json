@@ -1,0 +1,112 @@
+{
+  "api_style": "responses",
+  "budget_before": {
+    "committed_upper_microusd": 839581,
+    "cost_cap_usd": 20,
+    "dispatches_in_this_command": 0,
+    "docker_mutations": 0,
+    "ledger_status": "READ",
+    "live_episode_cap": 12,
+    "pricing_status": "NOT_CONFIGURED",
+    "provider_request_count": 54,
+    "provider_status": "NOT_CONFIGURED",
+    "reported_cost_microusd": 744132,
+    "request_cap": 200,
+    "schema_version": "ecomsre.product.preflight.v050",
+    "unknown_usage_requests": 4
+  },
+  "committed_cap_microusd": 2000000,
+  "development_gate": "BOTH_ORIGINAL_DEVELOPMENT_EVENTS_TRUE; NO_FPR_OR_INDEPENDENT_READINESS_WITHOUT_CONTROLS",
+  "development_ids": [
+    "inc-9707724832184ab0c6bcce92",
+    "inc-b7a9bc21170f5c7c4b1591bb"
+  ],
+  "environment_id": "env-2aad94a1daf2c21c06c734a3",
+  "independent_validation_gate": "ORIGINAL_GOAL_SHADOW_AND_CONTROL_REQUIREMENTS_UNCHANGED",
+  "input_composition": {
+    "estimated_total_tokens": 15910,
+    "instructions_tokens": 294,
+    "old_actual_input_tokens": [
+      50189,
+      50209,
+      50216
+    ],
+    "schema_tokens": 1368,
+    "tokenizer": "o200k_base; local estimate, not Provider billed input",
+    "view_components": {
+      "binding_id": 42,
+      "comparison_evidence": 5229,
+      "dependencies": 111,
+      "feature_catalog": 94,
+      "feedback": 1,
+      "gaps": 2739,
+      "predicate_catalog": 228,
+      "protocol": 9,
+      "scope": 43,
+      "target_evidence": 4492,
+      "windows": 1232
+    },
+    "view_tokens": 14248
+  },
+  "max_output_tokens": 8192,
+  "max_semantic_attempts": 3,
+  "model": "gpt-5.4-mini-2026-03-17",
+  "protected": {
+    "investigation_provider_calls_v050": "0a210b7ca457d0fb3dcb46666ef9507899bb76cd433548986ef02b4dcbf9cdc7",
+    "investigation_sessions_v050": "567613901df32c9b61f831d7ef888fb9b04b3556d3e4ceeeab2c1b54daa7db1b",
+    "knowledge_episode_incidents_v050": "93c19a85cea3e91d4fba305e4c295f8a8d331a1eb2f774a499f280c17a9629fb",
+    "knowledge_rejections_v050": "315e69b4efed8cf8bc020ac2562e0ebb842424bfe3dd5b50dad4c52708ec2321"
+  },
+  "protocol": "knowledge-draft-v050.2",
+  "reasoning": "medium",
+  "request_cap": 6,
+  "roster": [
+    {
+      "episode_id": "ecomsre-v050-27de683624-e01",
+      "incident_id": "inc-f0e3b698b2d30035a1f94525",
+      "role": "DISCOVERY"
+    },
+    {
+      "episode_id": "ecomsre-v050-27de683624-e02",
+      "incident_id": "inc-b8b34c4a93927e43596a6016",
+      "role": "DISCOVERY"
+    },
+    {
+      "episode_id": "ecomsre-v050-27de683624-e03",
+      "incident_id": "inc-6f02324349fe6fe68f340709",
+      "role": "DISCOVERY"
+    },
+    {
+      "episode_id": "ecomsre-v050-27de683624-e04",
+      "incident_id": "inc-9707724832184ab0c6bcce92",
+      "role": "DEVELOPMENT"
+    },
+    {
+      "episode_id": "ecomsre-v050-27de683624-e05",
+      "incident_id": "inc-b7a9bc21170f5c7c4b1591bb",
+      "role": "DEVELOPMENT"
+    }
+  ],
+  "schema_sha256": "64439d2589b3bc18654d5853e44c93fb8c3e5006c086c97f3e16ec1c2f616c1d",
+  "scope": "LEVEL_A_ONLY_ALL_FIVE_SEEN_EVENTS; LEVEL_B_DEVELOPMENT_DEPENDENCY_GAP",
+  "snapshot_sha256": "5266abd07b8d89a1cd81ac183f7702aab579070245233efe6cdc17f3214b3215",
+  "sources": {
+    "incidents/extensions.py": "addd82263f489116145ff4d16b2e94fe347b3156362c53d9a550521db3cc00fa",
+    "investigation/contracts.py": "0da4502ba38e95150b469cd8bea4e8015313adef5bc2f41946bbce539151c6ef",
+    "investigation/provider.py": "054de5a049ed4975e4156c18be3034a8b0ee533cadc33abf050c9cf5b7936bf7",
+    "investigation/reads.py": "f0b90283ea3de3e48e5b2eacbac30fd418c8ba1f6a3e11ca001a7275a19c4757",
+    "knowledge/candidates_v050.py": "172b9824d00c8ed114b55d5aad126c846326d44bc126a7c2ad02e81dc07c7b2e",
+    "knowledge/compiler.py": "735cefab1bdc6961134d3fe235894055aff4fc4ff01584543990109e56df004a",
+    "knowledge/drafts_v050.py": "845bae49f17c0252d0dda1de48796dd1228b5be8af5e85ae77e62fe53970b13f",
+    "knowledge/evolution_v050.py": "911f3d38bc81f82eef3b17757055c7d13541c5e5bb4fd5461d1c2fcb0fc37838",
+    "knowledge/expressions.py": "dca58e6307647dbf46b5681878ea31a8cb4083708dcf8dee6bfc6a6aa01d1c3c",
+    "knowledge/observations_v050.py": "a46e942617c4770bae4b96553559131472f456558bac49c535ee8573f79dde56",
+    "knowledge/runtime.py": "0d5e92d1c45e15225b15ce999812b23bc7d384e59dd3fd994b2dbfb41e8161b8",
+    "knowledge/split_v050.py": "3f499a3b267a1ba6e21166a39abfa9f3d9581d035b72d1131f9ec224a9d316f5",
+    "scripts/product_v050/constrained_proposal.py": "229d4a371dfb5b4caeb1a3b0a7f71cc9955fbc826b1267f4f7b97c48f5f28971",
+    "scripts/product_v050/knowledge_feasibility.py": "99cc5f910802727cc826c141daa1a3eb3007348ec0015848cc8c15d21d59ac3c",
+    "src/ecomsre/product/investigation/repository.py": "2790ae82e9ef12c933b50318375b3aff118a4efa36306d4cec578a84c96b1ba5"
+  },
+  "start_head": "3ae84ab4bda5054ccfbfde74e9c655a416e312e4",
+  "target": "fraud-detection"
+}

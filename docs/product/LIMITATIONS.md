@@ -1,6 +1,6 @@
 # 能力与限制 · Product v0.4.1
 
-当前 [知识接口修复轮](../results/product-v050/knowledge-contract-repair/README.md) 复用了原 5 个已见 episode：新增 3 次请求，2 个格式有效草稿，0 个通过准入，真实开发求值/独立验证/晋升/复用均未发生。累计 54 次请求、USD 0.839581 承诺，终态仍为 `NO_VALIDATED_LLM_KNOWLEDGE`。无新增 Docker 操作或恢复写入；旧 live-02 clean=true 与 live-01 BLOCKED_SAFETY / clean=false 保留。
+当前 [可行性与受约束提议轮](../results/product-v050/knowledge-feasibility/README.md) 复用原 5 个已见事件：新增 3 次请求，3 个 schema-valid 草稿，1 个准入候选，1 次实际开发求值；原 Development 仅 1/2，未冻结、独立验证、晋升或复用。累计 57 次请求、USD 0.918501 承诺，终态仍为 `NO_VALIDATED_LLM_KNOWLEDGE`。本轮没有新增 live episode 或 Product 恢复写入；旧 live-02 clean=true 与 live-01 BLOCKED_SAFETY / clean=false 保留。
 
 ## 已证明什么
 

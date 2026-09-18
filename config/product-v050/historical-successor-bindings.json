@@ -8,7 +8,7 @@
     },
     "README.md": {
       "historical_sha256": "e125b11cdc7727fa90e031a1a45a731b81f84a3256c58bd913fbd6c057fb314b",
-      "successor_sha256": "404cd0298ccb728e2a3aaaee90786fa6392ea5eebfffe415844e421ada05fee0"
+      "successor_sha256": "6f3f1a0bddaa1199eed58d6bab5ab8d0c0019be4e498af6647f1ebdfd1d86b13"
     },
     "docs/interview/PROJECT_PITCH.md": {
       "historical_sha256": "aa07c76eee86068fa3407ca2584a189009e801c0d4fe3bfda3430f2c3f4d8c8f",
@@ -20,15 +20,15 @@
     },
     "docs/product/LIMITATIONS.md": {
       "historical_sha256": "6f5f94f227fe7a59ff3e5a0918eac7d1bc8bc9f7513f097c27e463797108573b",
-      "successor_sha256": "9469f675e03994f48f072baf80340c81d306bea1bf833696353b185d97937aa9"
+      "successor_sha256": "eecda8ff09bc72525d4985f2f72e2360fbfd571d83794f9ff1ec839593de6d73"
     },
     "docs/product/QUICKSTART.md": {
       "historical_sha256": "5be47a880028e353a96031f85d423ebbba0a2219bd91be0e2a49b392e032c7bb",
-      "successor_sha256": "3d50a3dba7b48f0893db837289cdf525c1f182bb8813f087c1ef92fc580be3e4"
+      "successor_sha256": "67528e78f722370f90c6fe55aa10b90282e389a04c723890c8de251dc9ee4ab8"
     },
     "docs/product/STATUS.md": {
       "historical_sha256": "f6d83224b763d6d74427a72d94c91a7526c1f3385a0691b69f2dbece3ea7040e",
-      "successor_sha256": "25f045bd87fde7f5a799b4eb052018253a58feaf247270bcafd6277feb6d1399"
+      "successor_sha256": "87c6785fd8546ef6018fd129e03aec404f60e4c532b07394973226c944b5efd2"
     }
   }
 }
