@@ -11,7 +11,6 @@ from fastapi.testclient import TestClient
 import httpx
 
 from scripts.product_v050.live_environment import (
-    ROOT,
     REPO,
     load,
     save,
@@ -54,16 +53,17 @@ def stamp():
 class Campaign:
     def __init__(self, owner):
         self.owner = owner
+        self.root = owner.root
         self.controller = GoalFlagControllerV030(
             endpoints=SimpleNamespace(
                 flag_control="http://127.0.0.1:18081/api",
                 flag_evaluation="http://127.0.0.1:18016",
             ),
-            flag_file=ROOT / "control/demo.flagd.json",
-            documents=load("documents.json"),
+            flag_file=self.root / "control/demo.flagd.json",
+            documents=self.load("documents.json"),
         )
-        self.authority_path = ROOT / "runtime-authority.json"
-        self.snapshot_path = DATA / "pilot/live-01-readiness.json"
+        self.authority_path = self.root / "runtime-authority.json"
+        self.snapshot_path = DATA / "pilot" / (self.root.name + "-readiness.json")
         if not (DATA / "product.sqlite3").is_file():
             raise ValueError("ORIGINAL_LEDGER_MISSING")
         load_project_environment(Path.home() / ".config/ecomsre/provider.env")
@@ -79,7 +79,7 @@ class Campaign:
             != "https://api.openai.com/v1"
         ):
             raise ValueError("PROVIDER_CONFIG_DRIFT")
-        save(ROOT / "provider-preflight.json", pre)
+        save(self.root / "provider-preflight.json", pre)
         self.settings = ProductSettingsV1(
             data_root=DATA,
             pilot_runtime_authority_path=self.authority_path,
@@ -100,18 +100,21 @@ class Campaign:
         self.evo = KnowledgeEvolutionV050(self.app.state.knowledge, self.repo)
         self.incidents = []
 
+    def load(self, name):
+        return load(name, self.root)
+
     def authority(self, env):
         return PilotRuntimeAuthorityV02.build(
             environment_id=env,
             allowed_logical_services=SERVICES,
-            profile_sha256=digest(load("manifest.json")),
+            profile_sha256=digest(self.load("manifest.json")),
             daemon_identity_sha256=digest(self.owner.daemon),
             docker_context_sha256=digest(
                 {"context": self.owner.context, "endpoint": self.owner.expected_context}
             ),
-            config_bundle_sha256=digest(load("compose.json")),
-            resolved_sandbox_sha256=digest(load("compose.json")),
-            resolved_endpoints_sha256=digest(load("manifest.json")["ports"]),
+            config_bundle_sha256=digest(self.load("compose.json")),
+            resolved_sandbox_sha256=digest(self.load("compose.json")),
+            resolved_endpoints_sha256=digest(self.load("manifest.json")["ports"]),
             ownership_scope_sha256=digest(self.owner.labels),
         )
 
@@ -128,7 +131,7 @@ class Campaign:
         if not run_one_job(self.settings, worker_id="v050-live"):
             raise ValueError("WORKER_NO_JOB")
         result = self.client.get("/v1/jobs/" + job).json()
-        save(ROOT / "jobs" / ("job-" + job + ".json"), result)
+        save(self.root / "jobs" / ("job-" + job + ".json"), result)
         if result["status"] != "SUCCEEDED":
             raise ValueError("JOB_FAILED:" + str(result.get("safe_error_code")))
         return result
@@ -185,7 +188,7 @@ class Campaign:
                 "restart_count": row["RestartCount"],
             }
         save(
-            ROOT / "runtime" / ("proof-" + label + ".json"),
+            self.root / "runtime" / ("proof-" + label + ".json"),
             {"at": stamp(), "services": states, "proof": proof},
         )
         if not all(s["healthy"] and s["restart_count"] == 0 for s in states.values()):
@@ -198,7 +201,7 @@ class Campaign:
                 services=states,
             )
             save(
-                ROOT / "runtime" / ("snapshot-" + label + ".json"),
+                self.root / "runtime" / ("snapshot-" + label + ".json"),
                 snap.model_dump(mode="json"),
             )
             self.snapshot_path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
@@ -220,7 +223,7 @@ class Campaign:
                     error_budget=1,
                 ),
             )
-        save(ROOT / "traffic" / (label + ".json"), r.model_dump(mode="json"))
+        save(self.root / "traffic" / (label + ".json"), r.model_dump(mode="json"))
         if r.failed or r.attempted != count:
             raise ValueError("BOUNDED_TRAFFIC_FAILED")
         return r
@@ -242,7 +245,7 @@ class Campaign:
             repository_root=REPO, runtime_authority_sha256=binding
         )
         payload.update(
-            name="product-v050-live-01",
+            name="product-v050-" + self.root.name,
             description="Independent local Goal telemetry; no recovery authority",
         )
         for c in payload["connector_configs"]:
@@ -254,30 +257,48 @@ class Campaign:
             if c["kind"] == "JAEGER":
                 c["endpoint"] = "http://127.0.0.1:16686/jaeger/ui"
             if c["kind"] == "PILOT_RUNTIME":
-                c["settings"]["snapshot_ref"] = "pilot/live-01-readiness.json"
+                c["settings"]["snapshot_ref"] = str(
+                    self.snapshot_path.relative_to(DATA)
+                )
         r = self.client.post("/v1/environments", json=payload)
         if r.status_code != 201:
             raise ValueError("ENVIRONMENT_CREATE:" + str(r.status_code))
         self.env = r.json()["environment_id"]
-        save(ROOT / "environment.json", r.json())
+        save(self.root / "environment.json", r.json())
         self.evo.enroll_fresh_test_environment(self.env)
         self.evo.freeze_split(
             self.env,
             {
                 self.owner.nonce + "-" + k: v
-                for k, v in load("manifest.json")["episode_order"].items()
+                for k, v in self.load("manifest.json")["episode_order"].items()
             },
         )
         write_pilot_runtime_authority_v02(self.authority_path, self.authority(self.env))
         self.runtime("environment")
         self.work("/v1/environments/" + self.env + "/verify-jobs")
         save(
-            ROOT / "capabilities.json",
+            self.root / "capabilities.json",
             self.app.state.capabilities.get(self.env).model_dump(mode="json"),
         )
         print("V050_ENVIRONMENT_VERIFIED", flush=True)
-        self.traffic("baseline", 90, 50002, rate=0.5)
-        self.runtime("baseline")
+        self.build_baseline("baseline", 50002)
+
+    def build_baseline(self, label, seed):
+        # The builder excludes the newest warmup_seconds from its lookback.
+        # Settle the complete traffic interval before selecting its five windows.
+        # Bound healthy log volume below the unchanged 200-record source cap.
+        self.traffic(label, 30, seed, rate=1 / 6)
+        started = stamp()
+        deadline = time.monotonic() + 180
+        while time.monotonic() < deadline:
+            self.owner.verify()
+            time.sleep(min(30, max(0, deadline - time.monotonic())))
+            print("V050_BASELINE_SETTLING", flush=True)
+        self.owner.verify()
+        save(
+            self.root / (label + "-settlement.json"), {"start": started, "end": stamp()}
+        )
+        self.runtime(label)
         if self.lag()["lag"] >= 20:
             raise ValueError("BASELINE_QUEUE_NOT_LOW")
         self.work(
@@ -299,7 +320,7 @@ class Campaign:
             for s in self.app.state.services.get_map(self.env).services
         }
         save(
-            ROOT / "baseline-ready.json",
+            self.root / "baseline-ready.json",
             {
                 "environment": self.env,
                 "at": stamp(),
@@ -310,8 +331,8 @@ class Campaign:
 
     def episode(self, ordinal):
         key = f"e{ordinal:02d}"
-        root = ROOT / "episodes" / key
-        count = len(list(DATA.glob("live-*/episodes/*/started.json")))
+        root = self.root / "episodes" / key
+        count = len(list(DATA.glob("live-*/**/episodes/*/started.json")))
         if count >= 12:
             raise ValueError("LIVE_EPISODE_BUDGET")
         self.owner.verify()

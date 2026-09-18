@@ -144,7 +144,19 @@ def load_observations(incident, objects):
         require_parent_binding(incident, envelope["parent_diagnosis_id"], objects.metadata_store)
         from ecomsre.dta_v2.v22.action_catalog import EvidenceActionV22
 
-        action = EvidenceActionV22.model_validate_json(json.dumps(envelope["action"]))
+        from ecomsre.product.incidents.queue_action import (
+            ProductQueueLagActionV030,
+            build_queue_lag_action_v030,
+        )
+
+        # This existing Product successor has an exact independent contract;
+        # frozen Core intentionally does not admit its queue-only parameters.
+        action_type = (
+            ProductQueueLagActionV030
+            if envelope["action"].get("action_id") == build_queue_lag_action_v030().action_id
+            else EvidenceActionV22
+        )
+        action = action_type.model_validate_json(json.dumps(envelope["action"]))
         from ecomsre.product.connectors.base import ConnectorWindowV1
 
         window = ConnectorWindowV1.model_validate_json(json.dumps(envelope["window"]))

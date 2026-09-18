@@ -306,6 +306,9 @@ jobs:
       - name: Product v0.5 live resume safety evidence
         run: PYTHONPATH=src:. uv run --frozen --no-sync python -m scripts.ci.verify_product_v050_live_resume
 
+      - name: Product v0.5 real local investigation evidence
+        run: PYTHONPATH=src:. uv run --frozen --no-sync python -m scripts.ci.verify_product_v050_docker_stability
+
       - name: Full repository tests
         env:
           GH_TOKEN: ${{ github.token }}

@@ -38,6 +38,22 @@ from ecomsre.product.knowledge.runtime import (
 from ecomsre.product.knowledge.compiler import _CORE_SOURCE, _ANOMALY_SOURCE
 
 
+def proposal_observation_view(observation: dict[str, Any]) -> dict[str, Any]:
+    """Keep incomplete-source diagnostics without sending inadmissible rows.
+
+    Full CAS observations remain intact and are verified before this projection.
+    A truncated result never supplies candidate evidence references.
+    """
+    if not observation["truncated"]:
+        return observation
+    return {
+        **observation,
+        "records": [],
+        "record_count": len(observation["records"]),
+        "records_omitted": "TRUNCATED_NOT_CANDIDATE_EVIDENCE",
+    }
+
+
 def evaluation_bindings() -> dict[str, str]:
     product = Path(__file__).resolve().parents[1]
     paths = [
@@ -176,6 +192,9 @@ class KnowledgeEvolutionV050:
                     )
                 }
             )
+            sessions[-1]["observations"] = [
+                proposal_observation_view(o) for o in session["observations"]
+            ]
             from ecomsre.product.knowledge.observations_v050 import dependency_catalog
             sessions[-1]["dependency_catalog_status"] = (
                 "RETAINED" if "read_catalog" in session else "NOT_RETAINED_LEGACY_SESSION"
@@ -189,12 +208,17 @@ class KnowledgeEvolutionV050:
                 ["core:" + k.value for k in _CORE_SOURCE]
                 + ["ga:" + k.value for k in _ANOMALY_SOURCE]
             ),
-            "proposal_constraints": "PATTERN_ONLY; use snapshot_sha256 for threshold_provenance. Do not infer causality. Only BOUND_OBSERVATION dependencies supply supporting_refs. LEGAL_NOT_COLLECTED requires a new investigation; initial resource snapshots do not establish supplemental query bindings. Fields outside feature_catalog are unsupported.",
+            "proposal_constraints": "All supporting_refs AND counter_evidence_refs must cover the proposed target, be SUCCESS_NONEMPTY and not truncated; cross-target comparisons may be described in confusable_patterns but are not target evidence refs. Predicates and expression are conjunctive conditions, not a list of alternatives. PATTERN_ONLY; use snapshot_sha256 for threshold_provenance. Do not infer causality. Only BOUND_OBSERVATION dependencies supply supporting_refs. LEGAL_NOT_COLLECTED requires a new investigation; initial resource snapshots do not establish supplemental query bindings. Fields outside feature_catalog are unsupported.",
             "feature_catalog": {
                 "source": "RESOURCES",
                 "fields": {"cpu_percent": "PERCENT", "memory_bytes": "BYTES"},
                 "operators": ["mean", "max", "delta", "rate"],
                 "ratio": "same-unit operands only",
+                "threshold_units": {
+                    "mean_max_delta": "same as operand field unit: PERCENT or BYTES",
+                    "rate": "PERCENT_PER_SECOND or BYTES_PER_SECOND",
+                    "ratio": "RATIO; numerator and denominator units must match",
+                },
                 "evaluator_version": "resource-aggregates-v1",
             },
         }

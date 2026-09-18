@@ -1,6 +1,6 @@
 # 能力与限制 · Product v0.4.1
 
-Current v0.5 [Live resume](../results/product-v050/live-resume/README.md): local authorization is active, but default Docker bridge identity drift blocked startup. All 28 newly owned resources were removed; global CLEAN is not claimed. No new Provider request or independent live episode. Historical generation and replay success remain preserved.
+Current v0.5 [local investigation](../results/product-v050/docker-stability/README.md): 5 independent local episodes, 17 model-selected reads, 51 cumulative Provider requests; 3 proposals and no accepted candidate. Terminal `NO_VALIDATED_LLM_KNOWLEDGE`; no holdout, promotion or learned reuse. New campaign clean=true; historical live-01 BLOCKED_SAFETY / clean=false remains unchanged.
 
 ## 已证明什么
 
@@ -65,4 +65,4 @@ C1 的无关 Logs / Traces 缺口仍被保留。
 
 ## v0.5 当前增量限制
 
-真实 Provider 配置与价格已确认，最小生成及回放工具往返已成功；仍没有独立 live 事故或模型知识有效性实测。学习/复用证据仍为 FIXTURE_ONLY，24 次累计 Provider 请求及全部失败单独保留。读取为固定连接器模板与两个历史窗口；自由日志文本不进入模型。Level B 仅为 CPU/memory gauges、单个派生条件和有限谓词合取，不支持任意字段、跨源组合或可执行代码。候选只支持 PATTERN_ONLY，一次开发检查和一次冻结评估，没有自动修订活动。唯一新增恢复能力是无执行权限的预览。
+真实 Provider 与实时本地遥测已完成 5 个独立事件、17 次模型选取补查。累计 51 次请求，3 次知识提议均未形成有效候选；学习晋升/复用仍仅有 FIXTURE_ONLY 工程证据，真实 holdout 和复用未尝试。全部失败保留。读取为固定连接器模板与两个历史窗口；自由日志文本不进入模型。Level B 仅为 CPU/memory gauges、单个派生条件和有限谓词合取，不支持任意字段、跨源组合或可执行代码。候选只支持 PATTERN_ONLY，一次开发检查和一次冻结评估，没有自动修订活动。唯一新增恢复能力是无执行权限的预览。

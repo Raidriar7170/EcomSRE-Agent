@@ -25,7 +25,7 @@
 
 恢复还需要另一道边界：诊断正确不代表可以写入。Diagnosis 始终 `action_authority = NONE`。Product v0.4 增加默认关闭的独立通道，检查批准、目标身份、Baseline 和当前状态，再授予一次有时限的固定动作。
 
-v0.4.1 既有通道中，LLM 是可选的非权威命名/解释层，不选择目标、Runbook、命令或写参数。本页所列 Product 实测 Provider / LLM calls = 0。
+v0.4.1 既有通道中，LLM 是可选的非权威命名/解释层，不选择目标、Runbook、命令或写参数。上述 v0.2.4–v0.4.1 Product 实测 Provider / LLM calls = 0。
 
 ## 四阶段演进
 
@@ -67,8 +67,8 @@ v0.4.1 既有通道中，LLM 是可选的非权威命名/解释层，不选择�
 
 ## v0.5 开发增量（尚未完成实测验收）
 
-默认关闭的调查与知识提议任务已接入 Product API/Worker；模型可从合法读取目录中选择证据并提出假设，Runtime 保留证据校验、预算和正式诊断权限。新增 Level B 资源聚合表达式、独立验证适配和只读局部恢复预览。学习与复用目前仅有离线 fixture 证据；续跑累计 24 次真实 Provider 请求，最小生成/function 和回放工具往返已成功，live episode 为 0，不能宣称完成了 LLM 学习或新事件复用。见 [设计与边界](docs/analysis/product-v050-design.md)、[执行进度](docs/analysis/product-v050-progress.md)。
+默认关闭的调查与知识提议任务已接入 Product API/Worker；模型可从合法读取目录中选择证据并提出假设，Runtime 保留证据校验、预算和正式诊断权限。新增 Level B 资源聚合表达式、独立验证适配和只读局部恢复预览。现已完成 5 个独立本地事件、17 次模型选取补查；累计 51 次 Provider 请求。3 次真实知识提议均未形成有效候选，终态为 `NO_VALIDATED_LLM_KNOWLEDGE`，未晋升或验证新事件复用。见 [设计与边界](docs/analysis/product-v050-design.md)、[执行进度](docs/analysis/product-v050-progress.md)。
 
 Product v0.5 [PR #104 continuation](docs/results/product-v050/continuation-01/README.md) repairs evidence binding and supplemental-read reuse. [Provider unblock](docs/results/product-v050/provider-unblock/README.md) now confirms minimal generation and replay tool roundtrips; no live learning success is claimed. Earlier zero-call evidence is preserved.
 
-Latest [live resume](docs/results/product-v050/live-resume/README.md) is `BLOCKED_SAFETY`: default Docker bridge identity drift blocked startup; all newly owned resources were removed, but global CLEAN is not claimed. No new calls or live episodes.
+Latest [local investigation](docs/results/product-v050/docker-stability/README.md) ended `NO_VALIDATED_LLM_KNOWLEDGE`; the admitted new campaign cleaned all owned resources with clean=true. Historical [live-01](docs/results/product-v050/live-resume/README.md) remains BLOCKED_SAFETY / clean=false.

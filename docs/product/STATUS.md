@@ -1,6 +1,6 @@
 # 当前状态 · Product v0.5 有限交付
 
-Current v0.5 [Live resume](../results/product-v050/live-resume/README.md): local authorization is active, but default Docker bridge identity drift blocked startup. All 28 newly owned resources were removed; global CLEAN is not claimed. No new Provider request or independent live episode. Historical generation and replay success remain preserved.
+Current v0.5 [local investigation](../results/product-v050/docker-stability/README.md): 5 independent local episodes, 17 model-selected reads, 51 cumulative Provider requests; 3 proposals and no accepted candidate. Terminal `NO_VALIDATED_LLM_KNOWLEDGE`; no holdout, promotion or learned reuse. New campaign clean=true; historical live-01 BLOCKED_SAFETY / clean=false remains unchanged.
 
 **收尾完成；v0.4 的真实 Payment 恢复已合并。单租户本地 Product 原型。**
 
@@ -47,4 +47,4 @@ v0.3 Shadow 为 3 个正例、10 个负向/反事实/失败用例，`OTHER_EXTEN
 
 ## v0.5 活动开发状态
 
-[v0.5 Goal](../goals/EcomSRE_v0.5_Codex_Goal.md) 已激活，当前本地续跑在启动前触发非 owned 网络身份漂移，终态为 `ECOMSRE_PRODUCT_V050_BLOCKED_SAFETY`，没有完整实测验收 PASS。新增调查、知识候选和恢复预览默认关闭/只读。项目 Provider 与价格配置已确认；累计 Provider 请求 24，最小生成/function 与回放工具往返已成功，live episode 0；历史 Product 调用数不改写。进度见 [记录](../analysis/product-v050-progress.md)。
+[v0.5 Goal](../goals/EcomSRE_v0.5_Codex_Goal.md) 以 `ECOMSRE_PRODUCT_V050_NO_VALIDATED_LLM_KNOWLEDGE` 有限终态收口，不是完整验收 PASS。5 个独立事件均已恢复实验健康状态；只有一例数值假说获得暂定支持，不代表因果定位。累计 51 次请求、USD 0.695520 承诺上界；旧调用和失败未改写。进度见 [记录](../analysis/product-v050-progress.md)。

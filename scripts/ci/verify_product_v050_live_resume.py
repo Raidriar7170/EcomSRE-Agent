@@ -1,11 +1,11 @@
-"""Verify current fixture checks and the retained prestart safety terminal."""
+"""Verify immutable 176d2b7 prestart safety history, not successor live success."""
 
 import hashlib
 import json
+import subprocess
 from pathlib import Path
 from scripts.ci.verify_product_v050 import require
 from scripts.ci.verify_product_v050_provider_unblock import verify as verify_history
-from scripts.product_v050.run_offline_checks import bound_sources
 
 ROOT = Path(__file__).resolve().parents[2]
 RESULT = ROOT / "docs/results/product-v050/live-resume"
@@ -78,20 +78,39 @@ def verify_claims(r):
 
 def verify():
     verify_history()
+    anchor = "176d2b782ae8615561c4e7f94347be434d05ba32"
+
+    def historical(path):
+        return subprocess.check_output(["git", "show", anchor + ":" + path], cwd=ROOT)
+
+    published = subprocess.check_output(
+        [
+            "git",
+            "ls-tree",
+            "-r",
+            "--name-only",
+            anchor,
+            "--",
+            str(RESULT.relative_to(ROOT)),
+        ],
+        cwd=ROOT,
+        text=True,
+    ).splitlines()
+    require(bool(published), "MISSING_LIVE_RESUME_HISTORY")
+    for path in published:
+        require(
+            (ROOT / path).read_bytes() == historical(path),
+            "LIVE_RESUME_HISTORY_DRIFT:" + path,
+        )
     offline = json.loads((RESULT / "offline-checks.json").read_text())
     require(
         offline["exit_code"] == 0
         and all(c["status"] == "PASSED" for c in offline["cases"]),
         "OFFLINE_FAILURE",
     )
-    require(
-        set(offline["source_sha256"])
-        == {str(p.relative_to(ROOT)) for p in bound_sources(ROOT)},
-        "SOURCE_SCOPE",
-    )
     for path, expected in offline["source_sha256"].items():
         require(
-            hashlib.sha256((ROOT / path).read_bytes()).hexdigest() == expected,
+            hashlib.sha256(historical(path)).hexdigest() == expected,
             "SOURCE_DRIFT:" + path,
         )
     return verify_claims(json.loads((RESULT / "result.json").read_text()))

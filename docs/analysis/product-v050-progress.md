@@ -314,3 +314,43 @@ Old attempts1–3 and continuation-01 preserved. No R1–R4/evaluator changes.
   engineering-completion or acceptance PASS. See results/product-v050/live-resume.
 
 - Final-check attempt at `6400daf` stopped during pytest collection: the new test basename collided with `tests/product_v030/test_live_environment.py`. Renamed the v0.5 test module; retained `.local/product-v050/validation/live-resume-full-pytest.log`. This failed attempt is not green evidence.
+
+## 2026-09-18 — Docker stability, five real episodes, no validated knowledge
+
+- User confirmed Resource Saver disabled/Docker ready. One 600.21s/21-sample
+  observation passed; one live-02 baseline admitted. Historical idle VM lifecycle
+  supports but does not prove old bridge causality; no user restart attribution.
+  Old live-01 BLOCKED_SAFETY/clean=false and all previous packages remain frozen.
+- Three startup attempts under the same baseline are retained. Initial missing
+  stderr, diagnostic astronomy-db exit1, and exact-image postgres999:999 repair
+  led to22-service readiness with cap_dropALL unchanged. Two baseline failures
+  retained; narrow Kafka projection, correct180s settlement and reduced healthy
+  traffic yielded5/5windows. No source-limit or evidence-policy relaxation.
+- Three Discovery plus two Development independent episodes all OPEN_WORLD and
+  healthy-restored/lag0. Investigator calls24, reads17, verified read-followups13;
+  results3UNRESOLVED,1PROVISIONAL_SUPPORTED,1PROVIDER_FAILED(output truncated).
+  Supported numeric memory trend does not prove causal diagnosis. No session rerun.
+- Real CAS-to-proposer transfer exposed exact Product queue action/Core parser
+  mismatch: red1fail4pass, then26focusedgreen; only exact successor type dispatched.
+  Truncated proposer record projection explicitly retains status/count/refs and
+  leaves CAS unchanged;25focusedchecks. Same-hypothesis and holdout checks unchanged.
+- Three real knowledge proposals/two bounded revisions: cross-target references,
+  expression schema failure, cross-target references. Last response contains a
+  LevelBmeanCPU expression with actually collected matching dependency; entire
+  candidate rejected. No hand-written replacement. Holdout/promotion/reuse not
+  attempted because candidate pool empty. Terminal NO_VALIDATED_LLM_KNOWLEDGE.
+- Same model/projectenv/ledger:51requests,600071microusd reported-token cost upper
+  plus95449unknown reservations=695520commitment;invoiceunknown;5/12liveepisodes.
+  No Provider reprobe. Product recoverywrites0; typed experiment fault/restores5each.
+- Every attempt removed22containers+1network+5volumes;finalremaining0/0/0 and
+  newbaselineclean=true. No Docker settings changes or nonowned mutation.
+- One appended evidence package contains projected calls/traces and failure chain.
+  New readonly verifier recomputes call/read/followup/support/rejection/budget and
+  cleanup claims;7tamper checks. Independent scoped reviews foundMustFix0 so far.
+  Final review/verification/PR publication follow; no further live/model attempts.
+- Successor write scope also includes the new Goal supplement, bounded harness,
+  Product log and knowledge adapters, new tests/verifier/CI and current docs.
+  Final repository scope remains original550a564d; historical176d2b7live-resume
+  package is freshly verified immutable, not rebound to successor source.
+
+- Final independent review reproduced one P2: unbound hypothesis prose in the new public verifier. Added accepted-model-proposal field binding with correct random-ID semantics; red1fail7pass, green8pass, reviewerMustFix0. No additional live/model calls.

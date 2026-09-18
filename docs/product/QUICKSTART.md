@@ -78,3 +78,11 @@ PYTHONPATH=src:. python -m scripts.product_v050.run_offline_checks --output .loc
 ### v0.5 continuation checks
 
 See [continuation evidence](../results/product-v050/continuation-01/README.md). `PYTHONPATH=src:. .venv/bin/python -m scripts.product_v050.provider_smoke` loads only the explicit project dotenv and dated pricing, then performs read-only preflight. It does not send requests without `--execute`; consumed smoke attempts must not be rerun. `PYTHONPATH=src:. .venv/bin/python -m scripts.ci.verify_product_v050_continuation` verifies the current source-bound result.
+
+### v0.5 real local investigation evidence
+
+```sh
+PYTHONPATH=src:. uv run --frozen --no-sync python -m scripts.ci.verify_product_v050_docker_stability
+```
+
+只校验已保留的 5 个独立本地事件和失败候选，不启动 Docker 或请求 Provider。预期终态为 `ECOMSRE_PRODUCT_V050_NO_VALIDATED_LLM_KNOWLEDGE`，不是学习成功。

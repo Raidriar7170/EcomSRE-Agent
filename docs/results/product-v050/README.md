@@ -63,3 +63,5 @@ contract bytes preserved.
 解除实测缺口需要用户提供本项目已授权 Provider 配置路径和可核对的计费信息。
 不需要另开账号或从其他应用取 key；预算仍为总计 200 请求 / USD 20 / 12 episodes。
 恢复仍限只读预览，Draft PR 不代表 merge、release 或部署。
+
+Latest successor: [Docker stability and real local investigation](docker-stability/README.md). Five independent episodes and three rejected model proposals; no validated LLM knowledge. All earlier packages remain historical and unchanged.
