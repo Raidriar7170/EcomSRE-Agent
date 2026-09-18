@@ -361,3 +361,93 @@ def test_safe_diagnostics_never_retain_unknown_prose():
     assert "SECRET" not in json.dumps(diagnostic)
     assert "PRIVATE" not in json.dumps(diagnostic)
     assert any(r.get("value") == 12 for r in diagnostic["fields"])
+
+
+def test_replay_attempt_guard_global_success_and_semantic_cap(tmp_path):
+    import json
+    from scripts.product_v050.knowledge_contract_repair import require_next_attempt
+    from ecomsre.product.app import create_app
+    from ecomsre.product.settings import ProductSettingsV1
+    from ecomsre.product.investigation.repository import InvestigationRepository
+
+    app = create_app(ProductSettingsV1(data_root=tmp_path / "data"))
+    repo = InvestigationRepository(app.state.store, app.state.object_store)
+    require_next_attempt(repo, 0, 0, tmp_path)
+    with pytest.raises(ValueError, match="SEMANTIC_ANCHOR"):
+        require_next_attempt(repo, 0, 1, tmp_path)
+    with pytest.raises(ValueError, match="MONOTONIC"):
+        require_next_attempt(repo, 1, 0, tmp_path)
+    result = tmp_path / "revision-1-repair-0.json"
+    result.write_text(json.dumps({"independent_validation_eligible": True}))
+    with pytest.raises(ValueError, match="NO_FURTHER_SAMPLING"):
+        require_next_attempt(repo, 0, 0, tmp_path)
+    result.unlink()
+    for i in range(3):
+        repo.reserve(f"knowledge-draft-v050.1:{i}", {"fixture": i}, 1)
+        repo.settle(f"knowledge-draft-v050.1:{i}", {}, None, "FAILED")
+    with pytest.raises(ValueError, match="EXHAUSTED"):
+        require_next_attempt(repo, 2, 0, tmp_path)
+
+
+def test_published_replay_failures_cannot_be_upgraded():
+    import json
+    from copy import deepcopy
+    from pathlib import Path
+    from scripts.ci.verify_product_v050_docker_stability import verify_repair_claims
+
+    root = (
+        Path(__file__).resolve().parents[2]
+        / "docs/results/product-v050/knowledge-contract-repair"
+    )
+    report = json.loads((root / "result.json").read_text())
+    calls = json.loads((root / "calls.json").read_text())
+    assert verify_repair_claims(report, calls)["development_evaluations"] == 0
+    for field in (
+        "accepted_candidates",
+        "development_evaluations",
+        "new_product_recovery_writes",
+        "independent_new_episode_count",
+    ):
+        bad = deepcopy(report)
+        bad[field] = 1
+        with pytest.raises(ValueError):
+            verify_repair_claims(bad, calls)
+    bad = deepcopy(calls)
+    bad[-1]["format_only_repair_claimed"] = True
+    with pytest.raises(ValueError):
+        verify_repair_claims(report, bad)
+
+
+def test_repair_verifier_rejects_false_levels_or_model():
+    import json
+    from copy import deepcopy
+    from pathlib import Path
+    from scripts.ci.verify_product_v050_docker_stability import verify_repair_claims
+
+    root = (
+        Path(__file__).resolve().parents[2]
+        / "docs/results/product-v050/knowledge-contract-repair"
+    )
+    report = json.loads((root / "result.json").read_text())
+    calls = json.loads((root / "calls.json").read_text())
+    for key in ("level_a_validated", "level_b_validated"):
+        bad = deepcopy(report)
+        bad[key] = True
+        with pytest.raises(ValueError, match="FALSE_LEVEL"):
+            verify_repair_claims(bad, calls)
+    bad = deepcopy(calls)
+    bad[0]["actual_model"] = "different-model"
+    with pytest.raises(ValueError, match="PROVIDER"):
+        verify_repair_claims(report, bad)
+    for call in calls:
+        draft = call["draft_projection"]
+        if draft:
+            assert draft["reason"] == "PRIVATE_MODEL_TEXT_WITHHELD"
+            for ref in (
+                draft["candidate"]["target_support"]
+                + draft["candidate"]["target_counterevidence"]
+            ):
+                assert (
+                    ref in call["admission_replay_view"]["evidence_catalog"]
+                    or ref == "UNKNOWN_ALIAS_PRIVATE_TEXT_WITHHELD"
+                )

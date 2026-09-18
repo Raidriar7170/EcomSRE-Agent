@@ -1,6 +1,6 @@
 # 当前状态 · Product v0.5 有限交付
 
-Current v0.5 [local investigation](../results/product-v050/docker-stability/README.md): 5 independent local episodes, 17 model-selected reads, 51 cumulative Provider requests; 3 proposals and no accepted candidate. Terminal `NO_VALIDATED_LLM_KNOWLEDGE`; no holdout, promotion or learned reuse. New campaign clean=true; historical live-01 BLOCKED_SAFETY / clean=false remains unchanged.
+当前 [知识接口修复轮](../results/product-v050/knowledge-contract-repair/README.md) 复用了原 5 个已见 episode：新增 3 次请求，2 个格式有效草稿，0 个通过准入，真实开发求值/独立验证/晋升/复用均未发生。累计 54 次请求、USD 0.839581 承诺，终态仍为 `NO_VALIDATED_LLM_KNOWLEDGE`。无新增 Docker 操作或恢复写入；旧 live-02 clean=true 与 live-01 BLOCKED_SAFETY / clean=false 保留。
 
 **收尾完成；v0.4 的真实 Payment 恢复已合并。单租户本地 Product 原型。**
 
@@ -47,4 +47,4 @@ v0.3 Shadow 为 3 个正例、10 个负向/反事实/失败用例，`OTHER_EXTEN
 
 ## v0.5 活动开发状态
 
-[v0.5 Goal](../goals/EcomSRE_v0.5_Codex_Goal.md) 以 `ECOMSRE_PRODUCT_V050_NO_VALIDATED_LLM_KNOWLEDGE` 有限终态收口，不是完整验收 PASS。5 个独立事件均已恢复实验健康状态；只有一例数值假说获得暂定支持，不代表因果定位。累计 51 次请求、USD 0.695520 承诺上界；旧调用和失败未改写。进度见 [记录](../analysis/product-v050-progress.md)。
+[v0.5 Goal](../goals/EcomSRE_v0.5_Codex_Goal.md) 以 `ECOMSRE_PRODUCT_V050_NO_VALIDATED_LLM_KNOWLEDGE` 有限终态收口，不是完整验收 PASS。5 个独立事件均已恢复实验健康状态；只有一例数值假说获得暂定支持，不代表因果定位。原 live 轮累计 51 次请求、USD 0.695520 承诺上界；追加修复轮后为 54 次、USD 0.839581；旧调用和失败未改写。进度见 [记录](../analysis/product-v050-progress.md)。

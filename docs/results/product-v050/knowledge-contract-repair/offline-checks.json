@@ -1,0 +1,671 @@
+{
+  "cases": [
+    {
+      "id": "tests.product_v050.test_continuation::test_r1_cross_hypothesis_support_cannot_be_spliced",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_continuation::test_r1_same_hypothesis_support_is_explicit_and_noncausal",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_continuation::test_r1_false_unknown_or_wrong_scope_cannot_support[change0]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_continuation::test_r1_false_unknown_or_wrong_scope_cannot_support[change1]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_continuation::test_r1_false_unknown_or_wrong_scope_cannot_support[change2]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_continuation::test_r1_false_unknown_or_wrong_scope_cannot_support[change3]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_continuation::test_r2_supplemental_resource_dependency_reaches_development_and_normal_reuse",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_continuation::test_r3_numeric_counterexample_is_scoped_negative_evidence",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_continuation::test_r3_empty_failed_or_wrong_scope_is_never_a_counterexample[mutation0]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_continuation::test_r3_empty_failed_or_wrong_scope_is_never_a_counterexample[mutation1]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_continuation::test_r3_empty_failed_or_wrong_scope_is_never_a_counterexample[mutation2]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_continuation::test_r3_empty_failed_or_wrong_scope_is_never_a_counterexample[mutation3]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_continuation::test_r3_empty_failed_or_wrong_scope_is_never_a_counterexample[mutation4]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_continuation::test_r4_cross_candidate_seen_incident_cannot_become_holdout",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_continuation::test_r4_episode_alias_failed_dispatch_and_restart_retain_exposure",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_continuation::test_project_env_parser_never_executes_or_overrides",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_continuation::test_r2_cache_selection_includes_target",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_continuation::test_r2_missing_required_supplement_is_unknown",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_continuation::test_r2_expired_worker_cannot_link_observation",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_dependency_catalog::test_initial_resource_is_not_deployable_supplement",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_dependency_catalog::test_verified_dependency_and_wrong_target_or_window",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_discovery_projection::test_truncated_records_are_explicitly_omitted_without_changing_evidence",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_discovery_projection::test_complete_resource_and_empty_source_views_are_unchanged",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_docker_stability_evidence::test_live_terminal_is_derived_with_old_failures_retained",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_docker_stability_evidence::test_live_claim_tampering_is_rejected[cost]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_docker_stability_evidence::test_live_claim_tampering_is_rejected[candidate]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_docker_stability_evidence::test_live_claim_tampering_is_rejected[restore]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_docker_stability_evidence::test_live_claim_tampering_is_rejected[read]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_docker_stability_evidence::test_live_claim_tampering_is_rejected[drift]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_docker_stability_evidence::test_live_claim_tampering_is_rejected[support]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_docker_stability_evidence::test_live_claim_tampering_is_rejected[mechanism]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_draft_contract::test_context_is_audited_but_cannot_change_canonical_matcher",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_draft_contract::test_wrong_target_cannot_be_counterevidence_or_support",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_draft_contract::test_context_does_not_replace_missing_support",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_draft_contract::test_aliases_cannot_cross_snapshots",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_draft_contract::test_unit_and_dependency_window_mismatch_reject",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_draft_contract::test_multiservice_ref_requires_actual_record_for_service",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_draft_contract::test_strict_schema_objects_all_required_and_no_extras",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_draft_contract::test_draft_provenance_reconstructs_live_bound_response",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_draft_contract::test_shared_continuation_budget_counts_failures_and_reservations",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_draft_contract::test_safe_diagnostics_never_retain_unknown_prose",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_draft_contract::test_replay_attempt_guard_global_success_and_semantic_cap",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_draft_contract::test_published_replay_failures_cannot_be_upgraded",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_draft_contract::test_repair_verifier_rejects_false_levels_or_model",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_expressions::test_derived_feature_evaluates_unseen_values_and_negative",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_expressions::test_missing_evidence_never_becomes_zero[change0-MISSING_OR_AMBIGUOUS_OBSERVATION]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_expressions::test_missing_evidence_never_becomes_zero[change1-MISSING_OR_AMBIGUOUS_OBSERVATION]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_expressions::test_missing_evidence_never_becomes_zero[change2-MISSING_OR_AMBIGUOUS_OBSERVATION]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_expressions::test_zero_denominator_and_wrong_target",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_expressions::test_invalid_dsl_fails_closed[change0]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_expressions::test_invalid_dsl_fails_closed[change1]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_expressions::test_invalid_dsl_fails_closed[change2]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_expressions::test_invalid_dsl_fails_closed[change3]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_expressions::test_invalid_dsl_fails_closed[change4]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_expressions::test_invalid_dsl_fails_closed[change5]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_expressions::test_invalid_dsl_fails_closed[change6]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_expressions::test_sample_alignment_and_insufficient_samples",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_history::test_historical_manifest_cannot_be_rewritten_with_matching_file_hash",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_reservation_survives_restart_and_counts_uncertain",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_successful_response_is_reused_and_drift_rejected",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_provider_failures_keep_reservations[response0-PROVIDER_TRUNCATED]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_provider_failures_keep_reservations[response1-PROVIDER_REFUSED]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_provider_failures_keep_reservations[response2-PROVIDER_PROTOCOL_INVALID]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_provider_failures_keep_reservations[response3-PROVIDER_MODEL_MISMATCH]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_api_worker_roundtrip_and_reentry",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_disabled_route_and_known_zero_calls",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_hypothesis_requires_actual_coverage_and_exact_window[mutation0-EVIDENCE_INCOMPLETE]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_hypothesis_requires_actual_coverage_and_exact_window[mutation1-EVIDENCE_INCOMPLETE]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_hypothesis_requires_actual_coverage_and_exact_window[mutation2-EVIDENCE_INCOMPLETE]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_hypothesis_requires_actual_coverage_and_exact_window[mutation3-EVIDENCE_TARGET_MISMATCH]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_hypothesis_requires_actual_coverage_and_exact_window[mutation4-EVIDENCE_WINDOW_MISMATCH]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_expired_job_cannot_reserve_provider_or_commit_session",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_unknown_cost_bound_failure_blocks_future_dispatch",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_invalid_request_cap_counts_every_reserved_request",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_prediction_check_is_runtime_computed_and_window_bound",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_malformed_nested_provider_response_is_typed_failure[response0]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_malformed_nested_provider_response_is_typed_failure[response1]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_malformed_nested_provider_response_is_typed_failure[response2]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_provider_does_not_persist_gateway_hidden_reasoning",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_unknown_model_suffix_invalidates_campaign_cost_bound",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_responses_adapter_preserves_model_usage_and_discards_reasoning",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_responses_incomplete_function_is_not_committed[failed-error0-in_progress]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_responses_incomplete_function_is_not_committed[in_progress-None-in_progress]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_responses_incomplete_function_is_not_committed[cancelled-None-completed]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_responses_incomplete_function_is_not_committed[completed-None-in_progress]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_kafka_log_projection::test_observed_kafka_initialization_keeps_fact_without_false_truth_marker",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_kafka_log_projection::test_kafka_normalization_never_admits_unknown_control_text[Created log for partition __consumer_offsets-2 in /tmp/kafka-logs/__consumer_offsets-2 with properties {cleanup.policy=compact, compression.type=\"producer\", segment.bytes=104857600} FeatureFlag 'unseenControl' is on]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_kafka_log_projection::test_kafka_normalization_never_admits_unknown_control_text[Created log for partition __consumer_offsets-2 in /tmp/kafka-logs/__consumer_offsets-2 with properties {cleanup.policy=compact, compression.type=\"unseenControl\", segment.bytes=104857600}]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_kafka_log_projection::test_kafka_normalization_never_admits_unknown_control_text[unrecognized 'unseenControl' value]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_knowledge::test_level_b_registry_normal_diagnosis_and_revocation",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_knowledge::test_holdout_excludes_all_discovery_inputs_and_cannot_reenter_proposer",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_knowledge::test_existing_environment_cannot_gain_test_promotion_authority",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_knowledge::test_candidate_from_persisted_discovery_is_frozen_consumed_and_rejected_without_controls",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_live_environment_v050::test_capture_all_births_before_failed_validation",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_live_environment_v050::test_aux_timeout_recovers_exact_created_identity",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_live_environment_v050::test_compose_null_inherits_image_command",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_live_environment_v050::test_created_network_still_requires_exact_name_and_running_requires_id",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_live_environment_v050::test_desktop_bind_alias_cannot_escape_exact_repository_source",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_live_environment_v050::test_campaign_path_rejects_old_other_and_symlink",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_live_environment_v050::test_prepare_refuses_prepared_campaign_before_external_calls",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_live_environment_v050::test_product_reads_owner_directory_without_legacy_global",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_live_environment_v050::test_start_checks_drift_before_any_creation",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_live_environment_v050::test_new_baseline_network_scope_cannot_drift",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_live_environment_v050::test_cleanup_extra_drift_or_failure_retains_receipts_and_never_clean[False]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_live_environment_v050::test_cleanup_extra_drift_or_failure_retains_receipts_and_never_clean[READ_FAILED]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_live_environment_v050::test_admitted_baseline_tamper_rejected_before_docker",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_live_environment_v050::test_start_failure_keeps_stderr_when_state_unavailable",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_live_environment_v050::test_only_one_named_diagnostic_directory_allowed",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_live_environment_v050::test_explicit_runtime_user_is_verified",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_live_environment_v050::test_episode_cap_counts_original_and_nested_attempts",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_live_environment_v050::test_baseline_excludes_settlement_without_lowering_window_policy",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_live_resume_evidence::test_actual_prestart_boundary",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_live_resume_evidence::test_no_success_from_safety_block[clean]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_live_resume_evidence::test_no_success_from_safety_block[live]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_live_resume_evidence::test_no_success_from_safety_block[promotion]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_live_resume_evidence::test_no_success_from_safety_block[budget]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_live_resume_evidence::test_no_success_from_safety_block[drift]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_preview::test_local_preview_preserves_unrelated_configuration",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_preview::test_state_drift_requires_regeneration",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_preview::test_extra_fields_fabricated_evidence_and_unsafe_scope",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_provider_diagnostics::test_bounded_single_read_and_categories[{\"error\":{\"message\":\"model unavailable\",\"code\":\"model_not_found\",\"type\":\"invalid_request_error\"}}-JSON_ERROR]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_provider_diagnostics::test_bounded_single_read_and_categories[<html>404 secret contents</html>-HTML]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_provider_diagnostics::test_bounded_single_read_and_categories[{\"message\":\"do not expose this\"}-OTHER]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_provider_diagnostics::test_bounded_single_read_and_categories[-EMPTY]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_provider_diagnostics::test_bounded_single_read_and_categories[404 page not found\\n-TEXT]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_provider_diagnostics::test_bounded_single_read_and_categories[xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-TEXT]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_provider_diagnostics::test_secret_redaction_and_allowlisted_headers",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_provider_diagnostics::test_sanitizer_failure_keeps_status",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_provider_diagnostics::test_failed_probe_keeps_reservation_and_cannot_repeat",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_provider_diagnostics::test_provider_uses_diagnostic_once_and_keeps_failure_budget",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_provider_diagnostics::test_ack_requires_actual_boolean[{\"ok\":true}-True]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_provider_diagnostics::test_ack_requires_actual_boolean[{\"ok\":1}-False]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_provider_diagnostics::test_ack_requires_actual_boolean[{\"ok\":false}-False]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_provider_diagnostics::test_ack_requires_actual_boolean[{\"ok\":true,\"extra\":1}-False]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_provider_diagnostics::test_http200_incomplete_not_misclassified_as_transport",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_provider_diagnostics::test_probe_sub_budget_blocks_before_transport[6-100]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_provider_diagnostics::test_probe_sub_budget_blocks_before_transport[1-999999]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_provider_diagnostics::test_schema_error_location_cannot_echo_secret",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_supplemental_queue_action::test_exact_queue_action_loads_without_inventing_resource_dependency",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_supplemental_queue_action::test_rehashed_queue_action_changes_remain_rejected[change0]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_supplemental_queue_action::test_rehashed_queue_action_changes_remain_rejected[change1]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_supplemental_queue_action::test_rehashed_queue_action_changes_remain_rejected[change2]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_supplemental_queue_action::test_rehashed_queue_action_changes_remain_rejected[change3]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_unblock_evidence::test_retained_trace_establishes_four_followups",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_unblock_evidence::test_no_unearned_success_from_tampered_projection[acceptance]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_unblock_evidence::test_no_unearned_success_from_tampered_projection[zero]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_unblock_evidence::test_no_unearned_success_from_tampered_projection[missing_observation]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_unblock_evidence::test_no_unearned_success_from_tampered_projection[detached_call]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_unblock_evidence::test_no_unearned_success_from_tampered_projection[missing_followup]",
+      "status": "PASSED"
+    }
+  ],
+  "command": "python -m pytest tests/product_v050 -q --junitxml=<temporary-file>",
+  "evidence_mode": "FIXTURE_ONLY",
+  "exit_code": 0,
+  "external_product_writes": 0,
+  "live_episode_count": 0,
+  "observed_at": "2026-09-18T19:23:38.074153+00:00",
+  "provider_request_count": 0,
+  "runtime": {
+    "pydantic": "2.13.4",
+    "pytest": "8.4.2",
+    "python": "3.12.2"
+  },
+  "schema_version": "ecomsre.product.offline-checks.v050",
+  "scope": "v050 fixture checks only; no learning or live acceptance",
+  "source_sha256": {
+    "config/product-v050/openai-gpt54-mini-prices-20260917.json": "6eb4461889b6104b1ebc03ae67928a9b96923ed28aa31c7022ae2aa379e4bd75",
+    "scripts/ci/verify_product_v050.py": "b3020c2d6ea2c3dd0ccef7298c5ea02c3151865d34cbc144706d8df9c0400998",
+    "scripts/ci/verify_product_v050_continuation.py": "012e734525e641bf6298f005a915cb1a829072885b32d4586b025995b48020db",
+    "scripts/ci/verify_product_v050_docker_stability.py": "e8cdff7a79fc10ef113353b431cbe167baf0c699db1c7ac564ff5bce5f716959",
+    "scripts/ci/verify_product_v050_history.py": "79c64ea5eb32157f6764a037b46dc98efa54ffc4a9d8ca0dabc7e43175a6c122",
+    "scripts/ci/verify_product_v050_live_resume.py": "0cab10e1f4b772f912f14f7c7f9fc3f8ff902e2e7c6925355e8ad14050cf3bf4",
+    "scripts/ci/verify_product_v050_provider_unblock.py": "46bd4d80f0152b987710c436c08729d3844b49939b357b31ca51df41665162b8",
+    "scripts/product_v050/knowledge_contract_repair.py": "0ac6fe5566a26d1c4b4cf05069253c50960770ff67a2d899381cd67140496eb0",
+    "scripts/product_v050/live_environment.py": "f8e4de997eeb607e8c6e8c68278631d66193ec43ac5bc1d6a933f6aea85517b9",
+    "scripts/product_v050/live_product.py": "ab94a0bf2008ce0d07ee6bc275a9fd27ee42358052f4b56d9c0ea2f5c6ee7900",
+    "scripts/product_v050/preflight.py": "f52ce11f9fcc2c4101dec1cbbf3b9d211cb3a1965db8d0f0fff3e7d6e8c28d30",
+    "scripts/product_v050/project_environment.py": "c49851e11082ba71d64c9660841a7afdb25beaff0da90d3ab53b7ab12fa83f11",
+    "scripts/product_v050/provider_smoke.py": "4a1387d8904a74d9ce2551ea6f57df5098c12fc7030519dcbbdb0098fd304049",
+    "scripts/product_v050/provider_unblock.py": "841e678a70499537ba9c2ca84d715e203595c8134e37c6f0c61871d936d328be",
+    "scripts/product_v050/run_offline_checks.py": "bd50abfb47717cbbeb5b38e98aa773efd461eb4756339b8975c98e76a611b6e4",
+    "src/ecomsre/product/api.py": "5931e47e2cb0f001493171f7823b0e5169e672aaa3b0b2eb72b8b860e8d22912",
+    "src/ecomsre/product/connectors/opensearch.py": "a945e4b7afd8f5f3c699d6f3cf372f49734863e7860cd0fe35ad5286ecd51cba",
+    "src/ecomsre/product/incidents/diagnosis_bridge.py": "2917d649aaa9d5d6f39ee71bd1184440bea33274f0c970297ff1e141a61c48d0",
+    "src/ecomsre/product/incidents/extensions.py": "addd82263f489116145ff4d16b2e94fe347b3156362c53d9a550521db3cc00fa",
+    "src/ecomsre/product/investigation/__init__.py": "10092f0724a1fa0fd1680fe5a5545da60f3ca5a1bdbe4798de4a5cf3ca6125ad",
+    "src/ecomsre/product/investigation/contracts.py": "0da4502ba38e95150b469cd8bea4e8015313adef5bc2f41946bbce539151c6ef",
+    "src/ecomsre/product/investigation/http_diagnostics.py": "226b4ed9ee63f3c15e6276d72c034dfa4930b1827a0b8d3665a6a207a33174ca",
+    "src/ecomsre/product/investigation/provider.py": "16c2855091c789f25e636879f53760474fb0b252e04a819418f3e1dab8fc5161",
+    "src/ecomsre/product/investigation/reads.py": "f0b90283ea3de3e48e5b2eacbac30fd418c8ba1f6a3e11ca001a7275a19c4757",
+    "src/ecomsre/product/investigation/repository.py": "7a687479f2207dc48f89e18f89851a1a55361f7be097d29e11f7349cb8612fa5",
+    "src/ecomsre/product/investigation/runtime.py": "11e1b50e2a1399a4cca4fd1aa76b5b781b848b830bd7ce3f2dc5ec6906795dad",
+    "src/ecomsre/product/jobs/contracts.py": "7b5506bafc27979c448cc08ec3798459f352e1bd01381691fea3444ca6800ab3",
+    "src/ecomsre/product/jobs/contracts_v050.py": "a8a01a51f495557fddd258b22d4606ebd41cc1e050615e0a38f0b70266ccfdfc",
+    "src/ecomsre/product/jobs/repository.py": "1c69ea2712b8b5b74df3d89ec9b2325d48fbc9515af28ce541317bc8d9a3e6c6",
+    "src/ecomsre/product/jobs/worker.py": "39c6ef716a638ee4f5213e0f1dee6bad180a5ce876ef95249446511b4692016a",
+    "src/ecomsre/product/knowledge/candidates_v050.py": "172b9824d00c8ed114b55d5aad126c846326d44bc126a7c2ad02e81dc07c7b2e",
+    "src/ecomsre/product/knowledge/drafts_v050.py": "7d3f042dba6d914365bbc68ea0289691c6b235b5a5c2b76321f76f6676df060d",
+    "src/ecomsre/product/knowledge/evolution_v050.py": "704e0e2c25395edd3cc6a96838920b79f6c777ffcc732314704f07ffe7e2ea08",
+    "src/ecomsre/product/knowledge/expressions.py": "dca58e6307647dbf46b5681878ea31a8cb4083708dcf8dee6bfc6a6aa01d1c3c",
+    "src/ecomsre/product/knowledge/observations_v050.py": "2f7045e024125f59ec629f049b880f5fdb24aaf0c28b3ad835247648754e2736",
+    "src/ecomsre/product/knowledge/repository.py": "a6920ffc3718f9b5d72b66ddb09780c85ecf51a5ddbf9b0229db1eab42dff7e6",
+    "src/ecomsre/product/knowledge/split_v050.py": "3f499a3b267a1ba6e21166a39abfa9f3d9581d035b72d1131f9ec224a9d316f5",
+    "src/ecomsre/product/remediation/planner.py": "91007d99ec2a88f0ac3ae40a4325c5cc9611b4f371d9297f43b568582a4a1828",
+    "src/ecomsre/product/settings.py": "bef8a2f80963290a262782d835f6eac5fbaa973c730d5bcc48fe8d4e5a5c4722",
+    "tests/product_v050/test_continuation.py": "dd3baedcfa026ed7c19b57a85cf3d4ea30cb6d880466c19c439cca31d8eed303",
+    "tests/product_v050/test_dependency_catalog.py": "802523be964b8b780fcc51241e55842307a8afd73650d3a761f4738bb289768e",
+    "tests/product_v050/test_discovery_projection.py": "08b5eeda3a1cdc4785af286cc23a3c3b97f77e0470f5d02ffa3feef9c8954c55",
+    "tests/product_v050/test_docker_stability_evidence.py": "410871868c9190a0ba6e3c223e83a33933148cdaa28eadc4eccdb1dbe9f9ce06",
+    "tests/product_v050/test_draft_contract.py": "2fa8e7693d6ed522aae41a7c7a106c1b676c147f505f996591ee65d3e5362d61",
+    "tests/product_v050/test_expressions.py": "f86d7772c9d10f207170ea5047f5c99cdad4b65cb367a41aefb75d69c8702aae",
+    "tests/product_v050/test_history.py": "c2bc54d84907e3fe4b1ebc561b06d993725aee204bc064e099989a50f132037c",
+    "tests/product_v050/test_investigation.py": "64c4687e4dc660de532d71d646be18699b15003581429b6bf087dd04f2b127d7",
+    "tests/product_v050/test_kafka_log_projection.py": "b9c75ffd5b9957f449425a17e175b9584bc9c3c64d875656e6bb735f279ceb1e",
+    "tests/product_v050/test_knowledge.py": "8a56f29501dbbd8ad20b1c88a878d5afdd1a3ba67d1a5804e57a8173635178b0",
+    "tests/product_v050/test_live_environment_v050.py": "8208ad1766622f23ccb75c1cf305cf6c55ec7465301675b8201ca3cf69785215",
+    "tests/product_v050/test_live_resume_evidence.py": "679fd4b199f9e7b8787d89b5646a8d92d197252dc78549ccecd27af2b46e4f35",
+    "tests/product_v050/test_preview.py": "ec56e7251f74e289bf8657d1c566cc2ec5c091ca9c29826c1595ef3342c51f86",
+    "tests/product_v050/test_provider_diagnostics.py": "319c533edb7f062224a19b2ac0b0d584e81e02e4e5b17f5a94f0e2f7d502f5d1",
+    "tests/product_v050/test_supplemental_queue_action.py": "1e81f896c2730ba4dbebb9c9b4d47bf04f3179160772577ee38335a5ec45b4c0",
+    "tests/product_v050/test_unblock_evidence.py": "bbd995f5b9ccdcb24ba75ea66e1a4c17e10fec9d9b37dce4d50782b0724e8af5"
+  }
+}

@@ -118,6 +118,24 @@ def material():
     return repo, evo, environment_id, ids, dev, discovery
 
 
+def require_next_attempt(repo, revision, repair, output):
+    # A truncated response has no recoverable semantic anchor. This runner does
+    # not implement format-only repair; every dispatch consumes a semantic slot.
+    if repair:
+        raise ValueError("FORMAT_REPAIR_UNSUPPORTED_WITHOUT_SEMANTIC_ANCHOR")
+    prior = [json.loads(p.read_text()) for p in output.glob("revision-*-repair-*.json")]
+    if any(p.get("independent_validation_eligible") for p in prior):
+        raise ValueError("DEVELOPMENT_PASSED_NO_FURTHER_SAMPLING")
+    with repo.store.connect() as c:
+        count = c.execute(
+            "SELECT COUNT(*) FROM investigation_provider_calls_v050 WHERE call_key LIKE 'knowledge-draft-v050.1:%'"
+        ).fetchone()[0]
+    if count >= 3:
+        raise ValueError("SEMANTIC_ATTEMPTS_EXHAUSTED")
+    if revision != count:
+        raise ValueError("SEMANTIC_ATTEMPTS_MUST_BE_MONOTONIC")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--execute", action="store_true")
@@ -157,6 +175,7 @@ def main():
             )
         )
         return
+    require_next_attempt(repo, args.revision, args.repair, OUT)
     protocol_path = OUT / "protocol.json"
     if protocol_path.exists():
         if json.loads(protocol_path.read_text()) != protocol:

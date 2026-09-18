@@ -354,3 +354,12 @@ Old attempts1–3 and continuation-01 preserved. No R1–R4/evaluator changes.
   package is freshly verified immutable, not rebound to successor source.
 
 - Final independent review reproduced one P2: unbound hypothesis prose in the new public verifier. Added accepted-model-proposal field binding with correct random-ID semantics; red1fail7pass, green8pass, reviewerMustFix0. No additional live/model calls.
+
+## Knowledge contract repair continuation — 2026-09-18
+
+- Active repair contract saved; same worktree/PR104, start 398b414, original ledger51 requests/695520microusd/5episodes.
+- New protocol knowledge-draft-v050.1 separates target support/counterevidence/context; mechanical compiler preserves model semantics. New raw draft/mapping/compiler/canonical provenance, strict schema and safe parameter diagnostics.
+- Reused original3Discovery+2Development episodes, all seen; noDocker/newlive. 3realrequests: alias/prose admission failure; truncation; truncated/cross-target evidence admission failure. 0admitted,0canonical,0development evaluations. NoC-stage trigger.
+- Readonly reviewer found unsupported format-repair semantics and incomplete global success lock. Third call retained and conservatively charged as final semantic revision; no fourth call. Offline guard fixes prohibit unanchored repair and enforce monotonic≤3semantic dispatches and global success lock.
+- Terminal remains ECOMSRE_PRODUCT_V050_NO_VALIDATED_LLM_KNOWLEDGE. Cumulative54requests/839581microusd commitment; invoiceunknown;5liveepisodes. Oldcalls/sessions/episodes/rejections unchanged. NewProduct recoverywrites0; no resources created.
+- Frozen run source13b19b6 retained separately from post-replay guard repair. Current tests/review/CI recorded in the small result pack, not retroactively attached to old model outputs.

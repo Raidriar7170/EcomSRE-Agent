@@ -3,6 +3,7 @@
 import hashlib
 import json
 import re
+import subprocess
 from pathlib import Path
 
 from ecomsre.dta_v2.v22.read_contracts import semantic_sha256_v22
@@ -245,6 +246,192 @@ def verify_claims(report, calls, sessions):
     }
 
 
+def verify_repair_claims(report, calls):
+    from ecomsre.product.knowledge.drafts_v050 import KnowledgeDraft, compile_draft
+
+    require(
+        report["terminal"] == "ECOMSRE_PRODUCT_V050_NO_VALIDATED_LLM_KNOWLEDGE",
+        "REPAIR_TERMINAL",
+    )
+    require(
+        len(calls)
+        == report["new_provider_requests"]
+        == report["semantic_attempts"]
+        == 3,
+        "REPAIR_ATTEMPTS",
+    )
+    cost = sum(
+        c["accounted_microusd"]
+        if c["accounted_microusd"] is not None
+        else c["reserved_microusd"]
+        for c in calls
+    )
+    require(
+        cost == report["committed_increment_microusd"] <= 1_000_000, "REPAIR_SUB_BUDGET"
+    )
+    require(
+        report["provider_request_count"] == 51 + len(calls)
+        and report["committed_upper_microusd"] == 695520 + cost,
+        "REPAIR_TOTAL_BUDGET",
+    )
+    require(
+        not report["level_a_validated"] and not report["level_b_validated"],
+        "REPAIR_FALSE_LEVEL_VALIDATION",
+    )
+    require(
+        report["telemetry_mode"] == "LIVE_PROVIDER_REPLAY_TELEMETRY",
+        "REPAIR_TELEMETRY_MODE",
+    )
+    valid = 0
+    for index, call in enumerate(calls):
+        require(
+            call["semantic_attempt_index"] == index
+            and not call["format_only_repair_claimed"],
+            "REPAIR_SEMANTIC_ACCOUNTING",
+        )
+        require(
+            call["requested_model"] == call["actual_model"] == "gpt-5.4-mini-2026-03-17"
+            and call["api_style"] == "responses"
+            and call["evidence_mode"] == "LIVE_PROVIDER",
+            "REPAIR_PROVIDER",
+        )
+        result = call["result"]
+        require(
+            not result["admission_passed"]
+            and not result["canonical_reconstructed"]
+            and not result["independent_validation_eligible"]
+            and result["protected_unchanged"],
+            "REPAIR_FALSE_ACCEPTANCE",
+        )
+        if call["draft_projection"] is None:
+            require(
+                not result["schema_valid"]
+                and result["error_code"] == "PROVIDER_TRUNCATED",
+                "REPAIR_TRUNCATION",
+            )
+            continue
+        valid += 1
+        require(
+            semantic_sha256_v22(call["draft_projection"]) == call["projection_sha256"],
+            "REPAIR_PROJECTION_HASH",
+        )
+        require(
+            len(call["private_draft_sha256"]) == 64
+            and call["replay_scope"]
+            == "REDACTED_STRUCTURE_ADMISSION_REJECTION_ONLY_NOT_RAW_DRAFT_OR_CANONICAL_PROOF",
+            "REPAIR_PROJECTION_SCOPE",
+        )
+        view = call["admission_replay_view"]
+        for alias, row in view["evidence_catalog"].items():
+            binding = {
+                k: row[k]
+                for k in (
+                    "snapshot",
+                    "incident_id",
+                    "evidence_ref",
+                    "window",
+                    "services",
+                )
+            }
+            require(
+                alias == "e-" + semantic_sha256_v22(binding), "REPAIR_ALIAS_BINDING"
+            )
+            require(
+                row["allowed_target_services"]
+                == [
+                    service
+                    for service in row["services"]
+                    if row["status"] == "SUCCESS_NONEMPTY"
+                    and not row["truncated"]
+                    and service in row["covered_services"]
+                ],
+                "REPAIR_ROLE_ELIGIBILITY",
+            )
+        try:
+            compile_draft(KnowledgeDraft.model_validate(call["draft_projection"]), view)
+        except ValueError as exc:
+            require(str(exc) == result["error_code"], "REPAIR_REJECTION_DIFFERS")
+        else:
+            raise ValueError("REPAIR_REJECTION_NOT_REPRODUCED")
+    require(valid == report["schema_valid_drafts"] == 2, "REPAIR_SCHEMA_COUNT")
+    require(
+        all(
+            report[k] == 0
+            for k in (
+                "accepted_candidates",
+                "canonical_reconstructions",
+                "development_evaluations",
+                "independent_validation_eligible",
+                "new_product_recovery_writes",
+                "docker_operations",
+                "independent_new_episode_count",
+            )
+        ),
+        "REPAIR_UNSUPPORTED_LEARNING",
+    )
+    require(
+        report["holdout"] == "NOT_ATTEMPTED_NO_ADMITTED_CANDIDATE"
+        and report["promotion"] == report["new_event_reuse"] == "NOT_ATTEMPTED",
+        "REPAIR_C_STAGE",
+    )
+    require(
+        report["seen_episode_count"] == report["live_episode_count"] == 5
+        and report["original_discovery_episodes"] == 3
+        and report["original_development_episodes"] == 2,
+        "REPAIR_DENOMINATOR",
+    )
+    require(
+        report["protected_before"] == report["protected_after"]
+        and report["old_terminal_preserved"]
+        and report["actual_invoice_usd"] is None,
+        "REPAIR_HISTORY",
+    )
+    return {
+        "verification": "PASS",
+        "terminal": report["terminal"],
+        "provider_requests": report["provider_request_count"],
+        "development_evaluations": 0,
+        "new_live_episodes": 0,
+    }
+
+
+def verify_repair():
+    directory = ROOT / "docs/results/product-v050/knowledge-contract-repair"
+    report = json.loads((directory / "result.json").read_text())
+    protocol = json.loads((directory / "protocol.json").read_text())
+    require(
+        report["run_source_commit"] == protocol["run_source_commit"],
+        "REPAIR_RUN_IDENTITY",
+    )
+    for path, digest in protocol["sources"].items():
+        relative = (
+            path
+            if path.startswith(("scripts/", "src/"))
+            else "src/ecomsre/product/" + path
+        )
+        frozen = subprocess.check_output(
+            ["git", "show", protocol["run_source_commit"] + ":" + relative], cwd=ROOT
+        )
+        require(
+            hashlib.sha256(frozen).hexdigest() == digest,
+            "REPAIR_FROZEN_SOURCE:" + relative,
+        )
+    offline = json.loads((directory / "offline-checks.json").read_text())
+    require(
+        offline["exit_code"] == 0
+        and all(c["status"] == "PASSED" for c in offline["cases"]),
+        "REPAIR_OFFLINE",
+    )
+    for path, digest in offline["source_sha256"].items():
+        require(
+            hashlib.sha256((ROOT / path).read_bytes()).hexdigest() == digest,
+            "REPAIR_CURRENT_SOURCE:" + path,
+        )
+    return verify_repair_claims(
+        report, json.loads((directory / "calls.json").read_text())
+    )
+
+
 def verify():
     verify_history()
     offline = json.loads((RESULT / "offline-checks.json").read_text())
@@ -254,17 +441,116 @@ def verify():
         "OFFLINE_FAILURE",
     )
     for path, digest in offline["source_sha256"].items():
-        require(
-            hashlib.sha256((ROOT / path).read_bytes()).hexdigest() == digest,
-            "CURRENT_SOURCE_DRIFT:" + path,
+        # The earlier check remains bound to its immutable execution source.
+        # Current successor source is independently checked below, not substituted
+        # into the old experiment or used to rewrite its test results.
+        content = subprocess.check_output(
+            ["git", "show", "398b414b2561b27a94a9663bb8e0ba24627e984f:" + path],
+            cwd=ROOT,
         )
-    return verify_claims(
+        require(
+            hashlib.sha256(content).hexdigest() == digest,
+            "HISTORICAL_SOURCE_DRIFT:" + path,
+        )
+    historical = verify_claims(
         *(
             json.loads((RESULT / name).read_text())
             for name in ["result.json", "calls.json", "live-traces.json"]
         )
     )
+    return {"historical": historical, "knowledge_contract_repair": verify_repair()}
+
+
+def verify_private_repair():
+    """Optional local CAS/ledger check. Read-only; never loads credentials."""
+    import sqlite3
+    from ecomsre.product.knowledge.drafts_v050 import (
+        TASK,
+        KnowledgeDraft,
+        compile_draft,
+    )
+
+    data = ROOT / ".local/product-v050"
+    directory = ROOT / "docs/results/product-v050/knowledge-contract-repair"
+    calls = json.loads((directory / "calls.json").read_text())
+
+    def read_object(digest):
+        require(bool(re.fullmatch("[0-9a-f]{64}", digest)), "PRIVATE_CAS_ID")
+        content = (
+            data / "objects/sha256" / digest[:2] / (digest + ".json")
+        ).read_bytes()
+        require(hashlib.sha256(content).hexdigest() == digest, "PRIVATE_CAS_HASH")
+        return json.loads(content)
+
+    with sqlite3.connect(
+        (data / "product.sqlite3").as_uri() + "?mode=ro", uri=True
+    ) as c:
+        c.row_factory = sqlite3.Row
+        count = 0
+        for call in calls:
+            row = c.execute(
+                "SELECT * FROM investigation_provider_calls_v050 WHERE call_key=?",
+                (call["ledger_key"],),
+            ).fetchone()
+            require(
+                row is not None and row["request_sha256"] == call["request_sha256"],
+                "PRIVATE_REQUEST_BINDING",
+            )
+            payload = json.loads(row["payload_json"])
+            view = read_object(call["view_object_sha256"])
+            require(
+                semantic_sha256_v22({"task": TASK, "view": view})
+                == payload["task_view_sha256"]
+                == call["task_view_sha256"],
+                "PRIVATE_VIEW_BINDING",
+            )
+            if call["draft_projection"] is None:
+                require(
+                    payload["error_code"] == "PROVIDER_TRUNCATED", "PRIVATE_TRUNCATION"
+                )
+                continue
+            raw = payload["proposal"]
+            require(
+                semantic_sha256_v22(raw) == call["private_draft_sha256"],
+                "PRIVATE_RAW_DRAFT_HASH",
+            )
+            try:
+                compile_draft(KnowledgeDraft.model_validate(raw), view)
+            except ValueError as exc:
+                require(
+                    str(exc) == call["result"]["error_code"],
+                    "PRIVATE_REJECTION_DIFFERS",
+                )
+            else:
+                raise ValueError("PRIVATE_REJECTION_NOT_REPRODUCED")
+            count += 1
+        protocol = json.loads((directory / "protocol.json").read_text())
+        queries = {
+            "calls": "SELECT * FROM investigation_provider_calls_v050 WHERE call_key NOT LIKE 'knowledge-draft-v050.1:%' ORDER BY call_key",
+            "sessions": "SELECT * FROM investigation_sessions_v050 ORDER BY session_id",
+            "episodes": "SELECT * FROM knowledge_episode_incidents_v050 ORDER BY incident_id",
+            "rejections": "SELECT * FROM knowledge_rejections_v050 WHERE source_request_key NOT LIKE 'knowledge-draft-v050.1:%' ORDER BY source_request_key",
+        }
+        for name, query in queries.items():
+            require(
+                semantic_sha256_v22([dict(r) for r in c.execute(query)])
+                == protocol["protected"][name],
+                "PRIVATE_HISTORY_DRIFT:" + name,
+            )
+    return {
+        "verification": "PASS",
+        "original_private_draft_rejections_recomputed": count,
+        "protected_history_unchanged": True,
+    }
 
 
 if __name__ == "__main__":
-    print(json.dumps(verify(), sort_keys=True))
+    import argparse
+
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--private-repair", action="store_true")
+    args = parser.parse_args()
+    result = verify()
+    if args.private_repair:
+        result["private_repair"] = verify_private_repair()
+    print(json.dumps(result, sort_keys=True))
