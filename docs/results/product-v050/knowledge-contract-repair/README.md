@@ -107,3 +107,11 @@ all predecessor result packs, original calls/sessions/episodes/rejections, DTA
 and upstream. Final repository scope is the entire tracked diff from
 `398b414b2561b27a94a9663bb8e0ba24627e984f`; untracked local CAS/logs are private,
 with explicitly reported read-only private verification.
+
+Local full regression on `192d95b`: **6690 passed / 21 skipped** in 659.26s.
+The first mainline CI failed the exact historical-successor document check:
+three current document digests had not been updated. Only their existing
+`successor_sha256` entries were refreshed; historical hashes, allowed path set
+and historical verifier remain unchanged. The focused historical check then
+passed. Final write scope also includes this one existing successor-binding
+file. The failed CI remains retained; the correction grants no further model run.
