@@ -312,3 +312,5 @@ Old attempts1–3 and continuation-01 preserved. No R1–R4/evaluator changes.
   inspection publication. User clarification about network recreation/fresh
   preflight pending. Terminal ECOMSRE_PRODUCT_V050_BLOCKED_SAFETY, not another
   engineering-completion or acceptance PASS. See results/product-v050/live-resume.
+
+- Final-check attempt at `6400daf` stopped during pytest collection: the new test basename collided with `tests/product_v030/test_live_environment.py`. Renamed the v0.5 test module; retained `.local/product-v050/validation/live-resume-full-pytest.log`. This failed attempt is not green evidence.

@@ -265,23 +265,23 @@
       "status": "PASSED"
     },
     {
-      "id": "tests.product_v050.test_live_environment::test_capture_all_births_before_failed_validation",
+      "id": "tests.product_v050.test_live_environment_v050::test_capture_all_births_before_failed_validation",
       "status": "PASSED"
     },
     {
-      "id": "tests.product_v050.test_live_environment::test_aux_timeout_recovers_exact_created_identity",
+      "id": "tests.product_v050.test_live_environment_v050::test_aux_timeout_recovers_exact_created_identity",
       "status": "PASSED"
     },
     {
-      "id": "tests.product_v050.test_live_environment::test_compose_null_inherits_image_command",
+      "id": "tests.product_v050.test_live_environment_v050::test_compose_null_inherits_image_command",
       "status": "PASSED"
     },
     {
-      "id": "tests.product_v050.test_live_environment::test_created_network_still_requires_exact_name_and_running_requires_id",
+      "id": "tests.product_v050.test_live_environment_v050::test_created_network_still_requires_exact_name_and_running_requires_id",
       "status": "PASSED"
     },
     {
-      "id": "tests.product_v050.test_live_environment::test_desktop_bind_alias_cannot_escape_exact_repository_source",
+      "id": "tests.product_v050.test_live_environment_v050::test_desktop_bind_alias_cannot_escape_exact_repository_source",
       "status": "PASSED"
     },
     {
@@ -422,7 +422,7 @@
   "exit_code": 0,
   "external_product_writes": 0,
   "live_episode_count": 0,
-  "observed_at": "2026-09-18T02:59:30.203432+00:00",
+  "observed_at": "2026-09-18T03:05:12.679447+00:00",
   "provider_request_count": 0,
   "runtime": {
     "pydantic": "2.13.4",
@@ -473,7 +473,7 @@
     "tests/product_v050/test_history.py": "c2bc54d84907e3fe4b1ebc561b06d993725aee204bc064e099989a50f132037c",
     "tests/product_v050/test_investigation.py": "64c4687e4dc660de532d71d646be18699b15003581429b6bf087dd04f2b127d7",
     "tests/product_v050/test_knowledge.py": "8a56f29501dbbd8ad20b1c88a878d5afdd1a3ba67d1a5804e57a8173635178b0",
-    "tests/product_v050/test_live_environment.py": "a269616d572fca3a851a52e3a01a7121fc84f2e84fd4b57d053e2405cb1bc128",
+    "tests/product_v050/test_live_environment_v050.py": "a269616d572fca3a851a52e3a01a7121fc84f2e84fd4b57d053e2405cb1bc128",
     "tests/product_v050/test_live_resume_evidence.py": "679fd4b199f9e7b8787d89b5646a8d92d197252dc78549ccecd27af2b46e4f35",
     "tests/product_v050/test_preview.py": "ec56e7251f74e289bf8657d1c566cc2ec5c091ca9c29826c1595ef3342c51f86",
     "tests/product_v050/test_provider_diagnostics.py": "319c533edb7f062224a19b2ac0b0d584e81e02e4e5b17f5a94f0e2f7d502f5d1",
