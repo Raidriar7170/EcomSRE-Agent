@@ -1,0 +1,143 @@
+# Final learning closure — BLOCKED_SAFETY
+
+[Active Goal](../../../goals/EcomSRE_v0.5_Final_Learning_Closure_Goal.md), same Draft
+[PR #104](https://github.com/Raidriar7170/EcomSRE-Agent/pull/104), base `29c195762b7bf6f4951ca778b6a0a034f2be94fd`.
+This is an interrupted Phase A audit with four fixture-tested interface slices,
+**not engineering completion or learning acceptance**.
+
+Fresh read-only precheck found a new non-owned container and changed default bridge
+membership against the retained post-cleanup inventory. Independent review saw
+successive short-lived `hermes-asi-executor:v1` containers without project ownership
+labels. Observations are timestamp-bound; no particular container ID is asserted
+still present. Under Goal §0.6 no new baseline, campaign, Provider request, or live
+episode was started. No resource was stopped or removed. The external task must
+finish and resource continuity must be rechecked; this package does not authorize
+accepting drift or taking over that task.
+
+[precheck.json](precheck.json) freshly reconstructs all five old candidate outcomes
+from retained SQLite/CAS and the existing evaluator: e04 TRUE, all others FALSE;
+original Development **1/2**, all seen **1/5**. Historical e04 resource dependency
+remains `UNKNOWN / NOT_COLLECTED`, never backfilled. All old candidates, failures,
+event roles, CHECKED records, split and ledger remain unchanged.
+
+New consumption: **0 requests / USD 0 / 0 live episodes / 0 semantic attempts**.
+Cumulative: **57 requests / USD 0.918501 committed / 5 episodes**. Four unknown-usage
+calls retain USD 0.095449; invoice unknown. Effective unused caps remain
+40 requests / USD 8 / 7 episodes / 6 semantic attempts, subject to fresh cumulative
+accounting at resumption. No fresh price verification or paid dispatch occurred.
+
+Level A loop: **NOT_RUN**. Level B acceptance: **false / NOT_RUN**. No new live candidate,
+live selection lock, freeze, independent batch, promotion, recurrence, or revocation.
+The historical `NO_VALIDATED_LLM_KNOWLEDGE` result is preserved; this attempted
+continuation is `ECOMSRE_PRODUCT_V050_BLOCKED_SAFETY`.
+
+## Fixed next-run plan and outstanding interfaces
+
+Primary objective is Level B, subject to same-semantics data feasibility established
+before proposer use. N1 target positive, N2 healthy, N3 confusable (existing Payment
+control; similar service degradation, not a claim of matching queue-lag mechanism)
+are development; N4 target, N5 healthy, N6 confusable/Core are independent holdout;
+N7 is post-promotion recurrence. No N4–N7 slot may fund development retries. These
+are planned roles, not created episodes or an installed split successor.
+
+Level A gate remains original e04/e05 2/2 and all original events at least 4/5,
+with complete negative controls FALSE. Level B forward cohort includes e05/N1 and
+all old target episodes with the same complete dependency (currently e01); minimum
+75% coverage, e05/N1 both TRUE, original e04/e05 base conditions TRUE, all complete
+negative controls FALSE, expression numerically consequential. Report e04 UNKNOWN
+and all original five separately. No actual candidate has been tested under these
+new gates. Goal §C4 remains normative; this summary changes no gate.
+
+Implemented offline only (not installed into the live ledger):
+
+- Selection identity lock binds a candidate, retained CHECKED development report,
+  source request, evaluator code, split, collection window and planned three-case
+  holdout. Freeze/evaluate enforce global selected identity; each planned holdout
+  or recurrence slot accepts only its first incident. Proposal dispatch and new
+  candidate admission are forbidden after the lock. This is an identity barrier,
+  **not a C4 development-gate verdict**: the runner must independently verify the
+  full gate, deployment compatibility and collection/promotion order before use.
+
+- Immutable closure sub-budget binds the original Provider journal, counting all
+  new request keys and committed/unknown usage against at most 40 requests/USD 8
+  and six ordered proposal attempts. Original remaining 200/USD 20 limits still
+  constrain it. Restart cannot reset the baseline; changed old ledger entries
+  refuse new dispatches. This is budget plumbing, not safety admission: the new
+  Provider protocol, development-gate integration and seven-episode guard remain outstanding.
+
+- Append-only split successor preserving original bytes, unused e06/e07, roles and
+  global exposure; rejects old incident relabeling and post-freeze extension.
+  Historical readers still select only the original manifest's five events.
+- Derived controls use actual evaluator output and fresh memory/coverage/references.
+  Target evidence withholding checks cross-service non-borrowing only, not complete
+  target attribution. It requires retained successful, nontruncated other-service
+  evidence from a required source; otherwise the control is NOT_AVAILABLE and the
+  gate refuses. Source failures preserve typed authoritative observations. UNKNOWN
+  remains raw UNKNOWN, and original negative UNKNOWN refuses new-protocol validation.
+  Independent originals and derived controls have separate counts.
+
+Before any new data consumption, still implement and fixture-test:
+
+- Explicit same-environment capability successor, only `verified_at` excluded from
+  structural comparison, exact old/new objects retained; separate birth-bound
+  deployment identity and actual query/resource-limit equivalence. Shared check in
+  development, Shadow and matcher; no broad capability bypass.
+- Connect the fixture-tested identity lock to mechanically verified C4 development
+  gates and the live runner before N4–N6 capture. The runner must reserve and bind
+  each slot before any opportunity to inspect/retry its outcome; no delayed binding
+  may select among already collected alternatives.
+- Fixture-only full admission → development → lock → freeze → evaluate → test
+  promotion → normal API/Worker dependency acquisition → revoke. The existing
+  isolated fixture insertion test does not establish this full governance chain.
+- New proposal wire feedback with full old semantics, every FALSE/UNKNOWN and
+  negative control; no supplied winning clause. Connect new keys and parent relations
+  to the implemented sub-budget only after safety admission; add the episode guard.
+
+After mechanical checks, fresh ownership continuity and same-environment binding,
+collect development data, stop selection at the first qualifying primary candidate,
+lock, collect N4–N6, freeze all raw inputs, run one unchanged Shadow gate. Require
+positive recall ≥0.75, FPR ≤0.10, zero healthy/Core overlap, target consistency ≥0.80,
+all source failures closed, reference validity/reachability 1.0 and zero authority
+violations. Only then normal governance may promote to the enrolled isolated test
+registry. N7 uses normal API/Worker with Provider disabled and ledger deltas; revoke
+and explicitly replay N7 afterward. None of these future steps is claimed complete.
+
+## Verification and review
+
+Executed read-only commands from this worktree:
+
+```sh
+PYTHONPATH=src:. .venv/bin/python -m scripts.product_v050.final_closure_precheck
+PYTHONPATH=src:. .venv/bin/python -m scripts.ci.verify_product_v050_docker_stability
+```
+
+The first prints current safe projections and never accepts a baseline. Its retained
+snapshot is time-specific. The historical verifier passed all three predecessor
+packages, with old feasibility source hashes checked against retained baseline
+`29c195762b7bf6f4951ca778b6a0a034f2be94fd`; it does not validate this new learning loop. Independent read-only reviewer
+recomputed budget and old CAS outcomes and confirmed ongoing non-owned drift.
+Independent review of the offline slices reports Must Fix 0. The latest complete
+v0.5 fixture suite passes **201 tests**; these tests are not live learning evidence.
+Identity lock exists, but C4 integration, capability successor and the full mechanical
+chain remain incomplete. Reviewer-discovered same-slot replacement and cross-environment
+bypass were fixed before the final fixture pass. Ruff passes repository-wide.
+
+The initial [precheck.json](precheck.json) and follow-up
+[offline-precheck.json](offline-precheck.json) remain preserved. The latest
+[blocked-precheck.json](blocked-precheck.json) at 2026-09-19 04:22 UTC still shows
+one new non-owned container and changed default bridge membership. No takeover,
+new baseline, Provider dispatch or live-ledger migration was performed.
+
+## 阻塞交接简报
+
+本轮未完成，Level A / Level B 均为 NOT_RUN。已保留 split successor、派生控制、
+原账本子预算及候选身份锁的离线实现；这些测试不替代真实候选或独立验证。
+同一非项目资源漂移已连续多轮确认，Goal §0.6 禁止建立新 campaign。
+重建路径涉及 Runtime authority、snapshot_ref 和带 nonce 的 Prometheus 查询；
+必须在资源连续性恢复后取得实际 owned deployment，再逐项核对能力、查询及限制。
+不能仅排除 verified_at 或接受一份声明就授予兼容关系。因此本次不接入未验证的
+successor，也不把缺失的新负例补成 fixture 成绩。
+
+恢复条件是外部任务结束并重新通过只读资源连续性检查；本次没有停止该任务。
+继续时沿用本 Goal、同一 PR、原账本和现有模型，先完成剩余机械链与实物绑定，
+再执行已授权的开发/独立验收。不得复活旧提议轮或替换历史 e04 缺失。

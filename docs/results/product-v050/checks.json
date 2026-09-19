@@ -1,0 +1,218 @@
+{
+  "ci_status": "TRACKED_EXTERNALLY_ON_PR_104",
+  "commands": [
+    {
+      "command": "python -m pytest tests/product_v050 -q",
+      "exit_code": 0,
+      "name": "focused",
+      "passed": 43
+    },
+    {
+      "command": "ruff check .",
+      "exit_code": 0,
+      "name": "ruff"
+    },
+    {
+      "command": "22 workflow verifier modules; v041 via verify_product_v050_history",
+      "exit_code": 0,
+      "name": "historical_verifiers"
+    },
+    {
+      "command": "mypy (complete Agent mainline CI scope)",
+      "exit_code": 0,
+      "name": "mypy",
+      "source_files": 731
+    },
+    {
+      "command": ".venv/bin/python -m pytest -q",
+      "commit": "430b8a129ed083103134ab361e0674a2262ce3d8",
+      "elapsed_seconds": 739.74,
+      "exit_code": 0,
+      "log_sha256": "0d18b21c5fc97cea182825cf1750990e44646b8496478890f78b40837d7a8e38",
+      "name": "full_repository",
+      "passed": 6584,
+      "skipped": 21,
+      "warnings": 17
+    }
+  ],
+  "full_repository_status": "PASS",
+  "historical_modules": [
+    {
+      "elapsed_seconds": 0.168,
+      "exit_code": 0,
+      "name": "scripts.ci.verify_product_mvp_v01_historical_bindings"
+    },
+    {
+      "elapsed_seconds": 0.085,
+      "exit_code": 0,
+      "name": "scripts.ci.verify_dta_v22_pr_a"
+    },
+    {
+      "elapsed_seconds": 2.006,
+      "exit_code": 0,
+      "name": "scripts.ci.verify_dta_v22_pr_b"
+    },
+    {
+      "elapsed_seconds": 2.679,
+      "exit_code": 0,
+      "name": "scripts.ci.verify_dta_v22_pr_c"
+    },
+    {
+      "elapsed_seconds": 0.024,
+      "exit_code": 0,
+      "name": "scripts.ci.verify_dta_v221_historical_practical_results"
+    },
+    {
+      "elapsed_seconds": 0.386,
+      "exit_code": 0,
+      "name": "scripts.ci.verify_dta_v221_study_manifest"
+    },
+    {
+      "elapsed_seconds": 0.467,
+      "exit_code": 0,
+      "name": "scripts.ci.verify_dta_v221_study_results"
+    },
+    {
+      "elapsed_seconds": 0.514,
+      "exit_code": 0,
+      "name": "scripts.ci.verify_dta_v226_real_fault_result"
+    },
+    {
+      "elapsed_seconds": 0.174,
+      "exit_code": 0,
+      "name": "scripts.ci.verify_phase5b_execution_historical_bindings"
+    },
+    {
+      "elapsed_seconds": 0.029,
+      "exit_code": 0,
+      "name": "scripts.ci.verify_product_v02_history"
+    },
+    {
+      "elapsed_seconds": 0.028,
+      "exit_code": 0,
+      "name": "scripts.ci.verify_product_v02_blocked_result"
+    },
+    {
+      "elapsed_seconds": 0.946,
+      "exit_code": 0,
+      "name": "scripts.ci.verify_product_v021_increment1"
+    },
+    {
+      "elapsed_seconds": 2.619,
+      "exit_code": 0,
+      "name": "scripts.ci.verify_product_v022_increment1"
+    },
+    {
+      "elapsed_seconds": 0.727,
+      "exit_code": 0,
+      "name": "scripts.ci.verify_product_v022_schema_probe_blocker"
+    },
+    {
+      "elapsed_seconds": 1.903,
+      "exit_code": 0,
+      "name": "scripts.ci.verify_product_v0221_schema_blocker"
+    },
+    {
+      "elapsed_seconds": 0.659,
+      "exit_code": 0,
+      "name": "scripts.ci.verify_product_v0222_increment5"
+    },
+    {
+      "elapsed_seconds": 0.663,
+      "exit_code": 0,
+      "name": "scripts.ci.verify_product_v0231_result"
+    },
+    {
+      "elapsed_seconds": 1.018,
+      "exit_code": 0,
+      "name": "scripts.ci.verify_product_v02323_increment5",
+      "repair": "Frozen job contract restored; additive Product adapter; direct verifier rerun PASS"
+    },
+    {
+      "elapsed_seconds": 0.914,
+      "exit_code": 0,
+      "name": "scripts.ci.verify_product_v0233_terminal"
+    },
+    {
+      "elapsed_seconds": 0.938,
+      "exit_code": 0,
+      "name": "scripts.ci.verify_product_v040_development"
+    },
+    {
+      "elapsed_seconds": 0.625,
+      "exit_code": 0,
+      "name": "scripts.ci.verify_product_v040_minimal_payment"
+    },
+    {
+      "elapsed_seconds": 0.637,
+      "exit_code": 0,
+      "name": "scripts.ci.verify_product_v050_history",
+      "repair": "Unchanged legacy verifier run through exact fixed-base presentation projection; scope is historical evidence"
+    }
+  ],
+  "historical_regression_status": "PASS",
+  "preserved_failures": [
+    {
+      "failure": "Strict JSON datetime snapshot adapter mismatch",
+      "phase": "integration",
+      "resolution": "New adapter validates typed JSON; legacy contract unchanged"
+    },
+    {
+      "failure": "Incomplete control strata cannot form legacy ShadowEvaluation",
+      "phase": "integration",
+      "resolution": "Explicit retained incomplete-validation rejection"
+    },
+    {
+      "failure": "Old registry revoke attempted old schema",
+      "phase": "review",
+      "resolution": "Controlled 409 and authenticated successor revocation"
+    },
+    {
+      "failure": "Raw gateway hidden reasoning could enter CAS",
+      "phase": "review",
+      "resolution": "Audit allowlist plus response digest"
+    },
+    {
+      "failure": "Arbitrary model suffix accepted as snapshot",
+      "phase": "review",
+      "resolution": "Explicit identities; unknown identity invalidates future dispatch cost bound"
+    },
+    {
+      "failure": "Added job enum altered frozen contract",
+      "phase": "historical",
+      "resolution": "Historical bytes restored; successor adapter"
+    },
+    {
+      "failure": "Current docs differ from historical presentation hashes",
+      "phase": "historical",
+      "resolution": "Exact scoped successor mappings with immutable historical manifest"
+    },
+    {
+      "failure": "Current historical manifest was not anchored to fixed base",
+      "phase": "review",
+      "resolution": "Fixed-base bytes check before importing legacy verifier"
+    },
+    {
+      "duration_seconds": 800.39,
+      "failed": 5,
+      "failure_details": [
+        "Historical dirty-worktree guard requires a clean committed checkout",
+        "Project-local .venv lacked pydantic despite shared test interpreter being complete",
+        "Two old Worker failure/recovery tests accessed unnecessary new capability binding before their handler",
+        "In-flight old test collection was overtaken by new development-check requirement"
+      ],
+      "passed": 6576,
+      "phase": "initial_full_repository",
+      "resolution": "No tests or historical gates removed; local environment sync, conditional capability binding, and fresh clean-head rerun pending",
+      "skipped": 21
+    }
+  ],
+  "pull_request": "https://github.com/Raidriar7170/EcomSRE-Agent/pull/104",
+  "review": {
+    "must_fix_open": 0,
+    "reviewer": "independent Codex read-only reviewer",
+    "scope": "Read-only Product investigation, knowledge, preview, Provider budget/privacy, job compatibility and exact historical successor adapter; no live/holdout review",
+    "status": "INDEPENDENT_REVIEW_COMPLETE"
+  },
+  "schema_version": "ecomsre.product.delivery-checks.v050"
+}

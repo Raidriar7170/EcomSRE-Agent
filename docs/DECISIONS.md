@@ -1576,3 +1576,28 @@ This decision derives from sections 3.3 and 12 of the
 [active Goal](goals/EcomSRE_Product_v0.4_Minimal_Payment_Live_Acceptance_Goal.md).
 It grants no authority outside that Goal and makes no Checkout or full-Demo
 acceptance claim.
+
+
+## DEC-064 — Product v0.5 bounded investigation and knowledge successor
+
+Status: accepted under the user-activated
+[ecomsre-product-v050-llm-investigation-knowledge-v1 Goal](goals/EcomSRE_v0.5_Codex_Goal.md).
+
+Within new Product paths only, the LLM may propose temporary hypotheses, choose
+bounded reads and propose declarative detection knowledge. Runtime assigns IDs,
+validates capabilities/evidence/budgets, evaluates rules and enforces governance.
+DEC-050/051/059 remain unchanged for their historical DTA namespaces. DEC-062
+continues to forbid ambiguous roots becoming admitted families. Investigation
+records are separate from formal diagnosis. Default feature switches are off.
+
+Level B expressions use a bounded Product adapter with typed registered fields,
+units, windows and coverage; no eval, arbitrary code or network addresses.
+Candidate freeze and independent controls precede PREAUTHORIZED_TEST_PROMOTION
+only in a new isolated test registry. No shared-environment promotion authority.
+
+Recovery proposals are preview-only, never WriteIntent or AttemptAuthorization.
+Existing v0.4 recovery authority and all historical evidence remain unchanged.
+All actual Provider requests (including failures/repairs) reserve bounded costs
+before dispatch. Unknown pricing blocks paid execution. Campaign maxima are
+200 requests, USD 20, 12 owned live episodes; stricter existing limits win.
+No model fallback, historical rerun, merge, release or production deployment.

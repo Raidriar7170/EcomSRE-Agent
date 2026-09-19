@@ -272,6 +272,7 @@ class ProductDiagnosisBridgeV1:
                 memory=memory,
                 generic_anomalies=anomalies,
                 raw_outcomes=acquisition.raw_outcomes,
+                snapshots=acquisition.snapshots,
             )
             extension_match_count = len(extension_matches)
             if len(extension_matches) > 1:
@@ -486,6 +487,12 @@ class ProductDiagnosisBridgeV1:
                 "payload": observation.model_dump(mode="json"),
             }
             for observation in acquisition.capability_observations_v0232
+        )
+        observations.extend(
+            {"evidence_ref": o["evidence_ref"], "source": o["source"],
+             "action_id": "supplemental:" + o["object_sha256"][:24],
+             "payload": {"supplemental_observation": o}}
+            for o in getattr(self._extension_matcher, "supplemental_observations", ())
         )
         return result, tuple(observations), trace
 

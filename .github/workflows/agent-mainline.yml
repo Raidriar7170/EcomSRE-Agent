@@ -292,7 +292,22 @@ jobs:
         run: PYTHONPATH=src:. uv run --frozen --no-sync python -m scripts.ci.verify_product_v040_minimal_payment
 
       - name: Product v0.4.1 live safety and presentation evidence verification
-        run: PYTHONPATH=src:. uv run --frozen --no-sync python -m scripts.ci.verify_product_v041_closeout
+        run: PYTHONPATH=src:. uv run --frozen --no-sync python -m scripts.ci.verify_product_v050_history
+
+      - name: Product v0.5 offline package verification
+        run: PYTHONPATH=src:. uv run --frozen --no-sync python -m scripts.ci.verify_product_v050
+
+      - name: Product v0.5 continuation evidence
+        run: PYTHONPATH=src:. uv run --frozen --no-sync python -m scripts.ci.verify_product_v050_continuation
+
+      - name: Product v0.5 Provider unblock evidence
+        run: PYTHONPATH=src:. uv run --frozen --no-sync python -m scripts.ci.verify_product_v050_provider_unblock
+
+      - name: Product v0.5 live resume safety evidence
+        run: PYTHONPATH=src:. uv run --frozen --no-sync python -m scripts.ci.verify_product_v050_live_resume
+
+      - name: Product v0.5 real local investigation evidence
+        run: PYTHONPATH=src:. uv run --frozen --no-sync python -m scripts.ci.verify_product_v050_docker_stability
 
       - name: Full repository tests
         env:

@@ -8,6 +8,8 @@ from typing import Any
 
 from pydantic import BaseModel, Field, PrivateAttr, model_validator
 
+from ecomsre.product.investigation.contracts import InvestigationConfig
+
 
 _LOOPBACK_HOSTS = {"127.0.0.1", "::1", "localhost"}
 
@@ -41,6 +43,8 @@ class ProductSettingsV1(BaseModel):
     rule_miner_beam_width: int = Field(default=20, ge=1, le=100)
     rule_miner_max_clause_size: int = Field(default=3, ge=1, le=3)
     pilot_runtime_authority_path: Path | None = None
+    investigation: InvestigationConfig = Field(default_factory=InvestigationConfig)
+    knowledge_proposer_enabled: bool = False
 
     @model_validator(mode="before")
     @classmethod
@@ -89,6 +93,10 @@ class ProductSettingsV1(BaseModel):
             values["admin_token_env"] = token_env
         if path := os.environ.get("ECOMSRE_PRODUCT_PILOT_RUNTIME_AUTHORITY_PATH"):
             values["pilot_runtime_authority_path"] = Path(path)
+        if os.environ.get("ECOMSRE_PRODUCT_INVESTIGATION_ENABLED") == "true":
+            values["investigation"] = {"enabled": True}
+        if os.environ.get("ECOMSRE_PRODUCT_KNOWLEDGE_PROPOSER_ENABLED") == "true":
+            values["knowledge_proposer_enabled"] = True
         return cls.model_validate(values)
 
 

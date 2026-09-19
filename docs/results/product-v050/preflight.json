@@ -1,0 +1,11 @@
+{
+  "cost_cap_usd": 20,
+  "dispatches_in_this_command": 0,
+  "docker_mutations": 0,
+  "ledger_status": "NOT_CREATED",
+  "live_episode_cap": 12,
+  "pricing_status": "NOT_CONFIGURED",
+  "provider_status": "NOT_CONFIGURED",
+  "request_cap": 200,
+  "schema_version": "ecomsre.product.preflight.v050"
+}

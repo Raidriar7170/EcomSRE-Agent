@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+
+from ecomsre.product.knowledge.candidates_v050 import CompiledKnowledge, evaluate_candidate, snapshot_observations
 from typing import Any
 
 from ecomsre.dta_v2.v22.memory import BaselineProfileV22, SalientEvidenceMemoryV22
@@ -110,7 +112,14 @@ class ProductExtensionMatcherV1:
     def __init__(
         self,
         registrations: tuple[ProductExtensionRegistrationV1, ...] = (),
+        *, derived_registrations: tuple[CompiledKnowledge, ...] = (),
+        capability_sha256: str | None = None,
+        supplemental_reads=None,
     ) -> None:
+        self.supplemental_observations: list[dict[str, Any]] = []
+        self._supplemental_reads = supplemental_reads
+        self._derived_registrations = derived_registrations
+        self._capability_sha256 = capability_sha256
         self._registrations = tuple(
             sorted(registrations, key=lambda item: item.registration_id)
         )
@@ -125,6 +134,7 @@ class ProductExtensionMatcherV1:
         memory: SalientEvidenceMemoryV22,
         generic_anomalies: tuple[GenericAnomalyV23, ...],
         raw_outcomes: tuple[ReadOutcomeV22, ...],
+        snapshots: tuple[dict[str, Any], ...] = (),
     ) -> tuple[ProductExtensionMatchV1, ...]:
         runtime_input = build_product_extension_runtime_input_v1(
             case_id=case_id,
@@ -153,6 +163,24 @@ class ProductExtensionMatcherV1:
                 for decision in decisions
                 if decision.admitted
             )
+        observations = snapshot_observations(snapshots, memory) if self._derived_registrations else []
+        if self._supplemental_reads is not None:
+            from ecomsre.product.knowledge.observations_v050 import acquire_dependencies
+            self.supplemental_observations = acquire_dependencies(self._derived_registrations, self._supplemental_reads)
+            observations += self.supplemental_observations
+        for candidate in self._derived_registrations:
+            if candidate.capability_sha256 != self._capability_sha256:
+                continue
+            for target in candidate_services:
+                outcome = evaluate_candidate(candidate, target=target, memory=memory,
+                                             anomalies=generic_anomalies, observations=observations,
+                                             incident_end=self._supplemental_reads.incident.diagnosis_observed_at if self._supplemental_reads else None)
+                if outcome.status == "TRUE":
+                    matches.append(ProductExtensionMatchV1(
+                        registration_id=candidate.registration_id, mechanism_slug=candidate.proposal.name,
+                        broad_fault_domain=candidate.proposal.broad_domain, root_service=target,
+                        supporting_evidence_refs=outcome.evidence_refs,
+                    ))
         return tuple(
             sorted(
                 matches,

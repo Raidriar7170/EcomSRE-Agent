@@ -35,6 +35,7 @@ from ecomsre.product.incidents.repository import (
     IncidentRepositoryV1,
 )
 from ecomsre.product.jobs.contracts import JobLeaseFenceV1, ProductJobTypeV1
+from ecomsre.product.jobs.contracts_v050 import InvestigationJobTypeV050
 from ecomsre.product.jobs.handlers import (
     handle_baseline_build,
     handle_environment_verify,
@@ -220,6 +221,57 @@ def run_one_job(
                 baselines,
                 fence=fence,
             )
+        elif job.job_type is InvestigationJobTypeV050.KNOWLEDGE_PROPOSAL:
+            from ecomsre.product.investigation.repository import InvestigationRepository
+            from ecomsre.product.investigation.runtime import configured_provider
+            from ecomsre.product.knowledge.evolution_v050 import KnowledgeEvolutionV050
+
+            if not settings.knowledge_proposer_enabled:
+                raise ProductError("KNOWLEDGE_PROPOSER_DISABLED", "Knowledge proposer is disabled.")
+            investigation_repo = InvestigationRepository(store, object_store)
+            evolution = KnowledgeEvolutionV050(knowledge, investigation_repo)
+            environment_id = str(job.payload["environment_id"])
+            candidate = evolution.propose(
+                environment_id=environment_id, incident_ids=job.payload["incident_ids"],
+                provider=configured_provider(investigation_repo),
+                key="knowledge:" + environment_id + ":" + job.job_id,
+                fence=fence,
+            )
+            result = candidate.model_dump(mode="json")
+        elif job.job_type is InvestigationJobTypeV050.INVESTIGATION:
+            from ecomsre.product.investigation.reads import InvestigationReads
+            from ecomsre.product.investigation.repository import InvestigationRepository
+            from ecomsre.product.investigation.runtime import run_investigation
+
+            investigated = incidents.get(str(job.payload.get("incident_id", "")))
+            parent = diagnoses.get(investigated.incident_id)
+            snapshot = semantic_sha256_v22([
+                entry.compiled_registration.compiled_sha256
+                for entry in knowledge.active_extensions(investigated.environment_id)
+            ] + [entry.compiled_sha256 for entry in knowledge.active_investigation_extensions(investigated.environment_id)])
+            residuals = []
+            if parent.terminal.value in {"CORE_KNOWN", "EXTENSION_KNOWN"}:
+                material = knowledge._shadow_runtime_material(investigated.incident_id)
+                supporting = set(parent.supporting_evidence_refs)
+                # Conservative residual opportunity: strong evidence outside every
+                # supporting reference of the formal match. It never replaces it.
+                residuals = [a.model_dump(mode="json") for a in material.runtime_input.generic_anomalies
+                             if a.strength.value == "STRONG" and a.evidence_refs
+                             and not supporting.intersection(a.evidence_refs)]
+            result = run_investigation(
+                incident=investigated, diagnosis=parent, knowledge_snapshot=snapshot,
+                reads=InvestigationReads(
+                    incident=investigated,
+                    environment=environments.get(investigated.environment_id),
+                    identities=services.get_map(investigated.environment_id),
+                    capabilities=capabilities.get(investigated.environment_id),
+                    backend=read_backend, objects=object_store, fence=fence,
+                    initial_evidence=diagnoses.evidence(investigated.incident_id),
+                ),
+                repository=InvestigationRepository(store, object_store),
+                config=settings.investigation, fence=fence, renew_lease=renew_lease,
+                residuals=residuals,
+            )
         elif job.job_type is ProductJobTypeV1.DIAGNOSIS:
             incident_id = str(job.payload.get("incident_id", ""))
             diagnosis_pipeline_v02322 = DiagnosisPipelineV02322(
@@ -358,6 +410,16 @@ def run_one_job(
                     return checkpoint.acquisition_sha256
 
                 seal_acquisition_v0233 = seal_formal_acquisition_v0233
+            derived_extensions = knowledge.active_investigation_extensions(incident.environment_id)
+            supplemental_reads = None
+            if any(c.proposal.resource_dependency is not None for c in derived_extensions):
+                from ecomsre.product.investigation.reads import InvestigationReads
+                supplemental_reads = InvestigationReads(
+                    incident=incident, environment=environments.get(incident.environment_id),
+                    identities=services.get_map(incident.environment_id),
+                    capabilities=capabilities.get(incident.environment_id),
+                    backend=read_backend, objects=object_store, fence=fence,
+                )
             result = handle_incident_diagnosis(
                 job,
                 incidents,
@@ -369,7 +431,10 @@ def run_one_job(
                 read_backend,
                 ProductDiagnosisBridgeV1(
                     ProductExtensionMatcherV1(
-                        knowledge.active_extensions(incident.environment_id)
+                        knowledge.active_extensions(incident.environment_id),
+                        derived_registrations=derived_extensions,
+                        supplemental_reads=supplemental_reads,
+                        capability_sha256=incident.source_capability_sha256 if derived_extensions else None,
                     )
                 ),
                 fence=fence,
