@@ -389,3 +389,11 @@ The 2026-09-19 04:04 UTC read-only snapshot still shows non-owned container/brid
 `ECOMSRE_PRODUCT_V050_BLOCKED_SAFETY`. New consumption stays 0 requests / USD 0 /
 0 episodes. Level A and Level B remain NOT_RUN. See the same final-learning-closure
 result package; no historic outcome or ledger was replaced.
+
+The next offline slice adds an immutable closure sub-budget over the same Provider
+journal: all new purposes share request/cost caps, uncertain usage keeps its reserve,
+six proposal slots cannot be reset, and original remaining balance remains binding.
+Nine focused fixture tests pass; independent budget review Must Fix 0. The actual
+ledger was not activated or migrated. New proposal protocol, selection lock and
+seven-episode guard are still incomplete. Resource continuity remained false at
+2026-09-19 04:08 UTC; cumulative usage remained 57 requests/USD 0.918501/5 episodes.

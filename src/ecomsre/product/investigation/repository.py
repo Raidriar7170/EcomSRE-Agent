@@ -115,6 +115,8 @@ class InvestigationRepository:
                         )
                     connection.execute("COMMIT")
                     return json.loads(row["payload_json"])
+                from ecomsre.product.investigation.closure_budget import guard
+                guard(connection, key, reserve, request)
                 if connection.execute(
                     "SELECT 1 FROM investigation_provider_calls_v050 WHERE state='UNSAFE_COST_BOUND' LIMIT 1"
                 ).fetchone():

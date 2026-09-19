@@ -79,6 +79,8 @@
     "derived_shadow_controls": "FIXTURE_TESTED_NOT_RUN_LIVE",
     "fixture_tests_passed": 183,
     "independent_review": "MUST_FIX_0_FOR_OFFLINE_SLICES_ONLY",
+    "live_episode_guard": "NOT_IMPLEMENTED",
+    "provider_sub_budget": "FIXTURE_TESTED_NOT_ACTIVATED",
     "selection_lock": "NOT_IMPLEMENTED",
     "split_successor": "FIXTURE_TESTED_NOT_INSTALLED",
     "target_control_claim": "TARGET_EVIDENCE_WITHHOLDING_CROSS_SERVICE_NON_BORROWING_ONLY"

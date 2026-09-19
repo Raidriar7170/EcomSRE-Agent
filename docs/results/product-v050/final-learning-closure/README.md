@@ -50,6 +50,13 @@ new gates. Goal §C4 remains normative; this summary changes no gate.
 
 Implemented offline only (not installed into the live ledger):
 
+- Immutable closure sub-budget binds the original Provider journal, counting all
+  new request keys and committed/unknown usage against at most 40 requests/USD 8
+  and six ordered proposal attempts. Original remaining 200/USD 20 limits still
+  constrain it. Restart cannot reset the baseline; changed old ledger entries
+  refuse new dispatches. This is budget plumbing, not safety admission: the new
+  Provider protocol, selection lock and seven-episode guard remain outstanding.
+
 - Append-only split successor preserving original bytes, unused e06/e07, roles and
   global exposure; rejects old incident relabeling and post-freeze extension.
   Historical readers still select only the original manifest's five events.
@@ -73,8 +80,8 @@ Before any new data consumption, still implement and fixture-test:
   promotion → normal API/Worker dependency acquisition → revoke. The existing
   isolated fixture insertion test does not establish this full governance chain.
 - New proposal wire feedback with full old semantics, every FALSE/UNKNOWN and
-  negative control; no supplied winning clause. Stable new keys, parent relations,
-  six semantic slots and original ledger sub-budget guards.
+  negative control; no supplied winning clause. Connect new keys and parent relations
+  to the implemented sub-budget only after safety admission; add the episode guard.
 
 After mechanical checks, fresh ownership continuity and same-environment binding,
 collect development data, stop selection at the first qualifying primary candidate,
