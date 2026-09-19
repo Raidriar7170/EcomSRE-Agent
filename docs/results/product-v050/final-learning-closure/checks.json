@@ -21,8 +21,14 @@
     "passed": 183
   },
   "ruff": "PASS",
+  "selection_identity_tests": {
+    "command": "PYTHONPATH=src:. .venv/bin/python -m pytest -q tests/product_v050",
+    "independent_review": "MUST_FIX_0_FOR_IDENTITY_SLICE_ONLY",
+    "limitations": "NO_C4_GATE_NO_LIVE_ADMISSION_NO_FULL_MECHANICAL_CHAIN",
+    "passed": 201
+  },
   "source_sha256": {
-    "docs/results/product-v050/final-learning-closure/acceptance.json": "4b7ebe7a3fd3962d772720c9b156a5dff39fe0391a2e72659bc207e382c4e931",
+    "docs/results/product-v050/final-learning-closure/acceptance.json": "b6f210381ae4aa410001eb0d94ee179ef97d618edafcfcd074175cbfd8682017",
     "docs/results/product-v050/final-learning-closure/offline-precheck.json": "bf80a2665404d2b97b886d11258242edb32f11e6794ca99b9ad0b604bdcbb6a5",
     "docs/results/product-v050/final-learning-closure/precheck.json": "e733c9932d495ea36a77e7a417c873a2287e2cea58e5bbea1af34ae06d7e9a0d",
     "scripts/product_v050/final_closure_precheck.py": "c4e222c6c6955470f5d1080514977ef6b569f84a626ca9d3920b914263637355"

@@ -397,3 +397,10 @@ Nine focused fixture tests pass; independent budget review Must Fix 0. The actua
 ledger was not activated or migrated. New proposal protocol, selection lock and
 seven-episode guard are still incomplete. Resource continuity remained false at
 2026-09-19 04:08 UTC; cumulative usage remained 57 requests/USD 0.918501/5 episodes.
+
+Selection identity lock is now fixture-tested, with 201 v0.5 tests passing and
+independent slice review Must Fix 0 after fixing same-slot sample replacement and
+cross-environment old-candidate bypass. Its retained CHECKED report is not proof of
+C4: runner development gates, actual deployment compatibility and timely episode
+reservation remain incomplete. No actual candidate was locked. The 04:17 UTC
+read-only precheck still found resource drift and unchanged original consumption.

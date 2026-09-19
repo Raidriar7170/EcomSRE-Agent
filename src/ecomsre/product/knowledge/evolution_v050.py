@@ -60,6 +60,10 @@ def evaluation_bindings() -> dict[str, str]:
     paths = [
         "knowledge/evolution_v050.py",
         "knowledge/candidates_v050.py",
+        "knowledge/repository.py",
+        "knowledge/metric_coverage.py",
+        "incidents/anomaly_policy.py",
+        "incidents/queue_action.py",
         "knowledge/expressions.py",
         "knowledge/runtime.py",
         "knowledge/compiler.py",
@@ -69,6 +73,9 @@ def evaluation_bindings() -> dict[str, str]:
         "knowledge/observations_v050.py",
         "knowledge/split_v050.py",
         "knowledge/shadow_controls_v050.py",
+        "knowledge/selection_lock_v050.py",
+        "investigation/closure_budget.py",
+        "investigation/repository.py",
         "knowledge/drafts_v050.py",
         "incidents/extensions.py",
     ]
@@ -600,6 +607,9 @@ class KnowledgeEvolutionV050:
                             "DUPLICATE_KNOWLEDGE_CANDIDATE",
                             "An equivalent candidate is already recorded.",
                         )
+                from ecomsre.product.knowledge.selection_lock_v050 import load as selection_lock
+                if selection_lock(c) is not None:
+                    raise ValueError("candidate selection locked; no new candidate admission")
                 if draft_view_binding is not None:
                     if origin != "LLM":
                         raise ValueError("draft provenance requires live model origin")
@@ -746,6 +756,8 @@ class KnowledgeEvolutionV050:
                 if row is None or row["state"] != "DRAFT":
                     raise ValueError("candidate not draft")
                 candidate = CompiledKnowledge.model_validate_json(row["payload_json"])
+                from ecomsre.product.knowledge.selection_lock_v050 import require_frozen_identity
+                selection_sha256 = require_frozen_identity(c, candidate, cases, derived_controls_version)
                 if set(cases) & set(candidate.discovery_incident_ids):
                     raise ValueError("holdout overlaps discovery")
                 development = c.execute(
@@ -796,6 +808,8 @@ class KnowledgeEvolutionV050:
                         i: self.knowledge._incident(i).incident_sha256 for i in cases
                     },
                 }
+                if selection_sha256 is not None:
+                    manifest["selection_lock_sha256"] = selection_sha256
                 if derived_controls_version is not None:
                     manifest["derived_controls_version"] = derived_controls_version
                 c.execute(
@@ -836,6 +850,10 @@ class KnowledgeEvolutionV050:
         if manifest["source_request_sha256"] != (None if source is None else source[0]):
             raise ValueError("frozen model request changed")
         with self.store.connect() as c:
+            from ecomsre.product.knowledge.selection_lock_v050 import require_frozen_identity
+            current_lock = require_frozen_identity(c, candidate, manifest["cases"], manifest.get("derived_controls_version"))
+            if current_lock != manifest.get("selection_lock_sha256"):
+                raise ValueError("selection lock changed after data freeze")
             if manifest["split_sha256"] != split_v050.split_digest(c, candidate.environment_id):
                 raise ValueError("frozen episode split differs")
             split_v050.expose(c, manifest["cases"], "HOLDOUT_CONSUMED")

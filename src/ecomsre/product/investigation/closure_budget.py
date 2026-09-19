@@ -77,6 +77,28 @@ def ledger(connection):
 
 def guard(connection, key, reserve, request):
     """Inside the existing reservation transaction, before any new dispatch."""
+    wire = request.get("payload", {})
+    messages = wire.get("input", wire.get("messages", []))
+    proposal_task = False
+    for message in messages if isinstance(messages, list) else []:
+        if isinstance(message, dict) and message.get("role") == "user":
+            # Inspect the bound task envelope, never task-like text in observations.
+            try:
+                envelope = json.loads(message["content"])
+            except (ValueError, TypeError):
+                continue  # Legacy fixed provider probes use plain text.
+            if isinstance(envelope, dict):
+                proposal_task |= str(envelope.get("task", "")).startswith(
+                    "propose_detection_"
+                )
+    is_proposal = proposal_task or key.startswith(("knowledge:", "knowledge-draft-"))
+    if is_proposal:
+        from ecomsre.product.knowledge.selection_lock_v050 import load as selection_lock
+
+        if selection_lock(connection) is not None:
+            raise ProductError(
+                "CANDIDATE_SELECTION_LOCKED", "No proposal dispatch after selection."
+            )
     payload = load(connection)
     if payload is None:
         if key.startswith(PROPOSAL_PREFIX):
@@ -101,15 +123,7 @@ def guard(connection, key, reserve, request):
             "BUDGET_EXHAUSTED", "Final closure request or committed-cost cap reached."
         )
     # Existing proposal namespaces cannot revive an old round after activation.
-    wire = request.get("payload", {})
-    messages = wire.get("input", wire.get("messages", []))
-    proposal_task = False
-    for message in messages:
-        if message.get("role") == "user":
-            # Inspect the bound task envelope, never task-like text in observations.
-            envelope = json.loads(message["content"])
-            proposal_task |= envelope.get("task", "").startswith("propose_detection_")
-    if proposal_task or key.startswith(("knowledge:", "knowledge-draft-")):
+    if is_proposal:
         if not key.startswith(PROPOSAL_PREFIX):
             raise ProductError(
                 "CLOSURE_PROPOSAL_NAMESPACE",

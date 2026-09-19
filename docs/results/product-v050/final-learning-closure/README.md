@@ -50,6 +50,14 @@ new gates. Goal §C4 remains normative; this summary changes no gate.
 
 Implemented offline only (not installed into the live ledger):
 
+- Selection identity lock binds a candidate, retained CHECKED development report,
+  source request, evaluator code, split, collection window and planned three-case
+  holdout. Freeze/evaluate enforce global selected identity; each planned holdout
+  or recurrence slot accepts only its first incident. Proposal dispatch and new
+  candidate admission are forbidden after the lock. This is an identity barrier,
+  **not a C4 development-gate verdict**: the runner must independently verify the
+  full gate, deployment compatibility and collection/promotion order before use.
+
 - Immutable closure sub-budget binds the original Provider journal, counting all
   new request keys and committed/unknown usage against at most 40 requests/USD 8
   and six ordered proposal attempts. Original remaining 200/USD 20 limits still
@@ -74,8 +82,10 @@ Before any new data consumption, still implement and fixture-test:
   structural comparison, exact old/new objects retained; separate birth-bound
   deployment identity and actual query/resource-limit equivalence. Shared check in
   development, Shadow and matcher; no broad capability bypass.
-- Candidate selection lock before N4–N6 capture, including source/protocol/evaluator,
-  cohort, transforms, deployment mapping and thresholds. Lock forbids proposer.
+- Connect the fixture-tested identity lock to mechanically verified C4 development
+  gates and the live runner before N4–N6 capture. The runner must reserve and bind
+  each slot before any opportunity to inspect/retry its outcome; no delayed binding
+  may select among already collected alternatives.
 - Fixture-only full admission → development → lock → freeze → evaluate → test
   promotion → normal API/Worker dependency acquisition → revoke. The existing
   isolated fixture insertion test does not establish this full governance chain.
@@ -112,3 +122,8 @@ selection lock, capability successor and the full mechanical chain remain incomp
 The current read-only follow-up snapshot is [offline-precheck.json](offline-precheck.json);
 its 2026-09-19 04:04 UTC observation still shows one new non-owned container and
 changed default bridge membership. The initial precheck is preserved separately.
+
+Latest local identity-lock regression: **201 v0.5 fixture tests passed**. Independent
+review found and resolved same-slot replacement and cross-environment lock bypass;
+remaining identity-slice Must Fix 0. Legacy plain-text Provider probes remain supported.
+This does not complete the admission-to-revocation mechanical chain or live acceptance.

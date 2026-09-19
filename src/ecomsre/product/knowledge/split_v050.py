@@ -178,6 +178,40 @@ def bind_episode(store, incident, episode_id):
             if tuple(old) != (incident.environment_id, episode_id):
                 raise ValueError("incident episode binding is immutable")
             return
+        from ecomsre.product.knowledge.selection_lock_v050 import load as selection_lock
+
+        lock = selection_lock(c, incident.environment_id)
+        if lock and manifest[episode_id] in {"HOLDOUT", "REUSE"}:
+            planned = set(lock["plan"]["holdout_episodes"]) | {
+                lock["plan"]["recurrence_episode"]
+            }
+            if (
+                episode_id not in planned
+                or incident.incident_id in lock["preexisting_incident_ids"]
+            ):
+                raise ValueError(
+                    "selection requires a new incident in the planned episode"
+                )
+            if c.execute(
+                "SELECT 1 FROM knowledge_episode_incidents_v050 WHERE episode_id=?",
+                (episode_id,),
+            ).fetchone():
+                raise ValueError(
+                    "planned episode already has its one immutable incident"
+                )
+            from datetime import datetime
+            from ecomsre.product.knowledge.selection_lock_v050 import collection_range
+
+            start, end = collection_range(lock["plan"])
+            if (
+                manifest[episode_id] == "HOLDOUT"
+                and not max(start, datetime.fromisoformat(lock["selected_at"]))
+                <= incident.started_at
+                <= end
+            ):
+                raise ValueError(
+                    "heldout incident outside selected collection time range"
+                )
         successor = _successor(c, incident.environment_id)
         if (
             successor is not None
