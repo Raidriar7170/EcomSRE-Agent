@@ -1,0 +1,17 @@
+{
+  "claim": "BLOCKED_HANDOFF_ONLY_NOT_LEARNING_ACCEPTANCE",
+  "diff_check": "PASS_EXCEPT_SEVEN_ORIGINAL_MARKDOWN_HARD_BREAKS_IN_VERBATIM_ACTIVATED_GOAL",
+  "focused_tests": {
+    "command": "PYTHONPATH=src:. .venv/bin/python -m pytest -q tests/product_v050/test_feasibility_evidence.py tests/product_v050/test_history.py",
+    "passed": 12
+  },
+  "historical_v041_verifier": "PASS_AFTER_REFRESHING_ONLY_TWO_EXISTING_SUCCESSOR_DOC_HASHES",
+  "historical_v050_three_packages": "PASS",
+  "independent_review": "MUST_FIX_0_FOR_BLOCKED_HANDOFF; NO_LEARNING_ACCEPTANCE",
+  "ruff": "PASS",
+  "source_sha256": {
+    "docs/results/product-v050/final-learning-closure/acceptance.json": "928a4a820cdb891bb75f15cc9210e14eaa8eb23d9e2776f283a5d847f7878bbf",
+    "docs/results/product-v050/final-learning-closure/precheck.json": "e733c9932d495ea36a77e7a417c873a2287e2cea58e5bbea1af34ae06d7e9a0d",
+    "scripts/product_v050/final_closure_precheck.py": "c4e222c6c6955470f5d1080514977ef6b569f84a626ca9d3920b914263637355"
+  }
+}

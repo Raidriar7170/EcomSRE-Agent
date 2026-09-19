@@ -16,7 +16,7 @@
     },
     "docs/product/ARCHITECTURE.md": {
       "historical_sha256": "d06cd44a2af449a637004b66a1d5f71e31a065331d05dbc4ce7516fde3a5fbb8",
-      "successor_sha256": "27c6b97e70964d449fa7c24abea96f80f5723d0179de7b594c4ee7780999d1a9"
+      "successor_sha256": "c3b3a92e5027a6b80aee4e4b6ec65d5cfc2985541f93413cda46872bf983464e"
     },
     "docs/product/LIMITATIONS.md": {
       "historical_sha256": "6f5f94f227fe7a59ff3e5a0918eac7d1bc8bc9f7513f097c27e463797108573b",
@@ -28,7 +28,7 @@
     },
     "docs/product/STATUS.md": {
       "historical_sha256": "f6d83224b763d6d74427a72d94c91a7526c1f3385a0691b69f2dbece3ea7040e",
-      "successor_sha256": "87c6785fd8546ef6018fd129e03aec404f60e4c532b07394973226c944b5efd2"
+      "successor_sha256": "1a5c2ebe8bd7510aca253f51c82fe04a767c80cb48d2187c9bb5cc9f7b75a1a7"
     }
   }
 }

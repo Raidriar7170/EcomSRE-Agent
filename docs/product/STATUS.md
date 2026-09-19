@@ -1,6 +1,8 @@
-# 当前状态 · Product v0.5 有限交付
+# 当前状态 · Product v0.5 闭环续跑安全阻塞
 
-当前 [可行性与受约束提议轮](../results/product-v050/knowledge-feasibility/README.md) 复用原 5 个已见事件：新增 3 次请求，3 个 schema-valid 草稿，1 个准入候选，1 次实际开发求值；原 Development 仅 1/2，未冻结、独立验证、晋升或复用。累计 57 次请求、USD 0.918501 承诺，终态仍为 `NO_VALIDATED_LLM_KNOWLEDGE`。本轮没有新增 live episode 或 Product 恢复写入；旧 live-02 clean=true 与 live-01 BLOCKED_SAFETY / clean=false 保留。
+最新 [Final learning closure](../results/product-v050/final-learning-closure/README.md) 在启动前核对发现持续非项目容器及 bridge 成员漂移，终态 `ECOMSRE_PRODUCT_V050_BLOCKED_SAFETY`。本轮新增请求、live episode、语义尝试均为 0；A/B 闭环均未新增完成证据，机械整链仍待实现及实测。累计仍为 57 请求、USD 0.918501、5 episode；未接纳新基线或操作非 owned 资源。
+
+历史 [可行性与受约束提议轮](../results/product-v050/knowledge-feasibility/README.md) 复用原 5 个已见事件：新增 3 次请求，3 个 schema-valid 草稿，1 个准入候选，1 次实际开发求值；原 Development 仅 1/2，未冻结、独立验证、晋升或复用。累计 57 次请求、USD 0.918501 承诺，终态仍为 `NO_VALIDATED_LLM_KNOWLEDGE`。本轮没有新增 live episode 或 Product 恢复写入；旧 live-02 clean=true 与 live-01 BLOCKED_SAFETY / clean=false 保留。
 
 **收尾完成；v0.4 的真实 Payment 恢复已合并。单租户本地 Product 原型。**
 

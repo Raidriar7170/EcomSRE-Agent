@@ -101,3 +101,7 @@ live 实验的独立控制器不是 Product/Agent 的执行权限。
 ## v0.5 默认关闭的调查后续任务
 
 原 Diagnosis → 独立 Investigation job → Provider 非执行提议 → Runtime 有界读取 → CAS/SQLite 调查记录。父诊断不变。跨事件候选走共享确定性求值器、开发检查、冻结 Shadow 与独立测试注册治理；正常 Diagnosis 可加载新表达式。具体职责和限制见 [v0.5 设计](../analysis/product-v050-design.md)。恢复 planner 仅返回预览，没有到 WriteIntent/Executor 的连接。
+
+## v0.5 final learning closure checkpoint
+
+The [active closure attempt](../results/product-v050/final-learning-closure/README.md) stopped at a read-only safety precheck due to non-owned resource drift. Same-environment capability successor, append-only split extension, pre-holdout selection lock and derived-control integration remain requirements, not implemented interfaces. No new learning, promotion or API/Worker recurrence claim is established.

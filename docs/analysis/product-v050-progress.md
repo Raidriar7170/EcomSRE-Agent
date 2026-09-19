@@ -1,6 +1,6 @@
 # Product v0.5 progress
 
-Active Goal: [contract](../goals/EcomSRE_v0.5_Codex_Goal.md).
+Active Goal: [final learning closure](../goals/EcomSRE_v0.5_Final_Learning_Closure_Goal.md); original [contract](../goals/EcomSRE_v0.5_Codex_Goal.md) retained.
 
 ## Phase A — in progress
 
@@ -370,3 +370,9 @@ Old attempts1–3 and continuation-01 preserved. No R1–R4/evaluator changes.
 当前 [可行性与受约束提议轮](../results/product-v050/knowledge-feasibility/README.md) 复用原 5 个已见事件：新增 3 次请求，3 个 schema-valid 草稿，1 个准入候选，1 次实际开发求值；原 Development 仅 1/2，未冻结、独立验证、晋升或复用。累计 57 次请求、USD 0.918501 承诺，终态仍为 `NO_VALIDATED_LLM_KNOWLEDGE`。本轮没有新增 live episode 或 Product 恢复写入；旧 live-02 clean=true 与 live-01 BLOCKED_SAFETY / clean=false 保留。
 
 完成零请求可行性矩阵、实际发送的专属任务说明/短句柄 enum、聚合诊断和 8192 output 的同步预留。新协议 v050.2 的 3 次语义尝试已消耗，费用 USD 0.078920；D 仅只读预检，未新增实验。旧结果与累计预留保持。独立 Reviewer 从 CAS 重算 1/5 已见、1/2 Development，Must Fix 0。
+
+## 2026-09-19 UTC — final learning closure safety stop
+
+Same Draft PR #104 / base 29c1957. Retained CAS and ledger independently rechecked: old Development 1/2, all seen 1/5, 57 requests / 918501 microusd / 5 episodes. New non-owned transient containers and default bridge membership drift against retained inventory stop live continuation under active Goal §0.6. No paid requests, episode starts, baseline admission or Docker mutations. Level A/B loop NOT_RUN; full mechanical precheck and successor interfaces still outstanding. See [result/run plan](../results/product-v050/final-learning-closure/README.md).
+
+Read scope: Product source/tests, previous Product v050 results, retained SQLite/CAS and read-only local resource metadata. Write scope for this blocked handoff: active Goal, scripts/product_v050/final_closure_precheck.py, docs/results/product-v050/final-learning-closure, this progress file, docs/product/STATUS.md and docs/product/ARCHITECTURE.md, plus only their existing entries in config/product-v050/historical-successor-bindings.json. Frozen: all predecessor results, ledger/roles/candidates, DTA, upstream and runtime locks; no change. Final repository scope: complete tracked delta from 29c195762b7bf6f4951ca778b6a0a034f2be94fd. No runtime behavior changed.
