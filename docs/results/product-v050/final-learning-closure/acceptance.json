@@ -74,6 +74,15 @@
   },
   "normal_api_result": "NOT_RUN",
   "observation_domain": "retained five local episodes; no new observations",
+  "offline_interfaces": {
+    "capability_successor": "NOT_IMPLEMENTED",
+    "derived_shadow_controls": "FIXTURE_TESTED_NOT_RUN_LIVE",
+    "fixture_tests_passed": 183,
+    "independent_review": "MUST_FIX_0_FOR_OFFLINE_SLICES_ONLY",
+    "selection_lock": "NOT_IMPLEMENTED",
+    "split_successor": "FIXTURE_TESTED_NOT_INSTALLED",
+    "target_control_claim": "TARGET_EVIDENCE_WITHHOLDING_CROSS_SERVICE_NON_BORROWING_ONLY"
+  },
   "original_development_results": {
     "claim": "OLD_CANDIDATE_RECOMPUTED_NOT_NEW_ROUND",
     "denominator": 2,

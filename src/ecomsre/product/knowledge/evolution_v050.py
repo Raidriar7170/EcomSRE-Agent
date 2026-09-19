@@ -68,6 +68,7 @@ def evaluation_bindings() -> dict[str, str]:
         "investigation/reads.py",
         "knowledge/observations_v050.py",
         "knowledge/split_v050.py",
+        "knowledge/shadow_controls_v050.py",
         "knowledge/drafts_v050.py",
         "incidents/extensions.py",
     ]
@@ -108,6 +109,8 @@ class KnowledgeEvolutionV050:
                 CREATE TABLE IF NOT EXISTS knowledge_rejections_v050 (
                     source_request_key TEXT PRIMARY KEY, environment_id TEXT NOT NULL,
                     discovery_sha256 TEXT NOT NULL, reason TEXT NOT NULL, created_at TEXT NOT NULL);
+                CREATE TABLE IF NOT EXISTS knowledge_shadow_details_v050 (
+                    registration_id TEXT PRIMARY KEY, payload_json TEXT NOT NULL);
             """)
 
         split_v050.initialize(self.store)
@@ -724,8 +727,15 @@ class KnowledgeEvolutionV050:
             )
         return result
 
-    def freeze(self, registration_id: str, cases: dict[str, str]) -> None:
+    def freeze(self, registration_id: str, cases: dict[str, str], *, derived_controls_version: str | None = None) -> None:
         """Freeze evaluator-only incident strata before evaluating any holdout."""
+        from ecomsre.product.knowledge.shadow_controls_v050 import CONTROL_VERSION
+        if derived_controls_version not in {None, CONTROL_VERSION}:
+            raise ValueError("unsupported derived control protocol")
+        if derived_controls_version is not None and any(
+            label in {"TARGET_COUNTERFACTUAL", "SOURCE_FAILURE"} for label in cases.values()
+        ):
+            raise ValueError("derived controls cannot be registered as original episodes")
         with self.store.connect() as c:
             c.execute("BEGIN IMMEDIATE")
             try:
@@ -786,6 +796,8 @@ class KnowledgeEvolutionV050:
                         i: self.knowledge._incident(i).incident_sha256 for i in cases
                     },
                 }
+                if derived_controls_version is not None:
+                    manifest["derived_controls_version"] = derived_controls_version
                 c.execute(
                     "UPDATE knowledge_candidate_pool_v050 SET state='FROZEN',freeze_json=? WHERE registration_id=?",
                     (json.dumps(manifest, sort_keys=True), registration_id),
@@ -828,6 +840,7 @@ class KnowledgeEvolutionV050:
                 raise ValueError("frozen episode split differs")
             split_v050.expose(c, manifest["cases"], "HOLDOUT_CONSUMED")
         outcomes = []
+        raw_details = []
         for incident_id, label in sorted(manifest["cases"].items()):
             material = self.knowledge._shadow_runtime_material(incident_id)
             if (
@@ -894,9 +907,21 @@ class KnowledgeEvolutionV050:
                     {**payload, "outcome_sha256": semantic_sha256_v22(payload)}
                 )
             )
-        present = {o.stratum for o in outcomes}
+            raw_details.append(dict(
+                case_id=incident_id, origin="PERSISTED_INCIDENT",
+                raw_result=outcome.model_dump(mode="json"),
+            ))
+            if manifest.get("derived_controls_version") is not None and stratum is ShadowEvaluationStratumV1.POSITIVE_INCIDENT:
+                from ecomsre.product.knowledge.shadow_controls_v050 import CONTROL_VERSION, derived_controls
+                if manifest["derived_controls_version"] != CONTROL_VERSION:
+                    raise ValueError("derived control protocol differs")
+                derived, details = derived_controls(candidate, material, list(snapshots.values()), observations)
+                outcomes.extend(derived)
+                raw_details.extend(details)
+        represented = {o.stratum for o in outcomes}
+        present = {o.stratum for o in outcomes if o.origin is not ShadowCaseOriginV1.NOT_AVAILABLE}
         for stratum in ShadowEvaluationStratumV1:
-            if stratum in present:
+            if stratum in represented:
                 continue
             payload = {
                 "schema_version": "ecomsre.product.shadow-case-outcome.v1",
@@ -941,7 +966,29 @@ class KnowledgeEvolutionV050:
             shadow = evaluate_shadow_gate_v1(
                 registration_id=registration_id, outcomes=tuple(outcomes)
             )
+        # New protocol adds a determinate-negative gate, without changing the
+        # legacy Shadow formula or inflating the original episode denominator.
+        if manifest.get("derived_controls_version") is not None:
+            indeterminate = [d["case_id"] for d in raw_details
+                if d.get("origin") == "PERSISTED_INCIDENT"
+                and manifest["cases"][d["case_id"]] != "POSITIVE_INCIDENT"
+                and d["raw_result"]["status"] == "UNKNOWN"]
+            if indeterminate:
+                shadow = IncompleteValidation(
+                    reason_codes=tuple(sorted(set(shadow.reason_codes) | {"ORIGINAL_NEGATIVE_CONTROL_UNKNOWN"})),
+                    outcomes=tuple(outcomes),
+                )
         with self.store.connect() as c:
+            c.execute("BEGIN IMMEDIATE")
+            c.execute(
+                "INSERT INTO knowledge_shadow_details_v050 VALUES (?,?)",
+                (registration_id, json.dumps(dict(
+                    original_episode_count=len(manifest["cases"]),
+                    derived_control_counts={origin: sum(o.origin.value == origin for o in outcomes)
+                                            for origin in ("DERIVED_COUNTERFACTUAL", "DERIVED_SOURCE_FAILURE")},
+                    raw_details=raw_details,
+                ), sort_keys=True)),
+            )
             c.execute(
                 "UPDATE knowledge_candidate_pool_v050 SET state=?,evaluation_json=? WHERE registration_id=?",
                 (
@@ -950,6 +997,7 @@ class KnowledgeEvolutionV050:
                     registration_id,
                 ),
             )
+            c.execute("COMMIT")
         return shadow
 
     def promote(self, registration_id: str) -> None:

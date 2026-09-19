@@ -2,6 +2,7 @@ import json
 from datetime import UTC, datetime
 
 from fastapi.testclient import TestClient
+import pytest
 
 from ecomsre.dta_v2.v22.read_contracts import semantic_sha256_v22
 from ecomsre.product.app import create_app
@@ -255,8 +256,9 @@ def test_existing_environment_cannot_gain_test_promotion_authority(tmp_path):
             evolution.promote("missing")
 
 
+@pytest.mark.parametrize("derived", [False, True])
 def test_candidate_from_persisted_discovery_is_frozen_consumed_and_rejected_without_controls(
-    tmp_path, monkeypatch
+    tmp_path, monkeypatch, derived
 ):
     import pytest
     from ecomsre.product.errors import ProductError
@@ -378,10 +380,20 @@ def test_candidate_from_persisted_discovery_is_frozen_consumed_and_rejected_with
             evolution.freeze(
                 candidate.registration_id, {development: "POSITIVE_INCIDENT"}
             )
-        evolution.freeze(candidate.registration_id, {heldout: "POSITIVE_INCIDENT"})
+        from ecomsre.product.knowledge.shadow_controls_v050 import CONTROL_VERSION
+        evolution.freeze(candidate.registration_id, {heldout: "POSITIVE_INCIDENT"},
+                         derived_controls_version=CONTROL_VERSION if derived else None)
         evaluation = evolution.evaluate(candidate.registration_id)
         assert not evaluation.gate_passed
         assert "CONFUSABLE_CORE_KNOWN_CONTROL_MISSING" in evaluation.reason_codes
+        if derived:
+            assert "SOURCE_FAILURE_CONTROL_MISSING" not in evaluation.reason_codes
+            assert "TARGET_COUNTERFACTUAL_CONTROL_MISSING" in evaluation.reason_codes
+            with app.state.store.connect() as c:
+                audit = json.loads(c.execute("SELECT payload_json FROM knowledge_shadow_details_v050 WHERE registration_id=?", (candidate.registration_id,)).fetchone()[0])
+            assert audit["original_episode_count"] == 1
+            assert audit["derived_control_counts"] == {"DERIVED_COUNTERFACTUAL":0,"DERIVED_SOURCE_FAILURE":2}
+            assert [r["raw_result"]["status"] for r in audit["raw_details"][2:]] == ["UNKNOWN", "UNKNOWN"]
         with pytest.raises(ValueError, match="unconsumed"):
             evolution.evaluate(candidate.registration_id)
         with pytest.raises(ProductError, match="Independent validation"):

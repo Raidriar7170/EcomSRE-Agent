@@ -101,14 +101,14 @@ def test_provider_failures_keep_reservations(tmp_path, response, code):
     assert repo.accounting()["unknown_usage_requests"] == 1
 
 
-def prepare(client, settings, dataset="capture-c2aa"):
+def prepare(client, settings, dataset="capture-c2aa", services=("payment",)):
     env = client.post(
         "/v1/environments",
         json={
             "name": "v050-test",
             "description": "Fixture only",
             "timezone": "UTC",
-            "service_identity_policy": {"services": [{"logical_service": "payment"}]},
+            "service_identity_policy": {"services": [{"logical_service": s} for s in services]},
             "connector_configs": [
                 {
                     "name": "fixture",
@@ -117,7 +117,7 @@ def prepare(client, settings, dataset="capture-c2aa"):
                     "credential_refs": {},
                 }
             ],
-            "explicit_service_catalog": ["payment"],
+            "explicit_service_catalog": list(services),
         },
     ).json()["environment_id"]
     client.post(f"/v1/environments/{env}/verify-jobs")
@@ -125,7 +125,7 @@ def prepare(client, settings, dataset="capture-c2aa"):
     client.post(f"/v1/environments/{env}/baseline-jobs", json={"activate": True})
     assert run_one_job(settings, worker_id="fixture")
     app = client.app
-    service = app.state.services.get_map(env).services[0].service_id
+    service_ids = sorted(s.service_id for s in app.state.services.get_map(env).services)
     incident = client.post(
         "/v1/incidents",
         json={
@@ -134,7 +134,7 @@ def prepare(client, settings, dataset="capture-c2aa"):
             "alert_name": "alert",
             "summary": "Bounded observation",
             "started_at": datetime.now(UTC).isoformat(),
-            "candidate_service_ids": [service],
+            "candidate_service_ids": service_ids,
         },
     )
     assert incident.status_code == 201, incident.text

@@ -65,10 +65,12 @@ def material(data=DATA):
                 (env,),
             )
         ]
+    # Historical audit stays on the original manifest; future successor events
+    # must neither crash this reader nor enter the preserved five-event result.
     roster = [
         dict(r, role=split[r["episode_id"]])
         for r in roster
-        if split[r["episode_id"]] in {"DISCOVERY", "DEVELOPMENT"}
+        if split.get(r["episode_id"]) in {"DISCOVERY", "DEVELOPMENT"}
     ]
     discovery = evo.discovery_view(
         env, [r["incident_id"] for r in roster], record_exposure=False

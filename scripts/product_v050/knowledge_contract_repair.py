@@ -109,9 +109,9 @@ def material():
     ids = [
         r["incident_id"]
         for r in rows
-        if roles[r["episode_id"]] in {"DISCOVERY", "DEVELOPMENT"}
+        if roles.get(r["episode_id"]) in {"DISCOVERY", "DEVELOPMENT"}
     ]
-    dev = [r["incident_id"] for r in rows if roles[r["episode_id"]] == "DEVELOPMENT"]
+    dev = [r["incident_id"] for r in rows if roles.get(r["episode_id"]) == "DEVELOPMENT"]
     if len(ids) != 5 or len(dev) != 2:
         raise ValueError("ORIGINAL_EPISODE_ROSTER_DIFFERS")
     discovery = evo.discovery_view(environment_id, ids)

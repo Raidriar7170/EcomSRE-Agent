@@ -7,10 +7,16 @@
   },
   "historical_v041_verifier": "PASS_AFTER_REFRESHING_ONLY_TWO_EXISTING_SUCCESSOR_DOC_HASHES",
   "historical_v050_three_packages": "PASS",
+  "independent_offline_review": "MUST_FIX_0; NO_FULL_MECHANICAL_OR_LEARNING_ACCEPTANCE",
   "independent_review": "MUST_FIX_0_FOR_BLOCKED_HANDOFF; NO_LEARNING_ACCEPTANCE",
+  "offline_slice_tests": {
+    "command": "PYTHONPATH=src:. .venv/bin/python -m pytest -q tests/product_v050",
+    "passed": 183
+  },
   "ruff": "PASS",
   "source_sha256": {
-    "docs/results/product-v050/final-learning-closure/acceptance.json": "928a4a820cdb891bb75f15cc9210e14eaa8eb23d9e2776f283a5d847f7878bbf",
+    "docs/results/product-v050/final-learning-closure/acceptance.json": "b2583d84bfe9890517c62479ad510043b8d684f79570058f2bd4d5ce5ffc63c5",
+    "docs/results/product-v050/final-learning-closure/offline-precheck.json": "bf80a2665404d2b97b886d11258242edb32f11e6794ca99b9ad0b604bdcbb6a5",
     "docs/results/product-v050/final-learning-closure/precheck.json": "e733c9932d495ea36a77e7a417c873a2287e2cea58e5bbea1af34ae06d7e9a0d",
     "scripts/product_v050/final_closure_precheck.py": "c4e222c6c6955470f5d1080514977ef6b569f84a626ca9d3920b914263637355"
   }
