@@ -5,6 +5,7 @@
     "true": 1
   },
   "base_head": "29c195762b7bf6f4951ca778b6a0a034f2be94fd",
+  "blocked_dependency": "OWNED_DEPLOYMENT_AND_FORWARD_CONTROLS_CANNOT_BE_ACQUIRED_WHILE_NON_OWNED_RESOURCE_DRIFT_PERSISTS",
   "candidate_locked_before_holdout": null,
   "candidate_origin": null,
   "candidate_semantic_sha256": null,
@@ -26,6 +27,8 @@
   ],
   "holdout_original_episode_count": 0,
   "invoice_known": false,
+  "latest_precheck": "blocked-precheck.json",
+  "latest_precheck_observed_at": "2026-09-19T04:22:31.709888+00:00",
   "learning_loop_status": "NOT_RUN",
   "limitations": [
     "No new LLM proposal or forward cohort",

@@ -404,3 +404,10 @@ cross-environment old-candidate bypass. Its retained CHECKED report is not proof
 C4: runner development gates, actual deployment compatibility and timely episode
 reservation remain incomplete. No actual candidate was locked. The 04:17 UTC
 read-only precheck still found resource drift and unchanged original consumption.
+
+Final blocked handoff: fresh 2026-09-19 04:22 UTC continuity remains false. No owned
+successor deployment or required new development controls can be collected under
+Goal §0.6. Runtime authority, snapshot path and nonce-bound queries require actual
+new deployment verification; no timestamp-only compatibility bypass was added.
+Same Draft PR and original ledger retained; no live consumption or learning acceptance.
+See final-learning-closure/blocked-precheck.json and the Chinese handoff brief.

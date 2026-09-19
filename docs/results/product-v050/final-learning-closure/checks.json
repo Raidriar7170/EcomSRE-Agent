@@ -14,13 +14,20 @@
   },
   "historical_v041_verifier": "PASS_AFTER_REFRESHING_ONLY_TWO_EXISTING_SUCCESSOR_DOC_HASHES",
   "historical_v050_three_packages": "PASS",
+  "independent_final_blocked_audit": "REAL_SQLITE_57_REQUESTS_918501_MICROUSD_NO_NEW_TABLES_OLD_DRAFT_UNFROZEN",
   "independent_offline_review": "MUST_FIX_0; NO_FULL_MECHANICAL_OR_LEARNING_ACCEPTANCE",
   "independent_review": "MUST_FIX_0_FOR_BLOCKED_HANDOFF; NO_LEARNING_ACCEPTANCE",
+  "mypy_product": {
+    "command": ".venv/bin/mypy src/ecomsre/product",
+    "result": "PASS",
+    "source_files": 169
+  },
   "offline_slice_tests": {
     "command": "PYTHONPATH=src:. .venv/bin/python -m pytest -q tests/product_v050",
     "passed": 183
   },
   "ruff": "PASS",
+  "ruff_repository": "PASS",
   "selection_identity_tests": {
     "command": "PYTHONPATH=src:. .venv/bin/python -m pytest -q tests/product_v050",
     "independent_review": "MUST_FIX_0_FOR_IDENTITY_SLICE_ONLY",
@@ -28,7 +35,8 @@
     "passed": 201
   },
   "source_sha256": {
-    "docs/results/product-v050/final-learning-closure/acceptance.json": "b6f210381ae4aa410001eb0d94ee179ef97d618edafcfcd074175cbfd8682017",
+    "docs/results/product-v050/final-learning-closure/acceptance.json": "3b4d65bac70a5fc6f778ac98d98f693b8ae19af941496749421ab5b3a83cb497",
+    "docs/results/product-v050/final-learning-closure/blocked-precheck.json": "8ffe102e500e30dea4c364a4782ee77a177e32c1ace1135f0b6422f511560a78",
     "docs/results/product-v050/final-learning-closure/offline-precheck.json": "bf80a2665404d2b97b886d11258242edb32f11e6794ca99b9ad0b604bdcbb6a5",
     "docs/results/product-v050/final-learning-closure/precheck.json": "e733c9932d495ea36a77e7a417c873a2287e2cea58e5bbea1af34ae06d7e9a0d",
     "scripts/product_v050/final_closure_precheck.py": "c4e222c6c6955470f5d1080514977ef6b569f84a626ca9d3920b914263637355"
