@@ -126,7 +126,7 @@ class StructuredProvider:
         prompt_version = SCOPED_PROTOCOL if scoped else PROTOCOL if draft_protocol else "product-v050.3-read-shape-clarification"
         parameters = strict_schema(schema) if draft_protocol else schema.model_json_schema()
         if scoped:
-            if not key.startswith("knowledge-draft-v050.2:proposal:"):
+            if not key.startswith(("knowledge-draft-v050.2:proposal:", "knowledge-draft-v050.final:proposal:")):
                 raise ValueError("SCOPED_TASK_KEY_NAMESPACE_MISMATCH")
             if scoped_binding is None or scoped_binding["request_key"] != key or scoped_model_view(scoped_binding) != view:
                 raise ValueError("SCOPED_REQUEST_BINDING_MISMATCH")

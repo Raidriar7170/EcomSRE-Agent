@@ -115,9 +115,14 @@ class ProductExtensionMatcherV1:
         *, derived_registrations: tuple[CompiledKnowledge, ...] = (),
         capability_sha256: str | None = None,
         supplemental_reads=None,
+        compatibility_store=None,
+        environment_id=None,
     ) -> None:
         self.supplemental_observations: list[dict[str, Any]] = []
+        self.learned_match_bindings: list[dict[str, Any]] = []
         self._supplemental_reads = supplemental_reads
+        self._compatibility_store = compatibility_store
+        self._environment_id = environment_id
         self._derived_registrations = derived_registrations
         self._capability_sha256 = capability_sha256
         self._registrations = tuple(
@@ -136,6 +141,8 @@ class ProductExtensionMatcherV1:
         raw_outcomes: tuple[ReadOutcomeV22, ...],
         snapshots: tuple[dict[str, Any], ...] = (),
     ) -> tuple[ProductExtensionMatchV1, ...]:
+        self.learned_match_bindings = []
+        self.supplemental_observations = []
         runtime_input = build_product_extension_runtime_input_v1(
             case_id=case_id,
             candidate_services=candidate_services,
@@ -163,19 +170,35 @@ class ProductExtensionMatcherV1:
                 for decision in decisions
                 if decision.admitted
             )
-        observations = snapshot_observations(snapshots, memory) if self._derived_registrations else []
-        if self._supplemental_reads is not None:
-            from ecomsre.product.knowledge.observations_v050 import acquire_dependencies
-            self.supplemental_observations = acquire_dependencies(self._derived_registrations, self._supplemental_reads)
-            observations += self.supplemental_observations
+        admitted = []
         for candidate in self._derived_registrations:
-            if candidate.capability_sha256 != self._capability_sha256:
+            if self._compatibility_store is not None:
+                from ecomsre.product.knowledge.capability_successor_v050 import admits
+                if not admits(self._compatibility_store, environment_id=self._environment_id, candidate_environment_id=candidate.environment_id, expected=candidate.capability_sha256, actual=self._capability_sha256):
+                    continue
+            elif candidate.capability_sha256 != self._capability_sha256:
                 continue
+            admitted.append(candidate)
+        observations = snapshot_observations(snapshots, memory) if admitted else []
+        if admitted and self._supplemental_reads is not None:
+            from ecomsre.product.knowledge.observations_v050 import acquire_dependencies
+            self.supplemental_observations = acquire_dependencies(admitted, self._supplemental_reads)
+            observations += self.supplemental_observations
+        for candidate in admitted:
             for target in candidate_services:
                 outcome = evaluate_candidate(candidate, target=target, memory=memory,
                                              anomalies=generic_anomalies, observations=observations,
                                              incident_end=self._supplemental_reads.incident.diagnosis_observed_at if self._supplemental_reads else None)
                 if outcome.status == "TRUE":
+                    self.learned_match_bindings.append(dict(
+                        registration_id=candidate.registration_id,
+                        candidate_sha256=candidate.compiled_sha256,
+                        environment_id=candidate.environment_id,
+                        incident_id=case_id, target=target,
+                        candidate_capability_sha256=candidate.capability_sha256,
+                        observed_capability_sha256=self._capability_sha256,
+                        supporting_evidence_refs=list(outcome.evidence_refs),
+                    ))
                     matches.append(ProductExtensionMatchV1(
                         registration_id=candidate.registration_id, mechanism_slug=candidate.proposal.name,
                         broad_fault_domain=candidate.proposal.broad_domain, root_service=target,

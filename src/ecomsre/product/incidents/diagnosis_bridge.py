@@ -494,6 +494,13 @@ class ProductDiagnosisBridgeV1:
              "payload": {"supplemental_observation": o}}
             for o in getattr(self._extension_matcher, "supplemental_observations", ())
         )
+        # Attach actual deterministic matcher provenance to its supporting CAS
+        # objects without changing historical diagnosis/trace schemas or hashes.
+        for observation in observations:
+            bindings = [b for b in getattr(self._extension_matcher, "learned_match_bindings", ())
+                        if observation["evidence_ref"] in b["supporting_evidence_refs"]]
+            if bindings:
+                observation["payload"] = dict(observation["payload"], learned_match_bindings_v050=bindings)
         return result, tuple(observations), trace
 
 

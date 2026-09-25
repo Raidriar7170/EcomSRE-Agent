@@ -11,6 +11,7 @@ from datetime import UTC, datetime
 from typing import Any, Literal
 
 from ecomsre.product.knowledge import split_v050
+from ecomsre.product.knowledge.capability_successor_v050 import admits as capability_admits
 from ecomsre.product.investigation.contracts import StrictModel
 
 from ecomsre.dta_v2.v22.read_contracts import semantic_sha256_v22
@@ -74,15 +75,17 @@ def evaluation_bindings() -> dict[str, str]:
         "knowledge/split_v050.py",
         "knowledge/shadow_controls_v050.py",
         "knowledge/selection_lock_v050.py",
+        "knowledge/capability_successor_v050.py",
         "investigation/closure_budget.py",
         "investigation/repository.py",
         "knowledge/drafts_v050.py",
         "incidents/extensions.py",
+        "incidents/diagnosis_bridge.py",
     ]
     return {
         path: hashlib.sha256((product / path).read_bytes()).hexdigest()
         for path in paths
-    }
+    } | {"scripts/product_v050/final_closure.py": hashlib.sha256((product.parents[2] / "scripts/product_v050/final_closure.py").read_bytes()).hexdigest()}
 
 
 class IncompleteValidation(StrictModel):
@@ -208,9 +211,15 @@ class KnowledgeEvolutionV050:
                     )
                 }
             )
+            # Fixed harness collection is bound to this incident/CAS independently
+            # of model-selected reads. Do not rewrite the retained session trace.
+            seen = {o["evidence_ref"] for o in session["observations"]}
+            fixed = [o for ref, o in bound_observations.items() if ref not in seen]
             sessions[-1]["observations"] = [
-                proposal_observation_view(o) for o in session["observations"]
+                proposal_observation_view(o) for o in session["observations"] + fixed
             ]
+            if fixed:
+                sessions[-1]["fixed_collection_refs"] = [o["evidence_ref"] for o in fixed]
             from ecomsre.product.knowledge.observations_v050 import dependency_catalog
             sessions[-1]["dependency_catalog_status"] = (
                 "RETAINED" if "read_catalog" in session else "NOT_RETAINED_LEGACY_SESSION"
@@ -686,9 +695,7 @@ class KnowledgeEvolutionV050:
         for incident_id in sorted(set(incident_ids)):
             material = self.knowledge._shadow_runtime_material(incident_id)
             if (
-                material.incident.environment_id != candidate.environment_id
-                or material.incident.source_capability_sha256
-                != candidate.capability_sha256
+                not capability_admits(self.store, environment_id=material.incident.environment_id, candidate_environment_id=candidate.environment_id, expected=candidate.capability_sha256, actual=material.incident.source_capability_sha256)
             ):
                 raise ValueError("development environment or capability differs")
             evidence = self.knowledge._evidence(
@@ -864,8 +871,7 @@ class KnowledgeEvolutionV050:
             if (
                 material.incident.incident_sha256
                 != manifest["incident_hashes"][incident_id]
-                or material.incident.source_capability_sha256
-                != candidate.capability_sha256
+                or not capability_admits(self.store, environment_id=material.incident.environment_id, candidate_environment_id=candidate.environment_id, expected=candidate.capability_sha256, actual=material.incident.source_capability_sha256)
                 or manifest["candidate_sha256"] != candidate.compiled_sha256
                 or self.knowledge._diagnosis(incident_id).result_sha256
                 != manifest["diagnosis_hashes"][incident_id]

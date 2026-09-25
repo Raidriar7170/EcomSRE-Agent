@@ -61,7 +61,10 @@ def identity(connection, registration_id):
         if source_row is None or source_row["state"] != "COMPLETED":
             raise ValueError("selection source is not completed")
         source = dict(source_row)
+    from ecomsre.product.knowledge.capability_successor_v050 import load as capability_successor
+    mapping = capability_successor(connection, candidate.environment_id)
     return candidate, dict(
+        capability_successor_sha256=None if mapping is None else mapping["sha256"],
         candidate=candidate.model_dump(mode="json"),
         development=report,
         source=source,

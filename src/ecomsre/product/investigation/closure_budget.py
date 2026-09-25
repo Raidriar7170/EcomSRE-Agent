@@ -95,7 +95,25 @@ def guard(connection, key, reserve, request):
     if is_proposal:
         from ecomsre.product.knowledge.selection_lock_v050 import load as selection_lock
 
-        if selection_lock(connection) is not None:
+        pending = (
+            connection.execute(
+                "SELECT 1 FROM sqlite_master WHERE name='knowledge_closure_runner_v050'"
+            ).fetchone()
+            and connection.execute(
+                "SELECT 1 FROM knowledge_closure_runner_v050 WHERE entry_key='selection-pending'"
+            ).fetchone()
+        )
+        # Also cover a crash after retaining a passed gate but before its pending
+        # marker. The gate and immutable plan are harness-authored, not model data.
+        passed = (
+            connection.execute(
+                "SELECT 1 FROM sqlite_master WHERE name='knowledge_closure_runner_v050'"
+            ).fetchone()
+            and connection.execute(
+                "SELECT 1 FROM knowledge_closure_runner_v050 g JOIN knowledge_closure_runner_v050 p ON p.entry_key='plan' WHERE g.entry_key LIKE 'development:%' AND json_extract(g.payload_json,'$.value.passed')=1 AND json_extract(g.payload_json,'$.value.level')=json_extract(p.payload_json,'$.value.plan.primary_level')"
+            ).fetchone()
+        )
+        if pending or passed or selection_lock(connection) is not None:
             raise ProductError(
                 "CANDIDATE_SELECTION_LOCKED", "No proposal dispatch after selection."
             )

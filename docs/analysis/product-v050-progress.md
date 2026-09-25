@@ -411,3 +411,27 @@ Goal §0.6. Runtime authority, snapshot path and nonce-bound queries require act
 new deployment verification; no timestamp-only compatibility bypass was added.
 Same Draft PR and original ledger retained; no live consumption or learning acceptance.
 See final-learning-closure/blocked-precheck.json and the Chinese handoff brief.
+
+
+## 2026-09-25 — offline closure connections completed; live pending
+
+Same PR #104 and original ledger. Successor semantics/current identity checks, full
+C4/selection/request and episode guards, complete historical feedback, and fixture
+admission→development→lock→freeze→Shadow→governance promotion→normal API/Worker
+dependency match→revocation replay are connected. Eight focused runner tests pass;
+independent read-only review Must Fix 0. No direct ACTIVE insertion in the chain.
+Old e04 UNKNOWN and old CHECKED records remain. Budget freshly read: 57 requests,
+918501 microusd, 5 original live starts; new consumption all zero. No Docker command.
+Await Hermes pause notification, then one continuity check; offline completion does
+not establish actual deployment equivalence or real A/B acceptance. See latest
+[result and resumption handoff](../results/product-v050/final-learning-closure/README.md).
+
+Read scope: Product source/tests, Goal, predecessor results and read-only retained
+SQLite/CAS. Write scope: scripts/product_v050/final_closure.py; Product knowledge,
+investigation budget/provider, incidents matcher/bridge and worker connection files;
+tests/product_v050/test_final_closure.py and test_capability_successor.py; this
+progress file, docs/product/STATUS.md, docs/product/ARCHITECTURE.md, final-learning-closure
+result package, and only existing presentation bindings for those two Product docs.
+Frozen: predecessor result packages, original SQLite/CAS/candidates/CHECKED/roles,
+DTA/upstream/runtime locks. Final repository scope: complete tracked delta from
+cfa94b58ea5c7826600c255d2d1c550002b191ae, including new staged files.

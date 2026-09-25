@@ -451,6 +451,10 @@ class KnowledgeRepositoryV1:
             incident.environment_id
         )
         if matrix.capability_sha256 != incident.source_capability_sha256:
+            from ecomsre.product.knowledge.capability_successor_v050 import historical_matrix
+            original = historical_matrix(self.store, incident.environment_id, incident.source_capability_sha256)
+            if original is not None:
+                return original
             raise ProductError(
                 "INCIDENT_CAPABILITY_BINDING_MISMATCH",
                 "The incident capability binding is no longer available.",

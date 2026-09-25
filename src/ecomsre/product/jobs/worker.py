@@ -434,6 +434,8 @@ def run_one_job(
                         knowledge.active_extensions(incident.environment_id),
                         derived_registrations=derived_extensions,
                         supplemental_reads=supplemental_reads,
+                        compatibility_store=store,
+                        environment_id=incident.environment_id,
                         capability_sha256=incident.source_capability_sha256 if derived_extensions else None,
                     )
                 ),
