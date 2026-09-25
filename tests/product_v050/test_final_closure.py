@@ -266,10 +266,11 @@ def closure(tmp_path, monkeypatch, request):
         )
 
 
-def admit(c, *, level="B", threshold=1.0, complete_negative=True):
-    c.episode("N1", investigate=True)
-    c.episode("N2", "healthy", supplement=complete_negative)
-    c.episode("N3", "core")
+def admit(c, *, level="B", threshold=1.0, complete_negative=True, collected=False):
+    if not collected:
+        c.episode("N1", investigate=True)
+        c.episode("N2", "healthy", supplement=complete_negative)
+        c.episode("N3", "core")
     cohort = c.runner.freeze_cohort()
     assert c.original["e04"] not in cohort["complete_positives"]
     discovery = c.evo.discovery_view(c.runner.environment_id, cohort["positives"])
@@ -617,3 +618,52 @@ def test_incomplete_negative_or_constant_expression_never_passes(
         assert gate["expression_checks"]["status"] == "FAIL"
     with pytest.raises(ValueError, match="not passed"):
         closure.runner.select(candidate)
+
+
+def test_failed_n1_preproposal_feasibility_preserves_plan_and_slots(closure):
+    c = closure
+    runner = c.runner
+    original_plan = runner._get("plan")
+    runner.reserve_episode("N1")
+    runner.finish_episode("N1", succeeded=False, reason="FAILED")
+    proof = dict(
+        n1_result_sha256="a" * 64,
+        cleanup_sha256="b" * 64,
+        resource_window="NOT_COLLECTED_IRRECOVERABLE",
+        incident_created=False,
+        failure="INCIDENT_CREATE:422",
+    )
+    runner.declare_level_a_feasibility(proof)
+    assert runner.primary_level == "A"
+    assert runner.plan["primary_level"] == "B"
+    assert runner._get("plan") == original_plan
+    assert runner._get("terminal:N1") == dict(succeeded=False, reason="FAILED")
+    with pytest.raises(ValueError, match="consumed"):
+        runner.reserve_episode("N1")
+    c.episode("N2", "healthy")
+    c.episode("N3", "core")
+    cohort = runner.freeze_cohort()
+    assert cohort["n1"] is None
+    assert len(cohort["all_ids"]) == 7
+    candidate, _ = admit(c, level="A", collected=True)
+    assert runner.develop(candidate)["passed"]
+    runner.select(candidate)
+    assert (
+        runner._get("selection-pending")["registration_id"] == candidate.registration_id
+    )
+    for slot, kind in (("N4", "positive"), ("N5", "healthy"), ("N6", "core")):
+        c.episode(slot, kind)
+    assert runner.evaluate_and_promote(candidate).gate_passed
+    with pytest.raises(ValueError, match="pending selection"):
+        runner.propose_next(None)
+    with pytest.raises(ValueError, match="precede cohort"):
+        runner.declare_level_a_feasibility(proof)
+
+
+def test_feasibility_revision_cannot_follow_new_provider_work(closure):
+    c = closure
+    c.runner.reserve_episode("N1")
+    c.runner.finish_episode("N1", succeeded=False, reason="FAILED")
+    c.evo.investigations.reserve("fixture-new", {"fixture": True}, 1)
+    with pytest.raises(ValueError, match="precede new Provider"):
+        c.runner.declare_level_a_feasibility({})

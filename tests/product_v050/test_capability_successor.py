@@ -175,3 +175,111 @@ def test_same_digest_does_not_bypass_environment_drift(deployment_pair):
             expected=expected,
             actual=actual,
         )
+
+
+@pytest.mark.parametrize("consumed", [False, True])
+def test_unused_redeployment_retains_history_and_rejects_actual_incident(
+    deployment_pair, consumed
+):
+    import json
+    from datetime import timedelta
+    from ecomsre.product.investigation import closure_budget
+    from ecomsre.product.environment.capabilities import EnvironmentCapabilityMatrixV1
+
+    app, incident, old, new, before, after = deployment_pair
+    store = app.state.store
+    from ecomsre.product.investigation.repository import InvestigationRepository
+    from ecomsre.product.knowledge.evolution_v050 import KnowledgeEvolutionV050
+
+    KnowledgeEvolutionV050(
+        app.state.knowledge, InvestigationRepository(store, app.state.object_store)
+    )
+    first = install(deployment_pair)
+    with store.connect() as c:
+        baseline = successor.sha(closure_budget.ledger(c))
+        c.execute(
+            "CREATE TABLE IF NOT EXISTS knowledge_closure_runner_v050(entry_key TEXT PRIMARY KEY,payload_json TEXT)"
+        )
+    closure_budget.start(store, expected_ledger_sha256=baseline)
+    raw = new.model_dump(mode="json", exclude={"capability_sha256"})
+    raw["verified_at"] = new.model_copy(
+        update={"verified_at": new.verified_at + timedelta(seconds=1)}
+    ).model_dump(mode="json")["verified_at"]
+    third = EnvironmentCapabilityMatrixV1.model_validate(
+        dict(raw, capability_sha256=successor.sha(raw))
+    )
+    CapabilityMatrixRepositoryV1(store).put(third)
+    third_deployment = deepcopy(after)
+    third_deployment.update(
+        deployment_id="third", resource_births={"fixture": "third-birth"}
+    )
+    if consumed:
+        with store.connect() as c:
+            payload = incident.model_dump(mode="json")
+            payload["source_capability_sha256"] = new.capability_sha256
+            c.execute(
+                "UPDATE incidents SET payload_json=? WHERE incident_id=?",
+                (json.dumps(payload), incident.incident_id),
+            )
+        with pytest.raises(ValueError, match="consumed"):
+            successor.install(
+                store,
+                old=old,
+                new=third,
+                old_deployment=before,
+                new_deployment=third_deployment,
+                unused_predecessor_sha256=first,
+            )
+        return
+    second = successor.install(
+        store,
+        old=old,
+        new=third,
+        old_deployment=before,
+        new_deployment=third_deployment,
+        unused_predecessor_sha256=first,
+    )
+    assert (
+        successor.install(
+            store,
+            old=old,
+            new=third,
+            old_deployment=before,
+            new_deployment=third_deployment,
+            unused_predecessor_sha256=first,
+        )
+        == second
+    )
+    with pytest.raises(ValueError, match="immutable"):
+        successor.install(
+            store,
+            old=old,
+            new=third,
+            old_deployment=before,
+            new_deployment=third_deployment,
+            unused_predecessor_sha256="0" * 64,
+        )
+    with store.connect() as c:
+        actual = successor.load(c, old.environment_id)
+        assert actual["sha256"] == second
+        history = json.loads(
+            c.execute(
+                "SELECT payload_json FROM knowledge_capability_successor_history_v050 WHERE sha256=?",
+                (first,),
+            ).fetchone()[0]
+        )
+        assert history["new"] == new.model_dump(mode="json")
+    assert successor.admits(
+        store,
+        environment_id=old.environment_id,
+        candidate_environment_id=old.environment_id,
+        expected=old.capability_sha256,
+        actual=third.capability_sha256,
+    )
+    assert not successor.admits(
+        store,
+        environment_id=old.environment_id,
+        candidate_environment_id=old.environment_id,
+        expected=new.capability_sha256,
+        actual=third.capability_sha256,
+    )

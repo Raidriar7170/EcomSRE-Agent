@@ -287,3 +287,54 @@ def test_baseline_excludes_settlement_without_lowering_window_policy(
     }
     assert len([e for e in events if e[0] == "verify"]) == 7
     assert (tmp_path / "bounded-settlement.json").is_file()
+
+
+def test_final_closure_preserves_selectors_but_rejects_changed_inputs(
+    tmp_path, monkeypatch
+):
+    import json
+
+    monkeypatch.setattr(live, "REPO", tmp_path)
+    root = tmp_path / ".local/product-v050/live-final-closure-01"
+    old = root.parent / "live-02/postgres-user-01"
+    for p in (root, old):
+        p.mkdir(parents=True)
+        for name, value in {
+            "cached-images.json": {"payment": {"Id": "fixed"}},
+            "upstream-pinned-resolved.json": {"services": {"payment": {}}},
+            "admitted-baseline.json": {
+                "inventory": {"container": {}},
+                "daemon": "fixed",
+            },
+        }.items():
+            (p / name).write_text(json.dumps(value))
+    (old / "cleanup.json").write_text('{"result":{"clean":true}}')
+    (old / "compose.json").write_text(
+        '{"services":{"payment":{"container_name":"old-payment"}}}'
+    )
+    assert live.campaign_root(root) == root
+    assert live.closure_predecessor(root) == (old, {"payment": "old-payment"})
+    (root / "cached-images.json").write_text('{"payment":{"Id":"other"}}')
+    with pytest.raises(ValueError, match="FROZEN_INPUT_CHANGED"):
+        live.closure_predecessor(root)
+
+
+def test_owned_container_must_match_frozen_query_selector():
+    owner = object.__new__(live.Owned)
+    owner.plan = {"services": {"payment": {"container_name": "old-payment"}}}
+    owner.images = {"payment": {}}
+    with pytest.raises(ValueError, match="CONTAINER_QUERY_SELECTOR_DRIFT"):
+        owner.validate(
+            "payment", {"Name": "/new-payment", "Config": {}, "HostConfig": {}}
+        )
+
+
+def test_owned_limits_must_remain_equal_to_authenticated_birth():
+    owner = object.__new__(live.Owned)
+    owner.plan = {"services": {"payment": {}}}
+    owner.images = {"payment": {}}
+    owner.births = {"container": {"id": {"HostConfig": {"Memory": 128}}}}
+    with pytest.raises(ValueError, match="RESOURCE_LIMIT_DRIFT"):
+        owner.validate(
+            "payment", {"Id": "id", "Config": {}, "HostConfig": {"Memory": 256}}
+        )

@@ -51,7 +51,7 @@ def stamp():
 
 
 class Campaign:
-    def __init__(self, owner):
+    def __init__(self, owner, *, continuation=False, provider_enabled=True):
         self.owner = owner
         self.root = owner.root
         self.controller = GoalFlagControllerV030(
@@ -79,17 +79,22 @@ class Campaign:
             != "https://api.openai.com/v1"
         ):
             raise ValueError("PROVIDER_CONFIG_DRIFT")
-        save(self.root / "provider-preflight.json", pre)
+        preflight_path = self.root / "provider-preflight.json"
+        if continuation:
+            preflight_path = (
+                self.root / "provider-preflights" / (str(time.monotonic_ns()) + ".json")
+            )
+        save(preflight_path, pre)
         self.settings = ProductSettingsV1(
             data_root=DATA,
             pilot_runtime_authority_path=self.authority_path,
             connector_timeout_seconds=15,
             investigation={
-                "enabled": True,
+                "enabled": provider_enabled,
                 "max_provider_calls": 10,
                 "max_evidence_reads": 8,
             },
-            knowledge_proposer_enabled=True,
+            knowledge_proposer_enabled=provider_enabled,
         )
         self.client = TestClient(create_app(self.settings))
         self.client.__enter__()

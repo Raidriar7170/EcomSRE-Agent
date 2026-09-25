@@ -85,7 +85,10 @@ def evaluation_bindings() -> dict[str, str]:
     return {
         path: hashlib.sha256((product / path).read_bytes()).hexdigest()
         for path in paths
-    } | {"scripts/product_v050/final_closure.py": hashlib.sha256((product.parents[2] / "scripts/product_v050/final_closure.py").read_bytes()).hexdigest()}
+    } | {p: hashlib.sha256((product.parents[2] / p).read_bytes()).hexdigest() for p in (
+        "scripts/product_v050/final_closure.py", "scripts/product_v050/final_closure_live.py",
+        "scripts/product_v050/live_environment.py", "scripts/product_v050/live_product.py",
+    )}
 
 
 class IncompleteValidation(StrictModel):

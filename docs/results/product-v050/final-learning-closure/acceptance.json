@@ -5,7 +5,7 @@
     "true": 1
   },
   "base_head": "29c195762b7bf6f4951ca778b6a0a034f2be94fd",
-  "blocked_dependency": "REAL_OWNED_DEPLOYMENT_AND_N1_N7_PENDING; OFFLINE_ENGINEERING_COMPLETED",
+  "blocked_dependency": "NON_OWNED_TRANSIENT_CONTAINER_DURING_BASELINE; N2_N7_NOT_STARTED",
   "candidate_locked_before_holdout": null,
   "candidate_origin": null,
   "candidate_semantic_sha256": null,
@@ -18,83 +18,72 @@
   "delivery_head": "SEE_GIT_COMMIT_CONTAINING_THIS_PACKAGE",
   "derived_control_counts": {},
   "event_llm_calls": null,
-  "forward_development_results": "NOT_RUN",
+  "forward_development_results": {
+    "N1": "FAILED / INCIDENT_CREATE:422 / consumed",
+    "N2": "NOT_RUN",
+    "N3": "NOT_RUN"
+  },
   "frozen_identity": null,
   "full_v050_acceptance": false,
   "goal_id": "ecomsre-v050-final-learning-closure-v1",
   "historical_missing_cases": [
-    "e04: offset30/query30/sampling10/count5 NOT_COLLECTED"
+    "e04: offset30/query30/sampling10/count5 NOT_COLLECTED",
+    "N1: incident/CAS/fixed resource window NOT_COLLECTED; irreversible collector failure; counted live slot"
   ],
   "holdout_original_episode_count": 0,
   "invoice_known": false,
-  "latest_precheck": "blocked-precheck.json",
-  "latest_precheck_observed_at": "2026-09-19T04:22:31.709888+00:00",
+  "latest_precheck": "continuation-20260925.md",
+  "latest_precheck_observed_at": "2026-09-25T21:20:07Z",
   "learning_loop_status": "NOT_RUN",
   "limitations": [
-    "Real owned deployment equivalence not verified or installed",
-    "No new real LLM proposal, forward live cohort, independent validation, promotion or N7",
-    "Last Docker drift observation is historical; no new check before Hermes pause notification"
+    "No new real model proposal, development pass, selection, Shadow, promotion or recurrence",
+    "N1 required forward Level B resource window was never collected and cannot be recovered",
+    "Actual non-owned transient container after pause notification interrupted baseline; no baseline rotation",
+    "Level A feasibility ceiling is LIMITED; old B plan and N1 FAILED retained"
   ],
   "live_new_and_cumulative": {
-    "cumulative": 5,
-    "new": 0
+    "new": 1,
+    "cumulative": 6
   },
   "matched_registration_id": null,
   "mechanical_end_to_end": "PASS_FIXTURE_ONLY_NOT_REAL_MODEL",
   "model": "gpt-5.4-mini-2026-03-17",
   "non_owned_drift": {
-    "changes": {
-      "container": {
-        "added": 1,
-        "changed": 0,
-        "removed": 0
-      },
-      "network": {
-        "added": 0,
-        "changed": 1,
-        "removed": 0
-      },
-      "volume": {
-        "added": 0,
-        "changed": 0,
-        "removed": 0
-      }
-    },
-    "context_unchanged": true,
-    "counts": {
-      "container": 1,
-      "network": 3,
-      "volume": 3
-    },
-    "daemon_unchanged": true,
-    "docker_mutations": 0,
-    "endpoint_unchanged": true,
-    "inventory_unchanged": false,
-    "network_extra_unchanged": true,
+    "event_utc": "2026-09-25T21:20:07Z",
+    "container_name": "frosty_engelbart",
+    "container_id": "f8d8ec77a5d517974045cb3b9d4f1249654e7239fa9636278bec3f1731e04767",
+    "image": "swerebench/sweb.eval.x86_64.asottile_1776_pyupgrade-330",
+    "changed_fields": [
+      "inventory.container[foreign_id]",
+      "network.none.Containers[foreign_id]"
+    ],
+    "ownership": "NOT_ECOMSRE; Hermes-associated bind path; initiating process not established",
+    "lifetime": "created, connected to none network, started, exited, disconnected, destroyed within one second",
+    "non_owned_mutations_by_this_task": 0,
     "new_baseline_admitted": false,
-    "old_owned_cleanup": true
+    "cleanup_non_owned_unchanged": true
   },
   "normal_api_result": "NOT_RUN",
-  "observation_domain": "retained five local episodes; no new observations",
+  "observation_domain": "original five unchanged; N1 real activation failed before Product incident or resource collection",
   "offline_interfaces": {
-    "capability_successor": "FIXTURE_TESTED_REAL_DEPLOYMENT_BINDING_PENDING",
+    "capability_successor": "REAL_ORIGINAL_TO_02_AND_03_BINDINGS_VERIFIED; 02_HISTORY_RETAINED",
     "derived_shadow_controls": "FIXTURE_TESTED_NOT_RUN_LIVE",
-    "fixture_tests_passed": 8,
-    "independent_review": "MUST_FIX_0_OFFLINE_SCOPE",
+    "fixture_tests_passed": 51,
+    "independent_review": "MUST_FIX_0_FOR_IMPLEMENTATION_AND_ACTUAL_SUCCESSOR; LEARNING_UNVERIFIED",
     "live_episode_guard": "ORIGINAL_STARTED_RECORDS_ROOT_BOUND_FAILED_STARTS_COUNTED",
-    "provider_sub_budget": "RUNNER_CONNECTED_FIXTURE_TESTED_NOT_ACTIVATED_LIVE",
+    "provider_sub_budget": "ACTIVATED_ON_ORIGINAL_LEDGER; 0_NEW_REQUESTS",
     "selection_lock": "FULL_C4_RUNNER_CONNECTED_FIXTURE_TESTED",
-    "split_successor": "FIXTURE_TESTED_NOT_INSTALLED",
+    "split_successor": "INSTALLED_APPEND_ONLY; N1_CONSUMED; N2_N7_UNTOUCHED",
     "target_control_claim": "TARGET_EVIDENCE_WITHHOLDING_CROSS_SERVICE_NON_BORROWING_ONLY",
     "proposer_feedback": "REAL_PROVIDER_WIRE_WITH_FIXTURE_TRANSPORT_VERIFIED",
-    "fixture_test_scope": "NEW_CLOSURE_RUNNER_TESTS_ONLY"
+    "fixture_test_scope": "CLOSURE_RUNNER_SUCCESSOR_LIVE_HARNESS_ENVIRONMENT_FOCUSED_TESTS"
   },
   "original_development_results": {
     "claim": "OLD_CANDIDATE_RECOMPUTED_NOT_NEW_ROUND",
     "denominator": 2,
     "true": 1
   },
-  "owned_cleanup": "NO_NEW_RESOURCES_CREATED; HISTORICAL_LIVE02_CLEAN_PRESERVED",
+  "owned_cleanup": "OWNED_01_02_03_CLEAN; ALL_PROJECT_BIRTHS_REMOVED; NON_OWNED_BASELINE_RESTORED_AT_CLEANUP",
   "pr": 104,
   "precheck_sha256": "e733c9932d495ea36a77e7a417c873a2287e2cea58e5bbea1af34ae06d7e9a0d",
   "product_recovery_writes": 0,
@@ -109,15 +98,17 @@
     "cumulative": 57,
     "new": 0
   },
-  "review": "INDEPENDENT_READ_ONLY_OFFLINE_REVIEW_MUST_FIX_0; NO_LIVE_ACCEPTANCE",
+  "review": "INDEPENDENT_READ_ONLY_SUCCESSOR_AND_FEASIBILITY_REVIEW_MUST_FIX_0; NO_LIVE_LEARNING_ACCEPTANCE",
   "revocation_check": "NOT_RUN",
-  "scope_level": "OFFLINE_CLOSURE_CONNECTIONS_FIXTURE_VERIFIED_LIVE_PENDING",
+  "scope_level": "OFFLINE_CHAIN_AND_REAL_DEPLOYMENT_BINDING_VERIFIED; LEARNING_NOT_RUN",
   "semantic_attempts_new": 0,
   "shadow_gate": "NOT_RUN",
   "source_failure_raw_states": "NOT_RUN",
-  "stop_reason": "LIVE_ONLY_WAITING_FOR_HERMES_PAUSE_NOTIFICATION_AND_FRESH_CONTINUITY",
+  "stop_reason": "LIVE_SAFETY_BLOCKED_PENDING_ACTUAL_HERMES_CONTAINER_LAUNCHER_STOP",
   "terminal": "ECOMSRE_PRODUCT_V050_BLOCKED_SAFETY",
-  "current_resource_continuity": "NOT_RECHECKED_WAITING_FOR_HERMES_PAUSE_NOTIFICATION",
+  "current_resource_continuity": "PASSED_INITIAL_FRESH_CHECK; TRANSIENT_DRIFT_DURING_BASELINE; CLEANUP_RETURNED_TO_ORIGINAL_INVENTORY",
   "latest_offline_handoff": "2026-09-25",
-  "terminal_scope": "LAST_LIVE_SAFETY_TERMINAL_PRESERVED_NOT_A_FRESH_DOCKER_OBSERVATION"
+  "terminal_scope": "NEW_RUNTIME_DRIFT_OBSERVED_20260925; NO_LEARNING_ACCEPTANCE",
+  "level_a_status": "PREPROPOSAL_PRIMARY_A_DECLARED; BLOCKED_BEFORE_N2",
+  "level_b_status": "NOT_ACHIEVED_N1_RESOURCE_WINDOW_IRRECOVERABLE"
 }

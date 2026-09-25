@@ -1,4 +1,8 @@
-# Final learning closure — offline chain connected; live pending
+# Final learning closure
+
+> Latest continuation: [2026-09-25 live continuation](continuation-20260925.md).
+> Hermes pause notification received; fresh continuity passed. The record below
+> is the preserved earlier offline handoff, not the current live state.
 
 Active [Goal](../../../goals/EcomSRE_v0.5_Final_Learning_Closure_Goal.md), same Draft
 [PR #104](https://github.com/Raidriar7170/EcomSRE-Agent/pull/104). Latest handoff:

@@ -33,11 +33,45 @@ PORTS = {
     "flagd-ui": (18081, 4000),
 }
 
+RESOURCE_LIMIT_KEYS = (
+    "Memory",
+    "MemorySwap",
+    "NanoCpus",
+    "CpuPeriod",
+    "CpuQuota",
+    "CpusetCpus",
+    "PidsLimit",
+    "ShmSize",
+    "Ulimits",
+    "OomKillDisable",
+)
+
+
+def resource_limit_values(host, keys=RESOURCE_LIMIT_KEYS):
+    result = {k: host.get(k) for k in keys}
+    # Nullable opt-in flag: unset leaves the OOM killer enabled, as does false.
+    # Moby clears this field on cgroups v2; true remains a different policy.
+    if "OomKillDisable" in result and result["OomKillDisable"] is None:
+        result["OomKillDisable"] = False
+    limits = result.get("Ulimits")
+    if limits is not None:
+        if len({r["Name"] for r in limits}) != len(limits):
+            raise ValueError("DUPLICATE_ULIMIT_NAME")
+        result["Ulimits"] = sorted(limits, key=lambda r: r["Name"])
+    return result
+
 
 def campaign_root(root):
     root = Path(root)
     allowed = REPO / ".local/product-v050/live-02"
-    permitted = {allowed, allowed / "diagnostic-01", allowed / "postgres-user-01"}
+    permitted = {
+        allowed,
+        allowed / "diagnostic-01",
+        allowed / "postgres-user-01",
+        allowed.parent / "live-final-closure-01",
+        allowed.parent / "live-final-closure-02",
+        allowed.parent / "live-final-closure-03",
+    }
     if root not in permitted or root.resolve() != root or root.is_symlink():
         raise ValueError("CAMPAIGN_PATH_NOT_AUTHORIZED")
     return root
@@ -45,6 +79,47 @@ def campaign_root(root):
 
 def load(name, root):
     return json.loads((root / name).read_text())
+
+
+def closure_predecessor(root):
+    """Retain exact released names as query selectors, never as ownership proof."""
+    old = root.parent / "live-02/postgres-user-01"
+    if not load("cleanup.json", old)["result"]["clean"]:
+        raise ValueError("CLOSURE_PREDECESSOR_NOT_CLEAN")
+    if root.name == "live-final-closure-02":
+        failed = root.parent / "live-final-closure-01"
+        if (
+            not load("cleanup.json", failed)["result"]["clean"]
+            or load("deployment-rejection.json", failed)["reason"]
+            != "ULIMIT_ORDER_ONLY"
+        ):
+            raise ValueError("CLOSURE_REPAIR_PREDECESSOR_NOT_CLEAN")
+    if root.name == "live-final-closure-03":
+        failed = root.parent / "live-final-closure-02"
+        result = load("episodes/N1/result.json", failed)
+        if (
+            not load("cleanup.json", failed)["result"]["clean"]
+            or result.get("error") != "INCIDENT_CREATE:422"
+            or not result.get("healthy_restored")
+            or result.get("incident_id")
+        ):
+            raise ValueError("CLOSURE_FAILED_COLLECTION_NOT_CLEAN")
+    for name in ("cached-images.json", "upstream-pinned-resolved.json"):
+        if load(name, root) != load(name, old):
+            raise ValueError("CLOSURE_FROZEN_INPUT_CHANGED")
+    admission = load("admitted-baseline.json", root)
+    previous = load("admitted-baseline.json", old)
+    if any(admission[k] != previous[k] for k in previous):
+        raise ValueError("CLOSURE_BASELINE_CHANGED")
+    if admission["inventory"]["container"]:
+        raise ValueError("CLOSURE_SELECTOR_NAMES_NOT_FREE")
+    plan = load("compose.json", old)
+    names = {k: v["container_name"] for k, v in plan["services"].items()}
+    if set(names) != set(load("cached-images.json", root)) or len(
+        set(names.values())
+    ) != len(names):
+        raise ValueError("CLOSURE_SERVICE_SELECTOR_MAP_INVALID")
+    return old, names
 
 
 def prepare(root):
@@ -67,6 +142,12 @@ def prepare(root):
         raise ValueError("UPSTREAM_CHANGED")
     source = load("upstream-pinned-resolved.json", root)
     images = load("cached-images.json", root)
+    closure = root.name in {
+        "live-final-closure-01",
+        "live-final-closure-02",
+        "live-final-closure-03",
+    }
+    old_root, selector_names = closure_predecessor(root) if closure else (None, {})
     if root.name in {"diagnostic-01", "postgres-user-01"}:
         parent = root.parent
         if (
@@ -93,7 +174,15 @@ def prepare(root):
         nonce = "ecomsre-v050-" + uuid.uuid4().hex[:10]
     labels = {
         "io.ecomsre.minimal.goal": hashlib.sha256(
-            (REPO / "docs/goals/EcomSRE_v0.5_Live_Resume_Amendment.md").read_bytes()
+            (
+                REPO
+                / "docs/goals"
+                / (
+                    "EcomSRE_v0.5_Final_Learning_Closure_Goal.md"
+                    if closure
+                    else "EcomSRE_v0.5_Live_Resume_Amendment.md"
+                )
+            ).read_bytes()
         ).hexdigest(),
         "io.ecomsre.minimal.attempt": nonce,
         "io.ecomsre.sandbox.id": nonce,
@@ -134,13 +223,13 @@ def prepare(root):
             pull_policy="never",
             platform="linux/arm64",
             restart="no",
-            container_name=nonce + "-" + name,
+            container_name=selector_names.get(name, nonce + "-" + name),
             labels=labels,
             networks=["default"],
             cap_drop=["ALL"],
             security_opt=["no-new-privileges:true"],
         )
-        if name == "astronomy-db" and root.name == "postgres-user-01":
+        if name == "astronomy-db" and (root.name == "postgres-user-01" or closure):
             # Verified fixed image has postgres uid/gid 999 and owned data/run dirs.
             # Avoid root chown/gosu with ALL capabilities dropped; grant no caps.
             if (
@@ -323,14 +412,29 @@ def prepare(root):
             ],
             "episode_cap": 12,
             "episode_order": {
-                "e01": "DISCOVERY",
-                "e02": "DISCOVERY",
-                "e03": "DISCOVERY",
-                "e04": "DEVELOPMENT",
-                "e05": "DEVELOPMENT",
-                "e06": "HOLDOUT",
-                "e07": "REUSE",
+                **(
+                    {
+                        f"N{i}": "DEVELOPMENT"
+                        if i <= 3
+                        else "HOLDOUT"
+                        if i <= 6
+                        else "REUSE"
+                        for i in range(1, 8)
+                    }
+                    if closure
+                    else {
+                        "e01": "DISCOVERY",
+                        "e02": "DISCOVERY",
+                        "e03": "DISCOVERY",
+                        "e04": "DEVELOPMENT",
+                        "e05": "DEVELOPMENT",
+                        "e06": "HOLDOUT",
+                        "e07": "REUSE",
+                    }
+                ),
             },
+            "selector_predecessor": str(old_root) if closure else None,
+            "service_container_names": selector_names,
             "control": "existing BASELINE/QUEUE/PAYMENT documents and bounded checkout traffic",
             "new_product_writes": 0,
             "provider_container_mounts": [],
@@ -420,8 +524,15 @@ class Owned(BaseOwned):
         image = self.images[name]
         h = row["HostConfig"]
         c = row["Config"]
+        if "container_name" in s and row.get("Name") != "/" + s["container_name"]:
+            raise ValueError("CONTAINER_QUERY_SELECTOR_DRIFT")
         if "user" in s and c.get("User") != s["user"]:
             raise ValueError("RUNTIME_USER_DRIFT")
+        birth = getattr(self, "births", {}).get("container", {}).get(row.get("Id"))
+        if birth is not None and resource_limit_values(h) != resource_limit_values(
+            birth["HostConfig"]
+        ):
+            raise ValueError("RESOURCE_LIMIT_DRIFT")
         if any(c["Labels"].get(k) != v for k, v in self.labels.items()):
             raise ValueError("LABEL_DRIFT")
         if row["Image"] not in {image["Id"], image["index_id"]}:

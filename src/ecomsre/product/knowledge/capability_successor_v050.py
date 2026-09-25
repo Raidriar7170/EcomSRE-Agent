@@ -104,6 +104,22 @@ def load(connection, environment_id):
     payload = json.loads(row[0])
     if payload["sha256"] != sha({k: v for k, v in payload.items() if k != "sha256"}):
         raise ValueError("capability successor binding differs")
+    if "unused_predecessor_sha256" in payload:
+        history = connection.execute(
+            "SELECT payload_json FROM knowledge_capability_successor_history_v050 WHERE sha256=?",
+            (payload["unused_predecessor_sha256"],),
+        ).fetchone()
+        if history is None:
+            raise ValueError("retained successor predecessor absent")
+        previous = json.loads(history[0])
+        if (
+            previous["sha256"] != payload["unused_predecessor_sha256"]
+            or previous["sha256"]
+            != sha({k: v for k, v in previous.items() if k != "sha256"})
+            or previous["old"] != payload["old"]
+            or previous["old_deployment"] != payload["old_deployment"]
+        ):
+            raise ValueError("retained successor predecessor differs")
     validate_pair(
         payload["old"],
         payload["new"],
@@ -113,7 +129,9 @@ def load(connection, environment_id):
     return payload
 
 
-def install(store, *, old, new, old_deployment, new_deployment):
+def install(
+    store, *, old, new, old_deployment, new_deployment, unused_predecessor_sha256=None
+):
     old, new, before, after = validate_pair(old, new, old_deployment, new_deployment)
     value = dict(
         round_id="ecomsre-v050-final-learning-closure-v1",
@@ -122,16 +140,11 @@ def install(store, *, old, new, old_deployment, new_deployment):
         old_deployment=before.model_dump(mode="json"),
         new_deployment=after.model_dump(mode="json"),
     )
+    if unused_predecessor_sha256 is not None:
+        value["unused_predecessor_sha256"] = unused_predecessor_sha256
     value["sha256"] = sha(value)
     with store.connect() as c:
         c.execute("BEGIN IMMEDIATE")
-        prior = load(c, old.environment_id)
-        if prior is not None:
-            if prior != value:
-                raise ValueError("capability successor is immutable")
-            return value["sha256"]
-        if selection_lock_v050.load(c) is not None:
-            raise ValueError("capability successor must precede candidate lock")
         current = c.execute(
             "SELECT payload_json FROM environment_capability_matrices WHERE environment_id=?",
             (old.environment_id,),
@@ -147,13 +160,69 @@ def install(store, *, old, new, old_deployment, new_deployment):
             raise ValueError(
                 "successor must bind the current environment configuration"
             )
+        prior = load(c, old.environment_id)
+        if prior is not None and prior == value:
+            return value["sha256"]
+        if prior is not None:
+            if unused_predecessor_sha256 != prior["sha256"]:
+                raise ValueError("capability successor is immutable")
+            from ecomsre.product.investigation import closure_budget
+
+            budget = closure_budget.load(c)
+            if budget is None or closure_budget.ledger(c) != budget["baseline"]:
+                raise ValueError("redeployment must precede all new Provider work")
+            if (
+                prior["old"] != value["old"]
+                or prior["old_deployment"] != value["old_deployment"]
+            ):
+                raise ValueError(
+                    "redeployment must compare directly to retained original"
+                )
+            intermediate = prior["new"]["capability_sha256"]
+            for table in (
+                "incidents",
+                "knowledge_candidate_pool_v050",
+                "investigation_provider_calls_v050",
+            ):
+                if c.execute(
+                    f"SELECT 1 FROM {table} WHERE payload_json LIKE ?",
+                    ("%" + intermediate + "%",),
+                ).fetchone():
+                    raise ValueError("intermediate capability was consumed")
+            if c.execute(
+                "SELECT 1 FROM knowledge_closure_runner_v050 WHERE entry_key LIKE 'request:%' OR entry_key LIKE 'attempt:%' OR entry_key='selection-pending'"
+            ).fetchone():
+                raise ValueError("redeployment cannot follow proposal preparation")
+        elif unused_predecessor_sha256 is not None:
+            raise ValueError("redeployment predecessor absent")
+        if selection_lock_v050.load(c) is not None:
+            raise ValueError("capability successor must precede candidate lock")
         c.execute(
             "CREATE TABLE IF NOT EXISTS knowledge_capability_successor_v050 (environment_id TEXT PRIMARY KEY,payload_json TEXT NOT NULL)"
         )
-        c.execute(
-            "INSERT INTO knowledge_capability_successor_v050 VALUES (?,?)",
-            (old.environment_id, json.dumps(value, sort_keys=True)),
-        )
+        if prior is not None:
+            c.execute(
+                "CREATE TABLE IF NOT EXISTS knowledge_capability_successor_history_v050 (sha256 TEXT PRIMARY KEY,payload_json TEXT NOT NULL)"
+            )
+            c.execute(
+                "INSERT INTO knowledge_capability_successor_history_v050 VALUES (?,?)",
+                (prior["sha256"], json.dumps(prior, sort_keys=True)),
+            )
+            changed = c.execute(
+                "UPDATE knowledge_capability_successor_v050 SET payload_json=? WHERE environment_id=? AND payload_json=?",
+                (
+                    json.dumps(value, sort_keys=True),
+                    old.environment_id,
+                    json.dumps(prior, sort_keys=True),
+                ),
+            ).rowcount
+            if changed != 1:
+                raise ValueError("redeployment mapping compare-and-swap failed")
+        else:
+            c.execute(
+                "INSERT INTO knowledge_capability_successor_v050 VALUES (?,?)",
+                (old.environment_id, json.dumps(value, sort_keys=True)),
+            )
         c.execute("COMMIT")
     return value["sha256"]
 

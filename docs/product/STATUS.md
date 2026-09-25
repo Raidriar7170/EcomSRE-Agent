@@ -1,6 +1,6 @@
 # 当前状态 · Product v0.5 闭环续跑安全阻塞
 
-最新 [Final learning closure](../results/product-v050/final-learning-closure/README.md) 已完成 successor、C4/预算/episode runner、完整 fixture 治理整链与 proposer 完整反馈接线；独立离线审查 Must Fix 0。真实 A/B 闭环仍 NOT_RUN；累计仍为 57 请求、USD 0.918501、5 episode，本轮新增均 0。等待用户转达 Hermes 暂停后做一次只读连续性核对；2026-09-19 的 BLOCKED_SAFETY 是保留历史观察，本次未重新检查 Docker，也未接纳新基线。
+最新 [Final learning closure](../results/product-v050/final-learning-closure/continuation-20260925.md)：Hermes 暂停通知后的首次连续性检查通过，真实 original→02/03 successor 已核验。N1 因 collector service IDs 未排序而在 incident 创建前 FAILED，健康恢复与清理成功，消耗保留且不重采；Level B 必需窗口不可恢复，按 C5 在首次新提议前追加 Level A / LIMITED 可行性声明。03 基线期间又出现 Hermes 关联短时非项目容器，触发新的 `BLOCKED_SAFETY`，项目清理后恢复原非项目状态。累计 57 请求、USD 0.918501、6 episode；新增 Provider/语义尝试 0、episode 1。A 闭环尚未开始，N2–N7 未动用；等待实际容器启动来源停止。
 
 历史 [可行性与受约束提议轮](../results/product-v050/knowledge-feasibility/README.md) 复用原 5 个已见事件：新增 3 次请求，3 个 schema-valid 草稿，1 个准入候选，1 次实际开发求值；原 Development 仅 1/2，未冻结、独立验证、晋升或复用。累计 57 次请求、USD 0.918501 承诺，终态仍为 `NO_VALIDATED_LLM_KNOWLEDGE`。本轮没有新增 live episode 或 Product 恢复写入；旧 live-02 clean=true 与 live-01 BLOCKED_SAFETY / clean=false 保留。
 

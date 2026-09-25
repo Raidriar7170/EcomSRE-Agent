@@ -191,6 +191,71 @@ class ClosureRunner:
             raise ValueError("closure plan not initialized")
         return retained["plan"]
 
+    def declare_level_a_feasibility(self, proof):
+        """C5 data-feasibility decision before proposals; original B plan survives."""
+        if self.plan["primary_level"] != "B" or self._get("cohort") is not None:
+            raise ValueError("feasibility revision must precede cohort and proposals")
+        terminal = self._get("terminal:N1")
+        if terminal != {
+            "succeeded": False,
+            "reason": "FAILED",
+        } or self._get("binding:N1"):
+            raise ValueError(
+                "only the retained unbound failed N1 permits this revision"
+            )
+        with self.store.connect() as c:
+            budget = closure_budget.load(c)
+            if (
+                budget is None
+                or closure_budget.ledger(c) != budget["baseline"]
+                or selection_lock_v050.load(c) is not None
+            ):
+                raise ValueError(
+                    "feasibility revision must precede new Provider work or selection"
+                )
+        if any(
+            self._get("request:" + str(i)) or self._get("attempt:" + str(i))
+            for i in range(6)
+        ):
+            raise ValueError(
+                "feasibility revision cannot follow model request preparation"
+            )
+        if (
+            set(proof)
+            != {
+                "n1_result_sha256",
+                "cleanup_sha256",
+                "resource_window",
+                "incident_created",
+                "failure",
+            }
+            or proof["resource_window"] != "NOT_COLLECTED_IRRECOVERABLE"
+            or proof["incident_created"] is not False
+            or proof["failure"] != "INCIDENT_CREATE:422"
+        ):
+            raise ValueError("failed collection proof required")
+        return self._keep(
+            "feasibility",
+            dict(
+                original_plan_sha256=sha(self.plan),
+                primary_level="A",
+                ceiling="LIMITED",
+                n1_terminal=terminal,
+                reason="ENGINEERING_FAILURE_BEFORE_INCIDENT_CREATION",
+                proof=proof,
+                budget_sha256=budget["sha256"],
+            ),
+        )
+
+    @property
+    def primary_level(self):
+        revision = self._get("feasibility")
+        if revision is not None:
+            if revision["original_plan_sha256"] != sha(self.plan):
+                raise ValueError("feasibility parent differs")
+            return revision["primary_level"]
+        return self.plan["primary_level"]
+
     def reserve_episode(self, slot):
         plan = self.plan
         if slot not in SLOTS or self._get("episode:" + slot) is not None:
@@ -232,7 +297,7 @@ class ClosureRunner:
         )
 
         path = self.episode_root / plan["campaign"] / "episodes" / slot / "started.json"
-        path.parent.mkdir(parents=True, exist_ok=True)
+        path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
         with path.open("x") as stream:
             json.dump(
                 dict(
@@ -243,6 +308,7 @@ class ClosureRunner:
                 ),
                 stream,
             )
+        path.chmod(0o600)
         return reservation
 
     def bind_episode(self, slot, incident_id):
@@ -308,7 +374,7 @@ class ClosureRunner:
         positives = list(original.values())
         n1 = (
             self.incident("N1")
-            if plan["primary_level"] == "B" or self._get("binding:N1")
+            if self.primary_level == "B" or self._get("binding:N1")
             else None
         )
         if n1:
@@ -361,7 +427,7 @@ class ClosureRunner:
                     )
                 ):
                     complete.append(iid)
-        if plan["primary_level"] == "B" and not {original["e05"], n1} <= set(complete):
+        if self.primary_level == "B" and not {original["e05"], n1} <= set(complete):
             raise ValueError(
                 "forward complete cohort lacks e05/N1; no selection permitted"
             )
@@ -447,7 +513,7 @@ class ClosureRunner:
         cohort = self.freeze_cohort()
         previous = self._get("development:" + candidate.registration_id)
         if previous is not None:
-            if previous["passed"] and previous["level"] == self.plan["primary_level"]:
+            if previous["passed"] and previous["level"] == self.primary_level:
                 self._keep(
                     "selection-pending", dict(registration_id=candidate.registration_id)
                 )
@@ -533,7 +599,7 @@ class ClosureRunner:
             ),
         )
 
-        if passed and level == self.plan["primary_level"]:
+        if passed and level == self.primary_level:
             self._keep(
                 "selection-pending", dict(registration_id=candidate.registration_id)
             )
@@ -549,7 +615,7 @@ class ClosureRunner:
         gate = self.develop(candidate)
         if not gate["passed"]:
             raise ValueError("full development gate not passed")
-        if self.plan["primary_level"] == "B" and gate["level"] == "A":
+        if self.primary_level == "B" and gate["level"] == "A":
             with self.store.connect() as c:
                 n = c.execute(
                     "SELECT COUNT(*) FROM investigation_provider_calls_v050 WHERE call_key LIKE ?",
@@ -586,7 +652,9 @@ class ClosureRunner:
                 recurrence_episode=plan["slots"]["N7"],
                 collection=plan["collection"],
                 time_range=plan["time_range"],
-                development_gate_report=gate,
+                development_gate_report=dict(
+                    gate, feasibility=self._get("feasibility")
+                ),
                 compatibility_binding={"mode": "EXACT_CAPABILITY_ONLY"}
                 if mapping is None
                 else {"sha256": mapping["sha256"]},
@@ -615,7 +683,7 @@ class ClosureRunner:
         cohort = self.freeze_cohort()
         members = (
             cohort["complete_positives"]
-            if self.plan["primary_level"] == "B"
+            if self.primary_level == "B"
             else cohort["positives"]
         )
         aliases = {iid: f"I{i:02}" for i, iid in enumerate(sorted(members), 1)}
@@ -819,6 +887,16 @@ class ClosureRunner:
                 previous_candidates=previous,
                 previous_drafts=raw_drafts,
                 rejections=rejections,
+                data_feasibility=(
+                    None
+                    if self._get("feasibility") is None
+                    else {
+                        "unavailable_forward_target": "N1 failed before incident/resource collection; no replacement observation",
+                        "primary_level": self.primary_level,
+                        "ceiling": "LIMITED",
+                    }
+                ),
+                primary_level=self.primary_level,
                 historical_gap="e04 offset30/query30/sampling10/count5 NOT_COLLECTED; no backfill",
                 earlier_attempts=[
                     {
@@ -882,7 +960,7 @@ class ClosureRunner:
                 target=self.plan["target"],
                 members=(
                     cohort["complete_positives"]
-                    if self.plan["primary_level"] == "B"
+                    if self.primary_level == "B"
                     else cohort["positives"]
                 ),
                 feedback=feedback,
@@ -934,7 +1012,7 @@ class ClosureRunner:
                     registration_id=candidate.registration_id,
                     gate=gate,
                 )
-                if gate["passed"] and gate["level"] == self.plan["primary_level"]:
+                if gate["passed"] and gate["level"] == self.primary_level:
                     self._keep(
                         "selection-pending",
                         dict(registration_id=candidate.registration_id),

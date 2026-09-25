@@ -435,3 +435,10 @@ result package, and only existing presentation bindings for those two Product do
 Frozen: predecessor result packages, original SQLite/CAS/candidates/CHECKED/roles,
 DTA/upstream/runtime locks. Final repository scope: complete tracked delta from
 cfa94b58ea5c7826600c255d2d1c550002b191ae, including new staged files.
+
+
+### 2026-09-25 live continuation after Hermes pause
+
+See [actual continuation](../results/product-v050/final-learning-closure/continuation-20260925.md). Initial continuity passed; original→02/03 deployment binding verified. N1 was consumed and failed before incident creation because of unsorted service IDs; no resource window exists. The bug is fixed, failure preserved, and preproposal primary A / LIMITED is append-only over the original B plan. New non-owned transient Hermes-associated container at 21:20:07 UTC interrupted 03 baseline; project-only cleanup completed. No N2–N7 or new Provider work. Cumulative 57 / USD 0.918501 / six live starts; new 0 / USD 0 / one. This is a fresh safety blocker, not the earlier September 19 observation.
+
+Read scope: Product source/tests, existing Goal/results, private original SQLite/CAS, owned deployment receipts and bounded read-only Docker metadata/events. Write scope: scripts/product_v050/{final_closure,final_closure_live,live_environment,live_product}.py; src/ecomsre/product/knowledge/{capability_successor_v050,evolution_v050}.py; corresponding tests/product_v050; docs/results/product-v050/final-learning-closure; this progress file; docs/product/{STATUS,ARCHITECTURE}.md; only their existing successor hashes in config/product-v050/historical-successor-bindings.json. Frozen: original e01–e05, e04 missing window, old candidate/CHECKED/request/role records, original ledger prefix, Goal, upstream and runtime image locks; new failed N1/01/02/03 evidence remains retained. Final repository verification covers the complete tracked delta from 5742f6fc352cdd8263ce8cbb28e49e86d1716343. No Product recovery authority or merge/release/deploy is added.
