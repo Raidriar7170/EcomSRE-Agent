@@ -269,7 +269,7 @@ class ClosureRunner:
         if repair is not None:
             from ecomsre.product.knowledge.control_repair_v050 import verify_sources
 
-            verify_sources(repair)
+            verify_sources(repair, self._get("control-repair-execution-resume"))
         roles = SLOTS | ({} if repair is None else {"D_CORE_FIX_01": "DEVELOPMENT"})
         if slot not in roles or self._get("episode:" + slot) is not None:
             raise ValueError("episode slot invalid or already consumed; no resampling")
@@ -658,7 +658,7 @@ class ClosureRunner:
         if repair is not None:
             from ecomsre.product.knowledge.control_repair_v050 import verify_sources
 
-            verify_sources(repair)
+            verify_sources(repair, self._get("control-repair-execution-resume"))
         pending = self._get("selection-pending")
         if (
             pending is not None
@@ -704,9 +704,13 @@ class ClosureRunner:
                 },
                 recurrence_episode=plan["slots"]["N7"],
                 collection=dict(
-                    plan["collection"], control_repair=self._get("control-repair")
+                    plan["collection"],
+                    control_repair=self._get("control-repair"),
+                    execution_resume=self._get("control-repair-execution-resume"),
                 ),
-                time_range=plan["time_range"],
+                time_range=plan["time_range"]
+                if repair is None
+                else repair["time_range"],
                 development_gate_report=dict(
                     gate,
                     feasibility=self._get("feasibility"),

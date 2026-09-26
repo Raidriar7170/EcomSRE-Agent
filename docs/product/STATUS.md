@@ -1,4 +1,8 @@
-# 当前状态 · Product v0.5 开发控制数据阻塞
+# 当前状态 · Product v0.5 真实模型开发准入失败
+
+最新 [控制补采与执行结果](../results/product-v050/final-learning-closure/execution-resume-20260926.md)：D_CORE_FIX_01 经真实配置读回和正常 API/Worker 得到 CORE_KNOWN，并恢复健康；目标 Logs/Traces/Changes 缺口保留。两次真实模型提议均只选择 Metrics 条件，被 TWO_SOURCES_REQUIRED 拒绝，已按 Goal C3 连续同错规则停止。本轮无获准候选、选择锁或 N4–N7；Level A 开发失败，Level B 未恢复。累计59请求、USD 1.015867、9 live；本轮2请求、USD 0.097366、2语义、4 live。owned 05/06 精确 CLEAN，非项目未变。当前 NO_VALIDATED_LLM_KNOWLEDGE，不是当前 Docker 阻塞，不是预算耗尽。
+
+## 历史检查点（以下计数按当时状态保留）
 
 最新 [Final learning closure](../results/product-v050/final-learning-closure/continuation-20260925.md)：实际 Hermes runner 停止后连续性通过，owned 04 successor 与基线 READY。N2 返回 NO_INCIDENT；N3 返回 INSUFFICIENT_EVIDENCE，无法满足采集前固定的 Core/Extension Known 控制门槛；保留证据不能离线重建缺失的 trace 因果身份。不修改历史诊断、不降低门槛、不重采 N3、不挪用 N4–N7。04 已精确清理且非项目资源未变。累计 57 请求、USD 0.918501、8 episode；本闭环新增 Provider/语义尝试 0、episode 3。Level A 未完成；Level B 亦未完成，N1 必需窗口缺口仍保留。当前为 NO_VALIDATED_LLM_KNOWLEDGE，具体层级为 DEVELOPMENT_DATA_BLOCKED；非模型失败。
 
@@ -47,10 +51,10 @@ v0.3 Shadow 为 3 个正例、10 个负向/反事实/失败用例，`OTHER_EXTEN
 
 单次观察的完整时延、时钟语义和缺失项见 [timing 说明](../results/product-v041-live-safety/README.md#observed-timing)。
 
-## v0.5 活动开发状态
+## v0.5 历史开发状态
 
 [v0.5 Goal](../goals/EcomSRE_v0.5_Codex_Goal.md) 以 `ECOMSRE_PRODUCT_V050_NO_VALIDATED_LLM_KNOWLEDGE` 有限终态收口，不是完整验收 PASS。5 个独立事件均已恢复实验健康状态；只有一例数值假说获得暂定支持，不代表因果定位。原 live 轮累计 51 次请求、USD 0.695520 承诺上界；先前接口修复轮后为 54 次、USD 0.839581，当前可行性轮后为 57 次、USD 0.918501；旧调用和失败未改写。进度见 [记录](../analysis/product-v050-progress.md)。
 
-### Final learning control repair amendment (2026-09-26)
+### Historical control repair precheck (2026-09-26 05:29 UTC)
 
 The activated narrow amendment has 66 passing focused checks and independent review Must Fix 0. It adds an explicit 13/8 live ceiling child contract, preserves N3 as insufficient, binds actual configuration audit and the same N6 collector, and retains original/consumed/new deployment identities. The actual child contract is not installed: fresh read-only continuity found a new non-owned container and bridge attachment. `D_CORE_FIX_01` and N4–N7 are unconsumed; no new Provider request or live start. Current terminal: `ECOMSRE_PRODUCT_V050_BLOCKED_SAFETY`; Level A incomplete, Level B not achieved. Accounting: 57 requests / USD 0.918501 committed / 8 starts. See [control repair result](../results/product-v050/final-learning-closure/control-repair-result.json). No merge, release or Product recovery write.

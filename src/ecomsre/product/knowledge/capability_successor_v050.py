@@ -155,6 +155,27 @@ def load(connection, environment_id):
                 previous["new_deployment"],
                 cursor["new_deployment"],
             )
+            if "execution_resume_sha256" in cursor:
+                from ecomsre.product.knowledge.control_repair_v050 import (
+                    read_execution_resume,
+                )
+
+                resume = read_execution_resume(connection, environment_id)
+                if (
+                    resume is None
+                    or sha(resume) != cursor["execution_resume_sha256"]
+                    or resume["predecessor_sha256"] != previous["sha256"]
+                    or cursor.get("earlier_development")
+                    != previous.get("retained_development")
+                ):
+                    raise ValueError("execution resume deployment differs")
+                earlier = cursor["earlier_development"]
+                validate_pair(
+                    earlier["matrix"],
+                    cursor["new"],
+                    earlier["deployment"],
+                    cursor["new_deployment"],
+                )
         cursor = previous
     validate_pair(
         payload["old"],
@@ -205,6 +226,7 @@ def install(
                 "successor must bind the current environment configuration"
             )
         prior = load(c, old.environment_id)
+        execution_resume = None
         if repair_predecessor_sha256 is not None:
             from ecomsre.product.knowledge.control_repair_v050 import (
                 read as repair_contract,
@@ -225,10 +247,31 @@ def install(
                 repair is None
                 or predecessor is None
                 or predecessor["sha256"] != repair_predecessor_sha256
-                or "repair_predecessor_sha256" in predecessor
             ):
                 raise ValueError(
                     "one authorized repair deployment predecessor required"
+                )
+            if "repair_predecessor_sha256" in predecessor:
+                from ecomsre.product.knowledge.control_repair_v050 import (
+                    read_execution_resume,
+                    verify_sources,
+                )
+
+                execution_resume = read_execution_resume(c, old.environment_id)
+                if (
+                    execution_resume is None
+                    or execution_resume["predecessor_sha256"] != predecessor["sha256"]
+                    or "execution_resume_sha256" in predecessor
+                ):
+                    raise ValueError(
+                        "one authorized execution resume predecessor required"
+                    )
+                verify_sources(repair, execution_resume)
+                earlier = predecessor["retained_development"]
+                validate_pair(earlier["matrix"], new, earlier["deployment"], after)
+                value.update(
+                    execution_resume_sha256=sha(execution_resume),
+                    earlier_development=earlier,
                 )
             validate_pair(predecessor["new"], new, predecessor["new_deployment"], after)
             value.update(
@@ -270,9 +313,12 @@ def install(
                     ("%" + intermediate + "%",),
                 ).fetchone():
                     raise ValueError("intermediate capability was consumed")
-            if c.execute(
-                "SELECT 1 FROM knowledge_closure_runner_v050 WHERE entry_key LIKE 'request:%' OR entry_key LIKE 'attempt:%' OR entry_key='selection-pending'"
-            ).fetchone():
+            if (
+                execution_resume is None
+                and c.execute(
+                    "SELECT 1 FROM knowledge_closure_runner_v050 WHERE entry_key LIKE 'request:%' OR entry_key LIKE 'attempt:%' OR entry_key='selection-pending'"
+                ).fetchone()
+            ):
                 raise ValueError("redeployment cannot follow proposal preparation")
         elif (
             unused_predecessor_sha256 is not None
@@ -325,6 +371,11 @@ def admits(store, *, environment_id, candidate_environment_id, expected, actual)
                 if "retained_development" in value
                 else set()
             )
+            | (
+                {value["earlier_development"]["matrix"]["capability_sha256"]}
+                if "earlier_development" in value
+                else set()
+            )
         ):
             return False
         # A later unregistered reverify/config edit invalidates the mapping.
@@ -349,6 +400,8 @@ def historical_matrix(store, environment_id, digest):
         matrices = [value["old"], value["new"]]
         if "retained_development" in value:
             matrices.append(value["retained_development"]["matrix"])
+        if "earlier_development" in value:
+            matrices.append(value["earlier_development"]["matrix"])
         for matrix in matrices:
             if matrix["capability_sha256"] == digest:
                 return EnvironmentCapabilityMatrixV1.model_validate(matrix)

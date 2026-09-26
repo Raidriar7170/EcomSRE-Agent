@@ -1,121 +1,23 @@
-# Final learning closure
+# Final learning closure — 本轮开发失败
 
-> Latest continuation: [activated control repair](control-repair-result.json), 2026-09-26.
-> Offline repair and 66 focused checks passed. Fresh 05:29 UTC continuity failed on a new non-owned container/bridge attachment; no additional slot, deployment or Provider call was started. The following older handoffs remain historical.
+同一 [Draft PR #104](https://github.com/Raidriar7170/EcomSRE-Agent/pull/104)，沿用原 [Goal](../../../goals/EcomSRE_v0.5_Final_Learning_Closure_Goal.md) 与已激活的 [控制补充](../../../goals/EcomSRE_v0.5_Development_Control_Repair_Amendment.md)。最新结果见 [机器记录](control-repair-execution-result.json)、[执行交接](execution-resume-20260926.md) 和 [验收索引](acceptance.json)。
 
-Active [Goal](../../../goals/EcomSRE_v0.5_Final_Learning_Closure_Goal.md), same Draft
-[PR #104](https://github.com/Raidriar7170/EcomSRE-Agent/pull/104). Latest handoff:
-**2026-09-25, offline implementation and fixture verification**. This is not a
-real-model learning result or authorization to bypass resource continuity.
+| 验收项 | 实际结果 |
+|---|---|
+| 开发控制 | D_CORE_FIX_01 正常 API/Worker 返回 CORE_KNOWN / CONFIGURATION_ERROR，真实配置读回与健康恢复通过 |
+| 目标负例覆盖 | Metrics、Runtime、固定 Resources 完整；Logs/Traces/Changes 的目标缺口保留，不能称所有来源完整 |
+| 真实模型 | 2 次请求成功返回；两份草稿均只选择 Metrics 条件，均被 TWO_SOURCES_REQUIRED 拒绝 |
+| 开发门槛/选择锁 | 未通过准入，未进入合格候选开发求值，无选择锁 |
+| 独立 Shadow / 晋升 / N7 / 撤销 | 全部 NOT_RUN；N4–N7 未消耗、未曝光 |
+| Level A | 开发失败，闭环未完成 |
+| Level B | 未恢复、未实现；N1 与旧 e04 的资源缺口保留 |
 
-## Current facts
+第二次真实 wire input 已包含第一次完整草稿与具体拒绝原因，仍返回同一执行条件。依照 Goal C3，runner 持久化 `REPEATED_ERROR_WITHOUT_NEW_OBSERVATIONS`，不再盲抽剩余槽位。终态为 `ECOMSRE_PRODUCT_V050_NO_VALIDATED_LLM_KNOWLEDGE`。这次是模型准入失败，不是当前 Docker 阻塞，也不是预算用尽。
 
-The original read-only ledger check still returns **57 requests / USD 0.918501
-committed / 5 live starts**. This continuation added **0 Provider requests,
-0 committed cost, 0 live episodes and 0 semantic attempts**. Invoice unknown.
-Original remaining limits still constrain the unused 40-request/USD-8/7-episode/
-6-semantic-attempt sub-budget. No closure tables or new baseline were installed in
-the actual database. Old e04 missing observations, old CHECKED results, candidates,
-roles, failed attempts, raw CAS and cumulative accounting remain intact.
+累计 **59 次请求 / USD 1.015867 承诺 / 9 live starts**；本闭环轮 **2 次请求 / USD 0.097366 / 2 次语义尝试 / 4 live starts**。已追加激活的 live 上限为 **13/8**；Provider 200/40、费用20/8、语义6上限未增加。Invoice actual 未知，历史4次未知用量的预留仍在。
 
-The last Docker observation remains [blocked-precheck.json](blocked-precheck.json),
-2026-09-19 04:22 UTC: a non-owned container and changed default bridge membership.
-**This is historical, not a claim that those objects still exist.** No Docker
-command was run during this continuation. Per the latest instruction, wait for the
-user to relay that Hermes container experiments are paused, then perform one fresh
-read-only continuity check. If unchanged from the accepted original baseline,
-proceed under existing authority; otherwise report exact objects/fields/known
-ownership and needed external action. Do not remove non-project resources or
-repeatedly replace the baseline.
+本次先解决真实变更事实采集，再遇到一个发送前的反馈大小拒绝。无损来源字典化保留全部反馈，将真实请求体降至173,060字节，未提高192,000上限。异常清理后的窄追加式续接保留原contract、request与采集版本；新部署直接验证 original/04/05/06 四代身份。两次 owned 部署均已精确 CLEAN，非项目资源未变。Product 恢复写入为0，无 merge/tag/release/deploy。
 
-Level A real loop: **NOT_RUN**. Level B real acceptance: **NOT_RUN / false**.
-Historical `NO_VALIDATED_LLM_KNOWLEDGE` and `BLOCKED_SAFETY` results are preserved.
-No new live candidate, lock, Shadow batch, promotion, recurrence or revocation.
+聚焦回归45项通过，另有live harness/environment检查；独立源码与真实账本/wire复核 Must Fix 0。完整回归和完整 tracked-diff SHA-256 对交付提交单独记录；测试成功不升级学习结论。
 
-## Completed offline connections
-
-- `capability_successor_v050` retains complete original/new capability and
-  deployment objects. Only capability `verified_at` may change semantically.
-  Deployment births and exact Runtime authority/snapshot identities are separate;
-  image, service mapping, actual query, units, sampling, resource limits, connector
-  semantics and trust boundaries must compare equal. Unknown hashes, a third
-  verification or current environment drift fail closed. Development, Shadow and
-  the normal matcher share this check; historical inputs keep their original hash.
-  **Real owned deployment equivalence has not been verified or installed.**
-- `scripts.product_v050.final_closure.ClosureRunner` connects the existing SQLite/
-  CAS repositories, original Provider sub-budget, seven reserved episode roles,
-  full Goal C4 gates, first-qualified selection, freeze/evaluation and conditional
-  test promotion. Episode counting uses the existing `live-*/**/episodes/*/started.json`
-  records, including unbound failures; fixture replay identities do not inflate it.
-  The original ledger root, five independent original episodes and immutable plan
-  are bound at initialization. A failed reserved slot cannot be renamed or reused.
-- C4 separately reports the original five, forward complete cohort and controls.
-  e04 is retained as UNKNOWN for its missing dependency. Level A requires original
-  e04/e05 TRUE and at least 4/5 originals. Level B requires e05/N1 TRUE, at least
-  75% of the predeclared complete cohort, original e04/e05 base predicates TRUE,
-  complete negative controls FALSE and a numerically consequential expression.
-  Fixed numeric variants are derived behavior checks, never independent episodes.
-  First primary pass blocks new proposals even if selection sealing fails; only
-  that candidate may be resumed. Earliest qualified A fallback waits for six slots.
-- Real `StructuredProvider` wiring retains Mini/Responses, medium/8192, strict
-  short-handle schema and the new request namespace. Full feedback contains source
-  categories, every original/development-control event, per-predicate FALSE/UNKNOWN,
-  numeric observations, prior full proposals and preserved CHECKED reports plus
-  explicitly recomputed all-seen components. Old complete draft outputs require
-  original CAS request bindings and matching task-view digests; missing bindings
-  block dispatch. Fixed harness observations are distinguished from model-selected
-  reads and do not rewrite session traces. No winning clause is generated by Runtime.
-- The fixture test now actually admits a `FIXTURE_ONLY` candidate, develops, locks,
-  freezes, evaluates and promotes it via governance. It does **not** insert an ACTIVE
-  registration. A fresh event goes through normal API/Worker dependency acquisition
-  with Provider disabled; its evidence CAS binds the actual incident, registration
-  and candidate hash. Revocation then uses the normal loader/matcher on explicitly
-  labelled retained-input replay; the old diagnosis and Provider journal stay unchanged.
-
-Eight focused runner tests pass, including full chain, A gate, B gate, incomplete
-negative/constant-expression rejection, failed-start accounting, changed-root refusal,
-selection-write failure and full historical feedback. Successor/selection/budget
-focused regression also passes. Independent read-only review: **Must Fix 0 for this
-offline scope**. Ruff passes; Product mypy passes (170 source files). Full regression
-is run on a clean fixed HEAD because an existing repository test rejects dirty
-worktrees; the earlier dirty-tree attempt is not reported as a passing full run.
-
-## Resume sequence and exact remaining boundary
-
-1. After the Hermes pause notification, run one read-only resource continuity check.
-   Keep the old prechecks; do not reinterpret a current mismatch as accepted.
-2. Admit the owned campaign only if continuity passes. Re-read cumulative balances,
-   retain old/new deployment facts, and verify actual query/resource-limit semantics
-   before installing a successor. Identity-bearing queries that differ are not
-   automatically normalized or exempted by the adapter.
-3. Initialize the runner once on the original database and episode root, with fixed
-   N1–N7 identities, target/dependency, legal numeric bounds, collection/time range
-   and historical request-to-CAS bindings. The old v050.1 repair records contain
-   `view_object_sha256`; v050.2 records contain `binding_object_sha256`. The runner
-   validates each against the original journal; no new ledger is created.
-4. Reserve before any episode acquisition. N1 target, N2 healthy, N3 existing
-   confusable/Core control are development; fixed collection is not model selection.
-   Freeze the complete forward cohort before the first proposal. Preserve old e04.
-5. Run the bounded feedback loop. At the first full primary gate, seal selection.
-   N4 positive, N5 healthy, N6 confusable/Core remain unseen until after selection.
-   Freeze all raw inputs and run one unchanged Shadow gate. No rule edits from results.
-6. On PASS only, promote into the enrolled isolated registry. N7 must use normal
-   API/Worker, no Provider, current-event dependency evidence and ledger deltas.
-   Revoke, replay the sealed N7, recover the experiment and perform birth-bound cleanup.
-
-No live acceptance step above has been run. Real deployment binding and real N1–N7
-remain outstanding; the current offline fixture result does not supply their data.
-Product recovery authority remains NONE. No merge/tag/release/deploy.
-
-Offline verification (temporary fixture data only):
-
-```sh
-.venv/bin/pytest -q tests/product_v050/test_final_closure.py tests/product_v050/test_capability_successor.py
-.venv/bin/ruff check .
-.venv/bin/mypy src/ecomsre/product
-PYTHONPATH=src:. .venv/bin/python -m scripts.ci.verify_product_v050_docker_stability
-```
-
-The historical verifier performs no Docker operation and validates predecessor
-packages, not this new live learning loop. `final_closure_precheck` does inspect
-Docker; do not rerun it until the requested pause notification.
+历史结果均保留：[N1–N3交接](continuation-20260925.md)、[旧N3控制失败](development-control-result.json)、[旧外部资源阻塞](control-repair-result.json)、[此前验收快照](pre-execution-resume-acceptance.json)。原五例、e04缺失、旧候选、失败、事件角色和原账本没有重写。任何后续工作都不能把剩余N4–N7挪作开发重试，或把已持久化的本轮停止marker删除后继续抽样。

@@ -22,6 +22,48 @@ def test_scoped_payload_has_short_role_specific_choices():
     assert "hypotheses" not in str(d.scoped_model_view(view))
 
 
+def test_feedback_source_projection_is_lossless_and_preserves_unknowns():
+    import json
+
+    old, _, _ = materials()
+    source = dict(
+        source="TRACES",
+        status="SUCCESS_NONEMPTY",
+        truncated=True,
+        covered_services=["other"],
+        window={"start": "earlier", "end": "later"},
+    )
+    feedback = dict(
+        event_facts=[
+            dict(
+                event="F01",
+                role="DEVELOPMENT_CONTROL",
+                predicates=[dict(predicate="core:TRACE_FIRST_ERROR", status="UNKNOWN")],
+                sources=[source] * 100,
+            )
+        ],
+        previous_drafts=[dict(error="historical rejection")],
+    )
+    view = d.scoped_view(
+        old,
+        request_key="feedback",
+        target="payment",
+        members=["one", "two"],
+        feedback=feedback,
+    )
+    original = deepcopy(view)
+    projected = d.scoped_model_view(view)["feedback"]
+    restored = deepcopy(projected)
+    rows = restored.pop("source_rows")
+    restored.pop("source_encoding")
+    for event in restored["event_facts"]:
+        event["sources"] = [rows[alias] for alias in event["sources"]]
+    assert restored == feedback
+    assert view == original
+    assert len(projected["event_facts"][0]["sources"]) == 100
+    assert len(json.dumps(projected)) < len(json.dumps(feedback)) / 4
+
+
 def test_bound_context_cannot_cross_request_or_snapshot():
     view, draft = bundle()
     data = draft.model_dump(mode="json")

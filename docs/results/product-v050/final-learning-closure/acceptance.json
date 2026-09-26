@@ -4,21 +4,169 @@
     "denominator": 5,
     "true": 1
   },
-  "base_head": "29c195762b7bf6f4951ca778b6a0a034f2be94fd",
-  "blocked_dependency": "CURRENT_NON_OWNED_RESOURCE_CONTINUITY",
+  "base_head": "cf0a4a1434303b014523ecb78cbb630894d4ab47",
+  "blocked_dependency": null,
   "candidate_locked_before_holdout": null,
   "candidate_origin": null,
   "candidate_semantic_sha256": null,
   "capability_mismatch_check": "NOT_RUN",
   "committed_cost": {
-    "cumulative_microusd": 918501,
-    "new_microusd": 0,
+    "cumulative_microusd": 1015867,
+    "new_microusd": 97366,
     "unknown_usage_reservation_microusd": 95449
   },
+  "control_repair": {
+    "N4_N7": "UNCONSUMED_UNEXPOSED",
+    "accounting": {
+      "amendment_live_starts": 1,
+      "closure_committed_microusd": 97366,
+      "closure_live_starts": 4,
+      "closure_provider_requests": 2,
+      "cumulative_committed_microusd": 1015867,
+      "cumulative_live_starts": 9,
+      "cumulative_provider_requests": 59,
+      "invoice_known": false,
+      "new_semantic_attempts": 2,
+      "unknown_usage_requests": 4,
+      "unknown_usage_reservation_microusd": 95449
+    },
+    "base_head": "cf0a4a1434303b014523ecb78cbb630894d4ab47",
+    "budget_authorization": {
+      "actual_child_contract_installed": true,
+      "committed_usd_round": 8,
+      "committed_usd_total": 20,
+      "cumulative_live_limit": 13,
+      "provider_round": 40,
+      "provider_total": 200,
+      "round_live_limit": 8,
+      "semantic_attempts_round": 6
+    },
+    "candidate_admission": "FAILED_2_OF_2",
+    "current_resource_continuity": "PASSED; NOT_CURRENT_BLOCKER",
+    "data": {
+      "D_CORE_FIX_01": "CORE_KNOWN_CONFIGURATION_ERROR; HEALTHY_RESTORED",
+      "N1": "FAILED_UNBOUND_CONSUMED",
+      "N2": "NO_INCIDENT_RETAINED",
+      "N3": "INSUFFICIENT_EVIDENCE_RETAINED",
+      "complete_candidate_specific_negative_validation": "NOT_ESTABLISHED_FOR_AN_ADMITTED_CANDIDATE",
+      "control_attempts": 3,
+      "established_diagnostic_control_roles": 2,
+      "future_slot_identities_unchanged": true,
+      "insufficient_controls": 1,
+      "original_target_events": 5
+    },
+    "engineering": {
+      "all_four_deployment_identities": "ORIGINAL_04_05_06_DIRECTLY_VERIFIED",
+      "execution_resume": "APPEND_ONLY_ZERO_DISPATCH_05_TO_06",
+      "focused_tests_passed": 45,
+      "full_delivery_regression": "SEE_CONTAINING_COMMIT_CHECKS",
+      "independent_review": "MUST_FIX_0; REAL_REQUEST_BINDINGS_AND_REPEATED_ERROR_STOP_VERIFIED",
+      "lossless_feedback_projection": true,
+      "original_request_0_preserved": true,
+      "predispatch_rejection_preserved": true,
+      "repaired_wire_payload_bytes": 173060,
+      "unchanged_payload_limit_bytes": 192000,
+      "validated_collection_module": "UNCHANGED_EXCEPT_EXACT_DEPLOYMENT_PATHS"
+    },
+    "full_development_evaluation": "NOT_REACHED",
+    "historical_results": [
+      "pre-execution-resume-acceptance.json",
+      "control-repair-result.json",
+      "pre-control-repair-acceptance.json",
+      "development-control-result.json"
+    ],
+    "level_a": "FAILED_AT_ADMISSION; LEARNING_LOOP_NOT_COMPLETED",
+    "level_b": "NOT_ACHIEVED; NOT_RESUMED; N1_DATA_IRRECOVERABLE",
+    "limits": [
+      "No second D control acquisition",
+      "No hand-written winning clause or threshold",
+      "No missing source counted as complete true negative",
+      "No independent validation, registration promotion or zero-LLM reuse demonstrated",
+      "Original failures, ledger prefix and evidence retained"
+    ],
+    "model_attempts": [
+      {
+        "error": "TWO_SOURCES_REQUIRED",
+        "http_status": 200,
+        "ordinal": 0,
+        "predicate_sources": [
+          "METRICS"
+        ],
+        "provider_state": "COMPLETED",
+        "status": "REJECTED"
+      },
+      {
+        "error": "TWO_SOURCES_REQUIRED",
+        "http_status": 200,
+        "ordinal": 1,
+        "predicate_sources": [
+          "METRICS"
+        ],
+        "provider_state": "COMPLETED",
+        "status": "REJECTED"
+      }
+    ],
+    "observed_at": "2026-09-26T22:47:18.365875+00:00",
+    "promotion": "NOT_RUN",
+    "recurrence": "NOT_RUN",
+    "remaining_budget": {
+      "committed_microusd_round": 7902634,
+      "committed_microusd_total": 18984133,
+      "live_slots_reserved_N4_N7": 4,
+      "may_retry_stopped_round": false,
+      "provider_round": 38,
+      "provider_total": 141,
+      "semantic_slots_unused": 4
+    },
+    "revocation": "NOT_RUN",
+    "safety": {
+      "merge": false,
+      "non_owned_mutations": 0,
+      "non_owned_unchanged": true,
+      "owned_05_cleanup": "CLEAN",
+      "owned_06_cleanup": "CLEAN",
+      "owned_deployments_created": 2,
+      "product_recovery_writes": 0,
+      "production_deploy": false,
+      "release": false,
+      "remaining": {
+        "container": 0,
+        "network": 0,
+        "volume": 0
+      }
+    },
+    "schema_version": "ecomsre.product.control-repair-execution-result.v1",
+    "selection": null,
+    "shadow": "NOT_RUN",
+    "stop_authority": "Final Learning Closure Goal C3; no additional information after identical second rejection",
+    "stop_reason": "REPEATED_ERROR_WITHOUT_NEW_OBSERVATIONS",
+    "target_coverage": {
+      "claim": "KNOWN_DIAGNOSIS_QUALIFIED; required candidate coverage gate unchanged; no all-source completeness claim",
+      "complete_sources": [
+        "METRICS",
+        "RUNTIME",
+        "RESOURCES"
+      ],
+      "incomplete_sources": [
+        "LOGS",
+        "TRACES",
+        "CHANGES"
+      ],
+      "predicate_catalog_counts": {
+        "FALSE": 15,
+        "TRUE": 2,
+        "UNKNOWN": 11
+      },
+      "service": "fraud-detection"
+    },
+    "terminal": "ECOMSRE_PRODUCT_V050_NO_VALIDATED_LLM_KNOWLEDGE"
+  },
+  "current_resource_continuity": "PASSED; NOT_CURRENT_BLOCKER",
   "delivery_head": "SEE_GIT_COMMIT_CONTAINING_THIS_PACKAGE",
   "derived_control_counts": {},
   "event_llm_calls": null,
   "forward_development_results": {
+    "D_CORE_FIX_01": "CORE_KNOWN_CONFIGURATION_ERROR; HEALTHY_RESTORED",
     "N1": "FAILED / INCIDENT_CREATE:422 / consumed",
     "N2": "OBSERVED / NO_INCIDENT / full fixed target resource samples",
     "N3": "OBSERVED / INSUFFICIENT_EVIDENCE / known-control gate not met"
@@ -32,62 +180,67 @@
   ],
   "holdout_original_episode_count": 0,
   "invoice_known": false,
-  "latest_precheck": "control-repair-result.json",
-  "latest_precheck_observed_at": "2026-09-26T05:29:55.546278+00:00",
-  "learning_loop_status": "NOT_COMPLETED_CONTROL_REPAIR_SAFETY_BLOCKED",
+  "latest_offline_handoff": "2026-09-26",
+  "latest_precheck": "control-repair-execution-result.json",
+  "latest_precheck_observed_at": "2026-09-26T22:02:01.202956+00:00",
+  "learning_loop_status": "NOT_COMPLETED_DEVELOPMENT_ADMISSION_FAILED",
+  "level_a_status": "FAILED_AT_ADMISSION; LEARNING_LOOP_NOT_COMPLETED",
+  "level_b_status": "NOT_ACHIEVED; NOT_RESUMED; N1_DATA_IRRECOVERABLE",
   "limitations": [
-    "N3 did not satisfy the precollection Core/Extension Known control gate",
-    "No justified offline reconstruction of missing trace causal identity; no resampling or holdout reuse",
-    "No new real model candidate, selection, independent evaluation, promotion or recurrence",
-    "N1 fixed resource window irrecoverable; full Level B not achieved"
+    "No second D control acquisition",
+    "No hand-written winning clause or threshold",
+    "No missing source counted as complete true negative",
+    "No independent validation, registration promotion or zero-LLM reuse demonstrated",
+    "Original failures, ledger prefix and evidence retained",
+    "Full Level B unavailable: N1 fixed resource data irrecoverable"
   ],
   "live_new_and_cumulative": {
-    "new": 3,
-    "cumulative": 8
+    "cumulative": 9,
+    "new": 4
   },
   "matched_registration_id": null,
   "mechanical_end_to_end": "PASS_FIXTURE_ONLY_NOT_REAL_MODEL",
   "model": "gpt-5.4-mini-2026-03-17",
   "non_owned_drift": {
-    "event_utc": "2026-09-25T21:20:07Z",
-    "container_name": "frosty_engelbart",
-    "container_id": "f8d8ec77a5d517974045cb3b9d4f1249654e7239fa9636278bec3f1731e04767",
-    "image": "swerebench/sweb.eval.x86_64.asottile_1776_pyupgrade-330",
     "changed_fields": [
       "inventory.container[foreign_id]",
       "network.none.Containers[foreign_id]"
     ],
-    "ownership": "NOT_ECOMSRE; Hermes-associated bind path; initiating process not established",
-    "lifetime": "created, connected to none network, started, exited, disconnected, destroyed within one second",
-    "non_owned_mutations_by_this_task": 0,
-    "new_baseline_admitted": false,
     "cleanup_non_owned_unchanged": true,
+    "container_id": "f8d8ec77a5d517974045cb3b9d4f1249654e7239fa9636278bec3f1731e04767",
+    "container_name": "frosty_engelbart",
+    "event_utc": "2026-09-25T21:20:07Z",
+    "image": "swerebench/sweb.eval.x86_64.asottile_1776_pyupgrade-330",
+    "lifetime": "created, connected to none network, started, exited, disconnected, destroyed within one second",
+    "new_baseline_admitted": false,
+    "non_owned_mutations_by_this_task": 0,
+    "ownership": "NOT_ECOMSRE; Hermes-associated bind path; initiating process not established",
     "scope": "HISTORICAL_03_EVENT; NO_NEW_04_DRIFT"
   },
   "normal_api_result": "NOT_RUN",
-  "observation_domain": "original five unchanged; N1 unbound failed; N2/N3 independent actual controls with fixed target resource data",
+  "observation_domain": "original five unchanged; N1 failed; N2 retained healthy; N3 retained insufficient; D independently collected known control with explicit target source gaps",
   "offline_interfaces": {
-    "capability_successor": "REAL_ORIGINAL_TO_04_VERIFIED; 03_AND_02_FULL_HISTORY_RETAINED",
+    "capability_successor": "REAL_ORIGINAL_04_05_06_DIRECTLY_VERIFIED; COMPLETE_HISTORY_RETAINED",
     "derived_shadow_controls": "FIXTURE_TESTED_NOT_RUN_LIVE",
-    "fixture_tests_passed": 66,
+    "fixture_test_scope": "CLOSURE_RUNNER_SUCCESSOR_LIVE_HARNESS_ENVIRONMENT_FOCUSED_TESTS",
+    "fixture_tests_passed": 45,
     "independent_review": "MUST_FIX_0_FOR_IMPLEMENTATION_AND_ACTUAL_SUCCESSOR; LEARNING_UNVERIFIED",
     "live_episode_guard": "ORIGINAL_STARTED_RECORDS_ROOT_BOUND_FAILED_STARTS_COUNTED",
-    "provider_sub_budget": "ACTIVATED_ON_ORIGINAL_LEDGER; 0_NEW_REQUESTS",
+    "pre_dispatch_control_guard": "CANDIDATE_INDEPENDENT_GATE_FAILS_WITH_ZERO_PROVIDER_REQUESTS",
+    "proposer_feedback": "REAL_PROVIDER_WIRE_WITH_FIXTURE_TRANSPORT_VERIFIED",
+    "provider_sub_budget": "ORIGINAL_LEDGER; 2_NEW_REQUESTS",
     "selection_lock": "FULL_C4_RUNNER_CONNECTED_FIXTURE_TESTED",
     "split_successor": "ORIGINAL_ROUND02; N1_N3_CONSUMED; N4_N7_UNTOUCHED",
-    "target_control_claim": "TARGET_EVIDENCE_WITHHOLDING_CROSS_SERVICE_NON_BORROWING_ONLY",
-    "proposer_feedback": "REAL_PROVIDER_WIRE_WITH_FIXTURE_TRANSPORT_VERIFIED",
-    "fixture_test_scope": "CLOSURE_RUNNER_SUCCESSOR_LIVE_HARNESS_ENVIRONMENT_FOCUSED_TESTS",
-    "pre_dispatch_control_guard": "CANDIDATE_INDEPENDENT_GATE_FAILS_WITH_ZERO_PROVIDER_REQUESTS"
+    "target_control_claim": "TARGET_EVIDENCE_WITHHOLDING_CROSS_SERVICE_NON_BORROWING_ONLY"
   },
   "original_development_results": {
     "claim": "OLD_CANDIDATE_RECOMPUTED_NOT_NEW_ROUND",
     "denominator": 2,
     "true": 1
   },
-  "owned_cleanup": "OWNED_01_02_03_04_CLEAN; NON_OWNED_UNCHANGED",
+  "owned_cleanup": "OWNED_01_02_03_04_05_06_CLEAN; NON_OWNED_UNCHANGED",
   "pr": 104,
-  "precheck_sha256": "fe1287a917cb5410e0b0d06dd4c9384405c60d3a575b52fe3699dfd12465ccf3",
+  "precheck_sha256": "db9d4b3a3ace4d5a14b1eadf6e66fed944f5a8acff7609336a48f4f7a975b607",
   "product_recovery_writes": 0,
   "promotion": "NOT_RUN",
   "protocol": "NOT_FROZEN",
@@ -97,81 +250,22 @@
   "registry_version": null,
   "request_key": null,
   "requests_new_and_cumulative": {
-    "cumulative": 57,
-    "new": 0
+    "cumulative": 59,
+    "new": 2
   },
-  "review": "ACTUAL_SUCCESSOR_AND_N3_CAUSAL_EVIDENCE_READONLY_REVIEW; NO_LEARNING_ACCEPTANCE",
-  "revocation_check": "NOT_RUN",
-  "scope_level": "REAL_DEPLOYMENT_AND_N2_N3_COLLECTION; NO_NEW_MODEL_OR_SHADOW",
-  "semantic_attempts_new": 0,
-  "shadow_gate": "NOT_RUN",
-  "source_failure_raw_states": "NOT_RUN",
-  "stop_reason": "NEW_NON_OWNED_CONTAINER_AND_BRIDGE_MEMBERSHIP_DRIFT",
-  "terminal": "ECOMSRE_PRODUCT_V050_BLOCKED_SAFETY",
-  "current_resource_continuity": "FAILED_NEW_FOREIGN_CONTAINER_AND_BRIDGE_ATTACHMENT",
-  "latest_offline_handoff": "2026-09-26",
-  "terminal_scope": "CURRENT_CONTROL_REPAIR_SAFETY_BLOCK; PRIOR_N3_AND_SAFETY_RESULTS_RETAINED",
-  "level_a_status": "NOT_COMPLETED_CONTROL_REPAIR_NOT_RUN",
-  "level_b_status": "NOT_ACHIEVED_N1_RESOURCE_WINDOW_IRRECOVERABLE",
-  "control_repair": {
-    "schema_version": "ecomsre.product.control-repair-result.v1",
-    "authority": "USER_ACTIVATED_CONTROL_REPAIR_AMENDMENT",
-    "base_head": "bed49aec5597676065129d4b3d954ec08ecd6587",
-    "terminal": "ECOMSRE_PRODUCT_V050_BLOCKED_SAFETY",
-    "stop_reason": "NEW_NON_OWNED_CONTAINER_AND_BRIDGE_MEMBERSHIP_DRIFT",
-    "observed_at": "2026-09-26T05:29:55.546278+00:00",
-    "qualification": "OFFLINE_SOURCE_CONNECTION_AND_GOVERNANCE_VERIFIED; LIVE_CONTROL_NOT_COLLECTED",
-    "new_slot": "D_CORE_FIX_01",
-    "new_slot_status": "NOT_RESERVED",
-    "budget_authorization": {
-      "cumulative_live_limit": 13,
-      "round_live_limit": 8,
-      "provider_total": 200,
-      "committed_usd_total": 20,
-      "provider_round": 40,
-      "committed_usd_round": 8,
-      "semantic_attempts_round": 6,
-      "actual_child_contract_installed": false
-    },
-    "accounting": {
-      "cumulative_live_starts": 8,
-      "closure_live_starts": 3,
-      "amendment_live_starts": 0,
-      "cumulative_provider_requests": 57,
-      "closure_provider_requests": 0,
-      "cumulative_committed_microusd": 918501,
-      "closure_committed_microusd": 0,
-      "new_semantic_attempts": 0,
-      "invoice_known": false
-    },
-    "data": {
-      "original_target_events": 5,
-      "N1": "FAILED_UNBOUND_CONSUMED",
-      "N2": "NO_INCIDENT_RETAINED",
-      "N3": "INSUFFICIENT_EVIDENCE_RETAINED",
-      "D_CORE_FIX_01": "NOT_RUN",
-      "control_attempts": 2,
-      "established_controls": 1,
-      "insufficient_controls": 1,
-      "future_slot_identities_unchanged": true
-    },
-    "level_a": "NOT_COMPLETED; NO_NEW_REAL_MODEL_PROPOSAL",
-    "level_b": "NOT_ACHIEVED; N1_DATA_IRRECOVERABLE",
-    "N4_N7": "UNCONSUMED_UNEXPOSED",
-    "shadow": "NOT_RUN",
-    "promotion": "NOT_RUN",
-    "recurrence": "NOT_RUN",
-    "revocation": "NOT_RUN",
+  "resource_precheck": {
+    "observed_at": "2026-09-26T22:02:01.202956+00:00",
+    "resource_continuity_passed": true,
     "safety": {
       "changes": {
         "container": {
-          "added": 1,
+          "added": 0,
           "changed": 0,
           "removed": 0
         },
         "network": {
           "added": 0,
-          "changed": 1,
+          "changed": 0,
           "removed": 0
         },
         "volume": {
@@ -182,42 +276,27 @@
       },
       "context_unchanged": true,
       "counts": {
-        "container": 1,
+        "container": 0,
         "network": 3,
         "volume": 3
       },
       "daemon_unchanged": true,
       "docker_mutations": 0,
       "endpoint_unchanged": true,
-      "inventory_unchanged": false,
+      "inventory_unchanged": true,
       "network_extra_unchanged": true,
       "new_baseline_admitted": false,
-      "old_owned_cleanup": true,
-      "new_owned_deployments": 0,
-      "baseline_replacement": false,
-      "non_owned_mutations": 0,
-      "product_recovery_writes": 0
+      "old_owned_cleanup": true
     },
-    "resource_drift": {
-      "added_containers": 1,
-      "changed_networks": 1,
-      "network": "bridge",
-      "field": "Containers[new_foreign_container_id]",
-      "known_ownership": "NOT_ECOMSRE; Hermes-named, no EcomSRE ownership labels; initiating host process not established",
-      "required_external_action": "Responsible Hermes workflow must stop its actual runner and clean its own container/bridge attachment; EcomSRE may not operate on them"
-    },
-    "offline_tests": {
-      "focused_passed": 66,
-      "product_mypy_source_files": 171,
-      "ruff": "PASS",
-      "independent_review": "MUST_FIX_0",
-      "full_regression": "PENDING_STABLE_DELIVERY_HEAD"
-    },
-    "limits": [
-      "Fixture success is not a real known control or learned-rule result",
-      "No new trace causal identity was inferred",
-      "No equal-queue-lag or universal specificity claim",
-      "Prior failures, roles, candidate results and accounting remain unchanged"
-    ]
-  }
+    "sha256": "db9d4b3a3ace4d5a14b1eadf6e66fed944f5a8acff7609336a48f4f7a975b607"
+  },
+  "review": "MUST_FIX_0; REAL_REQUEST_BINDINGS_AND_REPEATED_ERROR_STOP_VERIFIED",
+  "revocation_check": "NOT_RUN",
+  "scope_level": "REAL_D_CONTROL_AND_TWO_REAL_REJECTED_MODEL_PROPOSALS; NO_ADMITTED_CANDIDATE",
+  "semantic_attempts_new": 2,
+  "shadow_gate": "NOT_RUN",
+  "source_failure_raw_states": "NOT_RUN",
+  "stop_reason": "REPEATED_ERROR_WITHOUT_NEW_OBSERVATIONS",
+  "terminal": "ECOMSRE_PRODUCT_V050_NO_VALIDATED_LLM_KNOWLEDGE",
+  "terminal_scope": "REPEATED_MODEL_ADMISSION_ERROR; PRIOR_SAFETY_AND_CONTROL_FAILURES_RETAINED"
 }

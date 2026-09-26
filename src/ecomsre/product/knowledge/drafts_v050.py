@@ -435,6 +435,31 @@ def scoped_model_view(view):
             ),
         )
 
+    # Closure feedback repeats source status/window rows for each extraction.
+    # Dictionary references preserve every row, its order and multiplicity;
+    # the retained request binding and all predicate results stay unchanged.
+    from copy import deepcopy
+
+    feedback = deepcopy(view["feedback"])
+    if isinstance(feedback, dict) and feedback.get("event_facts"):
+        source_aliases = {}
+        source_rows = {}
+        for event in feedback["event_facts"]:
+            references = []
+            for row in event["sources"]:
+                encoded = json.dumps(row, sort_keys=True, separators=(",", ":"))
+                if encoded not in source_aliases:
+                    alias = f"FS{len(source_aliases) + 1:03}"
+                    source_aliases[encoded] = alias
+                    source_rows[alias] = deepcopy(row)
+                references.append(source_aliases[encoded])
+            event["sources"] = references
+        feedback["source_rows"] = source_rows
+        feedback["source_encoding"] = (
+            "Each event sources entry references source_rows; order and repeated "
+            "entries preserve the complete original observations."
+        )
+
     result = dict(
         protocol=view["protocol"],
         binding_id=view["binding_id"],
@@ -465,7 +490,7 @@ def scoped_model_view(view):
         gaps=view["gaps"],
         predicate_catalog=view["predicate_catalog"],
         feature_catalog=view["feature_catalog"],
-        feedback=view["feedback"],
+        feedback=feedback,
     )
 
     # Window dictionary removes repeated timestamps without losing alignment.

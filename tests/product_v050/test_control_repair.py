@@ -73,6 +73,8 @@ def test_amended_chain_preserves_failed_parent_and_uses_new_control(
     assert gate["passed"] and gate["insufficient_control_safe"]
     lock = c.runner.select(candidate)
     assert lock["plan"]["collection"]["control_repair"] == contract
+    assert lock["plan"]["time_range"] == contract["time_range"]
+    assert c.runner.plan == c.plan
     for slot, kind in (("N4", "positive"), ("N5", "healthy"), ("N6", "core")):
         c.episode(slot, kind)
     assert c.runner.evaluate_and_promote(candidate).gate_passed
@@ -267,6 +269,135 @@ def test_consumed_deployment_repair_preserves_all_three_identities(
     with pytest.raises(ValueError, match="predecessor"):
         successor.install(
             app.state.store, **(kwargs | {"repair_predecessor_sha256": "0" * 64})
+        )
+    c.episode(repair.SLOT, "core")
+    request = c.runner._keep("request:0", dict(binding="retained fixture request"))
+    parent = c.runner._get(repair.KEY)
+    resume = repair.install_execution_resume(
+        c.runner,
+        prior_sources={p: (repair.REPO / p).read_text() for p in repair.SOURCES},
+        cleanup={
+            "result": {
+                "clean": True,
+                "remaining": {"container": 0, "network": 0, "volume": 0},
+            }
+        },
+        predecessor_sha256=final,
+        rejection=dict(
+            error="PROVIDER_INPUT_TOO_LARGE",
+            dispatch_occurred=False,
+            unchanged_limit_bytes=192000,
+            full_wire_payload_bytes_after=1000,
+        ),
+    )
+    assert c.runner._get("request:0") == request and c.runner._get(repair.KEY) == parent
+    repeat = dict(
+        prior_sources=resume["prior_sources"],
+        cleanup=resume["cleanup"],
+        predecessor_sha256=final,
+        rejection=resume["predispatch_rejection"],
+    )
+    assert repair.install_execution_resume(c.runner, **repeat) == resume
+    with pytest.raises(ValueError, match="immutable"):
+        repair.install_execution_resume(
+            c.runner, **(repeat | {"predecessor_sha256": "0" * 64})
+        )
+    c.client.post(f"/v1/environments/{env}/verify-jobs")
+    assert run_one_job(c.settings, worker_id="execution-resume")
+    fourth = app.state.capabilities.get(env)
+    deployment = dict(
+        before, deployment_id="resumed", resource_births={"fixture": "resumed"}
+    )
+    resumed = dict(
+        kwargs, new=fourth, new_deployment=deployment, repair_predecessor_sha256=final
+    )
+    for field in (
+        "actual_queries",
+        "windows_and_sampling",
+        "resource_limits",
+        "trust_boundary",
+    ):
+        bad = deepcopy(deployment)
+        bad[field]["drift"] = "changed"
+        with pytest.raises(ValueError, match="semantics differ"):
+            successor.install(app.state.store, **(resumed | {"new_deployment": bad}))
+    digest = successor.install(app.state.store, **resumed)
+    assert successor.install(app.state.store, **resumed) == digest
+    for matrix in (old, consumed, latest, fourth):
+        assert successor.admits(
+            app.state.store,
+            environment_id=env,
+            candidate_environment_id=env,
+            expected=matrix.capability_sha256,
+            actual=fourth.capability_sha256,
+        )
+        assert (
+            successor.historical_matrix(app.state.store, env, matrix.capability_sha256)
+            == matrix
+        )
+    with app.state.store.connect() as connection:
+        assert repair.read_execution_resume(connection, env) == resume
+
+
+@pytest.mark.parametrize("barrier", ["provider", "selection", "holdout"])
+def test_execution_resume_rejects_consumed_frontier(closure, monkeypatch, barrier):
+    c = closure
+    repair.install(c.runner, **prepare(c, monkeypatch))
+    c.episode(repair.SLOT, "core")
+    c.runner._keep("request:0", dict(binding="retained fixture request"))
+    if barrier == "provider":
+        monkeypatch.setattr(repair.closure_budget, "ledger", lambda c: {"different": 1})
+    elif barrier == "selection":
+        c.runner._keep("selection-pending", dict(registration_id="fixture"))
+    else:
+        c.runner._keep("episode:N4", dict(episode_id=c.plan["slots"]["N4"]))
+    with pytest.raises(
+        ValueError, match="zero new Provider|precede selection|unexposed holdout"
+    ):
+        repair.install_execution_resume(
+            c.runner,
+            prior_sources={p: (repair.REPO / p).read_text() for p in repair.SOURCES},
+            cleanup={"result": {"clean": True, "remaining": {"container": 0}}},
+            predecessor_sha256="0" * 64,
+            rejection=dict(
+                error="PROVIDER_INPUT_TOO_LARGE",
+                dispatch_occurred=False,
+                unchanged_limit_bytes=192000,
+                full_wire_payload_bytes_after=1000,
+            ),
+        )
+    assert c.runner._get(repair.RESUME_KEY) is None
+
+
+def test_execution_resume_rejects_changed_collection_globals(
+    closure, monkeypatch, tmp_path
+):
+    c = closure
+    repair.install(c.runner, **prepare(c, monkeypatch))
+    c.episode(repair.SLOT, "core")
+    c.runner._keep("request:0", dict(binding="retained fixture request"))
+    sources = {p: (repair.REPO / p).read_text() for p in repair.SOURCES}
+    for path in (*repair.SOURCES, repair.AUTHORITY, repair.COLLECTION):
+        target = tmp_path / path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes((repair.REPO / path).read_bytes())
+    live = tmp_path / "scripts/product_v050/final_closure_live.py"
+    live.write_text(
+        live.read_text().replace("window_offset_seconds=30", "window_offset_seconds=31")
+    )
+    monkeypatch.setattr(repair, "REPO", tmp_path)
+    with pytest.raises(ValueError, match="deployment path change|module changed"):
+        repair.install_execution_resume(
+            c.runner,
+            prior_sources=sources,
+            cleanup={"result": {"clean": True, "remaining": {"container": 0}}},
+            predecessor_sha256="0" * 64,
+            rejection=dict(
+                error="PROVIDER_INPUT_TOO_LARGE",
+                dispatch_occurred=False,
+                unchanged_limit_bytes=192000,
+                full_wire_payload_bytes_after=1000,
+            ),
         )
 
 

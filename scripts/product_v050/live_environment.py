@@ -73,6 +73,7 @@ def campaign_root(root):
         allowed.parent / "live-final-closure-03",
         allowed.parent / "live-final-closure-04",
         allowed.parent / "live-final-closure-05",
+        allowed.parent / "live-final-closure-06",
     }
     if root not in permitted or root.resolve() != root or root.is_symlink():
         raise ValueError("CAMPAIGN_PATH_NOT_AUTHORIZED")
@@ -118,8 +119,12 @@ def closure_predecessor(root):
             <= datetime.fromisoformat(drift["event_start"])
         ):
             raise ValueError("CLOSURE_RESUMPTION_CONTINUITY_REQUIRED")
-    if root.name == "live-final-closure-05":
-        previous = root.parent / "live-final-closure-04"
+    if root.name in {"live-final-closure-05", "live-final-closure-06"}:
+        previous = root.parent / (
+            "live-final-closure-04"
+            if root.name.endswith("05")
+            else "live-final-closure-05"
+        )
         precheck = load("resumption-precheck.json", root)
         if (
             not load("cleanup.json", previous)["result"]["clean"]
@@ -133,6 +138,16 @@ def closure_predecessor(root):
             or authorization["round_live_limit"] != 8
         ):
             raise ValueError("CONTROL_REPAIR_AUTHORIZATION_REQUIRED")
+        if root.name == "live-final-closure-06":
+            resume = load("execution-resume.json", root)
+            if (
+                resume["parent_contract_sha256"] != digest(authorization)
+                or resume["cleanup"] != load("cleanup.json", previous)
+                or resume["predecessor_sha256"]
+                != load("successor.json", previous)["sha256"]
+                or resume["to_root"] != root.name
+            ):
+                raise ValueError("EXECUTION_RESUME_PARENT_REQUIRED")
     for name in ("cached-images.json", "upstream-pinned-resolved.json"):
         if load(name, root) != load(name, old):
             raise ValueError("CLOSURE_FROZEN_INPUT_CHANGED")
@@ -177,6 +192,7 @@ def prepare(root):
         "live-final-closure-03",
         "live-final-closure-04",
         "live-final-closure-05",
+        "live-final-closure-06",
     }
     old_root, selector_names = closure_predecessor(root) if closure else (None, {})
     if root.name in {"diagnostic-01", "postgres-user-01"}:
@@ -444,10 +460,10 @@ def prepare(root):
             "episode_cap": load("control-repair-contract.json", root)[
                 "cumulative_live_limit"
             ]
-            if root.name == "live-final-closure-05"
+            if root.name in {"live-final-closure-05", "live-final-closure-06"}
             else 12,
             "control_repair_sha256": digest(load("control-repair-contract.json", root))
-            if root.name == "live-final-closure-05"
+            if root.name in {"live-final-closure-05", "live-final-closure-06"}
             else None,
             "episode_order": {
                 **(
