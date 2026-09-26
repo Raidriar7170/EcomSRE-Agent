@@ -1,8 +1,7 @@
 # Final learning closure
 
-> Latest continuation: [2026-09-25 live continuation](continuation-20260925.md).
-> Actual runner stop confirmed; 04 baseline and N2 passed, N3 failed the fixed known-control gate. Level A/B remain incomplete. The record below
-> is the preserved earlier offline handoff, not the current live state.
+> Latest continuation: [activated control repair](control-repair-result.json), 2026-09-26.
+> Offline repair and 66 focused checks passed. Fresh 05:29 UTC continuity failed on a new non-owned container/bridge attachment; no additional slot, deployment or Provider call was started. The following older handoffs remain historical.
 
 Active [Goal](../../../goals/EcomSRE_v0.5_Final_Learning_Closure_Goal.md), same Draft
 [PR #104](https://github.com/Raidriar7170/EcomSRE-Agent/pull/104). Latest handoff:

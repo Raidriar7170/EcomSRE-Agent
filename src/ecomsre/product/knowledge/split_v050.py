@@ -61,7 +61,18 @@ def effective_manifest(connection, environment_id):
         or successor["round_id"] != FINAL_CLOSURE_ROUND
     ):
         raise ValueError("split successor parent or scope differs")
-    return original | successor["additions"]
+    manifest = original | successor["additions"]
+    from ecomsre.product.knowledge.control_repair_v050 import read as repair_contract
+
+    repair = repair_contract(connection, environment_id)
+    if repair is not None:
+        if (
+            repair["parent_split_sha256"] != semantic_sha256_v22(manifest)
+            or repair["episode_id"] in manifest
+        ):
+            raise ValueError("repair split parent differs")
+        manifest = manifest | {repair["episode_id"]: "DEVELOPMENT"}
+    return manifest
 
 
 def append_final_closure_split(store, environment_id, additions, *, parent_sha256):
@@ -219,6 +230,17 @@ def bind_episode(store, incident, episode_id):
             and incident.incident_id in successor["preexisting_incident_ids"]
         ):
             raise ValueError("successor requires a new incident, not relabeled history")
+        from ecomsre.product.knowledge.control_repair_v050 import (
+            read as repair_contract,
+        )
+
+        repair = repair_contract(c, incident.environment_id)
+        if (
+            repair
+            and episode_id == repair["episode_id"]
+            and incident.incident_id in repair["preexisting_incident_ids"]
+        ):
+            raise ValueError("repair requires a new incident, not relabeled history")
         c.execute(
             "INSERT INTO knowledge_episode_incidents_v050 VALUES (?,?,?)",
             (incident.incident_id, incident.environment_id, episode_id),

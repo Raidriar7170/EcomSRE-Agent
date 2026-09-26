@@ -50,3 +50,7 @@ v0.3 Shadow 为 3 个正例、10 个负向/反事实/失败用例，`OTHER_EXTEN
 ## v0.5 活动开发状态
 
 [v0.5 Goal](../goals/EcomSRE_v0.5_Codex_Goal.md) 以 `ECOMSRE_PRODUCT_V050_NO_VALIDATED_LLM_KNOWLEDGE` 有限终态收口，不是完整验收 PASS。5 个独立事件均已恢复实验健康状态；只有一例数值假说获得暂定支持，不代表因果定位。原 live 轮累计 51 次请求、USD 0.695520 承诺上界；先前接口修复轮后为 54 次、USD 0.839581，当前可行性轮后为 57 次、USD 0.918501；旧调用和失败未改写。进度见 [记录](../analysis/product-v050-progress.md)。
+
+### Final learning control repair amendment (2026-09-26)
+
+The activated narrow amendment has 66 passing focused checks and independent review Must Fix 0. It adds an explicit 13/8 live ceiling child contract, preserves N3 as insufficient, binds actual configuration audit and the same N6 collector, and retains original/consumed/new deployment identities. The actual child contract is not installed: fresh read-only continuity found a new non-owned container and bridge attachment. `D_CORE_FIX_01` and N4–N7 are unconsumed; no new Provider request or live start. Current terminal: `ECOMSRE_PRODUCT_V050_BLOCKED_SAFETY`; Level A incomplete, Level B not achieved. Accounting: 57 requests / USD 0.918501 committed / 8 starts. See [control repair result](../results/product-v050/final-learning-closure/control-repair-result.json). No merge, release or Product recovery write.

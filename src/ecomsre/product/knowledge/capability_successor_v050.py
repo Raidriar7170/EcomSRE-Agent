@@ -106,16 +106,21 @@ def load(connection, environment_id):
         raise ValueError("capability successor binding differs")
     cursor = payload
     seen = {payload["sha256"]}
-    while "unused_predecessor_sha256" in cursor:
+    while (
+        "unused_predecessor_sha256" in cursor or "repair_predecessor_sha256" in cursor
+    ):
+        predecessor = cursor.get(
+            "unused_predecessor_sha256", cursor.get("repair_predecessor_sha256")
+        )
         history = connection.execute(
             "SELECT payload_json FROM knowledge_capability_successor_history_v050 WHERE sha256=?",
-            (cursor["unused_predecessor_sha256"],),
+            (predecessor,),
         ).fetchone()
         if history is None:
             raise ValueError("retained successor predecessor absent")
         previous = json.loads(history[0])
         if (
-            previous["sha256"] != cursor["unused_predecessor_sha256"]
+            previous["sha256"] != predecessor
             or previous["sha256"]
             != sha({k: v for k, v in previous.items() if k != "sha256"})
             or previous["old"] != payload["old"]
@@ -131,6 +136,25 @@ def load(connection, environment_id):
             previous["old_deployment"],
             previous["new_deployment"],
         )
+        if "repair_predecessor_sha256" in cursor:
+            from ecomsre.product.knowledge.control_repair_v050 import (
+                read as repair_contract,
+            )
+
+            repair = repair_contract(connection, environment_id)
+            if repair is None or cursor.get("repair_contract_sha256") != sha(repair):
+                raise ValueError("repair deployment authority differs")
+            if cursor.get("retained_development") != {
+                "matrix": previous["new"],
+                "deployment": previous["new_deployment"],
+            }:
+                raise ValueError("consumed development identity differs")
+            validate_pair(
+                previous["new"],
+                cursor["new"],
+                previous["new_deployment"],
+                cursor["new_deployment"],
+            )
         cursor = previous
     validate_pair(
         payload["old"],
@@ -142,7 +166,14 @@ def load(connection, environment_id):
 
 
 def install(
-    store, *, old, new, old_deployment, new_deployment, unused_predecessor_sha256=None
+    store,
+    *,
+    old,
+    new,
+    old_deployment,
+    new_deployment,
+    unused_predecessor_sha256=None,
+    repair_predecessor_sha256=None,
 ):
     old, new, before, after = validate_pair(old, new, old_deployment, new_deployment)
     value = dict(
@@ -154,7 +185,8 @@ def install(
     )
     if unused_predecessor_sha256 is not None:
         value["unused_predecessor_sha256"] = unused_predecessor_sha256
-    value["sha256"] = sha(value)
+    if repair_predecessor_sha256 is not None and unused_predecessor_sha256 is not None:
+        raise ValueError("one explicit predecessor mode required")
     with store.connect() as c:
         c.execute("BEGIN IMMEDIATE")
         current = c.execute(
@@ -173,10 +205,47 @@ def install(
                 "successor must bind the current environment configuration"
             )
         prior = load(c, old.environment_id)
+        if repair_predecessor_sha256 is not None:
+            from ecomsre.product.knowledge.control_repair_v050 import (
+                read as repair_contract,
+            )
+
+            repair = repair_contract(c, old.environment_id)
+            predecessor = prior
+            if (
+                prior
+                and prior.get("repair_predecessor_sha256") == repair_predecessor_sha256
+            ):
+                retained = c.execute(
+                    "SELECT payload_json FROM knowledge_capability_successor_history_v050 WHERE sha256=?",
+                    (repair_predecessor_sha256,),
+                ).fetchone()
+                predecessor = json.loads(retained[0]) if retained else None
+            if (
+                repair is None
+                or predecessor is None
+                or predecessor["sha256"] != repair_predecessor_sha256
+                or "repair_predecessor_sha256" in predecessor
+            ):
+                raise ValueError(
+                    "one authorized repair deployment predecessor required"
+                )
+            validate_pair(predecessor["new"], new, predecessor["new_deployment"], after)
+            value.update(
+                repair_predecessor_sha256=repair_predecessor_sha256,
+                repair_contract_sha256=sha(repair),
+                retained_development={
+                    "matrix": predecessor["new"],
+                    "deployment": predecessor["new_deployment"],
+                },
+            )
+        value["sha256"] = sha(value)
         if prior is not None and prior == value:
             return value["sha256"]
         if prior is not None:
-            if unused_predecessor_sha256 != prior["sha256"]:
+            if (unused_predecessor_sha256 or repair_predecessor_sha256) != prior[
+                "sha256"
+            ]:
                 raise ValueError("capability successor is immutable")
             from ecomsre.product.investigation import closure_budget
 
@@ -192,7 +261,7 @@ def install(
                 )
             intermediate = prior["new"]["capability_sha256"]
             for table in (
-                "incidents",
+                *(() if repair_predecessor_sha256 else ("incidents",)),
                 "knowledge_candidate_pool_v050",
                 "investigation_provider_calls_v050",
             ):
@@ -205,7 +274,10 @@ def install(
                 "SELECT 1 FROM knowledge_closure_runner_v050 WHERE entry_key LIKE 'request:%' OR entry_key LIKE 'attempt:%' OR entry_key='selection-pending'"
             ).fetchone():
                 raise ValueError("redeployment cannot follow proposal preparation")
-        elif unused_predecessor_sha256 is not None:
+        elif (
+            unused_predecessor_sha256 is not None
+            or repair_predecessor_sha256 is not None
+        ):
             raise ValueError("redeployment predecessor absent")
         if selection_lock_v050.load(c) is not None:
             raise ValueError("capability successor must precede candidate lock")
@@ -248,6 +320,11 @@ def admits(store, *, environment_id, candidate_environment_id, expected, actual)
             return expected == actual
         if not {expected, actual}.issubset(
             {value["old"]["capability_sha256"], value["new"]["capability_sha256"]}
+            | (
+                {value["retained_development"]["matrix"]["capability_sha256"]}
+                if "retained_development" in value
+                else set()
+            )
         ):
             return False
         # A later unregistered reverify/config edit invalidates the mapping.
@@ -269,7 +346,10 @@ def historical_matrix(store, environment_id, digest):
     with store.connect() as c:
         value = load(c, environment_id)
     if value is not None:
-        for name in ("old", "new"):
-            if value[name]["capability_sha256"] == digest:
-                return EnvironmentCapabilityMatrixV1.model_validate(value[name])
+        matrices = [value["old"], value["new"]]
+        if "retained_development" in value:
+            matrices.append(value["retained_development"]["matrix"])
+        for matrix in matrices:
+            if matrix["capability_sha256"] == digest:
+                return EnvironmentCapabilityMatrixV1.model_validate(matrix)
     return None

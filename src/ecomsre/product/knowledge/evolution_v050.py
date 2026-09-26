@@ -76,6 +76,7 @@ def evaluation_bindings() -> dict[str, str]:
         "knowledge/shadow_controls_v050.py",
         "knowledge/selection_lock_v050.py",
         "knowledge/capability_successor_v050.py",
+        "knowledge/control_repair_v050.py",
         "investigation/closure_budget.py",
         "investigation/repository.py",
         "knowledge/drafts_v050.py",
@@ -87,6 +88,7 @@ def evaluation_bindings() -> dict[str, str]:
         for path in paths
     } | {p: hashlib.sha256((product.parents[2] / p).read_bytes()).hexdigest() for p in (
         "scripts/product_v050/final_closure.py", "scripts/product_v050/final_closure_live.py",
+        "scripts/product_v050/change_audit.py",
         "scripts/product_v050/live_environment.py", "scripts/product_v050/live_product.py",
     )}
 

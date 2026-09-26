@@ -72,6 +72,7 @@ def campaign_root(root):
         allowed.parent / "live-final-closure-02",
         allowed.parent / "live-final-closure-03",
         allowed.parent / "live-final-closure-04",
+        allowed.parent / "live-final-closure-05",
     }
     if root not in permitted or root.resolve() != root or root.is_symlink():
         raise ValueError("CAMPAIGN_PATH_NOT_AUTHORIZED")
@@ -117,6 +118,21 @@ def closure_predecessor(root):
             <= datetime.fromisoformat(drift["event_start"])
         ):
             raise ValueError("CLOSURE_RESUMPTION_CONTINUITY_REQUIRED")
+    if root.name == "live-final-closure-05":
+        previous = root.parent / "live-final-closure-04"
+        precheck = load("resumption-precheck.json", root)
+        if (
+            not load("cleanup.json", previous)["result"]["clean"]
+            or not precheck["resource_continuity_passed"]
+        ):
+            raise ValueError("CONTROL_REPAIR_CONTINUITY_REQUIRED")
+        authorization = load("control-repair-contract.json", root)
+        if (
+            authorization["slot"] != "D_CORE_FIX_01"
+            or authorization["cumulative_live_limit"] != 13
+            or authorization["round_live_limit"] != 8
+        ):
+            raise ValueError("CONTROL_REPAIR_AUTHORIZATION_REQUIRED")
     for name in ("cached-images.json", "upstream-pinned-resolved.json"):
         if load(name, root) != load(name, old):
             raise ValueError("CLOSURE_FROZEN_INPUT_CHANGED")
@@ -160,6 +176,7 @@ def prepare(root):
         "live-final-closure-02",
         "live-final-closure-03",
         "live-final-closure-04",
+        "live-final-closure-05",
     }
     old_root, selector_names = closure_predecessor(root) if closure else (None, {})
     if root.name in {"diagnostic-01", "postgres-user-01"}:
@@ -424,8 +441,20 @@ def prepare(root):
             "provider_start_count": inspect_ledger(REPO / ".local/product-v050")[
                 "provider_request_count"
             ],
-            "episode_cap": 12,
+            "episode_cap": load("control-repair-contract.json", root)[
+                "cumulative_live_limit"
+            ]
+            if root.name == "live-final-closure-05"
+            else 12,
+            "control_repair_sha256": digest(load("control-repair-contract.json", root))
+            if root.name == "live-final-closure-05"
+            else None,
             "episode_order": {
+                **(
+                    {"D_CORE_FIX_01": "DEVELOPMENT"}
+                    if root.name == "live-final-closure-05"
+                    else {}
+                ),
                 **(
                     {
                         f"N{i}": "DEVELOPMENT"

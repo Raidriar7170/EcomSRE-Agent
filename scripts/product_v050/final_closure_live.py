@@ -17,9 +17,9 @@ from ecomsre.product.pilot.runtime_authority_v02 import (
     write_pilot_runtime_authority_v02,
 )
 
-ROOT = DATA / "live-final-closure-04"
+ROOT = DATA / "live-final-closure-05"
 ROUND = DATA / "live-final-closure-02"
-FAILED = DATA / "live-final-closure-03"
+FAILED = DATA / "live-final-closure-04"
 OLD = DATA / "live-02/postgres-user-01"
 DEPENDENCY = dict(
     template="RESOURCE_USAGE_SAMPLES",
@@ -243,7 +243,7 @@ def bind_existing(campaign):
         new=capability,
         old_deployment=old,
         new_deployment=new,
-        unused_predecessor_sha256=load("successor.json", FAILED)["sha256"],
+        repair_predecessor_sha256=load("successor.json", FAILED)["sha256"],
     )
     save(
         ROOT / "successor.json",
@@ -323,7 +323,7 @@ def runner_for(campaign):
     return runner
 
 
-def fixed_resource(campaign, iid):
+def fixed_resource(campaign, iid, *, execute=True):
     from ecomsre.product.incidents.read_backend import ProductReadBackendV1
     from ecomsre.product.connectors.registry import ConnectorRegistryV1
     from ecomsre.product.connectors.credentials import CredentialResolverV1
@@ -358,6 +358,8 @@ def fixed_resource(campaign, iid):
     ]
     if len(keys) != 1:
         raise ValueError("EXACT_FIXED_RESOURCE_DEPENDENCY_UNAVAILABLE")
+    if not execute:
+        return keys[0]
     campaign.owner.verify()
     return reads.read(keys[0])
 
@@ -392,13 +394,29 @@ def collect(campaign, runner, slot):
         "N1": "QUEUE",
         "N2": "BASELINE",
         "N3": "PAYMENT",
+        "D_CORE_FIX_01": "PAYMENT",
         "N4": "QUEUE",
         "N5": "BASELINE",
         "N6": "PAYMENT",
         "N7": "QUEUE",
     }[slot]
     now = datetime.now(UTC).isoformat()
-    incident_payload(campaign, runner.plan["slots"][slot], now, now)
+    incident_payload(campaign, runner.slots[slot], now, now)
+    if runner._get("control-repair"):
+        fixed_resource(campaign, runner.incident("N2"), execute=False)
+        if slot in {"D_CORE_FIX_01", "N6"}:
+            from ecomsre.product.changes import ChangeEventCreateV1
+
+            ChangeEventCreateV1.model_validate(
+                dict(
+                    service_id=campaign.service_ids["payment"],
+                    category="CONFIGURATION",
+                    occurred_at=now,
+                    revision="prevalidation",
+                    external_change_id="prevalidation",
+                    summary="Observed local configuration rollout",
+                )
+            )
     campaign.owner.verify()
     campaign.controller.read("BASELINE")
     campaign.runtime(slot + "-before")
@@ -416,13 +434,26 @@ def collect(campaign, runner, slot):
     try:
         campaign.owner.verify()
         save(root / "control-intent.json", {"at": stamp(), "document": document})
-        record["activated"] = campaign.controller.apply(document)
+        if slot in {"D_CORE_FIX_01", "N6"} and runner._get("control-repair"):
+            from scripts.product_v050.change_audit import apply as audited_apply
+
+            record["activated"] = audited_apply(
+                campaign,
+                before_state="BASELINE",
+                after_state=document,
+                root=root,
+                phase="activation",
+            )
+        else:
+            record["activated"] = campaign.controller.apply(document)
         campaign.owner.verify()
         with httpx.Client() as client:
             traffic = BoundedHealthyCheckoutTrafficV021(client=client).run(
                 endpoint="http://127.0.0.1:18080/api/checkout",
                 profile=HealthyTrafficProfileV021(
-                    request_seed=61000 + int(slot[1:]),
+                    request_seed=61008
+                    if slot == "D_CORE_FIX_01"
+                    else 61000 + int(slot[1:]),
                     maximum_request_count=3,
                     requests_per_second=1,
                     error_budget=3,
@@ -471,6 +502,16 @@ def collect(campaign, runner, slot):
             record["investigation"] = campaign.client.get(
                 "/v1/incidents/" + iid + "/investigation"
             ).json()
+        material = campaign.evo.knowledge._shadow_runtime_material(iid)
+        save(
+            root / "runtime-material-private.json",
+            dict(
+                incident=material.incident.model_dump(mode="json"),
+                baseline=material.baseline.model_dump(mode="json"),
+                raw_outcomes=[o.model_dump(mode="json") for o in material.raw_outcomes],
+                runtime_input=material.runtime_input.model_dump(mode="json"),
+            ),
+        )
         record["status"] = "OBSERVED"
     except BaseException as exc:
         record.update(
@@ -481,7 +522,18 @@ def collect(campaign, runner, slot):
         try:
             campaign.owner.verify()
             save(root / "restore-intent.json", {"at": stamp(), "document": "BASELINE"})
-            record["restored"] = campaign.controller.apply("BASELINE")
+            if slot in {"D_CORE_FIX_01", "N6"} and runner._get("control-repair"):
+                from scripts.product_v050.change_audit import apply as audited_apply
+
+                record["restored"] = audited_apply(
+                    campaign,
+                    before_state=document,
+                    after_state="BASELINE",
+                    root=root,
+                    phase="restoration",
+                )
+            else:
+                record["restored"] = campaign.controller.apply("BASELINE")
             deadline = time.monotonic() + 360
             while True:
                 lag = campaign.lag()
@@ -657,7 +709,7 @@ def recurrence(campaign, runner):
 
 
 def run_stage(stage):
-    campaign = attach(provider_enabled=stage in {"development", "propose"})
+    campaign = attach(provider_enabled=stage == "propose")
     try:
         runner = runner_for(campaign)
         if stage in {"shadow", "reuse"}:
@@ -677,8 +729,14 @@ def run_stage(stage):
                         "SELECTED_PROTOCOL_IDENTITY_CHANGED_BEFORE_COLLECTION"
                     )
         if stage == "development":
-            for slot in ("N2", "N3"):
-                collect(campaign, runner, slot)
+            if runner._get("control-repair") is None:
+                raise ValueError("CONTROL_REPAIR_CONTRACT_REQUIRED")
+            iid = collect(campaign, runner, "D_CORE_FIX_01")
+            if campaign.evo.knowledge._diagnosis(iid).terminal.value not in {
+                "CORE_KNOWN",
+                "EXTENSION_KNOWN",
+            }:
+                raise ValueError("DEVELOPMENT_KNOWN_CONTROL_NOT_ESTABLISHED")
             runner.freeze_cohort()
         elif stage == "propose":
             from ecomsre.product.investigation.runtime import configured_provider

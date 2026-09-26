@@ -256,13 +256,26 @@ class ClosureRunner:
             return revision["primary_level"]
         return self.plan["primary_level"]
 
+    @property
+    def slots(self):
+        repair = self._get("control-repair")
+        return self.plan["slots"] | (
+            {} if repair is None else {"D_CORE_FIX_01": repair["episode_id"]}
+        )
+
     def reserve_episode(self, slot):
         plan = self.plan
-        if slot not in SLOTS or self._get("episode:" + slot) is not None:
+        repair = self._get("control-repair")
+        if repair is not None:
+            from ecomsre.product.knowledge.control_repair_v050 import verify_sources
+
+            verify_sources(repair)
+        roles = SLOTS | ({} if repair is None else {"D_CORE_FIX_01": "DEVELOPMENT"})
+        if slot not in roles or self._get("episode:" + slot) is not None:
             raise ValueError("episode slot invalid or already consumed; no resampling")
         with self.store.connect() as c:
             lock = selection_lock_v050.load(c)
-            if slot in {"N1", "N2", "N3"} and lock is not None:
+            if roles[slot] == "DEVELOPMENT" and lock is not None:
                 raise ValueError("no new development after selection")
             if slot in HOLDOUT and lock is None:
                 raise ValueError("selection must precede holdout collection")
@@ -276,7 +289,7 @@ class ClosureRunner:
                 ):
                     raise ValueError("test promotion must precede recurrence")
             split = split_v050.effective_manifest(c, self.environment_id)
-            if split.get(plan["slots"][slot]) != SLOTS[slot]:
+            if split.get(self.slots[slot]) != roles[slot]:
                 raise ValueError("episode role drift")
         ledger = self.episode_ledger()
         declaration = self._get("plan")
@@ -285,13 +298,17 @@ class ClosureRunner:
             for k, v in declaration["original_episode_ledger"].items()
         ):
             raise ValueError("original episode ledger changed")
-        if len(ledger) >= 12 or len(ledger) - declaration["baseline_episodes"] >= 7:
+        if len(ledger) >= (
+            12 if repair is None else repair["cumulative_live_limit"]
+        ) or len(ledger) - declaration["baseline_episodes"] >= (
+            7 if repair is None else repair["round_live_limit"]
+        ):
             raise ValueError("live episode balance exhausted")
         reservation = self._keep(
             "episode:" + slot,
             dict(
                 slot=slot,
-                episode_id=plan["slots"][slot],
+                episode_id=self.slots[slot],
                 reserved_at=datetime.now(UTC).isoformat(),
             ),
         )
@@ -359,6 +376,31 @@ class ClosureRunner:
         return material, observations
 
     def freeze_cohort(self):
+        repair = self._get("control-repair")
+        if repair is not None:
+            parent = self._get("cohort")
+            if (
+                sha(parent) != repair["parent_cohort_sha256"]
+                or sha(self.plan) != repair["parent_plan_sha256"]
+            ):
+                raise ValueError("repair cohort parent differs")
+            new = self.incident("D_CORE_FIX_01")
+            controls = [self.incident("N2"), new]
+            return self._keep(
+                "cohort:control-repair",
+                dict(
+                    parent,
+                    controls=controls,
+                    insufficient_controls=[self.incident("N3")],
+                    all_ids=sorted(parent["all_ids"] + [new]),
+                    repair_sha256=sha(repair),
+                    control_denominators={
+                        "attempted": 3,
+                        "required_effective": 2,
+                        "insufficient": 1,
+                    },
+                ),
+            )
         prior = self._get("cohort")
         if prior is not None:
             return prior
@@ -558,7 +600,12 @@ class ClosureRunner:
             self.evo.knowledge._diagnosis(cohort["controls"][0]).terminal.value
             == "NO_INCIDENT"
         )
-        controls_ok = controls_ok and core_preserved and healthy_control
+        insufficient_safe = all(
+            status[i] != "TRUE" for i in cohort.get("insufficient_controls", [])
+        )
+        controls_ok = (
+            controls_ok and core_preserved and healthy_control and insufficient_safe
+        )
         original = cohort["original"]
         level = "B" if candidate.proposal.expression is not None else "A"
         checks = self.expression_checks(candidate, cohort)
@@ -594,6 +641,7 @@ class ClosureRunner:
                 controls_ok=controls_ok,
                 core_preserved=core_preserved,
                 healthy_control=healthy_control,
+                insufficient_control_safe=insufficient_safe,
                 positive_ok=positive_ok,
                 expression_checks=checks,
             ),
@@ -606,6 +654,11 @@ class ClosureRunner:
         return gate
 
     def select(self, candidate):
+        repair = self._get("control-repair")
+        if repair is not None:
+            from ecomsre.product.knowledge.control_repair_v050 import verify_sources
+
+            verify_sources(repair)
         pending = self._get("selection-pending")
         if (
             pending is not None
@@ -650,10 +703,14 @@ class ClosureRunner:
                     plan["slots"][slot]: label for slot, label in HOLDOUT.items()
                 },
                 recurrence_episode=plan["slots"]["N7"],
-                collection=plan["collection"],
+                collection=dict(
+                    plan["collection"], control_repair=self._get("control-repair")
+                ),
                 time_range=plan["time_range"],
                 development_gate_report=dict(
-                    gate, feasibility=self._get("feasibility")
+                    gate,
+                    feasibility=self._get("feasibility"),
+                    control_repair=self._get("control-repair"),
                 ),
                 compatibility_binding={"mode": "EXACT_CAPABILITY_ONLY"}
                 if mapping is None
@@ -718,6 +775,8 @@ class ClosureRunner:
                     event=aliases[iid],
                     role="DEVELOPMENT_CONTROL"
                     if iid in cohort["controls"]
+                    else "INSUFFICIENT_CONTROL"
+                    if iid in cohort.get("insufficient_controls", [])
                     else "SEEN_TARGET_EVENT",
                     original=next(
                         (
@@ -945,10 +1004,14 @@ class ClosureRunner:
         # These retained diagnoses are candidate-independent gates in develop().
         # Do not spend a semantic slot when no proposal can satisfy them. Keep
         # the original observations and roles; this does not permit resampling.
-        if self.evo.knowledge._diagnosis(cohort["controls"][0]).terminal.value != "NO_INCIDENT":
+        if (
+            self.evo.knowledge._diagnosis(cohort["controls"][0]).terminal.value
+            != "NO_INCIDENT"
+        ):
             raise ValueError("DEVELOPMENT_HEALTHY_CONTROL_NOT_ESTABLISHED")
         if self.evo.knowledge._diagnosis(cohort["controls"][1]).terminal.value not in {
-            "CORE_KNOWN", "EXTENSION_KNOWN"
+            "CORE_KNOWN",
+            "EXTENSION_KNOWN",
         }:
             raise ValueError("DEVELOPMENT_KNOWN_CONTROL_NOT_ESTABLISHED")
         if (

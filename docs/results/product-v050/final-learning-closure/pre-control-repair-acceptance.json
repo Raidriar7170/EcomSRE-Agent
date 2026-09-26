@@ -5,7 +5,7 @@
     "true": 1
   },
   "base_head": "29c195762b7bf6f4951ca778b6a0a034f2be94fd",
-  "blocked_dependency": "CURRENT_NON_OWNED_RESOURCE_CONTINUITY",
+  "blocked_dependency": "N3_PREDECLARED_CORE_PRESERVATION_GATE; RETAINED_TRACE_CAUSAL_IDENTITY_INSUFFICIENT",
   "candidate_locked_before_holdout": null,
   "candidate_origin": null,
   "candidate_semantic_sha256": null,
@@ -32,9 +32,9 @@
   ],
   "holdout_original_episode_count": 0,
   "invoice_known": false,
-  "latest_precheck": "control-repair-result.json",
-  "latest_precheck_observed_at": "2026-09-26T05:29:55.546278+00:00",
-  "learning_loop_status": "NOT_COMPLETED_CONTROL_REPAIR_SAFETY_BLOCKED",
+  "latest_precheck": "continuation-20260925.md",
+  "latest_precheck_observed_at": "2026-09-25T22:27:24Z",
+  "learning_loop_status": "NOT_COMPLETED_DEVELOPMENT_DATA_BLOCKED",
   "limitations": [
     "N3 did not satisfy the precollection Core/Extension Known control gate",
     "No justified offline reconstruction of missing trace causal identity; no resampling or holdout reuse",
@@ -69,7 +69,7 @@
   "offline_interfaces": {
     "capability_successor": "REAL_ORIGINAL_TO_04_VERIFIED; 03_AND_02_FULL_HISTORY_RETAINED",
     "derived_shadow_controls": "FIXTURE_TESTED_NOT_RUN_LIVE",
-    "fixture_tests_passed": 66,
+    "fixture_tests_passed": 53,
     "independent_review": "MUST_FIX_0_FOR_IMPLEMENTATION_AND_ACTUAL_SUCCESSOR; LEARNING_UNVERIFIED",
     "live_episode_guard": "ORIGINAL_STARTED_RECORDS_ROOT_BOUND_FAILED_STARTS_COUNTED",
     "provider_sub_budget": "ACTIVATED_ON_ORIGINAL_LEDGER; 0_NEW_REQUESTS",
@@ -106,118 +106,11 @@
   "semantic_attempts_new": 0,
   "shadow_gate": "NOT_RUN",
   "source_failure_raw_states": "NOT_RUN",
-  "stop_reason": "NEW_NON_OWNED_CONTAINER_AND_BRIDGE_MEMBERSHIP_DRIFT",
-  "terminal": "ECOMSRE_PRODUCT_V050_BLOCKED_SAFETY",
-  "current_resource_continuity": "FAILED_NEW_FOREIGN_CONTAINER_AND_BRIDGE_ATTACHMENT",
-  "latest_offline_handoff": "2026-09-26",
-  "terminal_scope": "CURRENT_CONTROL_REPAIR_SAFETY_BLOCK; PRIOR_N3_AND_SAFETY_RESULTS_RETAINED",
-  "level_a_status": "NOT_COMPLETED_CONTROL_REPAIR_NOT_RUN",
-  "level_b_status": "NOT_ACHIEVED_N1_RESOURCE_WINDOW_IRRECOVERABLE",
-  "control_repair": {
-    "schema_version": "ecomsre.product.control-repair-result.v1",
-    "authority": "USER_ACTIVATED_CONTROL_REPAIR_AMENDMENT",
-    "base_head": "bed49aec5597676065129d4b3d954ec08ecd6587",
-    "terminal": "ECOMSRE_PRODUCT_V050_BLOCKED_SAFETY",
-    "stop_reason": "NEW_NON_OWNED_CONTAINER_AND_BRIDGE_MEMBERSHIP_DRIFT",
-    "observed_at": "2026-09-26T05:29:55.546278+00:00",
-    "qualification": "OFFLINE_SOURCE_CONNECTION_AND_GOVERNANCE_VERIFIED; LIVE_CONTROL_NOT_COLLECTED",
-    "new_slot": "D_CORE_FIX_01",
-    "new_slot_status": "NOT_RESERVED",
-    "budget_authorization": {
-      "cumulative_live_limit": 13,
-      "round_live_limit": 8,
-      "provider_total": 200,
-      "committed_usd_total": 20,
-      "provider_round": 40,
-      "committed_usd_round": 8,
-      "semantic_attempts_round": 6,
-      "actual_child_contract_installed": false
-    },
-    "accounting": {
-      "cumulative_live_starts": 8,
-      "closure_live_starts": 3,
-      "amendment_live_starts": 0,
-      "cumulative_provider_requests": 57,
-      "closure_provider_requests": 0,
-      "cumulative_committed_microusd": 918501,
-      "closure_committed_microusd": 0,
-      "new_semantic_attempts": 0,
-      "invoice_known": false
-    },
-    "data": {
-      "original_target_events": 5,
-      "N1": "FAILED_UNBOUND_CONSUMED",
-      "N2": "NO_INCIDENT_RETAINED",
-      "N3": "INSUFFICIENT_EVIDENCE_RETAINED",
-      "D_CORE_FIX_01": "NOT_RUN",
-      "control_attempts": 2,
-      "established_controls": 1,
-      "insufficient_controls": 1,
-      "future_slot_identities_unchanged": true
-    },
-    "level_a": "NOT_COMPLETED; NO_NEW_REAL_MODEL_PROPOSAL",
-    "level_b": "NOT_ACHIEVED; N1_DATA_IRRECOVERABLE",
-    "N4_N7": "UNCONSUMED_UNEXPOSED",
-    "shadow": "NOT_RUN",
-    "promotion": "NOT_RUN",
-    "recurrence": "NOT_RUN",
-    "revocation": "NOT_RUN",
-    "safety": {
-      "changes": {
-        "container": {
-          "added": 1,
-          "changed": 0,
-          "removed": 0
-        },
-        "network": {
-          "added": 0,
-          "changed": 1,
-          "removed": 0
-        },
-        "volume": {
-          "added": 0,
-          "changed": 0,
-          "removed": 0
-        }
-      },
-      "context_unchanged": true,
-      "counts": {
-        "container": 1,
-        "network": 3,
-        "volume": 3
-      },
-      "daemon_unchanged": true,
-      "docker_mutations": 0,
-      "endpoint_unchanged": true,
-      "inventory_unchanged": false,
-      "network_extra_unchanged": true,
-      "new_baseline_admitted": false,
-      "old_owned_cleanup": true,
-      "new_owned_deployments": 0,
-      "baseline_replacement": false,
-      "non_owned_mutations": 0,
-      "product_recovery_writes": 0
-    },
-    "resource_drift": {
-      "added_containers": 1,
-      "changed_networks": 1,
-      "network": "bridge",
-      "field": "Containers[new_foreign_container_id]",
-      "known_ownership": "NOT_ECOMSRE; Hermes-named, no EcomSRE ownership labels; initiating host process not established",
-      "required_external_action": "Responsible Hermes workflow must stop its actual runner and clean its own container/bridge attachment; EcomSRE may not operate on them"
-    },
-    "offline_tests": {
-      "focused_passed": 66,
-      "product_mypy_source_files": 171,
-      "ruff": "PASS",
-      "independent_review": "MUST_FIX_0",
-      "full_regression": "PENDING_STABLE_DELIVERY_HEAD"
-    },
-    "limits": [
-      "Fixture success is not a real known control or learned-rule result",
-      "No new trace causal identity was inferred",
-      "No equal-queue-lag or universal specificity claim",
-      "Prior failures, roles, candidate results and accounting remain unchanged"
-    ]
-  }
+  "stop_reason": "DEVELOPMENT_KNOWN_CONTROL_NOT_ESTABLISHED_NO_LEGAL_RESAMPLING",
+  "terminal": "ECOMSRE_PRODUCT_V050_NO_VALIDATED_LLM_KNOWLEDGE",
+  "current_resource_continuity": "PASS_AFTER_ACTUAL_LAUNCHER_STOP; 04_CLEANUP_NON_OWNED_UNCHANGED",
+  "latest_offline_handoff": "2026-09-25",
+  "terminal_scope": "CURRENT_DEVELOPMENT_DATA_BLOCKER; PRIOR_SAFETY_FAILURES_RETAINED",
+  "level_a_status": "NOT_COMPLETED_DEVELOPMENT_DATA_BLOCKED",
+  "level_b_status": "NOT_ACHIEVED_N1_RESOURCE_WINDOW_IRRECOVERABLE"
 }
