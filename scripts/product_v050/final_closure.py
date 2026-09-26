@@ -941,13 +941,22 @@ class ClosureRunner:
         ordinal = unfinished[0] if unfinished else len(calls)
         if ordinal >= 6:
             raise ValueError("six semantic attempts exhausted")
+        cohort = self.freeze_cohort()
+        # These retained diagnoses are candidate-independent gates in develop().
+        # Do not spend a semantic slot when no proposal can satisfy them. Keep
+        # the original observations and roles; this does not permit resampling.
+        if self.evo.knowledge._diagnosis(cohort["controls"][0]).terminal.value != "NO_INCIDENT":
+            raise ValueError("DEVELOPMENT_HEALTHY_CONTROL_NOT_ESTABLISHED")
+        if self.evo.knowledge._diagnosis(cohort["controls"][1]).terminal.value not in {
+            "CORE_KNOWN", "EXTENSION_KNOWN"
+        }:
+            raise ValueError("DEVELOPMENT_KNOWN_CONTROL_NOT_ESTABLISHED")
         if (
             provider.config.model != "gpt-5.4-mini-2026-03-17"
             or provider.api_style != "responses"
             or provider.config.base_url.rstrip("/") != "https://api.openai.com/v1"
         ):
             raise ValueError("closure must retain the working Mini Responses provider")
-        cohort = self.freeze_cohort()
         # Controls enter feedback, never candidate support/member selection.
         discovery = self.evo.discovery_view(self.environment_id, cohort["positives"])
         feedback = self.feedback(discovery)

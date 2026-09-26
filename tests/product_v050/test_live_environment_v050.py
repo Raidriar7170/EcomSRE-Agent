@@ -289,13 +289,16 @@ def test_baseline_excludes_settlement_without_lowering_window_policy(
     assert (tmp_path / "bounded-settlement.json").is_file()
 
 
+@pytest.mark.parametrize(
+    "root_name", ["live-final-closure-01", "live-final-closure-04"]
+)
 def test_final_closure_preserves_selectors_but_rejects_changed_inputs(
-    tmp_path, monkeypatch
+    tmp_path, monkeypatch, root_name
 ):
     import json
 
     monkeypatch.setattr(live, "REPO", tmp_path)
-    root = tmp_path / ".local/product-v050/live-final-closure-01"
+    root = tmp_path / ".local/product-v050" / root_name
     old = root.parent / "live-02/postgres-user-01"
     for p in (root, old):
         p.mkdir(parents=True)
@@ -312,6 +315,23 @@ def test_final_closure_preserves_selectors_but_rejects_changed_inputs(
     (old / "compose.json").write_text(
         '{"services":{"payment":{"container_name":"old-payment"}}}'
     )
+    if root_name.endswith("04"):
+        failed = root.parent / "live-final-closure-03"
+        failed.mkdir()
+        (failed / "cleanup.json").write_text('{"result":{"clean":true}}')
+        (failed / "drift-summary.json").write_text(
+            json.dumps(
+                dict(reason="NON_OWNED_DRIFT", event_start="2026-09-25T21:20:07Z")
+            )
+        )
+        precheck = dict(
+            resource_continuity_passed=True, observed_at="2026-09-25T20:00:00Z"
+        )
+        (root / "resumption-precheck.json").write_text(json.dumps(precheck))
+        with pytest.raises(ValueError, match="CONTINUITY_REQUIRED"):
+            live.closure_predecessor(root)
+        precheck["observed_at"] = "2026-09-25T22:27:00Z"
+        (root / "resumption-precheck.json").write_text(json.dumps(precheck))
     assert live.campaign_root(root) == root
     assert live.closure_predecessor(root) == (old, {"payment": "old-payment"})
     (root / "cached-images.json").write_text('{"payment":{"Id":"other"}}')

@@ -283,3 +283,39 @@ def test_unused_redeployment_retains_history_and_rejects_actual_incident(
         expected=new.capability_sha256,
         actual=third.capability_sha256,
     )
+    # A second unused redeployment keeps and validates the entire history,
+    # while admitting only original-to-current identities.
+    raw = third.model_dump(mode="json", exclude={"capability_sha256"})
+    raw["verified_at"] = third.model_copy(
+        update={"verified_at": third.verified_at + timedelta(seconds=1)}
+    ).model_dump(mode="json")["verified_at"]
+    fourth = EnvironmentCapabilityMatrixV1.model_validate(
+        dict(raw, capability_sha256=successor.sha(raw))
+    )
+    CapabilityMatrixRepositoryV1(store).put(fourth)
+    fourth_deployment = deepcopy(third_deployment)
+    fourth_deployment.update(
+        deployment_id="fourth", resource_births={"fixture": "fourth-birth"}
+    )
+    final = successor.install(
+        store,
+        old=old,
+        new=fourth,
+        old_deployment=before,
+        new_deployment=fourth_deployment,
+        unused_predecessor_sha256=second,
+    )
+    with store.connect() as c:
+        assert successor.load(c, old.environment_id)["sha256"] == final
+        assert (
+            c.execute(
+                "SELECT COUNT(*) FROM knowledge_capability_successor_history_v050"
+            ).fetchone()[0]
+            == 2
+        )
+        c.execute(
+            "DELETE FROM knowledge_capability_successor_history_v050 WHERE sha256=?",
+            (first,),
+        )
+        with pytest.raises(ValueError, match="predecessor absent"):
+            successor.load(c, old.environment_id)

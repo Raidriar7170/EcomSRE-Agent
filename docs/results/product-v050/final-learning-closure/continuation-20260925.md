@@ -1,4 +1,6 @@
-# Continuation after Hermes paused — live safety blocked
+# Continuation after Hermes paused — retained execution history
+
+**Latest outcome:** see the final section: owned deployment 04 recovered, N2 completed, N3 did not satisfy the predeclared known-control gate.
 
 This record preserves the continuation after the user reported that Hermes container experiments were paused. It does not replace the earlier blocked checks or old candidate results.
 
@@ -23,3 +25,22 @@ The ownership guard raised `NON_OWNED_DRIFT`. No N2 start or Provider request oc
 The user has been asked to identify and stop the actual Hermes container launcher. Do not rerun startup, re-admit a changed baseline, or repeatedly check unchanged state while waiting. A later explicit pause update permits one fresh read-only check. Future owned deployment requires a fresh identity and direct original comparison; preserve every 01/02/03 object, the mapping chain, ROUND02 plan/episode IDs and original budgets. Never run the consumed N1 again. The actual append-only Level A feasibility declaration is now persisted before all new Provider work, with the original B plan intact.
 
 Level A: **NOT_RUN / blocked before N2**. Full Level B: **not achieved; N1 required data irrecoverable**. No learned rule is active. Remaining authorized slots are N2–N7, not seven new events. Product recovery writes remain zero.
+
+
+## Resumption after actual runner stop: development data blocked
+
+The user confirmed the actual Hermes container launcher had stopped. The one new read-only check at **2026-09-25 22:27:24 UTC** passed against the original baseline (zero containers, three networks, three volumes). Owned deployment 04 retained all predecessor identities and established a direct original→04 successor; the entire 03→02 history remains verified without admitting transitive capabilities. Baseline became READY at **22:37:42 UTC**. Independent actual-binding review found Must Fix 0.
+
+N2 and N3 used their original ROUND02 identities, each one real independent episode with the fixed 120-second observation interval and three checkout requests. Both fixed target resource windows contain all five samples; both restored baseline health. N2 returned `NO_INCIDENT`. N3 returned `INSUFFICIENT_EVIDENCE`, not Core/Extension Known. Its raw outcome remains `OBSERVED` (collection completed); this does not mean the development control gate passed.
+
+Readonly CAS analysis found actual payment error metrics and error spans, but every retained payment error span had `first_error_location=false`. Changes were empty, Runtime healthy, and payment resource coverage was absent. Payment/checkout trace results were truncated at the existing 12-record bound. The connector computes first-error identity before truncation: truncation alone does not establish why the flag was false. Retained typed spans have no original span IDs/parent graph, so offline reconstruction cannot establish a missing causal identity. No log, trace flag, diagnosis, query bound, detector or candidate was altered.
+
+The precollection runner required N3 Core/Extension Known. Goal B2's confusable wording alone is broader, but that does not authorize weakening this round's already fixed gate after observing N3. The control design/observation gap prevents every candidate from passing that gate. This is **not a model candidate failure** and not a new Docker safety failure. A bounded runner check now rejects these candidate-independent control failures before Provider dispatch; a real fixture test confirms zero calls, unchanged diagnosis and consumed slot.
+
+Independent readonly review confirmed there is no supported offline repair from the retained N3 records. N3 will not be resampled or renamed; N4–N7 will not be borrowed for development. The post-failure repair is not retroactive data evidence. A future continuation would require an explicit successor data/role contract and newly authorized acquisition budget, not another generic retry or a lowered gate.
+
+Exact birth-bound 04 cleanup removed 22 containers, one network and five volumes, with `clean=true` and `non_owned_unchanged=true`. The original non-owned inventory remains intact. Source versions used during 04 startup and collection are separately retained before the subsequent pre-dispatch guard repair.
+
+Final accounting: **57 cumulative Provider requests / USD 0.918501 committed / eight cumulative live starts**. This closure round consumed **zero Provider requests, zero semantic attempts, three live slots N1–N3**. N4–N7 remain unconsumed and reserved; budget is not exhausted. Invoice actual remains unknown. Level A **NOT_COMPLETED / DEVELOPMENT_DATA_BLOCKED**; full Level B **NOT_ACHIEVED**, including the irrecoverable N1 resource gap. No real new candidate, selection lock, Shadow, promotion, recurrence or revocation was run. Terminal: `ECOMSRE_PRODUCT_V050_NO_VALIDATED_LLM_KNOWLEDGE`.
+
+Focused current-slice checks: **53 passed**. Full current-head regression and final integrity evidence are reported separately at delivery; historical 9225bfc results do not verify this delta. Product recovery writes remain zero. No merge/tag/release/deploy.

@@ -104,22 +104,34 @@ def load(connection, environment_id):
     payload = json.loads(row[0])
     if payload["sha256"] != sha({k: v for k, v in payload.items() if k != "sha256"}):
         raise ValueError("capability successor binding differs")
-    if "unused_predecessor_sha256" in payload:
+    cursor = payload
+    seen = {payload["sha256"]}
+    while "unused_predecessor_sha256" in cursor:
         history = connection.execute(
             "SELECT payload_json FROM knowledge_capability_successor_history_v050 WHERE sha256=?",
-            (payload["unused_predecessor_sha256"],),
+            (cursor["unused_predecessor_sha256"],),
         ).fetchone()
         if history is None:
             raise ValueError("retained successor predecessor absent")
         previous = json.loads(history[0])
         if (
-            previous["sha256"] != payload["unused_predecessor_sha256"]
+            previous["sha256"] != cursor["unused_predecessor_sha256"]
             or previous["sha256"]
             != sha({k: v for k, v in previous.items() if k != "sha256"})
             or previous["old"] != payload["old"]
             or previous["old_deployment"] != payload["old_deployment"]
         ):
             raise ValueError("retained successor predecessor differs")
+        if previous["sha256"] in seen:
+            raise ValueError("retained successor history cycle")
+        seen.add(previous["sha256"])
+        validate_pair(
+            previous["old"],
+            previous["new"],
+            previous["old_deployment"],
+            previous["new_deployment"],
+        )
+        cursor = previous
     validate_pair(
         payload["old"],
         payload["new"],

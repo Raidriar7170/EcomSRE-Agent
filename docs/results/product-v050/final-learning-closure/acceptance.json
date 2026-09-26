@@ -5,7 +5,7 @@
     "true": 1
   },
   "base_head": "29c195762b7bf6f4951ca778b6a0a034f2be94fd",
-  "blocked_dependency": "NON_OWNED_TRANSIENT_CONTAINER_DURING_BASELINE; N2_N7_NOT_STARTED",
+  "blocked_dependency": "N3_PREDECLARED_CORE_PRESERVATION_GATE; RETAINED_TRACE_CAUSAL_IDENTITY_INSUFFICIENT",
   "candidate_locked_before_holdout": null,
   "candidate_origin": null,
   "candidate_semantic_sha256": null,
@@ -20,8 +20,8 @@
   "event_llm_calls": null,
   "forward_development_results": {
     "N1": "FAILED / INCIDENT_CREATE:422 / consumed",
-    "N2": "NOT_RUN",
-    "N3": "NOT_RUN"
+    "N2": "OBSERVED / NO_INCIDENT / full fixed target resource samples",
+    "N3": "OBSERVED / INSUFFICIENT_EVIDENCE / known-control gate not met"
   },
   "frozen_identity": null,
   "full_v050_acceptance": false,
@@ -33,17 +33,17 @@
   "holdout_original_episode_count": 0,
   "invoice_known": false,
   "latest_precheck": "continuation-20260925.md",
-  "latest_precheck_observed_at": "2026-09-25T21:20:07Z",
-  "learning_loop_status": "NOT_RUN",
+  "latest_precheck_observed_at": "2026-09-25T22:27:24Z",
+  "learning_loop_status": "NOT_COMPLETED_DEVELOPMENT_DATA_BLOCKED",
   "limitations": [
-    "No new real model proposal, development pass, selection, Shadow, promotion or recurrence",
-    "N1 required forward Level B resource window was never collected and cannot be recovered",
-    "Actual non-owned transient container after pause notification interrupted baseline; no baseline rotation",
-    "Level A feasibility ceiling is LIMITED; old B plan and N1 FAILED retained"
+    "N3 did not satisfy the precollection Core/Extension Known control gate",
+    "No justified offline reconstruction of missing trace causal identity; no resampling or holdout reuse",
+    "No new real model candidate, selection, independent evaluation, promotion or recurrence",
+    "N1 fixed resource window irrecoverable; full Level B not achieved"
   ],
   "live_new_and_cumulative": {
-    "new": 1,
-    "cumulative": 6
+    "new": 3,
+    "cumulative": 8
   },
   "matched_registration_id": null,
   "mechanical_end_to_end": "PASS_FIXTURE_ONLY_NOT_REAL_MODEL",
@@ -61,31 +61,33 @@
     "lifetime": "created, connected to none network, started, exited, disconnected, destroyed within one second",
     "non_owned_mutations_by_this_task": 0,
     "new_baseline_admitted": false,
-    "cleanup_non_owned_unchanged": true
+    "cleanup_non_owned_unchanged": true,
+    "scope": "HISTORICAL_03_EVENT; NO_NEW_04_DRIFT"
   },
   "normal_api_result": "NOT_RUN",
-  "observation_domain": "original five unchanged; N1 real activation failed before Product incident or resource collection",
+  "observation_domain": "original five unchanged; N1 unbound failed; N2/N3 independent actual controls with fixed target resource data",
   "offline_interfaces": {
-    "capability_successor": "REAL_ORIGINAL_TO_02_AND_03_BINDINGS_VERIFIED; 02_HISTORY_RETAINED",
+    "capability_successor": "REAL_ORIGINAL_TO_04_VERIFIED; 03_AND_02_FULL_HISTORY_RETAINED",
     "derived_shadow_controls": "FIXTURE_TESTED_NOT_RUN_LIVE",
-    "fixture_tests_passed": 51,
+    "fixture_tests_passed": 53,
     "independent_review": "MUST_FIX_0_FOR_IMPLEMENTATION_AND_ACTUAL_SUCCESSOR; LEARNING_UNVERIFIED",
     "live_episode_guard": "ORIGINAL_STARTED_RECORDS_ROOT_BOUND_FAILED_STARTS_COUNTED",
     "provider_sub_budget": "ACTIVATED_ON_ORIGINAL_LEDGER; 0_NEW_REQUESTS",
     "selection_lock": "FULL_C4_RUNNER_CONNECTED_FIXTURE_TESTED",
-    "split_successor": "INSTALLED_APPEND_ONLY; N1_CONSUMED; N2_N7_UNTOUCHED",
+    "split_successor": "ORIGINAL_ROUND02; N1_N3_CONSUMED; N4_N7_UNTOUCHED",
     "target_control_claim": "TARGET_EVIDENCE_WITHHOLDING_CROSS_SERVICE_NON_BORROWING_ONLY",
     "proposer_feedback": "REAL_PROVIDER_WIRE_WITH_FIXTURE_TRANSPORT_VERIFIED",
-    "fixture_test_scope": "CLOSURE_RUNNER_SUCCESSOR_LIVE_HARNESS_ENVIRONMENT_FOCUSED_TESTS"
+    "fixture_test_scope": "CLOSURE_RUNNER_SUCCESSOR_LIVE_HARNESS_ENVIRONMENT_FOCUSED_TESTS",
+    "pre_dispatch_control_guard": "CANDIDATE_INDEPENDENT_GATE_FAILS_WITH_ZERO_PROVIDER_REQUESTS"
   },
   "original_development_results": {
     "claim": "OLD_CANDIDATE_RECOMPUTED_NOT_NEW_ROUND",
     "denominator": 2,
     "true": 1
   },
-  "owned_cleanup": "OWNED_01_02_03_CLEAN; ALL_PROJECT_BIRTHS_REMOVED; NON_OWNED_BASELINE_RESTORED_AT_CLEANUP",
+  "owned_cleanup": "OWNED_01_02_03_04_CLEAN; NON_OWNED_UNCHANGED",
   "pr": 104,
-  "precheck_sha256": "e733c9932d495ea36a77e7a417c873a2287e2cea58e5bbea1af34ae06d7e9a0d",
+  "precheck_sha256": "fe1287a917cb5410e0b0d06dd4c9384405c60d3a575b52fe3699dfd12465ccf3",
   "product_recovery_writes": 0,
   "promotion": "NOT_RUN",
   "protocol": "NOT_FROZEN",
@@ -98,17 +100,17 @@
     "cumulative": 57,
     "new": 0
   },
-  "review": "INDEPENDENT_READ_ONLY_SUCCESSOR_AND_FEASIBILITY_REVIEW_MUST_FIX_0; NO_LIVE_LEARNING_ACCEPTANCE",
+  "review": "ACTUAL_SUCCESSOR_AND_N3_CAUSAL_EVIDENCE_READONLY_REVIEW; NO_LEARNING_ACCEPTANCE",
   "revocation_check": "NOT_RUN",
-  "scope_level": "OFFLINE_CHAIN_AND_REAL_DEPLOYMENT_BINDING_VERIFIED; LEARNING_NOT_RUN",
+  "scope_level": "REAL_DEPLOYMENT_AND_N2_N3_COLLECTION; NO_NEW_MODEL_OR_SHADOW",
   "semantic_attempts_new": 0,
   "shadow_gate": "NOT_RUN",
   "source_failure_raw_states": "NOT_RUN",
-  "stop_reason": "LIVE_SAFETY_BLOCKED_PENDING_ACTUAL_HERMES_CONTAINER_LAUNCHER_STOP",
-  "terminal": "ECOMSRE_PRODUCT_V050_BLOCKED_SAFETY",
-  "current_resource_continuity": "PASSED_INITIAL_FRESH_CHECK; TRANSIENT_DRIFT_DURING_BASELINE; CLEANUP_RETURNED_TO_ORIGINAL_INVENTORY",
+  "stop_reason": "DEVELOPMENT_KNOWN_CONTROL_NOT_ESTABLISHED_NO_LEGAL_RESAMPLING",
+  "terminal": "ECOMSRE_PRODUCT_V050_NO_VALIDATED_LLM_KNOWLEDGE",
+  "current_resource_continuity": "PASS_AFTER_ACTUAL_LAUNCHER_STOP; 04_CLEANUP_NON_OWNED_UNCHANGED",
   "latest_offline_handoff": "2026-09-25",
-  "terminal_scope": "NEW_RUNTIME_DRIFT_OBSERVED_20260925; NO_LEARNING_ACCEPTANCE",
-  "level_a_status": "PREPROPOSAL_PRIMARY_A_DECLARED; BLOCKED_BEFORE_N2",
+  "terminal_scope": "CURRENT_DEVELOPMENT_DATA_BLOCKER; PRIOR_SAFETY_FAILURES_RETAINED",
+  "level_a_status": "NOT_COMPLETED_DEVELOPMENT_DATA_BLOCKED",
   "level_b_status": "NOT_ACHIEVED_N1_RESOURCE_WINDOW_IRRECOVERABLE"
 }

@@ -17,9 +17,9 @@ from ecomsre.product.pilot.runtime_authority_v02 import (
     write_pilot_runtime_authority_v02,
 )
 
-ROOT = DATA / "live-final-closure-03"
+ROOT = DATA / "live-final-closure-04"
 ROUND = DATA / "live-final-closure-02"
-FAILED = ROUND
+FAILED = DATA / "live-final-closure-03"
 OLD = DATA / "live-02/postgres-user-01"
 DEPENDENCY = dict(
     template="RESOURCE_USAGE_SAMPLES",

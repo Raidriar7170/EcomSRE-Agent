@@ -483,6 +483,24 @@ def test_qualified_candidate_blocks_proposer_even_if_selection_write_fails(
     assert c.evo.investigations.accounting()["request_count"] == 0
 
 
+def test_unmet_control_gate_blocks_before_provider_and_preserves_episode(closure):
+    c = closure
+    c.episode("N1", investigate=True)
+    c.episode("N2", "healthy")
+    iid = c.episode("N3", "positive")
+    diagnosis = c.client.get(f"/v1/incidents/{iid}/diagnosis").json()
+    assert diagnosis["terminal"] not in {"CORE_KNOWN", "EXTENSION_KNOWN"}
+    before = c.evo.investigations.accounting()
+    with pytest.raises(ValueError, match="DEVELOPMENT_KNOWN_CONTROL_NOT_ESTABLISHED"):
+        c.runner.propose_next(None)
+    assert c.evo.investigations.accounting() == before
+    assert c.runner._get("attempt:0") is None
+    assert c.runner.incident("N3") == iid
+    assert c.client.get(f"/v1/incidents/{iid}/diagnosis").json() == diagnosis
+    with pytest.raises(ValueError):
+        c.runner.reserve_episode("N3")
+
+
 def test_real_proposer_wire_contains_full_feedback_and_bound_forward_members(closure):
     from ecomsre.model.gateway import OpenAICompatibleConfig
     from ecomsre.product.investigation.contracts import PriceSchedule

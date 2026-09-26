@@ -71,6 +71,7 @@ def campaign_root(root):
         allowed.parent / "live-final-closure-01",
         allowed.parent / "live-final-closure-02",
         allowed.parent / "live-final-closure-03",
+        allowed.parent / "live-final-closure-04",
     }
     if root not in permitted or root.resolve() != root or root.is_symlink():
         raise ValueError("CAMPAIGN_PATH_NOT_AUTHORIZED")
@@ -104,6 +105,18 @@ def closure_predecessor(root):
             or result.get("incident_id")
         ):
             raise ValueError("CLOSURE_FAILED_COLLECTION_NOT_CLEAN")
+    if root.name == "live-final-closure-04":
+        failed = root.parent / "live-final-closure-03"
+        precheck = load("resumption-precheck.json", root)
+        drift = load("drift-summary.json", failed)
+        if (
+            not load("cleanup.json", failed)["result"]["clean"]
+            or drift["reason"] != "NON_OWNED_DRIFT"
+            or not precheck["resource_continuity_passed"]
+            or datetime.fromisoformat(precheck["observed_at"])
+            <= datetime.fromisoformat(drift["event_start"])
+        ):
+            raise ValueError("CLOSURE_RESUMPTION_CONTINUITY_REQUIRED")
     for name in ("cached-images.json", "upstream-pinned-resolved.json"):
         if load(name, root) != load(name, old):
             raise ValueError("CLOSURE_FROZEN_INPUT_CHANGED")
@@ -146,6 +159,7 @@ def prepare(root):
         "live-final-closure-01",
         "live-final-closure-02",
         "live-final-closure-03",
+        "live-final-closure-04",
     }
     old_root, selector_names = closure_predecessor(root) if closure else (None, {})
     if root.name in {"diagnostic-01", "postgres-user-01"}:
