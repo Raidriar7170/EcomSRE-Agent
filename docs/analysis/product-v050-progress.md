@@ -463,3 +463,7 @@ Read scope: Product source/config/tests/Goal/results, original SQLite/CAS and ow
 ## 2026-09-27 event-binding repair and bounded continuation
 
 See [complete result](../results/product-v050/final-learning-closure/README.md). Execution b19ecbf preserves historical .2 requests and the repeated-error stop, adds event-bound .3 source choices, and rechecks all3682 combinations offline without feeding answers to the model. One new real request passed Level A development and locked before holdout. Mechanical Shadow passed, but N5 actual OPEN_WORLD does not establish a healthy control; N7 normal API/Worker returned CORE_KNOWN with no learned binding, despite zero Provider increment. Candidate revoked; separate post-failure readonly replay passed; all owned resources clean, non-owned unchanged. NO_VALIDATED_LLM_KNOWLEDGE, no complete Level A or Level B acceptance. Cumulative60/USD1.067489/13live; closure3/USD0.148988/8live. Live ceilings exhausted; no repeat/tuning. Full tests6797 passed21 skipped; source review clean, acceptance qualification gap preserved.
+
+## 2026-09-27 离线控制资格修复
+
+见 [诊断与后续边界](../results/product-v050/control-qualification-repair/README.md)。新 freeze/evaluate/promote 绑定独立控制资格；N5 fixture 可复现旧机械 PASS 但新协议 REJECTED。N7 纯规则 TRUE 与正常入口 matcher 未执行分开报告。无 Provider/Docker/live/新预算，旧库和 REVOKED 状态不变；263 项 v0.5 fixture 回归通过。

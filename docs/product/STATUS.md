@@ -2,6 +2,9 @@
 
 [最新结果](../results/product-v050/final-learning-closure/README.md)：引用绑定与来源选择已修复，真实模型一次提议通过完整 Level A 开发并锁定。机械 Shadow gate=true，但 N5 实际 OPEN_WORLD，健康资格未确立；N7 返回 CORE_KNOWN，未命中 learned registration，调用增量0不能算复用。最终规则已撤销，owned清理完成、非项目未变。终态仍 NO_VALIDATED_LLM_KNOWLEDGE；Level A完整闭环未通过，Level B未恢复。累计60请求/USD1.067489/13live，本轮3请求/USD0.148988/8live；live上限已用满。
 
+
+最新离线修复：[控制资格与 N7 追溯](../results/product-v050/control-qualification-repair/README.md)。新协议阻止异常健康控制晋升；N7 冻结规则纯回放 TRUE，但正常 Core 分支未执行 Extension matcher。原库只读未变、注册仍 REVOKED，13/13 live 不变。
+
 ## 2026-09-26 历史检查点
 
 

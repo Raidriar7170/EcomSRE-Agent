@@ -74,6 +74,7 @@ def evaluation_bindings() -> dict[str, str]:
         "knowledge/observations_v050.py",
         "knowledge/split_v050.py",
         "knowledge/shadow_controls_v050.py",
+        "knowledge/control_qualification_v050.py",
         "knowledge/selection_lock_v050.py",
         "knowledge/capability_successor_v050.py",
         "knowledge/control_repair_v050.py",
@@ -799,6 +800,30 @@ class KnowledgeEvolutionV050:
             )
         return result
 
+    def control_qualifications(self, candidate, cases):
+        """Read retained normal evidence; never use the candidate match as truth."""
+        from ecomsre.product.knowledge.control_qualification_v050 import qualify
+        from ecomsre.product.knowledge.observations_v050 import load_observations
+        result = {}
+        for iid, stratum in sorted(cases.items()):
+            material = self.knowledge._shadow_runtime_material(iid)
+            diagnosis = self.knowledge._diagnosis(iid)
+            evidence = self.knowledge._evidence(iid, diagnosis.diagnosis_id)
+            snapshots = {}
+            for obj in evidence.objects:
+                if "connector_result" not in obj.payload:
+                    continue
+                if obj.payload["incident_id"] != iid:
+                    raise ValueError("control evidence event binding differs")
+                snapshots[obj.action_id] = obj.payload
+            observations = snapshot_observations(snapshots.values(), material.runtime_input.memory)
+            observations += load_observations(material.incident, self.investigations.objects)
+            result[iid] = qualify(stratum=stratum, target=candidate.proposal.target,
+                incident=material.incident, diagnosis=diagnosis, runtime=material.runtime_input,
+                observations=observations,
+                evidence_objects=[obj.object_sha256 for obj in evidence.objects])
+        return result
+
     def freeze(self, registration_id: str, cases: dict[str, str], *, derived_controls_version: str | None = None) -> None:
         """Freeze evaluator-only incident strata before evaluating any holdout."""
         from ecomsre.product.knowledge.shadow_controls_v050 import CONTROL_VERSION
@@ -856,7 +881,10 @@ class KnowledgeEvolutionV050:
                     i: semantic_sha256_v22(load_observations(self.knowledge._incident(i), self.investigations.objects))
                     for i in cases
                 }
+                from ecomsre.product.knowledge.control_qualification_v050 import VERSION
                 manifest = {
+                    "control_qualification_version": VERSION,
+                    "control_qualifications": self.control_qualifications(candidate, cases),
                     "supplemental_sha256": supplemental_hashes,
                     "split_sha256": split_v050.split_digest(c, candidate.environment_id),
                     "evaluator_and_protocol_sha256": evaluation_bindings(),
@@ -891,6 +919,11 @@ class KnowledgeEvolutionV050:
             ).fetchone()
             if row is None or row["state"] != "FROZEN":
                 raise ValueError("candidate must be frozen and unconsumed")
+            # Legacy freezes are retained history, not consumable by this protocol.
+            from ecomsre.product.knowledge.control_qualification_v050 import VERSION
+            manifest = json.loads(row["freeze_json"])
+            if manifest.get("control_qualification_version") != VERSION:
+                raise ValueError("new evaluation requires observed control qualification protocol")
             # Consume before reading evaluator cases. A crash leaves the attempt retained.
             if (
                 c.execute(
@@ -919,6 +952,12 @@ class KnowledgeEvolutionV050:
             if manifest["split_sha256"] != split_v050.split_digest(c, candidate.environment_id):
                 raise ValueError("frozen episode split differs")
             split_v050.expose(c, manifest["cases"], "HOLDOUT_CONSUMED")
+        from ecomsre.product.knowledge.control_qualification_v050 import VERSION
+        if manifest.get("control_qualification_version") != VERSION:
+            raise ValueError("new evaluation requires observed control qualification protocol")
+        qualifications = self.control_qualifications(candidate, manifest["cases"])
+        if qualifications != manifest.get("control_qualifications"):
+            raise ValueError("frozen control qualification evidence changed")
         outcomes = []
         raw_details = []
         for incident_id, label in sorted(manifest["cases"].items()):
@@ -1057,11 +1096,19 @@ class KnowledgeEvolutionV050:
                     reason_codes=tuple(sorted(set(shadow.reason_codes) | {"ORIGINAL_NEGATIVE_CONTROL_UNKNOWN"})),
                     outcomes=tuple(outcomes),
                 )
+        mechanical_shadow = shadow.model_dump(mode="json")
+        if any(not q["qualified"] for q in qualifications.values()):
+            shadow = IncompleteValidation(
+                reason_codes=tuple(sorted(set(shadow.reason_codes) | {"ORIGINAL_CONTROL_UNQUALIFIED"})),
+                outcomes=tuple(outcomes),
+            )
         with self.store.connect() as c:
             c.execute("BEGIN IMMEDIATE")
             c.execute(
                 "INSERT INTO knowledge_shadow_details_v050 VALUES (?,?)",
                 (registration_id, json.dumps(dict(
+                    control_qualifications=qualifications,
+                    mechanical_shadow=mechanical_shadow,
                     original_episode_count=len(manifest["cases"]),
                     derived_control_counts={origin: sum(o.origin.value == origin for o in outcomes)
                                             for origin in ("DERIVED_COUNTERFACTUAL", "DERIVED_SOURCE_FAILURE")},
@@ -1099,6 +1146,25 @@ class KnowledgeEvolutionV050:
                         "TEST_PROMOTION_DENIED",
                         "Independent validation and fresh test registry enrollment required.",
                     )
+                # The public promotion entry must independently fail closed,
+                # including stale/missing qualification and a forged VALIDATED state.
+                from ecomsre.product.knowledge.control_qualification_v050 import VERSION
+                candidate = CompiledKnowledge.model_validate_json(row["payload_json"])
+                manifest = json.loads(row["freeze_json"] or "{}")
+                evaluation = json.loads(row["evaluation_json"] or "{}")
+                audit_row = c.execute("SELECT payload_json FROM knowledge_shadow_details_v050 WHERE registration_id=?", (registration_id,)).fetchone()
+                audit = {} if audit_row is None else json.loads(audit_row[0])
+                if (manifest.get("control_qualification_version") != VERSION
+                    or manifest.get("evaluator_and_protocol_sha256") != evaluation_bindings()
+                    or manifest.get("candidate_sha256") != candidate.compiled_sha256
+                    or not evaluation.get("gate_passed")
+                    or not audit.get("mechanical_shadow", {}).get("gate_passed")):
+                    raise ProductError("TEST_PROMOTION_DENIED", "Observed control qualification and independent validation required.")
+                qualifications = self.control_qualifications(candidate, manifest["cases"])
+                if (not qualifications or not all(q["qualified"] for q in qualifications.values())
+                    or qualifications != manifest.get("control_qualifications")
+                    or qualifications != audit.get("control_qualifications")):
+                    raise ProductError("TEST_PROMOTION_DENIED", "Observed control qualification failed or changed.")
                 if c.execute(
                     "SELECT 1 FROM environment_extension_registrations WHERE environment_id=? AND status='ACTIVE'",
                     (row["environment_id"],),
