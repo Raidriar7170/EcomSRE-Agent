@@ -1,4 +1,9 @@
-# 当前状态 · Product v0.5 真实模型开发准入失败
+# 当前状态 · Product v0.5 开发通过，完整学习闭环未通过
+
+[最新结果](../results/product-v050/final-learning-closure/README.md)：引用绑定与来源选择已修复，真实模型一次提议通过完整 Level A 开发并锁定。机械 Shadow gate=true，但 N5 实际 OPEN_WORLD，健康资格未确立；N7 返回 CORE_KNOWN，未命中 learned registration，调用增量0不能算复用。最终规则已撤销，owned清理完成、非项目未变。终态仍 NO_VALIDATED_LLM_KNOWLEDGE；Level A完整闭环未通过，Level B未恢复。累计60请求/USD1.067489/13live，本轮3请求/USD0.148988/8live；live上限已用满。
+
+## 2026-09-26 历史检查点
+
 
 最新 [控制补采与执行结果](../results/product-v050/final-learning-closure/execution-resume-20260926.md)：D_CORE_FIX_01 经真实配置读回和正常 API/Worker 得到 CORE_KNOWN，并恢复健康；目标 Logs/Traces/Changes 缺口保留。两次真实模型提议均只选择 Metrics 条件，被 TWO_SOURCES_REQUIRED 拒绝，已按 Goal C3 连续同错规则停止。本轮无获准候选、选择锁或 N4–N7；Level A 开发失败，Level B 未恢复。累计59请求、USD 1.015867、9 live；本轮2请求、USD 0.097366、2语义、4 live。owned 05/06 精确 CLEAN，非项目未变。当前 NO_VALIDATED_LLM_KNOWLEDGE，不是当前 Docker 阻塞，不是预算耗尽。
 

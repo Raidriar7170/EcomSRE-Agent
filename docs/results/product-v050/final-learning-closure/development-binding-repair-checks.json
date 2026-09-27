@@ -1,0 +1,54 @@
+{
+  "acceptance_review": "N5_HEALTH_QUALIFICATION_NOT_ESTABLISHED; N7_REUSE_FAILED; PUBLIC_CLAIM_CORRECTED",
+  "baseline": "54fc58ca2a683f4e34a39a9f9d09f6bdd911efd0",
+  "claim": "ENGINEERING_AND_RETAINED_FAILURE_EVIDENCE_ONLY_NOT_LEARNING_ACCEPTANCE",
+  "execution_head": "b19ecbf",
+  "focused_final": {
+    "passed": 30
+  },
+  "full_tests": {
+    "passed": 6797,
+    "seconds": 792.72,
+    "skipped": 21
+  },
+  "historical_verifiers": "PASS",
+  "mypy": {
+    "source_files": 171,
+    "status": "PASS"
+  },
+  "private_log_sha256": {
+    "final-focused.log": "1e9ac5889b033672a32f99ee85682ea18d364783a71fab1dcf3f86337dd8124e",
+    "final-historical-offline-verification.log": "b07dc096907b063f09e50736df0a982da2bc0018a423855e42bdb2f85e7ad4e1",
+    "final-history-verification.log": "b31346e3c35183bc0a6950e9a6d74d0e184ac8a176c7b10b5495d9971b0e88ba",
+    "full-tests.log": "927e82152a23e76b0643f9730790b1cf046bcb60e69c4eac1b019929761cdc04",
+    "mypy.log": "41de32c3861aaf342c311540e40a3603626267656e2ea0bc2838d845b68824bb"
+  },
+  "ruff": "PASS",
+  "scope": {
+    "final_repository": ".",
+    "frozen": [
+      "docs/goals/EcomSRE_v0.5_Final_Learning_Closure_Goal.md",
+      "docs/goals/EcomSRE_v0.5_Development_Control_Repair_Amendment.md",
+      "retained candidate and evaluator hashes in original selection/freeze records"
+    ],
+    "read": [
+      "src",
+      "scripts",
+      "tests",
+      "docs",
+      "config",
+      ".local/product-v050"
+    ],
+    "write": [
+      "src/ecomsre/product",
+      "scripts/product_v050",
+      "tests/product_v050",
+      "docs/results/product-v050/final-learning-closure",
+      "docs/product/STATUS.md",
+      "docs/product/ARCHITECTURE.md",
+      "docs/analysis/product-v050-progress.md",
+      "config/product-v050/historical-successor-bindings.json"
+    ]
+  },
+  "source_independent_review": "NO_REMAINING_MUST_FIX"
+}

@@ -1,23 +1,49 @@
-# Final learning closure — 本轮开发失败
+# Final learning closure — 开发通过，完整闭环未通过
 
-同一 [Draft PR #104](https://github.com/Raidriar7170/EcomSRE-Agent/pull/104)，沿用原 [Goal](../../../goals/EcomSRE_v0.5_Final_Learning_Closure_Goal.md) 与已激活的 [控制补充](../../../goals/EcomSRE_v0.5_Development_Control_Repair_Amendment.md)。最新结果见 [机器记录](control-repair-execution-result.json)、[执行交接](execution-resume-20260926.md) 和 [验收索引](acceptance.json)。
+同一 [Draft PR #104](https://github.com/Raidriar7170/EcomSRE-Agent/pull/104)，执行版本 `b19ecbf`。沿用原 Goal、控制补充和原账本；[本次修复授权与工程记录](development-binding-repair-20260927.md)、[机器结果](development-binding-repair-result.json)、[当前验收索引](acceptance.json)。终态 **ECOMSRE_PRODUCT_V050_NO_VALIDATED_LLM_KNOWLEDGE**，不声称 PASS_LEVEL_A；Level B 未恢复。
 
-| 验收项 | 实际结果 |
+| 层级 | 实际结果 |
 |---|---|
-| 开发控制 | D_CORE_FIX_01 正常 API/Worker 返回 CORE_KNOWN / CONFIGURATION_ERROR，真实配置读回与健康恢复通过 |
-| 目标负例覆盖 | Metrics、Runtime、固定 Resources 完整；Logs/Traces/Changes 的目标缺口保留，不能称所有来源完整 |
-| 真实模型 | 2 次请求成功返回；两份草稿均只选择 Metrics 条件，均被 TWO_SOURCES_REQUIRED 拒绝 |
-| 开发门槛/选择锁 | 未通过准入，未进入合格候选开发求值，无选择锁 |
-| 独立 Shadow / 晋升 / N7 / 撤销 | 全部 NOT_RUN；N4–N7 未消耗、未曝光 |
-| Level A | 开发失败，闭环未完成 |
-| Level B | 未恢复、未实现；N1 与旧 e04 的资源缺口保留 |
+| 离线枚举 | 新引用绑定下 3,682 组合重算一致，条件与证据绑定可行；非模型生成、非学习成功、未提供枚举答案 |
+| 真实模型 | 原模型一次新请求（ordinal 2）提出 Runtime 健康与 queue lag 两项合取，HTTP 200；Runtime 未改条件 |
+| 正式开发 | 原五例 5/5 TRUE，e04/e05 TRUE；N2、D 均 FALSE 且组件已知；旧 N3 非 TRUE，仍不算完整真负例 |
+| 选择锁 | 首次通过即锁定，03:53:19 UTC；早于 N4 预留 03:54:09 UTC，剩余三次语义槽未抽取 |
+| 机械 Shadow | 一次 gate=true；3 原始事件中 N4 TRUE、N5/N6 FALSE，另有 1 目标反事实、2 来源失败变体 |
+| 独立控制资格 | **未成立**：N5 实际 OPEN_WORLD / UNREGISTERED_OBSERVED_ANOMALY，存在 fraud latency 与 payment error 强异常；预定 NO_INCIDENT stratum、开关恢复和成功流量不能证明真实健康 |
+| 测试晋升 | 机械 gate 后确实晋升；随后复核发现健康资格问题，不能据此认定验收成立；最终已撤销 |
+| N7 正常 API/Worker | 实际 CORE_KNOWN / CONFIGURATION_ERROR，learned bindings 为空，复用检查失败；调用增量 0 不等于成功复用 |
+| 撤销与清理 | REVOKED；追加只读回放不命中，历史诊断不变；owned 22 容器、1 网络、5 卷已清理，剩余0，非项目未变 |
 
-第二次真实 wire input 已包含第一次完整草稿与具体拒绝原因，仍返回同一执行条件。依照 Goal C3，runner 持久化 `REPEATED_ERROR_WITHOUT_NEW_OBSERVATIONS`，不再盲抽剩余槽位。终态为 `ECOMSRE_PRODUCT_V050_NO_VALIDATED_LLM_KNOWLEDGE`。这次是模型准入失败，不是当前 Docker 阻塞，也不是预算用尽。
+## 条件修复与原始证据
 
-累计 **59 次请求 / USD 1.015867 承诺 / 9 live starts**；本闭环轮 **2 次请求 / USD 0.097366 / 2 次语义尝试 / 4 live starts**。已追加激活的 live 上限为 **13/8**；Provider 200/40、费用20/8、语义6上限未增加。Invoice actual 未知，历史4次未知用量的预留仍在。
+协议 `.3` 将引用明确绑定事件、父诊断、读取、窗口与对象摘要。旧 scoped metadata 中四个事件的 Runtime 摘要串用了另一事件；新视图修正12条服务投影（4目标、8比较）并保留发生身份，实际观测值和224个条件结果未变。旧 `.2` 请求、视图、摘要及失败均保留。实际发送 schema 仅依据固定来源映射约束第一、第二条件异来源，第三项可空，保留3,509个合法组合；不按开发结果裁剪。完整反馈含两次旧拒绝，没有手写赢家、排名或枚举候选清单。
 
-本次先解决真实变更事实采集，再遇到一个发送前的反馈大小拒绝。无损来源字典化保留全部反馈，将真实请求体降至173,060字节，未提高192,000上限。异常清理后的窄追加式续接保留原contract、request与采集版本；新部署直接验证 original/04/05/06 四代身份。两次 owned 部署均已精确 CLEAN，非项目资源未变。Product 恢复写入为0，无 merge/tag/release/deploy。
+真实模型草稿、wire、响应CAS和provenance已独立核验一致；正式候选为 `registration-ae3902fb32fd96d87608cb93`。N4–N6锁定后采集，没有挪作开发、改规则或重新盲测。三个派生控制实际为 raw UNKNOWN / SOURCE_COVERAGE_INCOMPLETE，符合fail-closed，但不表示确认健康；原始/派生分母分开，缺失分层保留NOT_AVAILABLE。
 
-聚焦回归45项通过，另有live harness/environment检查；独立源码与真实账本/wire复核 Must Fix 0。完整回归和完整 tracked-diff SHA-256 对交付提交单独记录；测试成功不升级学习结论。
+N5暴露了控制资格与机械标签之间的缺口，必须如实保留。N7在机械gate通过、晋升后启动；健康资格问题于N7在途复核发现，保留既成运行并完成撤销清理。N7因复用失败提前退出，原proof中的 `replay_after_revocation=true` 只是预设意图；**原链撤销回放及capability/environment mismatch检查未执行**。单独追加的只读撤销回放通过，不能冒充原链完整通过。
 
-历史结果均保留：[N1–N3交接](continuation-20260925.md)、[旧N3控制失败](development-control-result.json)、[旧外部资源阻塞](control-repair-result.json)、[此前验收快照](pre-execution-resume-acceptance.json)。原五例、e04缺失、旧候选、失败、事件角色和原账本没有重写。任何后续工作都不能把剩余N4–N7挪作开发重试，或把已持久化的本轮停止marker删除后继续抽样。
+## 账本、限制与下一步
+
+| 口径 | Provider请求 | 承诺费用 USD | live starts | 语义尝试 |
+|---|---:|---:|---:|---:|
+| 此次修复续行 | 1 | 0.051622 | 4 | 1 |
+| 整个 final-closure 轮 | 3 | 0.148988 | 8/8 | 3/6 |
+| 项目累计 | 60 | 1.067489 | 13/13 | 沿用各原轮记录 |
+
+Invoice actual未知；原4次未知usage预留仍计入承诺。旧 repeated-error stop未删除，续行另行追加；所有历史失败、N1/e04缺失、N3角色和原预算保留。没有开发补采、模型切换、Product恢复写入、merge/tag/release或生产部署。
+
+现有已见数据的实际区分来自queue lag，Runtime健康没有展示额外区分增益。本次证明模型可以在修复后的输入/选择机制下提出并通过开发，未证明新机制发现或完整学习闭环。下一步应先处理**独立控制的实际健康资格及正常事件时间窗口/既有Core诊断干扰**，不能再靠选择候补或调整该候选解决；根因仍需另外的只读诊断。本轮live额度已满，不再采集或重试。
+
+## 验证与保留
+
+聚焦30项通过（此前相关86项亦通过）；完整回归 **6797 passed / 21 skipped**，792.72秒；Product mypy171源文件和Ruff通过。历史v0.4.1/v0.5只读verifier通过。源码修复独立复核无Must Fix；验收复核提出健康资格问题，已通过如实报告“未成立”解决过度声明风险，数据缺口本身未解决。
+
+可重复的只读/fixture命令：
+
+```sh
+PYTHONPATH=src uv run pytest -q tests/product_v050/test_control_repair.py tests/product_v050/test_source_bound_draft.py tests/product_v050/test_final_closure.py
+PYTHONPATH=src uv run python -m scripts.ci.verify_product_v050_history
+PYTHONPATH=src uv run python -m scripts.ci.verify_product_v050
+```
+
+历史：[此前README](pre-binding-repair-README.md)、[此前验收](pre-binding-repair-acceptance.json)、[旧停止记录](control-repair-execution-result.json)。私有原件留在原CAS与 `.local/product-v050/live-final-closure-07/`，离线诊断单独保存，未送入proposer。
