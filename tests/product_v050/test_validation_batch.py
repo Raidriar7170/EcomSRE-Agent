@@ -461,3 +461,74 @@ def test_failed_owned_start_consumes_first_slot_and_stops(closure):  # noqa: F81
     with c.evo.store.connect() as conn:
         with pytest.raises(ValueError, match="stopped"):
             batch.verify(conn, batch.load(conn))
+
+
+def test_v1_raw_receipt_remains_readable_with_null_v2_field(closure, monkeypatch):  # noqa: F811
+    import json
+    from scripts.product_v050.validation_runner import ValidationRunner
+
+    c = closure
+    p = parent(c)
+    candidate = batch.install(
+        c.evo,
+        p.registration_id,
+        plan=plan(),
+        authorization_sha256="a" * 64,
+        episode_ledger=c.runner.episode_ledger(),
+    )
+    runner = ValidationRunner(
+        c.evo, p.environment_id, episode_root=c.runner.episode_root
+    )
+    objects = c.app.state.object_store
+    empty = objects.put_json({}).object_sha256
+    cases = {}
+    for slot, kind, label in [
+        ("N4", "positive", "POSITIVE_INCIDENT"),
+        ("N5", "healthy", "NO_INCIDENT"),
+        ("N6", "core", "CONFUSABLE_CORE_KNOWN"),
+    ]:
+        iid = fixture_episode(c, runner, candidate, slot, kind)
+        cases[iid] = label
+        key = batch.BATCH + ":collection:" + slot
+        with c.evo.store.connect() as conn:
+            row = json.loads(
+                conn.execute(
+                    "SELECT payload_json FROM knowledge_closure_runner_v050 WHERE entry_key=?",
+                    (key,),
+                ).fetchone()[0]
+            )
+            row["value"]["raw_index_sha256"] = objects.put_json(
+                dict(
+                    mode="OWNED_LOCAL",
+                    entries=[dict(truncated=False, response_object_sha256=empty)],
+                    operation_artifacts={
+                        k: empty
+                        for k in [
+                            "result.json",
+                            "control-intent.json",
+                            "restore-intent.json",
+                            "incident-request.json",
+                            "incident-response.json",
+                        ]
+                    },
+                )
+            ).object_sha256
+            row["value"]["scrape_receipt_sha256"] = objects.put_json(
+                dict(scrape_recency_passed=True, incident_id=iid, object_sha256=empty)
+            ).object_sha256
+            row["value"]["ingestion_receipt_sha256"] = None
+            row["sha256"] = batch.sha(row["value"])
+            conn.execute(
+                "UPDATE knowledge_closure_runner_v050 SET payload_json=? WHERE entry_key=?",
+                (json.dumps(row), key),
+            )
+    seen = []
+
+    def check(*args, **kw):
+        assert kw["ingestion"] is None and kw["scrape"]["scrape_recency_passed"]
+        seen.append(kw["incident_id"])
+
+    # Only stub the v1 raw validator to isolate protocol-field selection.
+    monkeypatch.setattr("scripts.product_v050.validation_capture.verify_raw", check)
+    batch.verify_collection_objects(c.evo, candidate, cases)
+    assert set(seen) == set(cases)

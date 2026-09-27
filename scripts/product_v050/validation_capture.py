@@ -96,13 +96,41 @@ def capture(objects, index_path, *, occurrence):
         raw_response_observer.reset(token)
 
 
-def verify_raw(entries, *, occurrence, incident_id, snapshots, queries, scrape):
+def verify_raw(
+    entries,
+    *,
+    occurrence,
+    incident_id,
+    snapshots,
+    queries,
+    scrape,
+    ingestion=None,
+    read_bytes=None,
+):
     """Bind retained wire requests to this incident's actual connector windows."""
     if not entries or any(
         e["occurrence"] != occurrence or e["truncated"] for e in entries
     ):
         raise ValueError("raw occurrence/truncation differs")
-    if (
+    if ingestion is not None:
+        from scripts.product_v050.ingestion_evidence import (
+            event_requirements,
+            verify_receipt,
+        )
+
+        if read_bytes is None:
+            raise ValueError("raw sample CAS reader required")
+        verify_receipt(
+            scrape,
+            binding=ingestion,
+            entries=entries,
+            occurrence=occurrence,
+            incident_id=incident_id,
+            queries=queries,
+            read_bytes=read_bytes,
+            requirements=event_requirements(entries, incident_id, queries),
+        )
+    elif (
         not scrape.get("scrape_recency_passed")
         or scrape.get("incident_id") != incident_id
     ):
@@ -124,7 +152,7 @@ def verify_raw(entries, *, occurrence, incident_id, snapshots, queries, scrape):
             for e in entries
             if e.get("action_context")
             and e["action_context"]["incident_id"] == incident_id
-            and e["action_context"]["action_id"] == action["action_id"]
+            and e["action_context"].get("action_id") == action["action_id"]
         ]
         if not reads or any(
             e["action_context"]["context"]["window"] != result["window"] for e in reads
@@ -165,3 +193,33 @@ def verify_raw(entries, *, occurrence, incident_id, snapshots, queries, scrape):
                     for r in fields.values()
                 ):
                     raise ValueError("fixed log window missing")
+
+
+def protocol_v2(
+    queries,
+    *,
+    collector,
+    prometheus_command,
+    preparation_query_keys,
+    target_service=None,
+):
+    """Explicit future opt-in; never upgrade a preserved v1 authorization."""
+    from scripts.product_v050.ingestion_evidence import topology, VERSION
+
+    if not preparation_query_keys or not set(preparation_query_keys) <= set(queries):
+        raise ValueError("fixed preparation queries required")
+    required = {
+        k
+        for k in queries
+        if ":queue_lag:" not in k
+        or target_service is None
+        or k.endswith(":" + target_service)
+    }
+    if not required <= set(preparation_query_keys):
+        raise ValueError("preparation omits required diagnostic metric queries")
+    plan = protocol(queries)
+    plan["target_service"] = target_service
+    plan["version"] = VERSION
+    plan["ingestion"] = topology(collector, prometheus_command, queries)
+    plan["preparation_query_keys"] = sorted(set(preparation_query_keys))
+    return plan

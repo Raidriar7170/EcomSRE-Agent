@@ -241,6 +241,119 @@ def start():
         raise
 
 
+def ingestion_support(
+    campaign, entries, root, incident_id, collection, *, requirements=None
+):
+    """Future v2 only. No model access, rule evaluation or diagnostic creation."""
+    from scripts.product_v050 import ingestion_evidence as ingestion
+
+    binding = collection["ingestion"]
+    collector = load("collector.json", ROOT)
+    command = load("compose.json", ROOT)["services"]["prometheus"]["command"]
+    ingestion.validate_topology(
+        binding, collector, command, collection["actual_queries"]
+    )
+    requirements = (
+        requirements
+        if requirements is not None
+        else ingestion.event_requirements(
+            entries, incident_id, collection["actual_queries"]
+        )
+    )
+    config = next(
+        c
+        for c in campaign.app.state.environments.get(campaign.env).connector_configs
+        if c.kind.value == "PROMETHEUS"
+    )
+    http = BoundedHttpTransportV1(
+        credential_resolver=CredentialResolverV1(),
+        credential_refs=config.credential_refs,
+        timeout_seconds=10,
+        maximum_response_bytes=config.settings["maximum_response_bytes"],
+    )
+    try:
+        ingestion.acquire(
+            http,
+            config.endpoint,
+            binding,
+            requirements,
+            incident_id=incident_id,
+            monotonic=time.monotonic,
+            preparation=incident_id is None,
+        )
+    finally:
+        http.close()
+    objects = campaign.app.state.object_store
+    return dict(
+        version=ingestion.VERSION,
+        collector_object_sha256=objects.put_json(collector).object_sha256,
+        prometheus_command_object_sha256=objects.put_json(command).object_sha256,
+        requirements=requirements,
+    )
+
+
+def prepare_ingestion(campaign, runner):
+    """One bounded read-only readiness pass before any fault/episode reservation."""
+    from scripts.product_v050 import ingestion_evidence as ingestion
+
+    collection = runner.batch["plan"]["collection"]
+    if "ingestion" not in collection:
+        raise ValueError(
+            "future ingestion-aware authorization required; v1 cannot resume"
+        )
+    campaign.owner.verify()
+    if runner._get("ingestion-preparation-attempt") is not None:
+        raise ValueError("ingestion preparation already attempted")
+    attempt = dict(
+        at=stamp(), incident_created=False, batch_sha256=runner.batch["sha256"]
+    )
+    now = datetime.fromisoformat(attempt["at"]["utc"]).timestamp()
+    requirements = [
+        dict(
+            query_key=k, query=collection["actual_queries"][k], start=now - 300, end=now
+        )
+        for k in collection["preparation_query_keys"]
+    ]
+    runner._keep("ingestion-preparation-attempt", attempt)
+    occurrence = "INGESTION_READINESS_NOT_EPISODE"
+    with capture(
+        campaign.app.state.object_store,
+        ROOT / "ingestion-readiness.jsonl",
+        occurrence=occurrence,
+    ) as entries:
+        receipt = ingestion_support(
+            campaign, entries, ROOT, None, collection, requirements=requirements
+        )
+    objects = campaign.app.state.object_store
+    receipt["assessment"] = ingestion.verify(
+        collection["ingestion"],
+        entries=entries,
+        occurrence=occurrence,
+        incident_id=None,
+        queries=collection["actual_queries"],
+        read_bytes=objects.read_bytes,
+        collector=load("collector.json", ROOT),
+        command=load("compose.json", ROOT)["services"]["prometheus"]["command"],
+        requirements=requirements,
+    )
+    receipt["raw_index_sha256"] = objects.put_json(entries).object_sha256
+    save(ROOT / "ingestion-readiness-result.json", receipt)
+    # Failures are retained but are never admissible preparation receipts.
+    if not receipt["assessment"]["passed"]:
+        raise ValueError("INGESTION_PREPARATION_INCOMPLETE_NO_RETRY")
+    ingestion.verify_receipt(
+        receipt,
+        binding=collection["ingestion"],
+        entries=entries,
+        occurrence=occurrence,
+        incident_id=None,
+        queries=collection["actual_queries"],
+        read_bytes=objects.read_bytes,
+        requirements=requirements,
+    )
+    runner._keep("ingestion-preparation", receipt)
+
+
 def raw_support(campaign, entries, root, incident_id):
     """Fixed supplementary raw counters, never fed into the rule or diagnosis."""
     config = next(
@@ -353,6 +466,10 @@ def collect(campaign, runner, slot):
             flush=True,
         )
     campaign.owner.verify()
+    if "ingestion" in plan and slot == "N4":
+        # The fixed isolation wait supplies the complete effective lookback.
+        # This is still deployment preparation: no slot reservation or fault yet.
+        prepare_ingestion(campaign, runner)
     # One readiness check only; no diagnostic probing or adaptive waiting.
     campaign.controller.read("BASELINE")
     campaign.runtime(slot + "-isolated-ready")
@@ -365,7 +482,24 @@ def collect(campaign, runner, slot):
     ) as entries:
         iid = previous.collect(campaign, runner, slot)
         original_entries = list(entries)
-        raw_support(campaign, original_entries, root, iid)
+        if "ingestion" in plan:
+            from scripts.product_v050 import ingestion_evidence as ingestion
+
+            sample_receipt = ingestion_support(campaign, entries, root, iid, plan)
+            sample_receipt["assessment"] = ingestion.verify(
+                plan["ingestion"],
+                entries=entries,
+                occurrence=runner.slots[slot],
+                incident_id=iid,
+                queries=plan["actual_queries"],
+                read_bytes=campaign.app.state.object_store.read_bytes,
+                collector=load("collector.json", ROOT),
+                command=load("compose.json", ROOT)["services"]["prometheus"]["command"],
+                requirements=sample_receipt["requirements"],
+            )
+            save(root / "ingestion-receipt.json", sample_receipt)
+        else:
+            raw_support(campaign, original_entries, root, iid)
     if any(e["truncated"] for e in entries):
         raise ValueError("RAW_RESPONSE_RETENTION_TRUNCATED")
     save(
@@ -415,7 +549,12 @@ def collect(campaign, runner, slot):
         incident_id=iid,
         snapshots=snapshots.values(),
         queries=plan["actual_queries"],
-        scrape=load("scrape-receipt.json", root),
+        scrape=load(
+            "ingestion-receipt.json" if "ingestion" in plan else "scrape-receipt.json",
+            root,
+        ),
+        ingestion=plan.get("ingestion"),
+        read_bytes=campaign.app.state.object_store.read_bytes,
     )
     for entry in entries:
         campaign.app.state.object_store.read_bytes(entry["response_object_sha256"])
@@ -425,7 +564,12 @@ def collect(campaign, runner, slot):
         raw_index=dict(
             mode="OWNED_LOCAL", entries=entries, operation_artifacts=artifact_index
         ),
-        scrape_receipt=load("scrape-receipt.json", root),
+        scrape_receipt=load("scrape-receipt.json", root)
+        if "ingestion" not in plan
+        else None,
+        ingestion_receipt=load("ingestion-receipt.json", root)
+        if "ingestion" in plan
+        else None,
     )
     return iid
 

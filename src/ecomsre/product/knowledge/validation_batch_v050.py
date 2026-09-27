@@ -94,6 +94,12 @@ def install(evo, parent_id, *, plan, authorization_sha256, episode_ledger):
         if len(rows) != 1 or rows[0]["state"] != "REVOKED":
             raise ValueError("retained revoked parent required")
         parent = CompiledKnowledge.model_validate_json(rows[0]["payload_json"])
+        if (
+            "ingestion" in plan["collection"]
+            and parent.origin == "LLM"
+            and plan["collection"].get("target_service") != parent.proposal.target
+        ):
+            raise ValueError("future preparation must bind fixed target service")
         if parent.origin not in {"LLM", "FIXTURE_ONLY"}:
             raise ValueError("original model or fixture provenance required")
         lock = original_lock(c)
@@ -427,6 +433,7 @@ def collection_receipts(c, value, cases):
 
 
 def verify_collection_objects(evo, candidate, cases):
+    verify_ingestion_cases(evo, candidate, cases)
     with evo.store.connect() as c:
         value = load(c, candidate.registration_id)
         if value is None:
@@ -472,7 +479,11 @@ def verify_collection_objects(evo, candidate, cases):
                 entries = retained_index["entries"]
                 if (
                     not entries
-                    or not collected["scrape_receipt_sha256"]
+                    or not collected.get(
+                        "ingestion_receipt_sha256"
+                        if "ingestion" in value["plan"]["collection"]
+                        else "scrape_receipt_sha256",
+                    )
                     or any(e["truncated"] for e in entries)
                 ):
                     raise ValueError("complete raw acquisition required")
@@ -480,7 +491,9 @@ def verify_collection_objects(evo, candidate, cases):
 
                 scrape = json.loads(
                     evo.investigations.objects.read_bytes(
-                        collected["scrape_receipt_sha256"]
+                        collected["ingestion_receipt_sha256"]
+                        if "ingestion" in value["plan"]["collection"]
+                        else collected["scrape_receipt_sha256"]
                     )
                 )
                 snapshots = {
@@ -498,8 +511,11 @@ def verify_collection_objects(evo, candidate, cases):
                     snapshots=snapshots.values(),
                     queries=value["plan"]["collection"]["actual_queries"],
                     scrape=scrape,
+                    ingestion=value["plan"]["collection"].get("ingestion"),
+                    read_bytes=evo.investigations.objects.read_bytes,
                 )
-                evo.investigations.objects.read_bytes(scrape["object_sha256"])
+                if "ingestion" not in value["plan"]["collection"]:
+                    evo.investigations.objects.read_bytes(scrape["object_sha256"])
                 for entry in entries:
                     evo.investigations.objects.read_bytes(
                         entry["response_object_sha256"]
@@ -509,3 +525,151 @@ def verify_collection_objects(evo, candidate, cases):
                 != evo.knowledge._diagnosis(collected["incident_id"]).result_sha256
             ):
                 raise ValueError("normal diagnosis capture binding changed")
+
+
+def verify_ingestion_preparation(evo, value):
+    """Read-only validation of the future protocol's pre-fault readiness proof."""
+    from scripts.product_v050.ingestion_evidence import verify_receipt
+
+    collection = value["plan"]["collection"]
+    if "ingestion" not in collection:
+        return
+    with evo.store.connect() as c:
+        verify(c, value)
+        row = c.execute(
+            "SELECT payload_json FROM knowledge_closure_runner_v050 WHERE entry_key=?",
+            (BATCH + ":ingestion-preparation",),
+        ).fetchone()
+        if row is None:
+            raise ValueError("pre-fault ingestion preparation required")
+        wrapped = json.loads(row[0])
+        if sha(wrapped["value"]) != wrapped["sha256"]:
+            raise ValueError("ingestion preparation digest differs")
+        proof = wrapped["value"]
+        attempt_row = c.execute(
+            "SELECT payload_json FROM knowledge_closure_runner_v050 WHERE entry_key=?",
+            (BATCH + ":ingestion-preparation-attempt",),
+        ).fetchone()
+        if attempt_row is None:
+            raise ValueError("sealed preparation attempt missing")
+        attempt = json.loads(attempt_row[0])
+        if (
+            attempt["sha256"] != sha(attempt["value"])
+            or attempt["value"]["batch_sha256"] != value["sha256"]
+        ):
+            raise ValueError("preparation attempt binding differs")
+    objects = evo.investigations.objects
+    entries = json.loads(objects.read_bytes(proof["raw_index_sha256"]))
+    requirements = proof["requirements"]
+    required_keys = {
+        k
+        for k in collection["actual_queries"]
+        if ":queue_lag:" not in k
+        or collection.get("target_service") is None
+        or k.endswith(":" + collection["target_service"])
+    }
+    if (
+        not required_keys <= set(collection["preparation_query_keys"])
+        or sorted(r["query_key"] for r in requirements)
+        != collection["preparation_query_keys"]
+    ):
+        raise ValueError("preparation query coverage differs")
+    if len({r["end"] for r in requirements}) != 1 or any(
+        r["end"] - r["start"] != 300 for r in requirements
+    ):
+        raise ValueError("fixed preparation window differs")
+    anchor = datetime.fromisoformat(attempt["value"]["at"]["utc"])
+    start, end = collection_range(value["plan"])
+    if not start <= anchor <= end or requirements[0]["end"] != anchor.timestamp():
+        raise ValueError("preparation window is not this batch attempt")
+    if (
+        not entries
+        or len(entries) > collection["ingestion"]["max_requests"]
+        or any(
+            not anchor
+            <= datetime.fromisoformat(e["requested_at"])
+            <= datetime.fromisoformat(e["received_at"])
+            <= end
+            or (datetime.fromisoformat(e["received_at"]) - anchor).total_seconds()
+            > collection["ingestion"]["max_seconds"]
+            for e in entries
+        )
+    ):
+        raise ValueError("preparation request time/cap differs")
+    first_request = min(
+        datetime.fromisoformat(e["requested_at"]).timestamp() for e in entries
+    )
+    if (
+        not 0
+        <= first_request - requirements[0]["end"]
+        <= collection["ingestion"]["max_sample_age_seconds"]
+    ):
+        raise ValueError("preparation evaluation time is not current")
+    verify_receipt(
+        proof,
+        binding=collection["ingestion"],
+        entries=entries,
+        occurrence="INGESTION_READINESS_NOT_EPISODE",
+        incident_id=None,
+        queries=collection["actual_queries"],
+        read_bytes=objects.read_bytes,
+        requirements=requirements,
+    )
+    return proof
+
+
+def verify_ingestion_cases(evo, candidate, cases):
+    """v2 evidence is required even by direct qualification, before matching."""
+    with evo.store.connect() as c:
+        value = load(c, candidate.registration_id)
+        if value is None or "ingestion" not in value["plan"]["collection"]:
+            return
+        verify(c, value)
+    preparation = verify_ingestion_preparation(evo, value)
+    objects = evo.investigations.objects
+    from scripts.product_v050.validation_capture import verify_raw
+
+    for iid in cases:
+        with evo.store.connect() as c:
+            slot = next(
+                (
+                    s
+                    for s in ("N4", "N5", "N6", "N7")
+                    if c.execute(
+                        "SELECT 1 FROM knowledge_closure_runner_v050 WHERE entry_key=?",
+                        (BATCH + ":binding:" + s,),
+                    ).fetchone()
+                    and receipt(c, s, "binding")["incident_id"] == iid
+                ),
+                None,
+            )
+            if slot is None:
+                raise ValueError("ingestion event binding missing")
+            collected = receipt(c, slot, "collection")
+            reservation = receipt(c, slot, "episode")
+        proof = json.loads(objects.read_bytes(collected["ingestion_receipt_sha256"]))
+        entries = json.loads(objects.read_bytes(collected["raw_index_sha256"]))[
+            "entries"
+        ]
+        prep_entries = json.loads(objects.read_bytes(preparation["raw_index_sha256"]))
+        if max(
+            datetime.fromisoformat(e["received_at"]) for e in prep_entries
+        ) >= datetime.fromisoformat(reservation["reserved_at"]):
+            raise ValueError("ingestion preparation must precede fault reservation")
+        snapshots = [
+            o.payload
+            for o in evo.knowledge._evidence(
+                iid, evo.knowledge._diagnosis(iid).diagnosis_id
+            ).objects
+            if "connector_result" in o.payload
+        ]
+        verify_raw(
+            entries,
+            occurrence=reservation["episode_id"],
+            incident_id=iid,
+            snapshots=snapshots,
+            queries=value["plan"]["collection"]["actual_queries"],
+            scrape=proof,
+            ingestion=value["plan"]["collection"]["ingestion"],
+            read_bytes=objects.read_bytes,
+        )

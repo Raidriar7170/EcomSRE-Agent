@@ -1,0 +1,38 @@
+{
+  "actual_active_targets": 0,
+  "committed_microusd": 1067489,
+  "database_sha256": "e0dc73fdd723a05908b17d740bcf8690d7f25f829b67f34f698420d852df24b3",
+  "database_unchanged": true,
+  "ingestion_binding": {
+    "attempts": 1,
+    "collector_sha256": "4b9492259da16eeb0849bd5a57a19342e498ad78c45c1583673c5388403b9e3a",
+    "collector_telemetry": "NOT_REQUIRED_NOT_PROVEN_AVAILABLE",
+    "exact_ingestion_latency": "UNKNOWN_NOT_EXPOSED",
+    "max_requests": 80,
+    "max_sample_age_seconds": 30,
+    "max_seconds": 120,
+    "mode": "OTLP_PUSH",
+    "prometheus_command_sha256": "20e677b08504d5b97cdda429ff31197bcafb6dd8b063090b22309d88790e9749",
+    "queries_sha256": "ac76a61ac89aa18641e8695846fe30db782e63b132eabe8650be4e30b848a022",
+    "sha256": "59ad5d968f0f10bf606d7509d53653d5f116fe5ead1c3f3b3370a95ffb894aed",
+    "source_routes": {
+      "container_": "docker_stats -> metrics",
+      "kafka_consumer_group_": "kafkametrics -> metrics",
+      "kafka_produce_": "application OTLP -> otlp/metrics",
+      "kafka_request_": "application OTLP -> otlp/metrics",
+      "traces_span_metrics_": "otlp/traces -> span_metrics -> metrics"
+    },
+    "version": "ingestion-sample-evidence-v2"
+  },
+  "ingestion_mode": "OTLP_PUSH",
+  "live": 14,
+  "new_registration_state": "DRAFT",
+  "old_archive_files_unchanged": 89,
+  "old_holdout_requalified": false,
+  "old_stop_retained": true,
+  "old_v1_error": "bounded scrape receipt missing",
+  "provider_requests": 60,
+  "required_actual_query_windows": 23,
+  "scope": "READ_ONLY_RETAINED_REPRODUCTION_NOT_NEW_ACCEPTANCE",
+  "v2_retained_evidence_gap": "sample request cap exceeded or no samples"
+}

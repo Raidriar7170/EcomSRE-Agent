@@ -471,3 +471,7 @@ See [complete result](../results/product-v050/final-learning-closure/README.md).
 ## 2026-09-27 固定规则独立验证追加终态
 
 执行 HEAD b213227，Agent mainline 36305736150 成功（6813 passed / 21 skipped）。原模型规则/旧 REVOKED 注册/全部历史保留；新版本 registration-validation-688460a30572ae84c676debb 仅继承同一语义，未新生成。新资源连续性和实际 successor 通过；唯一新目标 holdout OPEN_WORLD，随后 FIXED_SCRAPE_RECENCY_FAILED：新增检查要求非空 Prometheus scrape targets，而实际 Collector 使用 OTLP push。协议工程不兼容，非已证实的指标陈旧或规则失败。新资格、Shadow、晋升、复用未成立，其余三个事件未启动。owned 22容器/1网络/5卷 CLEAN，非项目未变；新增 Provider/语义/费用0，live1；累计60请求/USD1.067489/14 of17 live，闭环9 of12。停止不可自动续用剩余槽。见 [完整报告](../results/product-v050/final-learning-closure/fixed-validation-20260927-result.md) 与 [机器结果](../results/product-v050/final-learning-closure/fixed-validation-20260927-result.json)。整体保持 NO_VALIDATED_LLM_KNOWLEDGE，Level B未恢复；未 merge/tag/release/deploy。
+
+## 2026-09-27 OTLP 摄入协议离线修复
+
+[报告](../results/product-v050/ingestion-protocol-repair/README.md)：保留配置确认 OTLP push，空 targets 不等于遥测陈旧。未来显式 v2 用 instant range-vector 原始样本时间验证实际服务/selector及有效窗口，精确摄入延迟保留UNKNOWN；1次/80请求/120秒只读准备在固定隔离后、事件预留和故障前，资格/freeze/promotion重验CAS，v1保留。原材料缺少该样本证明，不补判旧N4。仅代码/fixture，原DB与89原件未变，新增Provider/Docker/live/语义/预算0，14/17及旧stop不变。Level A未完成、Level B未恢复，不自动恢复剩余槽位。

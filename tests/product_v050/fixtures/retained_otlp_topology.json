@@ -1,0 +1,127 @@
+{
+  "collector": {
+    "connectors": {
+      "span_metrics": {
+        "metrics_flush_interval": "5s"
+      }
+    },
+    "exporters": {
+      "opensearch": {
+        "http": {
+          "endpoint": "http://opensearch:9200"
+        },
+        "logs_index": "otel-logs",
+        "logs_index_time_format": "yyyy-MM-dd"
+      },
+      "otlp_grpc/jaeger": {
+        "endpoint": "jaeger:4317",
+        "tls": {
+          "insecure": true
+        }
+      },
+      "otlp_http/prometheus": {
+        "endpoint": "http://prometheus:9090/api/v1/otlp"
+      }
+    },
+    "processors": {
+      "memory_limiter": {
+        "check_interval": "5s",
+        "limit_mib": 500,
+        "spike_limit_mib": 100
+      }
+    },
+    "receivers": {
+      "docker_stats": {
+        "api_version": "1.44",
+        "collection_interval": "2s",
+        "container_labels_to_metric_labels": {
+          "com.docker.compose.project": "compose_project",
+          "com.docker.compose.service": "compose_service",
+          "io.ecomsre.sandbox.id": "sandbox_id"
+        },
+        "endpoint": "unix:///var/run/docker.sock"
+      },
+      "kafkametrics": {
+        "brokers": [
+          "kafka:9092"
+        ],
+        "collection_interval": "10s",
+        "scrapers": [
+          "brokers",
+          "topics",
+          "consumers"
+        ]
+      },
+      "otlp": {
+        "protocols": {
+          "grpc": {
+            "endpoint": "0.0.0.0:4317"
+          },
+          "http": {
+            "endpoint": "0.0.0.0:4318"
+          }
+        }
+      }
+    },
+    "service": {
+      "pipelines": {
+        "logs": {
+          "exporters": [
+            "opensearch"
+          ],
+          "processors": [
+            "memory_limiter"
+          ],
+          "receivers": [
+            "otlp"
+          ]
+        },
+        "metrics": {
+          "exporters": [
+            "otlp_http/prometheus"
+          ],
+          "processors": [
+            "memory_limiter"
+          ],
+          "receivers": [
+            "otlp",
+            "docker_stats",
+            "kafkametrics",
+            "span_metrics"
+          ]
+        },
+        "traces": {
+          "exporters": [
+            "otlp_grpc/jaeger",
+            "span_metrics"
+          ],
+          "processors": [
+            "memory_limiter"
+          ],
+          "receivers": [
+            "otlp"
+          ]
+        }
+      }
+    }
+  },
+  "prometheus_command": [
+    "--web.console.templates=/etc/prometheus/consoles",
+    "--web.console.libraries=/etc/prometheus/console_libraries",
+    "--storage.tsdb.retention.time=7d",
+    "--config.file=/etc/prometheus/prometheus-config.yaml",
+    "--storage.tsdb.path=/prometheus",
+    "--web.enable-lifecycle",
+    "--web.route-prefix=/",
+    "--web.enable-otlp-receiver",
+    "--enable-feature=exemplar-storage"
+  ],
+  "provenance": "RETAINED_08_CONFIGURATION_SAFE_PROJECTION_NOT_NEW_OBSERVATION",
+  "targets_response": {
+    "data": {
+      "activeTargets": [],
+      "droppedTargets": []
+    },
+    "status": "success"
+  }
+}

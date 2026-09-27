@@ -96,6 +96,7 @@ def evaluation_bindings() -> dict[str, str]:
         "scripts/product_v050/change_audit.py",
         "scripts/product_v050/validation_runner.py",
         "scripts/product_v050/validation_capture.py",
+        "scripts/product_v050/ingestion_evidence.py",
         "scripts/product_v050/validation_live.py",
         "scripts/product_v050/live_environment.py", "scripts/product_v050/live_product.py",
     )}
@@ -811,6 +812,8 @@ class KnowledgeEvolutionV050:
         """Read retained normal evidence; never use the candidate match as truth."""
         from ecomsre.product.knowledge.control_qualification_v050 import qualify
         from ecomsre.product.knowledge.observations_v050 import load_observations
+        from ecomsre.product.knowledge.validation_batch_v050 import verify_ingestion_cases
+        verify_ingestion_cases(self, candidate, cases)
         result = {}
         for iid, stratum in sorted(cases.items()):
             material = self.knowledge._shadow_runtime_material(iid)

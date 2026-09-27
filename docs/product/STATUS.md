@@ -1,5 +1,7 @@
 # 当前状态 · Product v0.5 固定规则新验证停止，完整学习闭环未通过
 
+最新离线修复：[OTLP 摄入协议与运行前检查](../results/product-v050/ingestion-protocol-repair/README.md)。未来显式 v2 绑定真实 push 配置、服务/selector 原始样本时间和准备阶段凭证，并在资格/freeze/promotion重验；fixture通过不代表真实准备通过。未运行Docker/Provider/live，原14/17账本、固定规则和停止状态不变，不自动恢复08批次。
+
 最新 [固定规则独立验证](../results/product-v050/final-learning-closure/fixed-validation-20260927-result.md)：执行版本 b213227 完整 CI 通过；资源连续性与 owned 部署绑定通过。唯一新目标事件返回 OPEN_WORLD，但新增 scrape-target 检查与实际 OTLP push 摄入路径不兼容，批次按冻结协议停止。空 targets 不证明指标陈旧；新健康/Core/复发未启动，Shadow/晋升未运行，新注册 DRAFT、旧注册 REVOKED。owned 22容器/1网络/5卷 CLEAN，非项目未变。新增0请求/0费用/1live；累计60请求/USD1.067489/14 of 17 live，闭环9 of 12 live，本批次1 of 4。剩余名额不用于停止后的自动重试。终态仍 NO_VALIDATED_LLM_KNOWLEDGE，Level A未完成、Level B未恢复。
 
 ## 2026-09-27 此前开发与离线检查点

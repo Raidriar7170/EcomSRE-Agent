@@ -54,6 +54,8 @@ class ValidationRunner(ClosureRunner):
             ).fetchone()[0]
             if slot == "N7" and state != "ACTIVE":
                 raise ValueError("recurrence requires new validated promotion")
+        if "ingestion" in self.batch["plan"]["collection"]:
+            batch.verify_ingestion_preparation(self.evo, self.batch)
         prep = self._get("preparation:" + slot)
         if prep is None or not datetime.fromisoformat(
             prep["earliest_legal_observation"]
@@ -130,7 +132,9 @@ class ValidationRunner(ClosureRunner):
             return parent.incident(slot)
         return super().incident(slot)
 
-    def seal_collection(self, slot, iid, *, raw_index, scrape_receipt=None):
+    def seal_collection(
+        self, slot, iid, *, raw_index, scrape_receipt=None, ingestion_receipt=None
+    ):
         obj = self.evo.investigations.objects.put_json(raw_index)
         receipt = (
             None
@@ -144,6 +148,13 @@ class ValidationRunner(ClosureRunner):
                 sealed_at=datetime.now(UTC).isoformat(),
                 raw_index_sha256=obj.object_sha256,
                 scrape_receipt_sha256=receipt,
+                ingestion_receipt_sha256=(
+                    None
+                    if ingestion_receipt is None
+                    else self.evo.investigations.objects.put_json(
+                        ingestion_receipt
+                    ).object_sha256
+                ),
                 diagnosis_sha256=self.evo.knowledge._diagnosis(iid).result_sha256,
                 preparation_sha256=batch.sha(self._get("preparation:" + slot)),
                 reservation_sha256=batch.sha(self._get("episode:" + slot)),
