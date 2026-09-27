@@ -17,9 +17,9 @@ from ecomsre.product.pilot.runtime_authority_v02 import (
     write_pilot_runtime_authority_v02,
 )
 
-ROOT = DATA / "live-final-closure-06"
+ROOT = DATA / "live-final-closure-07"
 ROUND = DATA / "live-final-closure-02"
-FAILED = DATA / "live-final-closure-05"
+FAILED = DATA / "live-final-closure-06"
 OLD = DATA / "live-02/postgres-user-01"
 DEPENDENCY = dict(
     template="RESOURCE_USAGE_SAMPLES",
@@ -759,7 +759,7 @@ def run_stage(stage):
                         ).fetchone()
                     runner.select(CompiledKnowledge.model_validate_json(row[0]))
                     break
-                if runner._get("stop") is not None:
+                if runner.active_stop() is not None:
                     break
                 result = runner.propose_next(configured_provider(campaign.repo))
                 print(

@@ -120,23 +120,27 @@ class StructuredProvider:
         max_output_tokens: int | None = None,
     ) -> T:
         from ecomsre.product.knowledge.drafts_v050 import TASK, PROTOCOL, strict_schema
-        from ecomsre.product.knowledge.drafts_v050 import SCOPED_TASK, SCOPED_PROTOCOL, scoped_schema, scoped_model_view
-        scoped = task == SCOPED_TASK
-        draft_protocol = task in {TASK, SCOPED_TASK}
-        prompt_version = SCOPED_PROTOCOL if scoped else PROTOCOL if draft_protocol else "product-v050.3-read-shape-clarification"
+        from ecomsre.product.knowledge.drafts_v050 import SCOPED_TASK, SCOPED_PROTOCOL, SOURCE_TASK, SOURCE_PROTOCOL, scoped_schema, scoped_model_view
+        scoped = task in {SCOPED_TASK, SOURCE_TASK}
+        draft_protocol = task in {TASK, SCOPED_TASK, SOURCE_TASK}
+        prompt_version = SOURCE_PROTOCOL if task == SOURCE_TASK else SCOPED_PROTOCOL if scoped else PROTOCOL if draft_protocol else "product-v050.3-read-shape-clarification"
         parameters = strict_schema(schema) if draft_protocol else schema.model_json_schema()
         if scoped:
             if not key.startswith(("knowledge-draft-v050.2:proposal:", "knowledge-draft-v050.final:proposal:")):
                 raise ValueError("SCOPED_TASK_KEY_NAMESPACE_MISMATCH")
             if scoped_binding is None or scoped_binding["request_key"] != key or scoped_model_view(scoped_binding) != view:
                 raise ValueError("SCOPED_REQUEST_BINDING_MISMATCH")
+            if scoped_binding["protocol"] != prompt_version:
+                raise ValueError("SCOPED_PROTOCOL_MISMATCH")
             parameters = scoped_schema(scoped_binding)
         elif scoped_binding is not None or max_output_tokens is not None:
             raise ValueError("OUTPUT_OVERRIDE_ONLY_FOR_SCOPED_DRAFT")
         output_cap = max_output_tokens if scoped and max_output_tokens is not None else 4096
         if scoped and (output_cap != 8192 or reasoning != "medium"):
             raise ValueError("SCOPED_DEVELOPMENT_CONFIGURATION_DIFFERS")
-        instructions = SYSTEM + TASK_CONTRACTS.get(task, "")
+        instructions = SYSTEM + TASK_CONTRACTS.get(SCOPED_TASK if task == SOURCE_TASK else task, "")
+        if task == SOURCE_TASK:
+            instructions += " Select predicates.first and predicates.second from distinct actual source categories; predicates.third is an optional additional conjunct or null. All selected conditions are AND, never alternatives. This task is Level A: expression is null. Preserve failed conditions and UNKNOWN in your reasoning; abstain when insufficient. No rule is supplied or selected by Runtime."
         user_content = json.dumps({"task": task, "view": view}, separators=(",", ":")) if scoped else json.dumps({"task": task, "view": view})
         payload: dict[str, Any] = {
             "model": self.config.model,

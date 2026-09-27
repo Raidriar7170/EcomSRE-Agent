@@ -155,6 +155,16 @@ def load(connection, environment_id):
                 previous["new_deployment"],
                 cursor["new_deployment"],
             )
+            if "development_repair_resume_sha256" in cursor:
+                from ecomsre.product.knowledge.control_repair_v050 import read_development_resume
+                resume = read_development_resume(connection, environment_id)
+                retained = [previous["earlier_development"], previous["retained_development"]]
+                if (resume is None or sha(resume) != cursor["development_repair_resume_sha256"]
+                    or resume["predecessor_sha256"] != previous["sha256"]
+                    or cursor.get("prior_developments") != retained):
+                    raise ValueError("development repair deployment binding differs")
+                for earlier in retained:
+                    validate_pair(earlier["matrix"], cursor["new"], earlier["deployment"], cursor["new_deployment"])
             if "execution_resume_sha256" in cursor:
                 from ecomsre.product.knowledge.control_repair_v050 import (
                     read_execution_resume,
@@ -227,6 +237,7 @@ def install(
             )
         prior = load(c, old.environment_id)
         execution_resume = None
+        development_resume = None
         if repair_predecessor_sha256 is not None:
             from ecomsre.product.knowledge.control_repair_v050 import (
                 read as repair_contract,
@@ -251,7 +262,19 @@ def install(
                 raise ValueError(
                     "one authorized repair deployment predecessor required"
                 )
-            if "repair_predecessor_sha256" in predecessor:
+            if "execution_resume_sha256" in predecessor:
+                from ecomsre.product.knowledge.control_repair_v050 import read_development_resume, inputs
+                from ecomsre.product.investigation import closure_budget
+                development_resume = read_development_resume(c, old.environment_id)
+                if (development_resume is None or development_resume["predecessor_sha256"] != predecessor["sha256"]
+                    or development_resume["control_inputs"] != inputs()
+                    or development_resume["ledger_sha256"] != sha(closure_budget.ledger(c))):
+                    raise ValueError("development repair requires exact pre-dispatch resume")
+                earlier = [predecessor["earlier_development"], predecessor["retained_development"]]
+                for retained in earlier:
+                    validate_pair(retained["matrix"], new, retained["deployment"], after)
+                value.update(development_repair_resume_sha256=sha(development_resume), prior_developments=earlier)
+            elif "repair_predecessor_sha256" in predecessor:
                 from ecomsre.product.knowledge.control_repair_v050 import (
                     read_execution_resume,
                     verify_sources,
@@ -293,7 +316,7 @@ def install(
             from ecomsre.product.investigation import closure_budget
 
             budget = closure_budget.load(c)
-            if budget is None or closure_budget.ledger(c) != budget["baseline"]:
+            if budget is None or (development_resume is None and closure_budget.ledger(c) != budget["baseline"]):
                 raise ValueError("redeployment must precede all new Provider work")
             if (
                 prior["old"] != value["old"]
@@ -314,7 +337,7 @@ def install(
                 ).fetchone():
                     raise ValueError("intermediate capability was consumed")
             if (
-                execution_resume is None
+                execution_resume is None and development_resume is None
                 and c.execute(
                     "SELECT 1 FROM knowledge_closure_runner_v050 WHERE entry_key LIKE 'request:%' OR entry_key LIKE 'attempt:%' OR entry_key='selection-pending'"
                 ).fetchone()
@@ -366,6 +389,7 @@ def admits(store, *, environment_id, candidate_environment_id, expected, actual)
             return expected == actual
         if not {expected, actual}.issubset(
             {value["old"]["capability_sha256"], value["new"]["capability_sha256"]}
+            | {v["matrix"]["capability_sha256"] for v in value.get("prior_developments", [])}
             | (
                 {value["retained_development"]["matrix"]["capability_sha256"]}
                 if "retained_development" in value
@@ -397,7 +421,7 @@ def historical_matrix(store, environment_id, digest):
     with store.connect() as c:
         value = load(c, environment_id)
     if value is not None:
-        matrices = [value["old"], value["new"]]
+        matrices = [value["old"], value["new"]] + [v["matrix"] for v in value.get("prior_developments", [])]
         if "retained_development" in value:
             matrices.append(value["retained_development"]["matrix"])
         if "earlier_development" in value:

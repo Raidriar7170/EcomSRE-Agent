@@ -269,8 +269,11 @@ class ClosureRunner:
         if repair is not None:
             from ecomsre.product.knowledge.control_repair_v050 import verify_sources
 
-            verify_sources(repair, self._get("control-repair-execution-resume"))
+            if self.verify_development_resume() is None:
+                verify_sources(repair, self._get("control-repair-execution-resume"))
         roles = SLOTS | ({} if repair is None else {"D_CORE_FIX_01": "DEVELOPMENT"})
+        if self._get("development-repair-resume") is not None and roles.get(slot) == "DEVELOPMENT":
+            raise ValueError("development repair forbids new development collection")
         if slot not in roles or self._get("episode:" + slot) is not None:
             raise ValueError("episode slot invalid or already consumed; no resampling")
         with self.store.connect() as c:
@@ -658,7 +661,8 @@ class ClosureRunner:
         if repair is not None:
             from ecomsre.product.knowledge.control_repair_v050 import verify_sources
 
-            verify_sources(repair, self._get("control-repair-execution-resume"))
+            if self.verify_development_resume() is None:
+                verify_sources(repair, self._get("control-repair-execution-resume"))
         pending = self._get("selection-pending")
         if (
             pending is not None
@@ -707,10 +711,11 @@ class ClosureRunner:
                     plan["collection"],
                     control_repair=self._get("control-repair"),
                     execution_resume=self._get("control-repair-execution-resume"),
+                    development_repair_resume=self._get("development-repair-resume"),
                 ),
-                time_range=plan["time_range"]
-                if repair is None
-                else repair["time_range"],
+                time_range=self._get("development-repair-resume")["time_range"]
+                if self._get("development-repair-resume") is not None
+                else plan["time_range"] if repair is None else repair["time_range"],
                 development_gate_report=dict(
                     gate,
                     feasibility=self._get("feasibility"),
@@ -973,6 +978,95 @@ class ClosureRunner:
             )
         )
 
+    def active_stop(self):
+        resume = self._get("development-repair-resume")
+        old = self._get("stop")
+        if resume is None:
+            return old
+        if sha(old) != resume["parent_stop_sha256"]:
+            raise ValueError("development resume stop parent differs")
+        return self._get("stop:development-repair-resume")
+
+    def authorize_development_resume(self, *, authority_sha256, verification_sha256):
+        """One user-authorized append-only repair, within the original six slots."""
+        from ecomsre.product.knowledge.evolution_v050 import evaluation_bindings
+        from ecomsre.product.knowledge.control_repair_v050 import inputs
+        from datetime import timedelta
+        for digest in (authority_sha256, verification_sha256):
+            if len(digest) != 64 or any(c not in "0123456789abcdef" for c in digest):
+                raise ValueError("resume requires retained authority and verification hashes")
+        previous = self._get("development-repair-resume")
+        if previous is not None:
+            if (previous["authority_sha256"], previous["verification_sha256"]) != (authority_sha256, verification_sha256):
+                raise ValueError("development resume authorization differs")
+            return previous
+        stop = self._get("stop")
+        if stop != dict(reason="REPEATED_ERROR_WITHOUT_NEW_OBSERVATIONS", ordinal=1):
+            raise ValueError("exact stopped two-attempt parent required")
+        if self.primary_level != "A" or self._get("selection-pending") is not None:
+            raise ValueError("resume requires unselected Level A")
+        with self.store.connect() as c:
+            if selection_lock_v050.load(c) is not None:
+                raise ValueError("selected candidate cannot resume")
+            budget = closure_budget.load(c)
+            ledger = closure_budget.ledger(c)
+            calls = [r for r in ledger if r["call_key"].startswith(closure_budget.PROPOSAL_PREFIX)]
+            if len(calls) != 2 or any(r["state"] != "COMPLETED" for r in calls):
+                raise ValueError("resume requires two completed original attempts")
+            if any(self._get("binding:" + n) or self._get("episode:" + n) for n in HOLDOUT | {"N7": "REUSE"}):
+                raise ValueError("holdout already consumed")
+            future = [self.plan["slots"][n] for n in ("N4", "N5", "N6", "N7")]
+            if c.execute("SELECT 1 FROM knowledge_episode_incidents_v050 WHERE environment_id=? AND episode_id IN (?,?,?,?)", (self.environment_id, *future)).fetchone():
+                raise ValueError("holdout already bound or exposed outside runner")
+        if any(self._get("attempt:"+str(i)) is None for i in range(2)):
+            raise ValueError("original attempt results missing")
+        baseline_keys = {r["call_key"] for r in budget["baseline"]}
+        round_rows = [r for r in ledger if r["call_key"] not in baseline_keys]
+        requests_left = min(200-len(ledger), budget["request_cap"]-len(round_rows))
+        committed_left = min(20_000_000-sum(r["committed_microusd"] for r in ledger),
+            budget["committed_cap_microusd"]-sum(r["committed_microusd"] for r in round_rows))
+        if requests_left <= 0 or committed_left <= 0:
+            raise ValueError("original closure budget exhausted")
+        now = datetime.now(UTC)
+        repair = self._get("control-repair")
+        interval = repair["time_range"] if repair else self.plan["time_range"]
+        duration = datetime.fromisoformat(interval["end"].replace("Z", "+00:00")) - datetime.fromisoformat(interval["start"].replace("Z", "+00:00"))
+        if not timedelta(0) < duration <= timedelta(hours=12):
+            raise ValueError("original collection calendar duration differs")
+        return self._keep("development-repair-resume", dict(
+            authority_sha256=authority_sha256, verification_sha256=verification_sha256,
+            environment_id=self.environment_id,
+            predecessor_sha256=self._resume_predecessor(),
+            parent_stop_sha256=sha(stop), parent_attempts_sha256=sha([self._get("attempt:"+str(i)) for i in range(2)]),
+            ledger_sha256=sha(ledger), first_ordinal=2, end_ordinal=min(6,budget["semantic_cap"]),
+            maximum_additional_semantic_attempts=min(4,budget["semantic_cap"]-2,requests_left),
+            remaining_requests=requests_left, remaining_committed_microusd=committed_left,
+            evaluation_bindings=evaluation_bindings(), control_inputs=inputs(),
+            parent_control_sha256=sha(repair), parent_execution_resume_sha256=sha(self._get("control-repair-execution-resume")),
+            time_range=dict(start=now.isoformat(),end=(now+duration).isoformat()),
+            protocol="knowledge-draft-v050.3", development_recollection=False,
+            budget_reset=False, historical_stop_preserved=True))
+
+    def _resume_predecessor(self):
+        with self.store.connect() as c:
+            mapping = capability_binding(c, self.environment_id)
+        if mapping is None:
+            raise ValueError("development resume requires retained deployment binding")
+        return mapping["sha256"]
+
+    def verify_development_resume(self):
+        resume = self._get("development-repair-resume")
+        if resume is not None:
+            from ecomsre.product.knowledge.evolution_v050 import evaluation_bindings
+            from ecomsre.product.knowledge.control_repair_v050 import inputs
+            if (resume["evaluation_bindings"] != evaluation_bindings()
+                or resume["control_inputs"] != inputs()
+                or resume["parent_control_sha256"] != sha(self._get("control-repair"))
+                or resume["parent_execution_resume_sha256"] != sha(self._get("control-repair-execution-resume"))):
+                raise ValueError("development repair source/parent identity differs")
+            self.active_stop()
+        return resume
+
     def propose_next(self, provider):
         """One semantic slot with full feedback; automatically stop at the gate."""
         from ecomsre.product.errors import ProductError
@@ -989,7 +1083,8 @@ class ClosureRunner:
             raise ValueError(
                 "qualified candidate pending selection; resume selection only"
             )
-        if self._get("stop") is not None:
+        resume = self.verify_development_resume()
+        if self.active_stop() is not None:
             raise ValueError("closure development has stopped")
         with self.store.connect() as c:
             if selection_lock_v050.load(c) is not None:
@@ -1002,8 +1097,8 @@ class ClosureRunner:
             i for i in range(len(calls)) if self._get("attempt:" + str(i)) is None
         ]
         ordinal = unfinished[0] if unfinished else len(calls)
-        if ordinal >= 6:
-            raise ValueError("six semantic attempts exhausted")
+        if ordinal >= 6 or (resume is not None and ordinal >= resume["first_ordinal"] + resume["maximum_additional_semantic_attempts"]):
+            raise ValueError("six semantic attempts or authorized remainder exhausted")
         cohort = self.freeze_cohort()
         # These retained diagnoses are candidate-independent gates in develop().
         # Do not spend a semantic slot when no proposal can satisfy them. Keep
@@ -1025,7 +1120,7 @@ class ClosureRunner:
         ):
             raise ValueError("closure must retain the working Mini Responses provider")
         # Controls enter feedback, never candidate support/member selection.
-        discovery = self.evo.discovery_view(self.environment_id, cohort["positives"])
+        discovery = (self.evo.verified_discovery_view if resume else self.evo.discovery_view)(self.environment_id, cohort["positives"])
         feedback = self.feedback(discovery)
         key = closure_budget.PROPOSAL_PREFIX + str(ordinal)
         retained = self._get("request:" + str(ordinal))
@@ -1039,7 +1134,7 @@ class ClosureRunner:
                     if self.primary_level == "B"
                     else cohort["positives"]
                 ),
-                feedback=feedback,
+                feedback=feedback, event_bound=resume is not None,
             )
             self._keep(
                 "request:" + str(ordinal), dict(binding=binding, discovery=discovery)
@@ -1057,12 +1152,13 @@ class ClosureRunner:
             registration_id=None,
             error=None,
         )
+        from ecomsre.product.knowledge.drafts_v050 import SOURCE_TASK, SourceScopedKnowledgeDraft
         try:
             raw = provider.complete(
                 key=key,
-                task=SCOPED_TASK,
+                task=SOURCE_TASK if resume else SCOPED_TASK,
                 view=scoped_model_view(binding),
-                schema=ScopedKnowledgeDraft,
+                schema=SourceScopedKnowledgeDraft if resume else ScopedKnowledgeDraft,
                 reasoning="medium",
                 max_output_tokens=8192,
                 scoped_binding=binding,
@@ -1105,13 +1201,14 @@ class ClosureRunner:
                 raise  # Engineering/pre-dispatch failures are not fabricated model attempts.
             result["error"] = exc.code if isinstance(exc, ProductError) else str(exc)
         result = self._keep("attempt:" + str(ordinal), result)
+        stop_key = "stop:development-repair-resume" if resume else "stop"
         if result["status"] in {"NO_CANDIDATE", "NEEDS_OBSERVATION"}:
-            self._keep("stop", dict(reason=result["status"], ordinal=ordinal))
-        if ordinal:
+            self._keep(stop_key, dict(reason=result["status"], ordinal=ordinal))
+        if ordinal > (resume["first_ordinal"] if resume else 0):
             prior = self._get("attempt:" + str(ordinal - 1))
             if result["error"] is not None and prior["error"] == result["error"]:
                 self._keep(
-                    "stop",
+                    stop_key,
                     dict(
                         reason="REPEATED_ERROR_WITHOUT_NEW_OBSERVATIONS",
                         ordinal=ordinal,
@@ -1139,7 +1236,7 @@ class ClosureRunner:
                     break
             else:
                 self._keep(
-                    "stop",
+                    stop_key,
                     dict(reason="NO_QUALIFIED_DEVELOPMENT_CANDIDATE", ordinal=ordinal),
                 )
         return result

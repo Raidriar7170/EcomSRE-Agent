@@ -254,6 +254,51 @@ class KnowledgeEvolutionV050:
         }
         return {**payload, "snapshot_sha256": semantic_sha256_v22(payload)}
 
+    def verified_discovery_view(self, environment_id, incident_ids, *, record_exposure=True):
+        """Event-bound successor; legacy discovery remains byte-replayable."""
+        from copy import deepcopy
+        from ecomsre.product.investigation.reads import project_record
+        from ecomsre.product.knowledge.observations_v050 import load_observations
+
+        view = deepcopy(self.discovery_view(environment_id, incident_ids, record_exposure=record_exposure))
+        for session in view["sessions"]:
+            iid = session["incident_id"]
+            instance = self.knowledge._incident(iid)
+            diagnosis = self.knowledge._diagnosis(iid)
+            evidence = self.knowledge._evidence(iid, diagnosis.diagnosis_id)
+            initial = {(e.evidence_ref, e.object_sha256): e for e in evidence.objects if "connector_result" in e.payload}
+            supplemental = {o["evidence_ref"]: o for o in load_observations(instance, self.investigations.objects)}
+            seen = {}
+            for o in session["observations"]:
+                digest = o.get("object_sha256")
+                if o["evidence_ref"].startswith("investigation:"):
+                    raw = supplemental.get(o["evidence_ref"])
+                    if raw is None or proposal_observation_view(raw) != o:
+                        raise ValueError("EVENT_SUPPLEMENTAL_OBSERVATION_MISMATCH")
+                    read_identity = digest
+                else:
+                    obj = initial.get((o["evidence_ref"], digest))
+                    if obj is None or obj.payload["incident_id"] != iid:
+                        raise ValueError("EVENT_OBSERVATION_OBJECT_MISMATCH")
+                    actual = obj.payload["connector_result"]
+                    for key in ("source", "status", "truncated", "covered_services", "window"):
+                        if actual[key] != o[key]:
+                            raise ValueError("EVENT_OBSERVATION_METADATA_MISMATCH")
+                    records = [] if o["truncated"] else [project_record(v) for v in actual["records"]]
+                    if records != o["records"]:
+                        raise ValueError("EVENT_OBSERVATION_RECORDS_MISMATCH")
+                    read_identity = obj.action_id
+                identity = dict(incident_id=iid, parent_diagnosis_id=diagnosis.diagnosis_id,
+                    evidence_ref=o["evidence_ref"], object_sha256=digest, read_identity=read_identity,
+                    source=o["source"], window=o["window"], observation_sha256=semantic_sha256_v22(o))
+                key = (iid, diagnosis.diagnosis_id, o["evidence_ref"], semantic_sha256_v22(o["window"]))
+                if key in seen and seen[key] != identity:
+                    raise ValueError("EVENT_OBSERVATION_IDENTITY_CONFLICT")
+                seen[key] = identity
+                o["observation_identity"] = identity
+        view["snapshot_sha256"] = semantic_sha256_v22({k:v for k,v in view.items() if k != "snapshot_sha256"})
+        return view
+
     def propose(
         self,
         *,
@@ -467,7 +512,10 @@ class KnowledgeEvolutionV050:
     ):
         """Both candidate origins enter identical compilation and later Shadow paths."""
         full_discovery_ids = [s["incident_id"] for s in discovery["sessions"]]
-        if self.discovery_view(environment_id, full_discovery_ids) != discovery:
+        from ecomsre.product.knowledge.drafts_v050 import SOURCE_PROTOCOL
+        event_bound = draft_view_binding is not None and draft_view_binding.get("protocol") == SOURCE_PROTOCOL
+        rebuilt = (self.verified_discovery_view if event_bound else self.discovery_view)(environment_id, full_discovery_ids)
+        if rebuilt != discovery:
             raise ValueError("discovery snapshot does not match persisted inputs")
         members = {s["incident_id"]: s for s in discovery["sessions"]}
         from ecomsre.product.environment.services import ServiceCatalogRepositoryV1
@@ -541,16 +589,18 @@ class KnowledgeEvolutionV050:
                 from ecomsre.product.knowledge.drafts_v050 import (
                     SCOPED_PROTOCOL, SCOPED_TASK, ScopedKnowledgeDraft,
                     scoped_view, scoped_model_view, compile_scoped_draft,
+                    SOURCE_PROTOCOL, SOURCE_TASK, SourceScopedKnowledgeDraft,
                 )
-                if bound_view.get("protocol") == SCOPED_PROTOCOL:
-                    protocol, task = SCOPED_PROTOCOL, SCOPED_TASK
+                if bound_view.get("protocol") in {SCOPED_PROTOCOL, SOURCE_PROTOCOL}:
+                    protocol = bound_view["protocol"]
+                    task = SOURCE_TASK if event_bound else SCOPED_TASK
                     if bound_view["request_key"] != source_request_key or scoped_view(
                         discovery, request_key=source_request_key,
                         target=bound_view["target"], members=list(bound_view["members"].values()),
-                        feedback=bound_view.get("feedback"),
+                        feedback=bound_view.get("feedback"), event_bound=event_bound,
                     ) != bound_view:
                         raise ValueError("draft mapping differs from persisted discovery")
-                    raw_draft = ScopedKnowledgeDraft.model_validate(provenance.get("proposal"))
+                    raw_draft = (SourceScopedKnowledgeDraft if event_bound else ScopedKnowledgeDraft).model_validate(provenance.get("proposal"))
                     reconstructed, context = compile_scoped_draft(raw_draft, bound_view)
                     bound_view = scoped_model_view(bound_view)
                 else:

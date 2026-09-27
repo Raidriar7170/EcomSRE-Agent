@@ -110,9 +110,24 @@ def guard(connection, key, reserve, request):
                 "SELECT 1 FROM sqlite_master WHERE name='knowledge_closure_runner_v050'"
             ).fetchone()
             and connection.execute(
-                "SELECT 1 FROM knowledge_closure_runner_v050 g JOIN knowledge_closure_runner_v050 p ON p.entry_key='plan' WHERE g.entry_key LIKE 'development:%' AND json_extract(g.payload_json,'$.value.passed')=1 AND json_extract(g.payload_json,'$.value.level')=json_extract(p.payload_json,'$.value.plan.primary_level')"
+                "SELECT 1 FROM knowledge_closure_runner_v050 g JOIN knowledge_closure_runner_v050 p ON p.entry_key='plan' LEFT JOIN knowledge_closure_runner_v050 f ON f.entry_key='feasibility' WHERE g.entry_key LIKE 'development:%' AND json_extract(g.payload_json,'$.value.passed')=1 AND json_extract(g.payload_json,'$.value.level')=COALESCE(json_extract(f.payload_json,'$.value.primary_level'),json_extract(p.payload_json,'$.value.plan.primary_level'))"
             ).fetchone()
         )
+        if connection.execute("SELECT 1 FROM sqlite_master WHERE name='knowledge_closure_runner_v050'").fetchone():
+            def retained_entry(name):
+                row = connection.execute("SELECT payload_json FROM knowledge_closure_runner_v050 WHERE entry_key=?", (name,)).fetchone()
+                if row is None:
+                    return None
+                wrapped = json.loads(row[0])
+                if wrapped["sha256"] != sha(wrapped["value"]):
+                    raise ProductError("CLOSURE_STOP_BINDING", "Closure record changed.")
+                return wrapped["value"]
+            stopped = retained_entry("stop")
+            resumed = retained_entry("development-repair-resume")
+            if stopped is not None and (resumed is None or resumed["parent_stop_sha256"] != sha(stopped)
+                or request.get("prompt_version") != resumed["protocol"]
+                or retained_entry("stop:development-repair-resume") is not None):
+                raise ProductError("CLOSURE_DEVELOPMENT_STOPPED", "No dispatch under an unresumed stop.")
         if pending or passed or selection_lock(connection) is not None:
             raise ProductError(
                 "CANDIDATE_SELECTION_LOCKED", "No proposal dispatch after selection."

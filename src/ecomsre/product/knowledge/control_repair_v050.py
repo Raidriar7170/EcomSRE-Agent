@@ -329,3 +329,23 @@ def read(connection, environment_id):
     ) != (VERSION, SLOT, "DEVELOPMENT", 13, 8):
         raise ValueError("repair contract scope differs")
     return value
+
+
+def read_development_resume(connection, environment_id):
+    if not connection.execute("SELECT 1 FROM sqlite_master WHERE name='knowledge_closure_runner_v050'").fetchone():
+        return None
+    def entry(key):
+        row = connection.execute("SELECT payload_json FROM knowledge_closure_runner_v050 WHERE entry_key=?", (key,)).fetchone()
+        if row is None:
+            return None
+        wrapped = json.loads(row[0])
+        if wrapped["sha256"] != sha(wrapped["value"]):
+            raise ValueError("development resume record changed")
+        return wrapped["value"]
+    value = entry("development-repair-resume")
+    if value is not None and (value["environment_id"] != environment_id or
+        value["parent_stop_sha256"] != sha(entry("stop")) or
+        value["parent_control_sha256"] != sha(entry("control-repair")) or
+        value["parent_execution_resume_sha256"] != sha(entry("control-repair-execution-resume"))):
+        raise ValueError("development resume parent binding differs")
+    return value

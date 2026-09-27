@@ -1,7 +1,7 @@
 """Versioned model draft: semantic choices stay with the model, bindings with Runtime."""
 
 from typing import Literal
-from pydantic import Field
+from pydantic import Field, model_validator
 from ecomsre.product.investigation.contracts import StrictModel
 from ecomsre.dta_v2.v22.read_contracts import semantic_sha256_v22 as sha
 from ecomsre.product.knowledge.candidates_v050 import KnowledgeProposal
@@ -296,20 +296,32 @@ class ScopedKnowledgeDraft(KnowledgeDraft):
     binding_id: str
 
 
-def scoped_view(old, *, request_key, target, members, feedback=None):
+def scoped_view(old, *, request_key, target, members, feedback=None, event_bound=False):
     """Canonical request-bound mapping; no truth-based or value-based selection."""
     from copy import deepcopy
 
+    if event_bound and "evidence_catalog" in old:
+        raise ValueError("EVENT_BOUND_VIEW_REQUIRES_VERIFIED_DISCOVERY")
     if "evidence_catalog" not in old:
         discovery = old
         old = draft_view(discovery)
-        observations = {
-            o["evidence_ref"]: o
-            for session in discovery["sessions"]
-            for o in session["observations"]
-        }
+        # The legacy branch is retained only for exact historical .2 replay.
+        observations = {}
+        for session in discovery["sessions"]:
+            for o in session["observations"]:
+                key = (session["incident_id"], o["evidence_ref"], sha(o["window"])) if event_bound else o["evidence_ref"]
+                if event_bound:
+                    identity = o.get("observation_identity")
+                    if identity is None or identity["incident_id"] != session["incident_id"] or identity["observation_sha256"] != sha({k:v for k,v in o.items() if k != "observation_identity"}):
+                        raise ValueError("EVENT_OBSERVATION_BINDING_MISSING_OR_CHANGED")
+                    if key in observations and observations[key] != o:
+                        raise ValueError("EVENT_OBSERVATION_IDENTITY_CONFLICT")
+                observations[key] = o
         for row in old["evidence_catalog"].values():
-            observation = observations[row["evidence_ref"]]
+            key = (row["incident_id"], row["evidence_ref"], sha(row["window"])) if event_bound else row["evidence_ref"]
+            observation = observations[key]
+            if event_bound:
+                row["observation_identity"] = observation["observation_identity"]
             row["requested_services"] = observation.get(
                 "targets", observation["covered_services"]
             )
@@ -385,7 +397,7 @@ def scoped_view(old, *, request_key, target, members, feedback=None):
                 )
             )
     view = dict(
-        protocol=SCOPED_PROTOCOL,
+        protocol=SOURCE_PROTOCOL if event_bound else SCOPED_PROTOCOL,
         request_key=request_key,
         snapshot_sha256=old["snapshot_sha256"],
         target=target,
@@ -483,6 +495,10 @@ def scoped_model_view(view):
                     i
                     for i, e in view["target_evidence"].items()
                     if e["evidence_ref"] in v["supporting_refs"]
+                    and (view["protocol"] != SOURCE_PROTOCOL or (
+                        e["incident_id"] == v["incident_id"]
+                        and e["services"] == [v["target"]]
+                    ))
                 ],
             )
             for k, v in view["dependencies"].items()
@@ -492,6 +508,11 @@ def scoped_model_view(view):
         feature_catalog=view["feature_catalog"],
         feedback=feedback,
     )
+
+    if view["protocol"] == SOURCE_PROTOCOL:
+        from ecomsre.product.knowledge.compiler import _predicate_parts
+        result["predicate_sources"] = {p:_predicate_parts(p)[1].value for p in view["predicate_catalog"]}
+        result["predicate_selection"] = "first AND second AND optional third; first and second must use different actual sources. Select independently from all listed predicates or abstain."
 
     # Window dictionary removes repeated timestamps without losing alignment.
     windows = {}
@@ -523,9 +544,10 @@ def scoped_model_view(view):
 def scoped_schema(view):
     """The exact schema sent on the wire; empty catalogs use maxItems=0."""
     _require_scoped_binding(view)
-    schema = strict_schema(ScopedKnowledgeDraft)
+    source_bound = view["protocol"] == SOURCE_PROTOCOL
+    schema = strict_schema(SourceScopedKnowledgeDraft if source_bound else ScopedKnowledgeDraft)
     schema["properties"]["binding_id"]["enum"] = [view["binding_id"]]
-    props = schema["$defs"]["CandidateDraft"]["properties"]
+    props = schema["$defs"]["SourceCandidateDraft" if source_bound else "CandidateDraft"]["properties"]
     props["target"]["enum"] = [view["target"]]
 
     def choices(node, values):
@@ -538,7 +560,31 @@ def scoped_schema(view):
     choices(props["member_incidents"], view["members"])
     props["member_incidents"]["minItems"] = len(view["members"])
     props["member_incidents"]["maxItems"] = len(view["members"])
-    choices(props["predicates"], view["predicate_catalog"])
+    if source_bound:
+        from ecomsre.product.knowledge.compiler import _predicate_parts
+        catalog = view["predicate_catalog"]
+        mapping = {p: _predicate_parts(p)[1].value for p in catalog}
+        alternatives = []
+        categories = sorted(set(mapping.values()))
+        for source in categories:
+            schema["$defs"]["Predicates_"+source] = dict(type="string", enum=[p for p in catalog if mapping[p] == source])
+        schema["$defs"]["OptionalThirdPredicate"] = dict(anyOf=[
+            *[{"$ref":"#/$defs/Predicates_"+source} for source in categories], dict(type="null")])
+        for source in categories:
+            others = [s for s in categories if s != source]
+            if others:
+                alternatives.append(dict(type="object", additionalProperties=False,
+                    properties=dict(first={"$ref":"#/$defs/Predicates_"+source},
+                                    second=dict(anyOf=[{"$ref":"#/$defs/Predicates_"+s} for s in others]),
+                                    third={"$ref":"#/$defs/OptionalThirdPredicate"}),
+                    required=["first", "second", "third"]))
+        if not alternatives:
+            raise ValueError("TWO_SOURCE_CATALOG_UNAVAILABLE")
+        props["predicates"] = {"anyOf": alternatives}
+        # This successor is explicitly Level A; old Level B protocol is unchanged.
+        props["expression"] = {"type": "null"}
+    else:
+        choices(props["predicates"], view["predicate_catalog"])
     for field in ("target_support", "target_counterevidence"):
         choices(props[field], view["target_evidence"])
     # Each comparison alternative binds service and handle together.
@@ -561,21 +607,22 @@ def scoped_schema(view):
         props["comparison_context"]["items"] = {"anyOf": alternatives}
     else:
         props["comparison_context"]["maxItems"] = 0
-    dep = schema["$defs"]["DraftExpression"]["properties"]["dependency_aliases"]
-    choices(dep, view["dependencies"])
-    # A scoped Level B task needs a common collected semantic for EVERY member.
-    semantics = {sha(r["dependency"]) for r in view["dependencies"].values()}
-    complete = any(
-        {
-            r["incident_id"]
-            for r in view["dependencies"].values()
-            if sha(r["dependency"]) == s
-        }
-        == set(view["members"].values())
-        for s in semantics
-    )
-    if not complete:
-        props["expression"] = {"type": "null"}
+    if not source_bound:
+        dep = schema["$defs"]["DraftExpression"]["properties"]["dependency_aliases"]
+        choices(dep, view["dependencies"])
+        # A scoped Level B task needs a common collected semantic for EVERY member.
+        semantics = {sha(r["dependency"]) for r in view["dependencies"].values()}
+        complete = any(
+            {
+                r["incident_id"]
+                for r in view["dependencies"].values()
+                if sha(r["dependency"]) == s
+            }
+            == set(view["members"].values())
+            for s in semantics
+        )
+        if not complete:
+            props["expression"] = {"type": "null"}
 
     def enum_count(x):
         if isinstance(x, dict):
@@ -604,6 +651,11 @@ def diagnose_scoped_draft(data, view):
     from copy import deepcopy
 
     data = deepcopy(data)
+    if view["protocol"] == SOURCE_PROTOCOL:
+        raw_source = data.get("candidate")
+        if isinstance(raw_source, dict) and isinstance(raw_source.get("predicates"), dict):
+            selected = raw_source["predicates"]
+            raw_source["predicates"] = [selected.get("first"), selected.get("second")] + ([] if selected.get("third") is None else [selected["third"]])
     raw = data.get("candidate")
     if isinstance(raw, dict):
         for field in (
@@ -744,6 +796,8 @@ def diagnose_scoped_draft(data, view):
 
 
 def compile_scoped_draft(draft, view):
+    if isinstance(draft, SourceScopedKnowledgeDraft):
+        draft = canonical_source_draft(draft)
     issues = diagnose_scoped_draft(draft.model_dump(mode="json"), view)
     if issues:
         raise ValueError(";".join(i["code"] for i in issues))
@@ -779,3 +833,44 @@ def _factor_records(records):
             for r in records
         ],
     )
+
+
+# Explicit source-structured, event-bound successor. Never rebuild .2 history with it.
+SOURCE_PROTOCOL = "knowledge-draft-v050.3"
+SOURCE_TASK = "propose_detection_draft_v050_3"
+
+
+class SourceConjunction(StrictModel):
+    first: str
+    second: str
+    third: str | None
+
+    @model_validator(mode="after")
+    def distinct_sources(self):
+        from ecomsre.product.knowledge.compiler import _predicate_parts
+        if _predicate_parts(self.first)[1] == _predicate_parts(self.second)[1]:
+            raise ValueError("TWO_SOURCES_REQUIRED")
+        values = [self.first, self.second] + ([] if self.third is None else [self.third])
+        if len(values) != len(set(values)):
+            raise ValueError("DUPLICATE_PREDICATES")
+        if self.third is not None:
+            _predicate_parts(self.third)
+        return self
+
+
+class SourceCandidateDraft(CandidateDraft):
+    predicates: SourceConjunction  # type: ignore[assignment]
+    expression: None
+
+
+class SourceScopedKnowledgeDraft(KnowledgeDraft):
+    candidate: SourceCandidateDraft | None
+    binding_id: str
+
+
+def canonical_source_draft(draft):
+    data = draft.model_dump(mode="json")
+    if data["candidate"] is not None:
+        selected = data["candidate"]["predicates"]
+        data["candidate"]["predicates"] = [selected["first"], selected["second"]] + ([] if selected["third"] is None else [selected["third"]])
+    return ScopedKnowledgeDraft.model_validate(data)

@@ -338,6 +338,33 @@ def test_consumed_deployment_repair_preserves_all_three_identities(
     with app.state.store.connect() as connection:
         assert repair.read_execution_resume(connection, env) == resume
 
+    # Explicit user repair after two failed model calls: original identities remain.
+    from ecomsre.product.investigation import closure_budget
+    for ordinal in range(2):
+        key = closure_budget.PROPOSAL_PREFIX + str(ordinal)
+        c.evo.investigations.reserve(key, {"fixture": ordinal}, 1)
+        c.evo.investigations.settle(key, {"failure": "TWO_SOURCES_REQUIRED"}, 1, "COMPLETED")
+        c.runner._keep("attempt:" + str(ordinal), dict(error="TWO_SOURCES_REQUIRED", ordinal=ordinal))
+    c.runner._keep("stop", dict(reason="REPEATED_ERROR_WITHOUT_NEW_OBSERVATIONS", ordinal=1))
+    continued = c.runner.authorize_development_resume(authority_sha256="a"*64, verification_sha256="b"*64)
+    assert continued["predecessor_sha256"] == digest
+    c.client.post(f"/v1/environments/{env}/verify-jobs")
+    assert run_one_job(c.settings, worker_id="development-repair")
+    fifth = app.state.capabilities.get(env)
+    fifth_deployment = dict(before, deployment_id="development-resumed", resource_births={"fixture":"development-resumed"})
+    final_kwargs = dict(kwargs, new=fifth, new_deployment=fifth_deployment, repair_predecessor_sha256=digest)
+    final_digest = successor.install(app.state.store, **final_kwargs)
+    assert successor.install(app.state.store, **final_kwargs) == final_digest
+    for matrix in (old, consumed, latest, fourth, fifth):
+        assert successor.admits(app.state.store, environment_id=env, candidate_environment_id=env,
+            expected=matrix.capability_sha256, actual=fifth.capability_sha256)
+        assert successor.historical_matrix(app.state.store, env, matrix.capability_sha256) == matrix
+    for field in ("actual_queries", "windows_and_sampling", "resource_limits", "trust_boundary"):
+        bad = deepcopy(fifth_deployment)
+        bad[field]["drift"] = "changed"
+        with pytest.raises(ValueError, match="semantics differ"):
+            successor.install(app.state.store, **(final_kwargs | {"new_deployment":bad}))
+
 
 @pytest.mark.parametrize("barrier", ["provider", "selection", "holdout"])
 def test_execution_resume_rejects_consumed_frontier(closure, monkeypatch, barrier):
@@ -470,3 +497,104 @@ def test_normal_changes_repository_supports_existing_core_clause(closure, monkey
         )
         for source in ("METRICS", "RUNTIME")
     )
+
+
+def test_development_repair_resume_preserves_stop_and_original_six_slots(closure, monkeypatch):
+    from ecomsre.product.investigation import closure_budget
+    from ecomsre.product.errors import ProductError
+    c=closure
+    args=prepare(c,monkeypatch)
+    repair.install(c.runner,**args)
+    c.episode(repair.SLOT,'core')
+    c.runner.freeze_cohort()
+    monkeypatch.setattr(c.runner,'_resume_predecessor',lambda:'c'*64)
+    for n in range(2):
+        key=closure_budget.PROPOSAL_PREFIX+str(n)
+        c.evo.investigations.reserve(key,dict(fixture=n),1)
+        c.evo.investigations.settle(key,dict(proposal='retained failure'),1,'COMPLETED')
+        c.runner._keep('attempt:'+str(n),dict(ordinal=n,error='TWO_SOURCES_REQUIRED'))
+    stopped=dict(reason='REPEATED_ERROR_WITHOUT_NEW_OBSERVATIONS',ordinal=1)
+    c.runner._keep('stop',stopped)
+    with pytest.raises(ProductError,match='unresumed stop'):
+        c.evo.investigations.reserve(closure_budget.PROPOSAL_PREFIX+'2',dict(fixture=2),1)
+    resume=c.runner.authorize_development_resume(authority_sha256='a'*64,verification_sha256='b'*64)
+    assert resume['maximum_additional_semantic_attempts']==4
+    assert c.runner._get('stop')==stopped and c.runner.active_stop() is None
+    assert c.runner.authorize_development_resume(authority_sha256='a'*64,verification_sha256='b'*64)==resume
+    assert c.runner.verify_development_resume()==resume
+    with pytest.raises(ValueError,match='authorization differs'):
+        c.runner.authorize_development_resume(authority_sha256='f'*64,verification_sha256='b'*64)
+    for n in range(2,6):
+        key=closure_budget.PROPOSAL_PREFIX+str(n)
+        c.evo.investigations.reserve(key,dict(prompt_version='knowledge-draft-v050.3'),1)
+        c.evo.investigations.settle(key,dict(fixture=n),1,'FAILED')
+    with pytest.raises(ProductError,match='semantic slots'):
+        c.evo.investigations.reserve(closure_budget.PROPOSAL_PREFIX+'6',dict(prompt_version='knowledge-draft-v050.3'),1)
+    c.runner._keep('stop:development-repair-resume',dict(reason='new stop',ordinal=5))
+    assert c.runner.active_stop()['reason']=='new stop'
+    assert c.runner._get('stop')==stopped
+
+
+def test_effective_a_pass_blocks_dispatch_before_pending_marker(closure, monkeypatch):
+    from ecomsre.product.investigation import closure_budget
+    from ecomsre.product.errors import ProductError
+    c=closure
+    repair.install(c.runner,**prepare(c,monkeypatch))
+    assert c.runner.plan['primary_level']=='B' and c.runner.primary_level=='A'
+    c.runner._keep('development:fixture-crash',dict(passed=True,level='A'))
+    assert c.runner._get('selection-pending') is None
+    with pytest.raises(ProductError,match='No proposal dispatch after selection'):
+        c.evo.investigations.reserve(closure_budget.PROPOSAL_PREFIX+'0',{'fixture':True},1)
+
+
+@pytest.mark.parametrize('direct_holdout',[False,True])
+def test_repaired_wire_admission_development_lock_and_freeze(closure, monkeypatch, direct_holdout):
+    from ecomsre.product.investigation import closure_budget
+    from ecomsre.product.investigation.provider import StructuredProvider
+    from ecomsre.product.investigation.contracts import PriceSchedule
+    from ecomsre.model.gateway import OpenAICompatibleConfig
+    c=closure
+    repair.install(c.runner,**prepare(c,monkeypatch))
+    c.episode(repair.SLOT,'core')
+    c.runner.freeze_cohort()
+    monkeypatch.setattr(c.runner,'_resume_predecessor',lambda:'c'*64)
+    for n in range(2):
+        key=closure_budget.PROPOSAL_PREFIX+str(n)
+        c.evo.investigations.reserve(key,{'fixture':n},1)
+        c.evo.investigations.settle(key,{'fixture':n},1,'COMPLETED')
+        c.runner._keep('attempt:'+str(n),dict(ordinal=n,error='TWO_SOURCES_REQUIRED'))
+    c.runner._keep('stop',dict(reason='REPEATED_ERROR_WITHOUT_NEW_OBSERVATIONS',ordinal=1))
+    if direct_holdout:
+        iid=c.new('bypass-runner','healthy')
+        c.evo.bind_episode(iid,c.plan['slots']['N4'])
+        with pytest.raises(ValueError,match='outside runner'):
+            c.runner.authorize_development_resume(authority_sha256='a'*64,verification_sha256='b'*64)
+        return
+    c.runner.authorize_development_resume(authority_sha256='a'*64,verification_sha256='b'*64)
+    def post(**kw):
+        payload=kw['payload']
+        wire=json.loads(payload['input'][0]['content'])['view']
+        raw=dict(disposition='CANDIDATE',reason='Fixture only',binding_id=wire['binding_id'],
+            candidate=dict(name='fixture-source-repair',target='payment',broad_domain='UNKNOWN',
+                member_incidents=wire['scope']['members'],predicates=dict(first='core:RUNTIME_HEALTHY',second='ga:LOG_UNKNOWN_ERROR_PATTERN',third=None),
+                expression=None,target_support=[a for a,o in wire['target_evidence'].items() if o['source'] in {'RUNTIME','LOGS'}][:24],
+                target_counterevidence=[],comparison_context=[],confusable_patterns=['fixture'],prediction='fixture',inapplicable_conditions=['missing']))
+        return dict(model='gpt-5.4-mini-2026-03-17',status='completed',id='fixture',output=[dict(type='function_call',status='completed',name='submit_proposal',arguments=json.dumps(raw))],usage=dict(input_tokens=100,output_tokens=100))
+    provider=StructuredProvider(OpenAICompatibleConfig('https://api.openai.com/v1','fixture','gpt-5.4-mini-2026-03-17'),
+        PriceSchedule(provider_profile='fixture',model='gpt-5.4-mini-2026-03-17',as_of='2026-09-17',source='fixture',input_usd_per_million=.75,output_usd_per_million=4.5),c.evo.investigations,SimpleNamespace(post_json=post),api_style='responses')
+    # Synthetic provenance flag exists only in this isolated fixture DB, to exercise the guard.
+    monkeypatch.setattr(provider, 'evidence_mode', 'LIVE_PROVIDER')
+    result=c.runner.propose_next(provider)
+    assert result['status']=='SELECTED',result
+    assert c.runner._get('stop')['ordinal']==1
+    with pytest.raises(ValueError,match='selection only'):
+        c.runner.propose_next(provider)
+    for slot,kind in (('N4','positive'),('N5','healthy'),('N6','core')):
+        c.episode(slot,kind)
+    from ecomsre.product.knowledge.candidates_v050 import CompiledKnowledge
+    with c.evo.store.connect() as conn:
+        row=conn.execute('SELECT payload_json FROM knowledge_candidate_pool_v050 WHERE registration_id=?',(result['registration_id'],)).fetchone()
+    candidate=CompiledKnowledge.model_validate_json(row[0])
+    assert c.runner.evaluate_and_promote(candidate).gate_passed
+    assert candidate.source_request_key==closure_budget.PROPOSAL_PREFIX+'2'
+    assert candidate.proposal.predicates==['core:RUNTIME_HEALTHY','ga:LOG_UNKNOWN_ERROR_PATTERN']
