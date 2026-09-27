@@ -1,4 +1,8 @@
-# 当前状态 · Product v0.5 开发通过，完整学习闭环未通过
+# 当前状态 · Product v0.5 固定规则新验证停止，完整学习闭环未通过
+
+最新 [固定规则独立验证](../results/product-v050/final-learning-closure/fixed-validation-20260927-result.md)：执行版本 b213227 完整 CI 通过；资源连续性与 owned 部署绑定通过。唯一新目标事件返回 OPEN_WORLD，但新增 scrape-target 检查与实际 OTLP push 摄入路径不兼容，批次按冻结协议停止。空 targets 不证明指标陈旧；新健康/Core/复发未启动，Shadow/晋升未运行，新注册 DRAFT、旧注册 REVOKED。owned 22容器/1网络/5卷 CLEAN，非项目未变。新增0请求/0费用/1live；累计60请求/USD1.067489/14 of 17 live，闭环9 of 12 live，本批次1 of 4。剩余名额不用于停止后的自动重试。终态仍 NO_VALIDATED_LLM_KNOWLEDGE，Level A未完成、Level B未恢复。
+
+## 2026-09-27 此前开发与离线检查点
 
 [最新结果](../results/product-v050/final-learning-closure/README.md)：引用绑定与来源选择已修复，真实模型一次提议通过完整 Level A 开发并锁定。机械 Shadow gate=true，但 N5 实际 OPEN_WORLD，健康资格未确立；N7 返回 CORE_KNOWN，未命中 learned registration，调用增量0不能算复用。最终规则已撤销，owned清理完成、非项目未变。终态仍 NO_VALIDATED_LLM_KNOWLEDGE；Level A完整闭环未通过，Level B未恢复。累计60请求/USD1.067489/13live，本轮3请求/USD0.148988/8live；live上限已用满。
 

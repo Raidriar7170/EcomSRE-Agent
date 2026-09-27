@@ -1,5 +1,7 @@
 # Final learning closure — 开发通过，完整闭环未通过
 
+最新追加：[固定规则新独立验证](fixed-validation-20260927-result.md)已因采集协议不适配 OTLP push 停止；新 live 1/4，累计14/17，未到资格/Shadow/晋升/复用。以下保留此前开发与旧 N4–N7 结果，旧计数按当时状态理解。
+
 同一 [Draft PR #104](https://github.com/Raidriar7170/EcomSRE-Agent/pull/104)，执行版本 `b19ecbf`。沿用原 Goal、控制补充和原账本；[本次修复授权与工程记录](development-binding-repair-20260927.md)、[机器结果](development-binding-repair-result.json)、[当前验收索引](acceptance.json)。终态 **ECOMSRE_PRODUCT_V050_NO_VALIDATED_LLM_KNOWLEDGE**，不声称 PASS_LEVEL_A；Level B 未恢复。
 
 | 层级 | 实际结果 |
