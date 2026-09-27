@@ -259,7 +259,11 @@ def test_v2_cannot_accept_a_legacy_scrape_receipt():
         )
 
 
-def test_v2_evidence_reaches_qualification_freeze_and_direct_promotion(closure):  # noqa: F811
+@pytest.mark.parametrize("replacement", [False, True])
+def test_v2_evidence_reaches_qualification_freeze_and_direct_promotion(
+    closure,  # noqa: F811
+    replacement,
+):
     """Synthetic samples, actual normal fixture diagnoses, no validator stubs."""
     from datetime import timedelta
     from test_validation_batch import parent, plan
@@ -299,15 +303,49 @@ def test_v2_evidence_reaches_qualification_freeze_and_direct_promotion(closure):
         prometheus_command=FIXTURE["prometheus_command"],
         preparation_query_keys=list(queries),
     )
+    batch_id = batch.REPLACEMENT if replacement else batch.BATCH
+    if replacement:
+        prior_plan = plan()
+        prior_plan["holdout_episodes"] = {
+            "old-" + k: v for k, v in prior_plan["holdout_episodes"].items()
+        }
+        prior_plan["recurrence_episode"] = "old-recurrence"
+        batch.install(
+            c.evo,
+            original.registration_id,
+            plan=prior_plan,
+            authorization_sha256="b" * 64,
+            episode_ledger=c.runner.episode_ledger(),
+        )
+        prior_runner = ValidationRunner(
+            c.evo, original.environment_id, episode_root=c.runner.episode_root
+        )
+        now = datetime.now(UTC)
+        prior_runner._keep(
+            "preparation:N4",
+            dict(
+                earliest_legal_observation=now.isoformat(),
+                deadline=(now + timedelta(minutes=1)).isoformat(),
+            ),
+        )
+        prior_runner.reserve_episode("N4")
+        prior_runner.finish_episode(
+            "N4", succeeded=False, reason="FIXTURE_PREDECESSOR_FAILURE"
+        )
+        prior_runner._keep("stop", dict(error="FIXTURE_PREDECESSOR_FAILURE"))
     candidate = batch.install(
         c.evo,
         original.registration_id,
         plan=plan() | {"collection": collection},
         authorization_sha256="a" * 64,
         episode_ledger=c.runner.episode_ledger(),
+        batch_id=batch_id,
     )
     runner = ValidationRunner(
-        c.evo, original.environment_id, episode_root=c.runner.episode_root
+        c.evo,
+        original.environment_id,
+        episode_root=c.runner.episode_root,
+        batch_id=batch_id,
     )
     objects = c.app.state.object_store
     collector_digest = objects.put_json(FIXTURE["collector"]).object_sha256
@@ -408,7 +446,7 @@ def test_v2_evidence_reaches_qualification_freeze_and_direct_promotion(closure):
     proof["raw_index_sha256"] = objects.put_json(entries).object_sha256
     runner._keep("ingestion-preparation", proof)
     # Re-signed historical window cannot substitute for this attempt's anchor.
-    key = batch.BATCH + ":ingestion-preparation"
+    key = batch_id + ":ingestion-preparation"
     with c.evo.store.connect() as conn:
         saved_row = conn.execute(
             "SELECT payload_json FROM knowledge_closure_runner_v050 WHERE entry_key=?",

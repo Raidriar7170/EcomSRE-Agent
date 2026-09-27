@@ -72,9 +72,10 @@ def effective_manifest(connection, environment_id):
         ):
             raise ValueError("repair split parent differs")
         manifest = manifest | {repair["episode_id"]: "DEVELOPMENT"}
-    from ecomsre.product.knowledge.validation_batch_v050 import load as validation_batch
-    batch = validation_batch(connection)
-    if batch is not None and batch['environment_id'] == environment_id:
+    from ecomsre.product.knowledge.validation_batch_v050 import all_batches
+    for batch in all_batches(connection):
+        if batch["environment_id"] != environment_id:
+            continue
         if batch['parent_split_sha256'] != semantic_sha256_v22(manifest) or set(batch['additions']) & set(manifest):
             raise ValueError('validation split parent differs')
         manifest = manifest | batch['additions']
@@ -198,8 +199,8 @@ def bind_episode(store, incident, episode_id):
         from ecomsre.product.knowledge.selection_lock_v050 import load as selection_lock
 
         lock = selection_lock(c, incident.environment_id)
-        from ecomsre.product.knowledge.validation_batch_v050 import load as validation_batch, verify
-        batch = validation_batch(c)
+        from ecomsre.product.knowledge.validation_batch_v050 import all_batches, verify
+        batch = next((v for v in all_batches(c) if episode_id in v["additions"]), None)
         if batch is not None and episode_id in batch['additions']:
             verify(c, batch)
             lock = batch

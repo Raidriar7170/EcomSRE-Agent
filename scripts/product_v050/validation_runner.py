@@ -11,13 +11,15 @@ STRATA = {"N4": "POSITIVE_INCIDENT", "N5": "NO_INCIDENT", "N6": "CONFUSABLE_CORE
 
 
 class ValidationRunner(ClosureRunner):
-    def __init__(self, evolution, environment_id, *, episode_root):
+    def __init__(
+        self, evolution, environment_id, *, episode_root, batch_id=batch.BATCH
+    ):
         super().__init__(evolution, environment_id, episode_root=episode_root)
         original = super()._get("plan")
         if original is None or str(self.episode_root) != original["episode_root"]:
             raise ValueError("original episode ledger root required")
         with self.store.connect() as c:
-            self.batch = batch.load(c)
+            self.batch = batch.load(c, batch_id=batch_id)
         if self.batch is None or self.batch["environment_id"] != environment_id:
             raise ValueError("validation batch not installed")
 
@@ -26,14 +28,17 @@ class ValidationRunner(ClosureRunner):
         # source contract or a new development run.
         if key == "control-repair":
             return super()._get(key)
-        return super()._get(batch.BATCH + ":" + key)
+        return super()._get(self.batch["batch_id"] + ":" + key)
 
     def _keep(self, key, value):
-        return super()._keep(batch.BATCH + ":" + key, value)
+        return super()._keep(self.batch["batch_id"] + ":" + key, value)
 
     @property
     def plan(self):
-        return dict(campaign="live-final-closure-08", slots=self.slots)
+        return dict(
+            campaign=self.batch.get("campaign", "live-final-closure-08"),
+            slots=self.slots,
+        )
 
     @property
     def slots(self):

@@ -18,23 +18,36 @@ BATCH = "fixed-rule-independent-validation-20260927"
 TABLE = "knowledge_validation_batch_v050"
 
 
-def load(c, registration_id=None):
+REPLACEMENT = "fixed-rule-otlp-validation-20260927"
+
+
+def all_batches(c):
     if not c.execute("SELECT 1 FROM sqlite_master WHERE name=?", (TABLE,)).fetchone():
-        return None
-    row = c.execute(
-        "SELECT payload_json FROM knowledge_validation_batch_v050 WHERE batch_id=?",
-        (BATCH,),
-    ).fetchone()
-    if row is None:
-        return None
-    value = json.loads(row[0])
-    if value["sha256"] != sha({k: v for k, v in value.items() if k != "sha256"}):
-        raise ValueError("validation batch digest differs")
-    return (
-        value
-        if registration_id is None or value["registration_id"] == registration_id
-        else None
-    )
+        return []
+    values = []
+    for row in c.execute(
+        "SELECT payload_json FROM knowledge_validation_batch_v050 ORDER BY rowid"
+    ):
+        value = json.loads(row[0])
+        if value["sha256"] != sha({k: v for k, v in value.items() if k != "sha256"}):
+            raise ValueError("validation batch digest differs")
+        values.append(value)
+    return values
+
+
+def load(c, registration_id=None, *, batch_id=None):
+    values = [
+        v
+        for v in all_batches(c)
+        if (
+            v["registration_id"] == registration_id
+            if registration_id is not None
+            else v["batch_id"] == (batch_id or BATCH)
+        )
+    ]
+    if len(values) > 1:
+        raise ValueError("ambiguous validation registration")
+    return values[0] if values else None
 
 
 def retained(c, parent_id):
@@ -60,7 +73,34 @@ def retained(c, parent_id):
     return result
 
 
-def install(evo, parent_id, *, plan, authorization_sha256, episode_ledger):
+def predecessor_snapshot(c, value):
+    """Seal stopped batch, its registration and all its append-only receipts."""
+    deployment = None
+    if c.execute(
+        "SELECT 1 FROM sqlite_master WHERE name='knowledge_validation_deployment_v050'"
+    ).fetchone():
+        row = c.execute(
+            "SELECT payload_json FROM knowledge_validation_deployment_v050 WHERE batch_id=?",
+            (value["batch_id"],),
+        ).fetchone()
+        deployment = None if row is None else json.loads(row[0])
+    return dict(
+        batch=value,
+        registration=retained(c, value["registration_id"]),
+        deployment=deployment,
+        receipts=[
+            dict(r)
+            for r in c.execute(
+                "SELECT * FROM knowledge_closure_runner_v050 WHERE entry_key LIKE ? ORDER BY entry_key",
+                (value["batch_id"] + ":%",),
+            )
+        ],
+    )
+
+
+def install(
+    evo, parent_id, *, plan, authorization_sha256, episode_ledger, batch_id=BATCH
+):
     from ecomsre.product.knowledge.evolution_v050 import evaluation_bindings
     from ecomsre.product.knowledge.control_qualification_v050 import VERSION
     from ecomsre.product.knowledge.selection_lock_v050 import load as original_lock
@@ -87,8 +127,52 @@ def install(evo, parent_id, *, plan, authorization_sha256, episode_ledger):
         raise ValueError("future bounded collection required")
     with evo.store.connect() as c:
         c.execute("BEGIN IMMEDIATE")
-        if load(c) is not None:
+        if load(c, batch_id=batch_id) is not None:
             raise ValueError("one validation batch only; no retries")
+        if batch_id not in {BATCH, REPLACEMENT}:
+            raise ValueError("explicit supported batch authorization required")
+        replacement = None
+        if batch_id == REPLACEMENT:
+            prior = load(c, batch_id=BATCH)
+            stop_row = c.execute(
+                "SELECT payload_json FROM knowledge_closure_runner_v050 WHERE entry_key=?",
+                (BATCH + ":stop",),
+            ).fetchone()
+            if (
+                prior is None
+                or stop_row is None
+                or prior["parent_registration_id"] != parent_id
+            ):
+                raise ValueError("stopped predecessor batch required")
+            stop = json.loads(stop_row[0])
+            if stop["sha256"] != sha(stop["value"]):
+                raise ValueError("parent stop digest differs")
+            state = c.execute(
+                "SELECT state FROM knowledge_candidate_pool_v050 WHERE registration_id=?",
+                (prior["registration_id"],),
+            ).fetchone()[0]
+            if state != "DRAFT" or any(
+                episode_ledger.get(k) != v
+                for k, v in prior["original_episode_ledger"].items()
+            ):
+                raise ValueError("stopped predecessor history differs")
+            used = len(episode_ledger) - len(prior["original_episode_ledger"])
+            if used != 1 or prior["new_live_limit"] - used != 3:
+                raise ValueError("exact three unused predecessor slots required")
+            if (
+                "ingestion" not in plan["collection"]
+                or plan["collection"]["ingestion"]["version"]
+                != "ingestion-sample-evidence-v2"
+            ):
+                raise ValueError("replacement requires explicit OTLP v2 protocol")
+            replacement = dict(
+                parent_batch_id=BATCH,
+                parent_batch_sha256=prior["sha256"],
+                parent_stop_sha256=stop["sha256"],
+                retired_unused_slots=3,
+                predecessor_registration_state=state,
+                predecessor_snapshot_sha256=sha(predecessor_snapshot(c, prior)),
+            )
         old = retained(c, parent_id)
         rows = old["knowledge_candidate_pool_v050"]
         if len(rows) != 1 or rows[0]["state"] != "REVOKED":
@@ -118,7 +202,7 @@ def install(evo, parent_id, *, plan, authorization_sha256, episode_ledger):
         ):
             raise ValueError("original complete development gate required")
         if parent.origin == "LLM" and (
-            len(episode_ledger) != 13
+            len(episode_ledger) != (14 if replacement else 13)
             or not any(
                 r["call_key"] == parent.source_request_key and r["state"] == "COMPLETED"
                 for r in ledger(c)
@@ -135,7 +219,8 @@ def install(evo, parent_id, *, plan, authorization_sha256, episode_ledger):
             raise ValueError("four new event identities required")
         payload = parent.model_dump(mode="json", exclude={"compiled_sha256"})
         payload["registration_id"] = (
-            "registration-validation-" + sha(dict(parent=parent_id, batch=BATCH))[:24]
+            "registration-validation-"
+            + sha(dict(parent=parent_id, batch=batch_id))[:24]
         )
         candidate = CompiledKnowledge.model_validate(
             payload | {"compiled_sha256": sha(payload)}
@@ -153,7 +238,7 @@ def install(evo, parent_id, *, plan, authorization_sha256, episode_ledger):
             claim="INHERITED_UNCHANGED_RULE_DEVELOPMENT_NOT_NEW_MODEL_GENERATION",
         )
         value = dict(
-            batch_id=BATCH,
+            batch_id=batch_id,
             registration_id=candidate.registration_id,
             parent_registration_id=parent_id,
             environment_id=parent.environment_id,
@@ -172,21 +257,24 @@ def install(evo, parent_id, *, plan, authorization_sha256, episode_ledger):
             evaluator=evaluation_bindings(),
             qualification_version=VERSION,
             provider_ledger=ledger(c),
-            cumulative_live_limit=17,
-            round_live_limit=12,
+            cumulative_live_limit=18 if replacement else 17,
+            round_live_limit=13 if replacement else 12,
             original_episode_ledger=episode_ledger,
             new_live_limit=4,
             new_provider_limit=0,
             new_semantic_limit=0,
             candidate=candidate.model_dump(mode="json"),
         )
+        if replacement:
+            value["replacement"] = replacement
+            value["campaign"] = "live-final-closure-09"
         value["sha256"] = sha(value)
         c.execute(
             "CREATE TABLE IF NOT EXISTS knowledge_validation_batch_v050 (batch_id TEXT PRIMARY KEY,payload_json TEXT NOT NULL)"
         )
         c.execute(
             "INSERT INTO knowledge_validation_batch_v050 VALUES (?,?)",
-            (BATCH, json.dumps(value, sort_keys=True)),
+            (batch_id, json.dumps(value, sort_keys=True)),
         )
         c.execute(
             "INSERT INTO knowledge_candidate_pool_v050 VALUES (?,?,?,?,'DRAFT',NULL,NULL)",
@@ -208,9 +296,31 @@ def install(evo, parent_id, *, plan, authorization_sha256, episode_ledger):
 def verify(c, value):
     if c.execute(
         "SELECT 1 FROM knowledge_closure_runner_v050 WHERE entry_key=?",
-        (BATCH + ":stop",),
+        (value["batch_id"] + ":stop",),
     ).fetchone():
         raise ValueError("validation batch stopped; no retry")
+    if "replacement" in value:
+        r = value["replacement"]
+        prior = load(c, batch_id=r["parent_batch_id"])
+        stop_row = c.execute(
+            "SELECT payload_json FROM knowledge_closure_runner_v050 WHERE entry_key=?",
+            (r["parent_batch_id"] + ":stop",),
+        ).fetchone()
+        stop = json.loads(stop_row[0]) if stop_row else None
+        if (
+            prior is None
+            or prior["sha256"] != r["parent_batch_sha256"]
+            or sha(predecessor_snapshot(c, prior)) != r["predecessor_snapshot_sha256"]
+            or stop is None
+            or stop["sha256"] != r["parent_stop_sha256"]
+            or sha(stop["value"]) != stop["sha256"]
+            or c.execute(
+                "SELECT state FROM knowledge_candidate_pool_v050 WHERE registration_id=?",
+                (prior["registration_id"],),
+            ).fetchone()[0]
+            != r["predecessor_registration_state"]
+        ):
+            raise ValueError("retired predecessor history changed")
     from ecomsre.product.knowledge.evolution_v050 import evaluation_bindings
 
     if (
@@ -253,7 +363,7 @@ def require_identity(c, candidate, cases, version):
     return value["sha256"]
 
 
-def install_deployment(store, *, new, new_deployment):
+def install_deployment(store, *, new, new_deployment, batch_id=BATCH):
     """Append one owned deployment binding without changing the old successor."""
     from ecomsre.product.knowledge.capability_successor_v050 import (
         load as successor,
@@ -263,13 +373,13 @@ def install_deployment(store, *, new, new_deployment):
 
     with store.connect() as c:
         c.execute("BEGIN IMMEDIATE")
-        value = load(c)
+        value = load(c, batch_id=batch_id)
         if value is None:
             raise ValueError("validation authorization must precede deployment")
         verify(c, value)
         if c.execute(
             "SELECT 1 FROM knowledge_closure_runner_v050 WHERE entry_key LIKE ?",
-            (BATCH + ":episode:%",),
+            (value["batch_id"] + ":episode:%",),
         ).fetchone():
             raise ValueError("deployment must precede slot reservation")
         if c.execute(
@@ -292,6 +402,25 @@ def install_deployment(store, *, new, new_deployment):
                 if k in prior
             ]
         )
+        previous_validation = None
+        if "replacement" in value:
+            row = c.execute(
+                "SELECT payload_json FROM knowledge_validation_deployment_v050 WHERE batch_id=?",
+                (value["replacement"]["parent_batch_id"],),
+            ).fetchone()
+            if row is None:
+                raise ValueError("actual stopped predecessor deployment required")
+            previous_validation = json.loads(row[0])
+            if previous_validation["sha256"] != sha(
+                {k: v for k, v in previous_validation.items() if k != "sha256"}
+            ):
+                raise ValueError("predecessor deployment digest differs")
+            pairs += [
+                dict(
+                    matrix=previous_validation["new"],
+                    deployment=previous_validation["deployment"],
+                )
+            ]
         for pair in pairs:
             validate_pair(pair["matrix"], new, pair["deployment"], new_deployment)
         current = json.loads(
@@ -313,34 +442,48 @@ def install_deployment(store, *, new, new_deployment):
             deployment=new_deployment.model_dump(mode="json"),
             retained_pairs=pairs,
         )
+        if previous_validation is not None:
+            record["previous_validation_sha256"] = previous_validation["sha256"]
         record["sha256"] = sha(record)
         c.execute(
             "CREATE TABLE IF NOT EXISTS knowledge_validation_deployment_v050 (batch_id TEXT PRIMARY KEY,payload_json TEXT NOT NULL)"
         )
         c.execute(
             "INSERT INTO knowledge_validation_deployment_v050 VALUES (?,?)",
-            (BATCH, json.dumps(record, sort_keys=True)),
+            (batch_id, json.dumps(record, sort_keys=True)),
         )
         c.execute("COMMIT")
         return record
 
 
-def deployment_admits(c, store, *, environment_id, expected, actual):
+def deployment_admits(c, store, *, environment_id, expected, actual, batch_id=None):
     """None means no new deployment; False must never fall back to old mapping."""
     if not c.execute(
         "SELECT 1 FROM sqlite_master WHERE name='knowledge_validation_deployment_v050'"
     ).fetchone():
         return None
-    row = c.execute(
-        "SELECT payload_json FROM knowledge_validation_deployment_v050 WHERE batch_id=?",
-        (BATCH,),
+    current_row = c.execute(
+        "SELECT payload_json FROM environment_capability_matrices WHERE environment_id=?",
+        (environment_id,),
     ).fetchone()
-    if row is None:
-        return None
+    current_matrix = json.loads(current_row[0]) if current_row else None
+    matches = []
+    for row in c.execute(
+        "SELECT batch_id,payload_json FROM knowledge_validation_deployment_v050"
+    ):
+        v = json.loads(row["payload_json"])
+        if (
+            (batch_id is None or row["batch_id"] == batch_id)
+            and v["new"]["environment_id"] == environment_id
+            and v["new"] == current_matrix
+        ):
+            matches.append((row["batch_id"], v))
+    if len(matches) != 1:
+        return False if matches or all_batches(c) else None
+    batch_id, v = matches[0]
     from ecomsre.product.environment.repository import EnvironmentRepositoryV1
 
-    v = json.loads(row[0])
-    b = load(c)
+    b = load(c, batch_id=batch_id)
     if (
         v["sha256"] != sha({k: x for k, x in v.items() if k != "sha256"})
         or b is None
@@ -364,10 +507,10 @@ def deployment_admits(c, store, *, environment_id, expected, actual):
     )
 
 
-def receipt(c, slot, kind):
+def receipt(c, slot, kind, *, batch_id=BATCH):
     row = c.execute(
         "SELECT payload_json FROM knowledge_closure_runner_v050 WHERE entry_key=?",
-        (BATCH + ":" + kind + ":" + slot,),
+        (batch_id + ":" + kind + ":" + slot,),
     ).fetchone()
     if row is None:
         raise ValueError("validation collection receipt missing: " + kind + ":" + slot)
@@ -385,11 +528,11 @@ def collection_receipts(c, value, cases):
         "N6": "CONFUSABLE_CORE_KNOWN",
     }
     for slot in ("N4", "N5", "N6"):
-        reservation = receipt(c, slot, "episode")
-        prep = receipt(c, slot, "preparation")
-        binding = receipt(c, slot, "binding")
-        terminal = receipt(c, slot, "terminal")
-        collected = receipt(c, slot, "collection")
+        reservation = receipt(c, slot, "episode", batch_id=value["batch_id"])
+        prep = receipt(c, slot, "preparation", batch_id=value["batch_id"])
+        binding = receipt(c, slot, "binding", batch_id=value["batch_id"])
+        terminal = receipt(c, slot, "terminal", batch_id=value["batch_id"])
+        collected = receipt(c, slot, "collection", batch_id=value["batch_id"])
         if (
             binding["incident_id"] not in cases
             or not terminal["succeeded"]
@@ -451,13 +594,14 @@ def verify_collection_objects(evo, candidate, cases):
             environment_id=candidate.environment_id,
             expected=candidate.capability_sha256,
             actual=current["capability_sha256"],
+            batch_id=value["batch_id"],
         )
         if compatibility is False or (
             candidate.origin == "LLM" and compatibility is not True
         ):
             raise ValueError("new actual deployment binding required")
         for slot in ("N4", "N5", "N6"):
-            collected = receipt(c, slot, "collection")
+            collected = receipt(c, slot, "collection", batch_id=value["batch_id"])
             retained_index = json.loads(
                 evo.investigations.objects.read_bytes(collected["raw_index_sha256"])
             )
@@ -506,7 +650,9 @@ def verify_collection_objects(evo, candidate, cases):
                 }
                 verify_raw(
                     entries,
-                    occurrence=receipt(c, slot, "episode")["episode_id"],
+                    occurrence=receipt(c, slot, "episode", batch_id=value["batch_id"])[
+                        "episode_id"
+                    ],
                     incident_id=collected["incident_id"],
                     snapshots=snapshots.values(),
                     queries=value["plan"]["collection"]["actual_queries"],
@@ -538,7 +684,7 @@ def verify_ingestion_preparation(evo, value):
         verify(c, value)
         row = c.execute(
             "SELECT payload_json FROM knowledge_closure_runner_v050 WHERE entry_key=?",
-            (BATCH + ":ingestion-preparation",),
+            (value["batch_id"] + ":ingestion-preparation",),
         ).fetchone()
         if row is None:
             raise ValueError("pre-fault ingestion preparation required")
@@ -548,7 +694,7 @@ def verify_ingestion_preparation(evo, value):
         proof = wrapped["value"]
         attempt_row = c.execute(
             "SELECT payload_json FROM knowledge_closure_runner_v050 WHERE entry_key=?",
-            (BATCH + ":ingestion-preparation-attempt",),
+            (value["batch_id"] + ":ingestion-preparation-attempt",),
         ).fetchone()
         if attempt_row is None:
             raise ValueError("sealed preparation attempt missing")
@@ -625,6 +771,24 @@ def verify_ingestion_cases(evo, candidate, cases):
         if value is None or "ingestion" not in value["plan"]["collection"]:
             return
         verify(c, value)
+        current = json.loads(
+            c.execute(
+                "SELECT payload_json FROM environment_capability_matrices WHERE environment_id=?",
+                (candidate.environment_id,),
+            ).fetchone()[0]
+        )
+        compatible = deployment_admits(
+            c,
+            evo.store,
+            environment_id=candidate.environment_id,
+            expected=candidate.capability_sha256,
+            actual=current["capability_sha256"],
+            batch_id=value["batch_id"],
+        )
+        if compatible is False or (
+            candidate.origin == "LLM" and compatible is not True
+        ):
+            raise ValueError("this batch actual deployment binding required")
     preparation = verify_ingestion_preparation(evo, value)
     objects = evo.investigations.objects
     from scripts.product_v050.validation_capture import verify_raw
@@ -637,16 +801,19 @@ def verify_ingestion_cases(evo, candidate, cases):
                     for s in ("N4", "N5", "N6", "N7")
                     if c.execute(
                         "SELECT 1 FROM knowledge_closure_runner_v050 WHERE entry_key=?",
-                        (BATCH + ":binding:" + s,),
+                        (value["batch_id"] + ":binding:" + s,),
                     ).fetchone()
-                    and receipt(c, s, "binding")["incident_id"] == iid
+                    and receipt(c, s, "binding", batch_id=value["batch_id"])[
+                        "incident_id"
+                    ]
+                    == iid
                 ),
                 None,
             )
             if slot is None:
                 raise ValueError("ingestion event binding missing")
-            collected = receipt(c, slot, "collection")
-            reservation = receipt(c, slot, "episode")
+            collected = receipt(c, slot, "collection", batch_id=value["batch_id"])
+            reservation = receipt(c, slot, "episode", batch_id=value["batch_id"])
         proof = json.loads(objects.read_bytes(collected["ingestion_receipt_sha256"]))
         entries = json.loads(objects.read_bytes(collected["raw_index_sha256"]))[
             "entries"

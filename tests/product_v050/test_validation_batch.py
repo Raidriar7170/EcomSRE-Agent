@@ -355,6 +355,7 @@ def test_validation_deployment_keeps_old_mapping_and_rejects_semantic_drift(clos
         actual=new.capability_sha256,
     )
     assert mapping.admits(c.evo.store, **args)
+    assert mapping.admits(c.evo.store, **(args | {"actual": old.capability_sha256}))
     assert not mapping.admits(c.evo.store, **(args | {"actual": "0" * 64}))
     with c.evo.store.connect() as conn:
         assert mapping.load(conn, p.environment_id) == v
@@ -364,6 +365,85 @@ def test_validation_deployment_keeps_old_mapping_and_rejects_semantic_drift(clos
             new=new,
             new_deployment=mapping.DeploymentV050.model_validate(after),
         )
+
+    # A second authorized deployment must directly compare the stopped actual one.
+    from scripts.product_v050.validation_runner import ValidationRunner
+    from scripts.product_v050.validation_capture import protocol_v2
+    from test_ingestion_evidence import FIXTURE
+
+    runner = ValidationRunner(
+        c.evo, p.environment_id, episode_root=c.runner.episode_root
+    )
+    now = datetime.now(UTC)
+    runner._keep(
+        "preparation:N4",
+        dict(
+            earliest_legal_observation=now.isoformat(),
+            deadline=(now + timedelta(minutes=1)).isoformat(),
+        ),
+    )
+    runner.reserve_episode("N4")
+    runner.finish_episode("N4", succeeded=False, reason="FIXTURE_OLD_FAILURE")
+    runner._keep("stop", dict(error="FIXTURE_OLD_FAILURE"))
+    successor_plan = plan()
+    successor_plan["holdout_episodes"] = {
+        "new-" + k: v for k, v in successor_plan["holdout_episodes"].items()
+    }
+    successor_plan["recurrence_episode"] = "new-reuse"
+    queries = {
+        "prometheus:request_support:payment": 'sum(rate(kafka_request_count_total{service_name="payment"}[5m]))'
+    }
+    successor_plan["collection"] = protocol_v2(
+        queries,
+        collector=FIXTURE["collector"],
+        prometheus_command=FIXTURE["prometheus_command"],
+        preparation_query_keys=list(queries),
+    )
+    batch.install(
+        c.evo,
+        p.registration_id,
+        plan=successor_plan,
+        authorization_sha256="b" * 64,
+        episode_ledger=runner.episode_ledger(),
+        batch_id=batch.REPLACEMENT,
+    )
+    with c.evo.store.connect() as conn:
+        assert (
+            batch.deployment_admits(
+                conn,
+                c.evo.store,
+                environment_id=p.environment_id,
+                expected=old.capability_sha256,
+                actual=new.capability_sha256,
+                batch_id=batch.REPLACEMENT,
+            )
+            is False
+        )
+    raw = new.model_dump(mode="json", exclude={"capability_sha256"})
+    raw["verified_at"] = new.model_copy(
+        update={"verified_at": new.verified_at + timedelta(seconds=1)}
+    ).model_dump(mode="json")["verified_at"]
+    newest = EnvironmentCapabilityMatrixV1.model_validate(
+        raw | {"capability_sha256": batch.sha(raw)}
+    )
+    caps.put(newest)
+    latest = deepcopy(after)
+    latest.update(
+        deployment_id="replacement", resource_births={"fixture": "replacement"}
+    )
+    record = batch.install_deployment(
+        c.evo.store,
+        new=newest,
+        new_deployment=mapping.DeploymentV050.model_validate(latest),
+        batch_id=batch.REPLACEMENT,
+    )
+    assert any(
+        pair["matrix"] == new.model_dump(mode="json") and pair["deployment"] == after
+        for pair in record["retained_pairs"]
+    )
+    assert mapping.admits(c.evo.store, **(args | {"actual": new.capability_sha256}))
+    assert mapping.admits(c.evo.store, **(args | {"actual": old.capability_sha256}))
+    assert mapping.admits(c.evo.store, **(args | {"actual": newest.capability_sha256}))
 
 
 @pytest.mark.parametrize("occurrence", ["N4", "N7"])
@@ -532,3 +612,146 @@ def test_v1_raw_receipt_remains_readable_with_null_v2_field(closure, monkeypatch
     monkeypatch.setattr("scripts.product_v050.validation_capture.verify_raw", check)
     batch.verify_collection_objects(c.evo, candidate, cases)
     assert set(seen) == set(cases)
+
+
+def test_explicit_otlp_replacement_retires_stopped_batch_without_rewriting_history(
+    closure,  # noqa: F811
+):
+    from scripts.product_v050.validation_runner import ValidationRunner
+    from scripts.product_v050.validation_capture import protocol_v2
+    from test_ingestion_evidence import FIXTURE, QUERIES as queue_queries
+
+    QUERIES = queue_queries | {
+        "prometheus:request_support:payment": 'sum(rate(kafka_request_count_total{service_name="payment"}[5m]))'
+    }
+    from ecomsre.product.knowledge.split_v050 import effective_manifest
+
+    c = closure
+    p = parent(c)
+    old = batch.install(
+        c.evo,
+        p.registration_id,
+        plan=plan(),
+        authorization_sha256="a" * 64,
+        episode_ledger=c.runner.episode_ledger(),
+    )
+    runner = ValidationRunner(
+        c.evo, p.environment_id, episode_root=c.runner.episode_root
+    )
+    now = datetime.now(UTC)
+    runner._keep(
+        "preparation:N4",
+        dict(
+            earliest_legal_observation=now.isoformat(),
+            deadline=(now + timedelta(minutes=5)).isoformat(),
+        ),
+    )
+    runner.reserve_episode("N4")
+    newplan = plan()
+    newplan["holdout_episodes"] = {
+        "new-" + k: v for k, v in newplan["holdout_episodes"].items()
+    }
+    newplan["recurrence_episode"] = "new-v-reuse"
+    newplan["collection"] = protocol_v2(
+        QUERIES,
+        collector=FIXTURE["collector"],
+        prometheus_command=FIXTURE["prometheus_command"],
+        preparation_query_keys=sorted(QUERIES),
+        target_service="fraud-detection",
+    )
+
+    def install():
+        return batch.install(
+            c.evo,
+            p.registration_id,
+            plan=newplan,
+            authorization_sha256="b" * 64,
+            episode_ledger=c.runner.episode_ledger(),
+            batch_id=batch.REPLACEMENT,
+        )
+
+    with pytest.raises(ValueError, match="stopped predecessor"):
+        install()
+    runner.finish_episode("N4", succeeded=False, reason="FIXTURE_OLD_FAILURE")
+    runner._keep("stop", dict(error="FIXTURE_OLD_FAILURE"))
+    with c.evo.store.connect() as conn:
+        before = batch.load(conn)
+        old_parent = batch.retained(conn, p.registration_id)
+    new = install()
+    assert new.proposal == old.proposal == p.proposal
+    assert new.source_request_key == p.source_request_key
+    next_runner = ValidationRunner(
+        c.evo,
+        p.environment_id,
+        episode_root=c.runner.episode_root,
+        batch_id=batch.REPLACEMENT,
+    )
+    assert next_runner.plan["campaign"] == "live-final-closure-09"
+    assert next_runner._get("episode:N4") is None
+    assert next_runner.batch["replacement"]["retired_unused_slots"] == 3
+    assert (
+        next_runner.batch["cumulative_live_limit"],
+        next_runner.batch["round_live_limit"],
+    ) == (18, 13)
+    with c.evo.store.connect() as conn:
+        assert batch.load(conn) == before
+        assert batch.load(conn, old.registration_id) == before
+        assert batch.load(conn, new.registration_id) == next_runner.batch
+        assert batch.retained(conn, p.registration_id) == old_parent
+        assert set(before["additions"]) | set(next_runner.batch["additions"]) <= set(
+            effective_manifest(conn, p.environment_id)
+        )
+        batch.verify(conn, next_runner.batch)
+        with pytest.raises(ValueError, match="stopped"):
+            batch.verify(conn, before)
+    with c.evo.store.connect() as conn:
+        key = batch.BATCH + ":terminal:N4"
+        saved = conn.execute(
+            "SELECT payload_json FROM knowledge_closure_runner_v050 WHERE entry_key=?",
+            (key,),
+        ).fetchone()[0]
+        conn.execute(
+            "UPDATE knowledge_closure_runner_v050 SET payload_json='{}' WHERE entry_key=?",
+            (key,),
+        )
+        with pytest.raises(ValueError, match="predecessor history"):
+            batch.verify(conn, next_runner.batch)
+        conn.execute(
+            "UPDATE knowledge_closure_runner_v050 SET payload_json=? WHERE entry_key=?",
+            (saved, key),
+        )
+    with pytest.raises(ValueError, match="pre-fault ingestion"):
+        next_runner.reserve_episode("N4")
+    with pytest.raises(ValueError, match="one validation batch"):
+        install()
+
+
+def test_explicit_live_entry_constructs_v2_and_keeps_historical_default(monkeypatch):
+    from scripts.product_v050 import validation_live as live
+    from test_ingestion_evidence import FIXTURE, QUERIES as queue_queries
+
+    QUERIES = queue_queries | {
+        "prometheus:request_support:payment": 'sum(rate(kafka_request_count_total{service_name="payment"}[5m]))'
+    }
+
+    def retained(name, root):
+        assert root.name == "live-final-closure-08"
+        return (
+            FIXTURE["collector"]
+            if name == "collector.json"
+            else {
+                "services": {"prometheus": {"command": FIXTURE["prometheus_command"]}}
+            }
+        )
+
+    monkeypatch.setattr(live, "load", retained)
+    try:
+        live.select_batch(batch.REPLACEMENT)
+        p = live.collection_protocol(QUERIES)
+        assert p["ingestion"]["version"] == "ingestion-sample-evidence-v2"
+        assert p["target_service"] == "fraud-detection"
+        assert p["preparation_query_keys"] == sorted(QUERIES)
+        assert live.ROOT.name == "live-final-closure-09"
+    finally:
+        live.select_batch(batch.BATCH)
+    assert "ingestion" not in live.collection_protocol(QUERIES)

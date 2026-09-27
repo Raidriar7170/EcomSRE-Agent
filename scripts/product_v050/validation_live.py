@@ -18,6 +18,45 @@ from ecomsre.product.connectors.credentials import CredentialResolverV1
 ROOT = DATA / "live-final-closure-08"
 PRIOR = DATA / "live-final-closure-07"
 PARENT = "registration-ae3902fb32fd96d87608cb93"
+BATCH_ID = batch.BATCH
+
+
+def select_batch(batch_id):
+    """Explicit bounded entry selection; defaults keep historical meaning."""
+    global ROOT, PRIOR, BATCH_ID
+    if batch_id not in {batch.BATCH, batch.REPLACEMENT}:
+        raise ValueError("unsupported validation batch")
+    BATCH_ID = batch_id
+    ROOT = DATA / (
+        "live-final-closure-09"
+        if batch_id == batch.REPLACEMENT
+        else "live-final-closure-08"
+    )
+    PRIOR = DATA / (
+        "live-final-closure-08"
+        if batch_id == batch.REPLACEMENT
+        else "live-final-closure-07"
+    )
+
+
+def collection_protocol(queries):
+    from scripts.product_v050.validation_capture import protocol, protocol_v2
+
+    if BATCH_ID == batch.BATCH:
+        return protocol(queries)
+    return protocol_v2(
+        queries,
+        collector=load("collector.json", PRIOR),
+        prometheus_command=load("compose.json", PRIOR)["services"]["prometheus"][
+            "command"
+        ],
+        target_service="fraud-detection",
+        preparation_query_keys=sorted(
+            k
+            for k in queries
+            if ":queue_lag:" not in k or k.endswith(":fraud-detection")
+        ),
+    )
 
 
 def authorize_and_prepare():
@@ -26,7 +65,6 @@ def authorize_and_prepare():
     import uuid
     from scripts.product_v050.live_environment import command, inventory, prepare, REPO
     from scripts.product_v050.final_closure import ClosureRunner
-    from scripts.product_v050.validation_capture import protocol
     from ecomsre.product.knowledge.shadow_controls_v050 import CONTROL_VERSION
 
     path = ROOT / "resumption-precheck.json"
@@ -87,15 +125,16 @@ def authorize_and_prepare():
             )
         ),
         recurrence_episode=episodes[3],
-        collection=protocol(queries),
+        collection=collection_protocol(queries),
         time_range=dict(
             start=now.isoformat(), end=(now + timedelta(hours=8)).isoformat()
         ),
         derived_controls_version=CONTROL_VERSION,
     )
-    authority = (
-        REPO
-        / "docs/results/product-v050/final-learning-closure/fixed-validation-20260927-plan.md"
+    authority = REPO / (
+        "docs/results/product-v050/final-learning-closure/otlp-validation-20260927-plan.md"
+        if BATCH_ID == batch.REPLACEMENT
+        else "docs/results/product-v050/final-learning-closure/fixed-validation-20260927-plan.md"
     )
     candidate = batch.install(
         evo,
@@ -103,9 +142,10 @@ def authorize_and_prepare():
         plan=plan,
         authorization_sha256=hashlib.sha256(authority.read_bytes()).hexdigest(),
         episode_ledger=original.episode_ledger(),
+        batch_id=BATCH_ID,
     )
     with evo.store.connect() as c:
-        value = batch.load(c)
+        value = batch.load(c, batch_id=BATCH_ID)
     save(ROOT / "validation-authorization.json", value)
     save(ROOT / "fixed-candidate.json", candidate.model_dump(mode="json"))
     for name in (
@@ -146,7 +186,10 @@ def bind(campaign):
 
         def append(store, **kw):
             return batch.install_deployment(
-                store, new=kw["new"], new_deployment=kw["new_deployment"]
+                store,
+                new=kw["new"],
+                new_deployment=kw["new_deployment"],
+                batch_id=BATCH_ID,
             )["sha256"]
 
         previous.install = append
@@ -205,9 +248,11 @@ def start():
     configured()
     evo = offline_evolution()
     with evo.store.connect() as c:
-        value = batch.load(c)
+        value = batch.load(c, batch_id=BATCH_ID)
         batch.verify(c, value)
-    runner = ValidationRunner(evo, value["environment_id"], episode_root=DATA)
+    runner = ValidationRunner(
+        evo, value["environment_id"], episode_root=DATA, batch_id=BATCH_ID
+    )
     owner = Owned(ROOT)
     marker = ROOT / "deployment-started.json"
     with marker.open("x") as stream:
@@ -531,6 +576,7 @@ def collect(campaign, runner, slot):
                 environment_id=campaign.env,
                 expected=runner.batch["candidate"]["capability_sha256"],
                 actual=actual,
+                batch_id=runner.batch["batch_id"],
             )
             is not True
         ):
@@ -597,7 +643,9 @@ def run(slot):
     campaign = attach()
     runner = None
     try:
-        runner = ValidationRunner(campaign.evo, campaign.env, episode_root=DATA)
+        runner = ValidationRunner(
+            campaign.evo, campaign.env, episode_root=DATA, batch_id=BATCH_ID
+        )
         candidate = CompiledKnowledge.model_validate(runner.batch["candidate"])
         if slot == "N7":
             previous.recurrence(
@@ -628,7 +676,9 @@ def evaluate():
     campaign = attach()
     runner = None
     try:
-        runner = ValidationRunner(campaign.evo, campaign.env, episode_root=DATA)
+        runner = ValidationRunner(
+            campaign.evo, campaign.env, episode_root=DATA, batch_id=BATCH_ID
+        )
         candidate = CompiledKnowledge.model_validate(runner.batch["candidate"])
         result = runner.evaluate_and_promote(candidate)
         save(ROOT / "new-shadow-result.json", result.model_dump(mode="json"))
@@ -649,7 +699,11 @@ if __name__ == "__main__":
         "stage",
         choices=["prepare", "start", "N4", "N5", "N6", "evaluate", "N7", "cleanup"],
     )
+    parser.add_argument(
+        "--batch", choices=[batch.BATCH, batch.REPLACEMENT], default=batch.BATCH
+    )
     args = parser.parse_args()
+    select_batch(args.batch)
     if args.stage == "prepare":
         authorize_and_prepare()
     elif args.stage == "start":
