@@ -77,6 +77,9 @@ def ledger(connection):
 
 def guard(connection, key, reserve, request):
     """Inside the existing reservation transaction, before any new dispatch."""
+    from ecomsre.product.knowledge.validation_batch_v050 import load as validation_batch
+    if validation_batch(connection) is not None:
+        raise ProductError("VALIDATION_PROVIDER_FORBIDDEN", "Fixed-rule validation permits zero Provider requests.")
     wire = request.get("payload", {})
     messages = wire.get("input", wire.get("messages", []))
     proposal_task = False

@@ -172,6 +172,10 @@ def seal(store, registration_id, *, plan):
 
 
 def require_frozen_identity(connection, candidate, cases, version):
+    from ecomsre.product.knowledge.validation_batch_v050 import require_identity
+    validation = require_identity(connection, candidate, cases, version)
+    if validation is not None:
+        return validation
     lock = load(connection)
     if lock is not None and (
         lock["environment_id"] != candidate.environment_id

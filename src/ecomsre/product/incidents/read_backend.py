@@ -944,7 +944,12 @@ class ProductReadBackendV1:
                     sampling_window_seconds=action.request.sampling_window_seconds,
                     sample_count=action.request.sample_count,
                 )
-                returned = connector.query(context)
+                from ecomsre.product.connectors._http import raw_request_context
+                capture_token = raw_request_context.set(dict(incident_id=incident.incident_id, action_id=action.action_id, context=context.model_dump(mode="json")))
+                try:
+                    returned = connector.query(context)
+                finally:
+                    raw_request_context.reset(capture_token)
                 source_results = tuple(
                     item for item in returned if item.source is action.source
                 )

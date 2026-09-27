@@ -72,6 +72,12 @@ def effective_manifest(connection, environment_id):
         ):
             raise ValueError("repair split parent differs")
         manifest = manifest | {repair["episode_id"]: "DEVELOPMENT"}
+    from ecomsre.product.knowledge.validation_batch_v050 import load as validation_batch
+    batch = validation_batch(connection)
+    if batch is not None and batch['environment_id'] == environment_id:
+        if batch['parent_split_sha256'] != semantic_sha256_v22(manifest) or set(batch['additions']) & set(manifest):
+            raise ValueError('validation split parent differs')
+        manifest = manifest | batch['additions']
     return manifest
 
 
@@ -192,6 +198,11 @@ def bind_episode(store, incident, episode_id):
         from ecomsre.product.knowledge.selection_lock_v050 import load as selection_lock
 
         lock = selection_lock(c, incident.environment_id)
+        from ecomsre.product.knowledge.validation_batch_v050 import load as validation_batch, verify
+        batch = validation_batch(c)
+        if batch is not None and episode_id in batch['additions']:
+            verify(c, batch)
+            lock = batch
         if lock and manifest[episode_id] in {"HOLDOUT", "REUSE"}:
             planned = set(lock["plan"]["holdout_episodes"]) | {
                 lock["plan"]["recurrence_episode"]

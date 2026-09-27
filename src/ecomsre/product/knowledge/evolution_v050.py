@@ -75,6 +75,10 @@ def evaluation_bindings() -> dict[str, str]:
         "knowledge/split_v050.py",
         "knowledge/shadow_controls_v050.py",
         "knowledge/control_qualification_v050.py",
+        "knowledge/validation_batch_v050.py",
+        "connectors/_http.py",
+        "incidents/read_backend.py",
+
         "knowledge/selection_lock_v050.py",
         "knowledge/capability_successor_v050.py",
         "knowledge/control_repair_v050.py",
@@ -90,6 +94,9 @@ def evaluation_bindings() -> dict[str, str]:
     } | {p: hashlib.sha256((product.parents[2] / p).read_bytes()).hexdigest() for p in (
         "scripts/product_v050/final_closure.py", "scripts/product_v050/final_closure_live.py",
         "scripts/product_v050/change_audit.py",
+        "scripts/product_v050/validation_runner.py",
+        "scripts/product_v050/validation_capture.py",
+        "scripts/product_v050/validation_live.py",
         "scripts/product_v050/live_environment.py", "scripts/product_v050/live_product.py",
     )}
 
@@ -843,6 +850,8 @@ class KnowledgeEvolutionV050:
                 if row is None or row["state"] != "DRAFT":
                     raise ValueError("candidate not draft")
                 candidate = CompiledKnowledge.model_validate_json(row["payload_json"])
+                from ecomsre.product.knowledge.validation_batch_v050 import verify_collection_objects
+                verify_collection_objects(self, candidate, cases)
                 from ecomsre.product.knowledge.selection_lock_v050 import require_frozen_identity
                 selection_sha256 = require_frozen_identity(c, candidate, cases, derived_controls_version)
                 if set(cases) & set(candidate.discovery_incident_ids):
@@ -935,6 +944,8 @@ class KnowledgeEvolutionV050:
                 raise ValueError("evaluation already consumed")
         candidate = CompiledKnowledge.model_validate_json(row["payload_json"])
         manifest = json.loads(row["freeze_json"])
+        from ecomsre.product.knowledge.validation_batch_v050 import verify_collection_objects
+        verify_collection_objects(self, candidate, manifest['cases'])
         if manifest["evaluator_and_protocol_sha256"] != evaluation_bindings():
             raise ValueError("frozen evaluator or protocol changed")
         with self.store.connect() as c:
@@ -1160,6 +1171,11 @@ class KnowledgeEvolutionV050:
                     or not evaluation.get("gate_passed")
                     or not audit.get("mechanical_shadow", {}).get("gate_passed")):
                     raise ProductError("TEST_PROMOTION_DENIED", "Observed control qualification and independent validation required.")
+                from ecomsre.product.knowledge.validation_batch_v050 import load as validation_batch, require_identity, verify_collection_objects
+                if validation_batch(c, registration_id) is not None:
+                    if require_identity(c, candidate, manifest['cases'], manifest.get('derived_controls_version')) != manifest.get('selection_lock_sha256'):
+                        raise ProductError('TEST_PROMOTION_DENIED', 'Validation batch identity differs.')
+                    verify_collection_objects(self, candidate, manifest['cases'])
                 qualifications = self.control_qualifications(candidate, manifest["cases"])
                 if (not qualifications or not all(q["qualified"] for q in qualifications.values())
                     or qualifications != manifest.get("control_qualifications")

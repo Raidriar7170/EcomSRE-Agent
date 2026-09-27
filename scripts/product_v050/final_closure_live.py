@@ -576,7 +576,7 @@ def collect(campaign, runner, slot):
     return iid
 
 
-def recurrence(campaign, runner):
+def recurrence(campaign, runner, *, registration_id=None, collect_event=None, output_root=None):
     from types import SimpleNamespace
     from ecomsre.product.knowledge.selection_lock_v050 import load as selection
     from ecomsre.product.incidents.extensions import ProductExtensionMatcherV1
@@ -585,6 +585,12 @@ def recurrence(campaign, runner):
 
     with campaign.app.state.store.connect() as c:
         lock = selection(c)
+        if registration_id is not None:
+            from ecomsre.product.knowledge.validation_batch_v050 import load as validation_batch, verify
+            lock = validation_batch(c, registration_id)
+            if lock is None:
+                raise ValueError("AUTHORIZED_VALIDATION_REGISTRATION_REQUIRED")
+            verify(c, lock)
         if lock is not None:
             row = c.execute(
                 "SELECT state,payload_json FROM knowledge_candidate_pool_v050 WHERE registration_id=?",
@@ -604,7 +610,7 @@ def recurrence(campaign, runner):
         before=before,
         passed=False,
         provider_explicitly_disabled=True,
-        replay_after_revocation=True,
+        replay_after_revocation=False,
     )
 
     def deny_provider(*args, **kwargs):
@@ -612,7 +618,7 @@ def recurrence(campaign, runner):
 
     investigation_runtime.configured_provider = deny_provider
     try:
-        iid = collect(campaign, runner, "N7")
+        iid = (collect_event or collect)(campaign, runner, "N7")
         diagnosis = campaign.client.get(f"/v1/incidents/{iid}/diagnosis").json()
         evidence = campaign.client.get(f"/v1/incidents/{iid}/evidence").json()
         bindings = [
@@ -695,6 +701,7 @@ def recurrence(campaign, runner):
             provider_call_delta=0,
             event_llm_calls=0,
             revocation_check=True,
+            replay_after_revocation=True,
             capability_mismatch_check=True,
             environment_mismatch_check=True,
         )
@@ -705,7 +712,7 @@ def recurrence(campaign, runner):
         if not proof.get("revoked"):
             campaign.evo.revoke(registration_id)
             proof["revoked"] = True
-        save(ROOT / "recurrence-proof.json", proof)
+        save((output_root or ROOT) / "recurrence-proof.json", proof)
 
 
 def run_stage(stage):

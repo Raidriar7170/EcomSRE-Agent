@@ -384,6 +384,10 @@ def admits(store, *, environment_id, candidate_environment_id, expected, actual)
     if environment_id != candidate_environment_id:
         return False
     with store.connect() as c:
+        from ecomsre.product.knowledge.validation_batch_v050 import deployment_admits
+        validation = deployment_admits(c, store, environment_id=environment_id, expected=expected, actual=actual)
+        if validation is not None:
+            return validation
         value = load(c, environment_id)
         if value is None:
             return expected == actual

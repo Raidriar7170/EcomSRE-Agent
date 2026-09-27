@@ -75,6 +75,7 @@ def campaign_root(root):
         allowed.parent / "live-final-closure-05",
         allowed.parent / "live-final-closure-06",
         allowed.parent / "live-final-closure-07",
+        allowed.parent / "live-final-closure-08",
     }
     if root not in permitted or root.resolve() != root or root.is_symlink():
         raise ValueError("CAMPAIGN_PATH_NOT_AUTHORIZED")
@@ -156,6 +157,16 @@ def closure_predecessor(root):
                 or resume["to_root"] != root.name
             ):
                 raise ValueError("EXECUTION_RESUME_PARENT_REQUIRED")
+    if root.name == "live-final-closure-08":
+        previous = root.parent / "live-final-closure-07"
+        authorization = load("validation-authorization.json", root)
+        if (not load("cleanup.json", previous)["result"]["clean"]
+            or not load("resumption-precheck.json", root)["resource_continuity_passed"]
+            or authorization["cumulative_live_limit"] != 17
+            or authorization["round_live_limit"] != 12
+            or authorization["new_live_limit"] != 4
+            or authorization["new_provider_limit"] != 0):
+            raise ValueError("FIXED_VALIDATION_AUTHORIZATION_REQUIRED")
     for name in ("cached-images.json", "upstream-pinned-resolved.json"):
         if load(name, root) != load(name, old):
             raise ValueError("CLOSURE_FROZEN_INPUT_CHANGED")
@@ -202,6 +213,7 @@ def prepare(root):
         "live-final-closure-05",
         "live-final-closure-06",
         "live-final-closure-07",
+        "live-final-closure-08",
     }
     old_root, selector_names = closure_predecessor(root) if closure else (None, {})
     if root.name in {"diagnostic-01", "postgres-user-01"}:
