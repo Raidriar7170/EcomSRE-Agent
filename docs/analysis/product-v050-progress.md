@@ -475,3 +475,8 @@ See [complete result](../results/product-v050/final-learning-closure/README.md).
 ## 2026-09-27 OTLP 摄入协议离线修复
 
 [报告](../results/product-v050/ingestion-protocol-repair/README.md)：保留配置确认 OTLP push，空 targets 不等于遥测陈旧。未来显式 v2 用 instant range-vector 原始样本时间验证实际服务/selector及有效窗口，精确摄入延迟保留UNKNOWN；1次/80请求/120秒只读准备在固定隔离后、事件预留和故障前，资格/freeze/promotion重验CAS，v1保留。原材料缺少该样本证明，不补判旧N4。仅代码/fixture，原DB与89原件未变，新增Provider/Docker/live/语义/预算0，14/17及旧stop不变。Level A未完成、Level B未恢复，不自动恢复剩余槽位。
+
+
+## 2026-09-27 OTLP v2替代批次真实准备
+
+执行0a6733a；[结果](../results/product-v050/final-learning-closure/otlp-validation-20260927-result.md)。独立新批次显式替代旧批三个未用额度，18/13上限追加、原14/9消耗保留。owned部署成功；固定隔离后54次HTTP读取，9/21查询原始样本窗口覆盖失败，故障前停止并CLEAN。无新事件/Provider/语义尝试；三个控制资格、Shadow、晋升、复用NOT_RUN；新DRAFT未激活，旧REVOKED不变。保留真实60秒Kafka样本间隔及部分span序列左窗口缺口，不放宽30秒协议，不重试。

@@ -1,0 +1,766 @@
+{
+  "all_http_200": true,
+  "any_truncation": false,
+  "batch_id": "fixed-rule-otlp-validation-20260927",
+  "business_health": "NOT_EVALUATED",
+  "cleanup": {
+    "clean": true,
+    "network_extra_unchanged": true,
+    "non_owned_unchanged": true,
+    "remaining": {
+      "container": 0,
+      "network": 0,
+      "volume": 0
+    }
+  },
+  "closure_live": 9,
+  "committed_microusd": 1067489,
+  "coverage_counts": {
+    "INVALID_SAMPLE_EVIDENCE": 9,
+    "SUPPORTED": 9,
+    "SUPPORTED_WITH_EXPLICIT_EMPTY_ALTERNATIVES": 3
+  },
+  "cumulative_live": 14,
+  "cumulative_provider": 60,
+  "exact_ingestion_latency": "UNKNOWN_NOT_EXPOSED",
+  "execution_head": "0a6733a7ca08cdf818c87850d8eae23e77a084f3",
+  "first_request": "2026-09-27T20:41:34.497379+00:00",
+  "http_elapsed_seconds": 0.138399,
+  "http_reads": 54,
+  "last_response": "2026-09-27T20:41:34.635778+00:00",
+  "level_a": "INCOMPLETE",
+  "level_b": "NOT_RESUMED",
+  "live_limits": [
+    18,
+    13
+  ],
+  "new_incidents": 0,
+  "new_live": 0,
+  "new_provider": 0,
+  "normal_queries": 21,
+  "old_archive_files_unchanged": 89,
+  "preparation": "FAIL_WINDOW_COVERAGE",
+  "promotion": "NOT_RUN",
+  "qualifications": "NOT_RUN",
+  "queries": [
+    {
+      "coverage": "SUPPORTED",
+      "query_key": "prometheus:cpu:checkout",
+      "selectors": [
+        {
+          "gap_over_30_series": 0,
+          "late_first_series": 0,
+          "max_first_offset_seconds": -0.11550092697143555,
+          "max_gap_seconds": 2.009999990463257,
+          "max_last_age_seconds": 0.11750102043151855,
+          "metric": "container_cpu_usage_nanoseconds_total",
+          "min_last_age_seconds": 0.11750102043151855,
+          "response_sha256": "5358443cb3c03576d66116d20406e8b244d43aba3f202a91f4348bb4aa79ce17",
+          "selector_sha256": "2bd7b5b5003e5611c47e07228b58ad9f53bf4192d3f348d74780806cb5c42073",
+          "series_count": 1,
+          "stale_series": 0,
+          "state": "FRESH_COVERED"
+        }
+      ]
+    },
+    {
+      "coverage": "SUPPORTED",
+      "query_key": "prometheus:cpu:fraud-detection",
+      "selectors": [
+        {
+          "gap_over_30_series": 0,
+          "late_first_series": 0,
+          "max_first_offset_seconds": -0.11550092697143555,
+          "max_gap_seconds": 2.009999990463257,
+          "max_last_age_seconds": 0.11750102043151855,
+          "metric": "container_cpu_usage_nanoseconds_total",
+          "min_last_age_seconds": 0.11750102043151855,
+          "response_sha256": "8f41fb11cbb010eb626ff590abd6c745c0891a61b22093425893cf1ff3016b13",
+          "selector_sha256": "44585717b7eb1e69e2000c033b3f4d575de584658a05d8ace92ad92a9f0e9a05",
+          "series_count": 1,
+          "stale_series": 0,
+          "state": "FRESH_COVERED"
+        }
+      ]
+    },
+    {
+      "coverage": "SUPPORTED",
+      "query_key": "prometheus:cpu:kafka",
+      "selectors": [
+        {
+          "gap_over_30_series": 0,
+          "late_first_series": 0,
+          "max_first_offset_seconds": -0.11550092697143555,
+          "max_gap_seconds": 2.009999990463257,
+          "max_last_age_seconds": 0.11750102043151855,
+          "metric": "container_cpu_usage_nanoseconds_total",
+          "min_last_age_seconds": 0.11750102043151855,
+          "response_sha256": "3210bda2b2a2dcf699d8b6fd3e9148e7d3a6614f6b2ca13546de5b5ec5ec6451",
+          "selector_sha256": "60321605b816639ec134621f1ddfcb36322c00a440e73a22307665702ed3e184",
+          "series_count": 1,
+          "stale_series": 0,
+          "state": "FRESH_COVERED"
+        }
+      ]
+    },
+    {
+      "coverage": "SUPPORTED",
+      "query_key": "prometheus:cpu:payment",
+      "selectors": [
+        {
+          "gap_over_30_series": 0,
+          "late_first_series": 0,
+          "max_first_offset_seconds": -0.11550092697143555,
+          "max_gap_seconds": 2.009999990463257,
+          "max_last_age_seconds": 0.11750102043151855,
+          "metric": "container_cpu_usage_nanoseconds_total",
+          "min_last_age_seconds": 0.11750102043151855,
+          "response_sha256": "5aa277cf22c5b514ce3eb5c0dd7681e2c92710428cfeabda7f243ecafd03ec71",
+          "selector_sha256": "d1ba034a6ee0be0005c50e6e3d1ae3d210f4183e19d8e8b541eb6de4744e7f19",
+          "series_count": 1,
+          "stale_series": 0,
+          "state": "FRESH_COVERED"
+        }
+      ]
+    },
+    {
+      "coverage": "SUPPORTED_WITH_EXPLICIT_EMPTY_ALTERNATIVES",
+      "query_key": "prometheus:error_rate:checkout",
+      "selectors": [
+        {
+          "gap_over_30_series": 0,
+          "late_first_series": 0,
+          "max_first_offset_seconds": null,
+          "max_gap_seconds": null,
+          "max_last_age_seconds": null,
+          "metric": "kafka_request_failed_total",
+          "min_last_age_seconds": null,
+          "response_sha256": "5270461ec81028d05a5dc2cd726f822921a8aacd21927e829d8895b3d662f0cc",
+          "selector_sha256": "7c8fffda48792b36b44de0fdb87fc1e82b0e9f0240a17e9597d962896c078863",
+          "series_count": 0,
+          "stale_series": 0,
+          "state": "EMPTY"
+        },
+        {
+          "gap_over_30_series": 0,
+          "late_first_series": 0,
+          "max_first_offset_seconds": null,
+          "max_gap_seconds": null,
+          "max_last_age_seconds": null,
+          "metric": "kafka_request_count_total",
+          "min_last_age_seconds": null,
+          "response_sha256": "5270461ec81028d05a5dc2cd726f822921a8aacd21927e829d8895b3d662f0cc",
+          "selector_sha256": "bffb16802d1013e60d8a95c709039b08449cd0989e4ff9f901f87564b90597d3",
+          "series_count": 0,
+          "stale_series": 0,
+          "state": "EMPTY"
+        },
+        {
+          "gap_over_30_series": 0,
+          "late_first_series": 0,
+          "max_first_offset_seconds": null,
+          "max_gap_seconds": null,
+          "max_last_age_seconds": null,
+          "metric": "traces_span_metrics_calls_total",
+          "min_last_age_seconds": null,
+          "response_sha256": "5270461ec81028d05a5dc2cd726f822921a8aacd21927e829d8895b3d662f0cc",
+          "selector_sha256": "dc31404eb3aebfb415595155a4a6fe0ec3bafaf9530d033a0c52961a6adcd49f",
+          "series_count": 0,
+          "stale_series": 0,
+          "state": "EMPTY"
+        },
+        {
+          "gap_over_30_series": 0,
+          "late_first_series": 0,
+          "max_first_offset_seconds": 0.7424991130828857,
+          "max_gap_seconds": 5.007999897003174,
+          "max_last_age_seconds": 4.266500949859619,
+          "metric": "traces_span_metrics_calls_total",
+          "min_last_age_seconds": 4.266500949859619,
+          "response_sha256": "aaa85b177729a2d08d59f3b15586f45237aff5be61f47ff2592f516fef21a767",
+          "selector_sha256": "be9bdc937f3127ead53061968b10cec6ce387fb1b7cd82989b22cdf7bb36b642",
+          "series_count": 9,
+          "stale_series": 0,
+          "state": "FRESH_COVERED"
+        }
+      ]
+    },
+    {
+      "coverage": "INVALID_SAMPLE_EVIDENCE",
+      "query_key": "prometheus:error_rate:fraud-detection",
+      "selectors": [
+        {
+          "gap_over_30_series": 0,
+          "late_first_series": 0,
+          "max_first_offset_seconds": null,
+          "max_gap_seconds": null,
+          "max_last_age_seconds": null,
+          "metric": "kafka_request_failed_total",
+          "min_last_age_seconds": null,
+          "response_sha256": "5270461ec81028d05a5dc2cd726f822921a8aacd21927e829d8895b3d662f0cc",
+          "selector_sha256": "1e099634ec8d251d3274fe78468539902ae43d4b4289744c1da001c389d0f747",
+          "series_count": 0,
+          "stale_series": 0,
+          "state": "EMPTY"
+        },
+        {
+          "gap_over_30_series": 0,
+          "late_first_series": 0,
+          "max_first_offset_seconds": null,
+          "max_gap_seconds": null,
+          "max_last_age_seconds": null,
+          "metric": "kafka_request_count_total",
+          "min_last_age_seconds": null,
+          "response_sha256": "5270461ec81028d05a5dc2cd726f822921a8aacd21927e829d8895b3d662f0cc",
+          "selector_sha256": "0c3d455afcb3ac9c6c046cfec47e77c3260e26168e6662916c2fd38b85256f39",
+          "series_count": 0,
+          "stale_series": 0,
+          "state": "EMPTY"
+        },
+        {
+          "gap_over_30_series": 0,
+          "late_first_series": 1,
+          "max_first_offset_seconds": 110.73649907112122,
+          "max_gap_seconds": 5.007999897003174,
+          "max_last_age_seconds": 4.266500949859619,
+          "metric": "traces_span_metrics_calls_total",
+          "min_last_age_seconds": 4.266500949859619,
+          "response_sha256": "ecba6684e04766dc881807704e93d6706ad1a323dcc37cc22c3d6933b4d29c91",
+          "selector_sha256": "7a82d3a147e2abd4bb4bc98bc322701a18733410877ef19db5f9dfb14099efc9",
+          "series_count": 1,
+          "stale_series": 0,
+          "state": "WINDOW_INCOMPLETE"
+        },
+        {
+          "gap_over_30_series": 0,
+          "late_first_series": 1,
+          "max_first_offset_seconds": 110.73649907112122,
+          "max_gap_seconds": 5.007999897003174,
+          "max_last_age_seconds": 4.266500949859619,
+          "metric": "traces_span_metrics_calls_total",
+          "min_last_age_seconds": 4.266500949859619,
+          "response_sha256": "3d70be3f783980aed4f4a869a2b87eff82403356b32934404e351b455e16861c",
+          "selector_sha256": "5a0ba3d43c781103de2558707db9b70ea139325a02fa064e6112de892f70a59c",
+          "series_count": 5,
+          "stale_series": 0,
+          "state": "WINDOW_INCOMPLETE"
+        }
+      ]
+    },
+    {
+      "coverage": "INVALID_SAMPLE_EVIDENCE",
+      "query_key": "prometheus:error_rate:kafka",
+      "selectors": [
+        {
+          "gap_over_30_series": 1,
+          "late_first_series": 1,
+          "max_first_offset_seconds": 34.82949900627136,
+          "max_gap_seconds": 60.00200009346008,
+          "max_last_age_seconds": 25.17150092124939,
+          "metric": "kafka_request_failed_total",
+          "min_last_age_seconds": 25.17150092124939,
+          "response_sha256": "22957f1bfd2e67da40b3636bbc7f86b1833071e1b59fa174c518b550490932b5",
+          "selector_sha256": "1dce5f56499697570ece91c6e8650ad64460e943271dc9f6e29b5078040c7534",
+          "series_count": 1,
+          "stale_series": 0,
+          "state": "WINDOW_INCOMPLETE"
+        },
+        {
+          "gap_over_30_series": 1,
+          "late_first_series": 1,
+          "max_first_offset_seconds": 34.82949900627136,
+          "max_gap_seconds": 60.00200009346008,
+          "max_last_age_seconds": 25.17150092124939,
+          "metric": "kafka_request_count_total",
+          "min_last_age_seconds": 25.17150092124939,
+          "response_sha256": "ea7900a4f1b81aa9a206992c5afe76afac3ccf8982092180bda35ce9da062423",
+          "selector_sha256": "485d0f639795235c81997fa53cd4d9f1195a67f9793cf73b636c9c2fcae19133",
+          "series_count": 1,
+          "stale_series": 0,
+          "state": "WINDOW_INCOMPLETE"
+        },
+        {
+          "gap_over_30_series": 0,
+          "late_first_series": 0,
+          "max_first_offset_seconds": null,
+          "max_gap_seconds": null,
+          "max_last_age_seconds": null,
+          "metric": "traces_span_metrics_calls_total",
+          "min_last_age_seconds": null,
+          "response_sha256": "5270461ec81028d05a5dc2cd726f822921a8aacd21927e829d8895b3d662f0cc",
+          "selector_sha256": "6e01f38eeb1ab45b997965801866b166cac9d64d59cd074b7f9e2ab66696cfcc",
+          "series_count": 0,
+          "stale_series": 0,
+          "state": "EMPTY"
+        },
+        {
+          "gap_over_30_series": 0,
+          "late_first_series": 0,
+          "max_first_offset_seconds": null,
+          "max_gap_seconds": null,
+          "max_last_age_seconds": null,
+          "metric": "traces_span_metrics_calls_total",
+          "min_last_age_seconds": null,
+          "response_sha256": "5270461ec81028d05a5dc2cd726f822921a8aacd21927e829d8895b3d662f0cc",
+          "selector_sha256": "41628dbb41a4a24786c62cf9362e291edddc16480938bf210b55acd0388a7a61",
+          "series_count": 0,
+          "stale_series": 0,
+          "state": "EMPTY"
+        }
+      ]
+    },
+    {
+      "coverage": "INVALID_SAMPLE_EVIDENCE",
+      "query_key": "prometheus:error_rate:payment",
+      "selectors": [
+        {
+          "gap_over_30_series": 0,
+          "late_first_series": 0,
+          "max_first_offset_seconds": null,
+          "max_gap_seconds": null,
+          "max_last_age_seconds": null,
+          "metric": "kafka_request_failed_total",
+          "min_last_age_seconds": null,
+          "response_sha256": "5270461ec81028d05a5dc2cd726f822921a8aacd21927e829d8895b3d662f0cc",
+          "selector_sha256": "3b0a38954f6be04511fa580b40afc8ed69e568078a1d658af75118ea2823517a",
+          "series_count": 0,
+          "stale_series": 0,
+          "state": "EMPTY"
+        },
+        {
+          "gap_over_30_series": 0,
+          "late_first_series": 0,
+          "max_first_offset_seconds": null,
+          "max_gap_seconds": null,
+          "max_last_age_seconds": null,
+          "metric": "kafka_request_count_total",
+          "min_last_age_seconds": null,
+          "response_sha256": "5270461ec81028d05a5dc2cd726f822921a8aacd21927e829d8895b3d662f0cc",
+          "selector_sha256": "e0ddaf848c4ee844b8572fa7304c8def18cb04244f016224f421314729a980ff",
+          "series_count": 0,
+          "stale_series": 0,
+          "state": "EMPTY"
+        },
+        {
+          "gap_over_30_series": 0,
+          "late_first_series": 1,
+          "max_first_offset_seconds": 120.73649907112122,
+          "max_gap_seconds": 5.007999897003174,
+          "max_last_age_seconds": 4.266500949859619,
+          "metric": "traces_span_metrics_calls_total",
+          "min_last_age_seconds": 4.266500949859619,
+          "response_sha256": "86e874957d7745739f3b26d6baad04018c1b82dea731605550b2e59c4527778d",
+          "selector_sha256": "9ac8a558e0c1e5b696435ce0edfd39207670b94e3ad5b0448151d78742aab837",
+          "series_count": 1,
+          "stale_series": 0,
+          "state": "WINDOW_INCOMPLETE"
+        },
+        {
+          "gap_over_30_series": 0,
+          "late_first_series": 1,
+          "max_first_offset_seconds": 120.73649907112122,
+          "max_gap_seconds": 5.007999897003174,
+          "max_last_age_seconds": 4.266500949859619,
+          "metric": "traces_span_metrics_calls_total",
+          "min_last_age_seconds": 4.266500949859619,
+          "response_sha256": "4a90300795e8ba7da4cf6fa27b87aedcf00623f3f1ee55c95bc2d891cdd567b9",
+          "selector_sha256": "a1851ae3b72b2cf84d33d1c1cceab706c7e18178a122f89474cd9c0c987df876",
+          "series_count": 6,
+          "stale_series": 0,
+          "state": "WINDOW_INCOMPLETE"
+        }
+      ]
+    },
+    {
+      "coverage": "SUPPORTED_WITH_EXPLICIT_EMPTY_ALTERNATIVES",
+      "query_key": "prometheus:latency:checkout",
+      "selectors": [
+        {
+          "gap_over_30_series": 0,
+          "late_first_series": 0,
+          "max_first_offset_seconds": null,
+          "max_gap_seconds": null,
+          "max_last_age_seconds": null,
+          "metric": "kafka_produce_request_time_95p_milliseconds",
+          "min_last_age_seconds": null,
+          "response_sha256": "5270461ec81028d05a5dc2cd726f822921a8aacd21927e829d8895b3d662f0cc",
+          "selector_sha256": "a612eb79947e1b1a78ef0c9d989664d6c8eeb8558c5d5d6fd41bdda28ebc45e9",
+          "series_count": 0,
+          "stale_series": 0,
+          "state": "EMPTY"
+        },
+        {
+          "gap_over_30_series": 0,
+          "late_first_series": 0,
+          "max_first_offset_seconds": 0.7424991130828857,
+          "max_gap_seconds": 5.007999897003174,
+          "max_last_age_seconds": 4.266500949859619,
+          "metric": "traces_span_metrics_duration_milliseconds_bucket",
+          "min_last_age_seconds": 4.266500949859619,
+          "response_sha256": "531ffaece4093923e90dde441020b8c11131b081bef1e3fdb6766140e58d5f29",
+          "selector_sha256": "d8c3d3c6d1645852cd7c26a8d32738029e37495ae399cba73e0ca8e3188b15f0",
+          "series_count": 153,
+          "stale_series": 0,
+          "state": "FRESH_COVERED"
+        }
+      ]
+    },
+    {
+      "coverage": "INVALID_SAMPLE_EVIDENCE",
+      "query_key": "prometheus:latency:fraud-detection",
+      "selectors": [
+        {
+          "gap_over_30_series": 0,
+          "late_first_series": 0,
+          "max_first_offset_seconds": null,
+          "max_gap_seconds": null,
+          "max_last_age_seconds": null,
+          "metric": "kafka_produce_request_time_95p_milliseconds",
+          "min_last_age_seconds": null,
+          "response_sha256": "5270461ec81028d05a5dc2cd726f822921a8aacd21927e829d8895b3d662f0cc",
+          "selector_sha256": "ea735439184eaaac711ee2c679779007ea6b25aa0f0943053a8954011b11d038",
+          "series_count": 0,
+          "stale_series": 0,
+          "state": "EMPTY"
+        },
+        {
+          "gap_over_30_series": 0,
+          "late_first_series": 17,
+          "max_first_offset_seconds": 110.73649907112122,
+          "max_gap_seconds": 5.007999897003174,
+          "max_last_age_seconds": 4.266500949859619,
+          "metric": "traces_span_metrics_duration_milliseconds_bucket",
+          "min_last_age_seconds": 4.266500949859619,
+          "response_sha256": "ba82b6cf375944571ccc15ac5cc4565512622cf89e5c9f3ead649b2bd9478c2c",
+          "selector_sha256": "d87b56f853e4b357475004c3615860c461ca1c4d4f3c0579e00323c8d5c449cd",
+          "series_count": 85,
+          "stale_series": 0,
+          "state": "WINDOW_INCOMPLETE"
+        }
+      ]
+    },
+    {
+      "coverage": "INVALID_SAMPLE_EVIDENCE",
+      "query_key": "prometheus:latency:kafka",
+      "selectors": [
+        {
+          "gap_over_30_series": 1,
+          "late_first_series": 1,
+          "max_first_offset_seconds": 34.82949900627136,
+          "max_gap_seconds": 60.00200009346008,
+          "max_last_age_seconds": 25.17150092124939,
+          "metric": "kafka_produce_request_time_95p_milliseconds",
+          "min_last_age_seconds": 25.17150092124939,
+          "response_sha256": "18ccc4abc018c98969dd7d68ed5e8a3e555ef8c82fb81c40f61bc3722cea2966",
+          "selector_sha256": "cf20d6ca3fc9e9cc4ecd027588e327c349011fdf63d057db86c2bab051ac07c3",
+          "series_count": 1,
+          "stale_series": 0,
+          "state": "WINDOW_INCOMPLETE"
+        },
+        {
+          "gap_over_30_series": 0,
+          "late_first_series": 0,
+          "max_first_offset_seconds": null,
+          "max_gap_seconds": null,
+          "max_last_age_seconds": null,
+          "metric": "traces_span_metrics_duration_milliseconds_bucket",
+          "min_last_age_seconds": null,
+          "response_sha256": "5270461ec81028d05a5dc2cd726f822921a8aacd21927e829d8895b3d662f0cc",
+          "selector_sha256": "197999f635147ec2059ffeabe25fb9889835d60ae9cd8f2ce6b805faf2ae1bb1",
+          "series_count": 0,
+          "stale_series": 0,
+          "state": "EMPTY"
+        }
+      ]
+    },
+    {
+      "coverage": "INVALID_SAMPLE_EVIDENCE",
+      "query_key": "prometheus:latency:payment",
+      "selectors": [
+        {
+          "gap_over_30_series": 0,
+          "late_first_series": 0,
+          "max_first_offset_seconds": null,
+          "max_gap_seconds": null,
+          "max_last_age_seconds": null,
+          "metric": "kafka_produce_request_time_95p_milliseconds",
+          "min_last_age_seconds": null,
+          "response_sha256": "5270461ec81028d05a5dc2cd726f822921a8aacd21927e829d8895b3d662f0cc",
+          "selector_sha256": "31dc7bd0eabc9f4f9b41f74167e0d2b07ab785ca90727457c264807bb9a1e547",
+          "series_count": 0,
+          "stale_series": 0,
+          "state": "EMPTY"
+        },
+        {
+          "gap_over_30_series": 0,
+          "late_first_series": 17,
+          "max_first_offset_seconds": 120.73649907112122,
+          "max_gap_seconds": 5.007999897003174,
+          "max_last_age_seconds": 4.266500949859619,
+          "metric": "traces_span_metrics_duration_milliseconds_bucket",
+          "min_last_age_seconds": 4.266500949859619,
+          "response_sha256": "5ca9a4dc13389a06d1bf6ef35e05b820d29d0226835ab76c0ddc8671dbd9a48e",
+          "selector_sha256": "ebd6182d6e9cd37bbcfc7faa70cea83b9e2f165682c69aa7de7607caaf6da25d",
+          "series_count": 102,
+          "stale_series": 0,
+          "state": "WINDOW_INCOMPLETE"
+        }
+      ]
+    },
+    {
+      "coverage": "SUPPORTED",
+      "query_key": "prometheus:memory:checkout",
+      "selectors": [
+        {
+          "gap_over_30_series": 0,
+          "late_first_series": 0,
+          "max_first_offset_seconds": -0.11750102043151855,
+          "max_gap_seconds": 2.009999990463257,
+          "max_last_age_seconds": 0.11750102043151855,
+          "metric": "container_memory_usage_total_bytes",
+          "min_last_age_seconds": 0.11750102043151855,
+          "response_sha256": "d74b25f8d8579ac4c4da99531ae5f42c260d55b01196b396ea6e3b368d0c4ea8",
+          "selector_sha256": "692266f85703ff316908deb3af0c55d5b500b2a04f824be0b3722ff4525ef9c3",
+          "series_count": 1,
+          "stale_series": 0,
+          "state": "FRESH_COVERED"
+        }
+      ]
+    },
+    {
+      "coverage": "SUPPORTED",
+      "query_key": "prometheus:memory:fraud-detection",
+      "selectors": [
+        {
+          "gap_over_30_series": 0,
+          "late_first_series": 0,
+          "max_first_offset_seconds": -0.11750102043151855,
+          "max_gap_seconds": 2.009999990463257,
+          "max_last_age_seconds": 0.11750102043151855,
+          "metric": "container_memory_usage_total_bytes",
+          "min_last_age_seconds": 0.11750102043151855,
+          "response_sha256": "32aa1e32c02abfd89ff6670b9023175ae58ad33c363540a9abea3a712556502c",
+          "selector_sha256": "5a36a507173c86b2c7bb0bf8b6f0ad3e3ef085c5952ffb914ee9281f361fd521",
+          "series_count": 1,
+          "stale_series": 0,
+          "state": "FRESH_COVERED"
+        }
+      ]
+    },
+    {
+      "coverage": "SUPPORTED",
+      "query_key": "prometheus:memory:kafka",
+      "selectors": [
+        {
+          "gap_over_30_series": 0,
+          "late_first_series": 0,
+          "max_first_offset_seconds": -0.11750102043151855,
+          "max_gap_seconds": 2.009999990463257,
+          "max_last_age_seconds": 0.11750102043151855,
+          "metric": "container_memory_usage_total_bytes",
+          "min_last_age_seconds": 0.11750102043151855,
+          "response_sha256": "b19bc70c08029da0f8e8500f4119a89e3c67b961d5ed0412b8430ecb1697aa0a",
+          "selector_sha256": "71a241967ce07a569ac280684e5727952cfbd21ddd8b85912ebf8371dafdfb66",
+          "series_count": 1,
+          "stale_series": 0,
+          "state": "FRESH_COVERED"
+        }
+      ]
+    },
+    {
+      "coverage": "SUPPORTED",
+      "query_key": "prometheus:memory:payment",
+      "selectors": [
+        {
+          "gap_over_30_series": 0,
+          "late_first_series": 0,
+          "max_first_offset_seconds": -0.11750102043151855,
+          "max_gap_seconds": 2.009999990463257,
+          "max_last_age_seconds": 0.11750102043151855,
+          "metric": "container_memory_usage_total_bytes",
+          "min_last_age_seconds": 0.11750102043151855,
+          "response_sha256": "dbb27c734c1b833f5e8dc5e51cb57e7f2732e18875fb82f23620fbee45f3e4a4",
+          "selector_sha256": "8a088dbe3c3cdd73f0929a96d234a6bd5f7adcc734ca409ce365cfc30e08275a",
+          "series_count": 1,
+          "stale_series": 0,
+          "state": "FRESH_COVERED"
+        }
+      ]
+    },
+    {
+      "coverage": "SUPPORTED",
+      "query_key": "prometheus:queue_lag:fraud-detection",
+      "selectors": [
+        {
+          "gap_over_30_series": 0,
+          "late_first_series": 0,
+          "max_first_offset_seconds": 1.7544989585876465,
+          "max_gap_seconds": 10.006999969482422,
+          "max_last_age_seconds": 8.245501041412354,
+          "metric": "kafka_consumer_group_lag_ratio",
+          "min_last_age_seconds": 8.245501041412354,
+          "response_sha256": "047dc54ba0047338c0852c12bb558ba211ba03e5b6ad81241086f02a377fcde5",
+          "selector_sha256": "4dc7f5447e3f52425596f654459cb4b699a1909d624eb90c0638ffc743679729",
+          "series_count": 1,
+          "stale_series": 0,
+          "state": "FRESH_COVERED"
+        }
+      ]
+    },
+    {
+      "coverage": "SUPPORTED_WITH_EXPLICIT_EMPTY_ALTERNATIVES",
+      "query_key": "prometheus:request_support:checkout",
+      "selectors": [
+        {
+          "gap_over_30_series": 0,
+          "late_first_series": 0,
+          "max_first_offset_seconds": null,
+          "max_gap_seconds": null,
+          "max_last_age_seconds": null,
+          "metric": "kafka_request_count_total",
+          "min_last_age_seconds": null,
+          "response_sha256": "5270461ec81028d05a5dc2cd726f822921a8aacd21927e829d8895b3d662f0cc",
+          "selector_sha256": "bffb16802d1013e60d8a95c709039b08449cd0989e4ff9f901f87564b90597d3",
+          "series_count": 0,
+          "stale_series": 0,
+          "state": "EMPTY"
+        },
+        {
+          "gap_over_30_series": 0,
+          "late_first_series": 0,
+          "max_first_offset_seconds": 0.7424991130828857,
+          "max_gap_seconds": 5.007999897003174,
+          "max_last_age_seconds": 4.266500949859619,
+          "metric": "traces_span_metrics_calls_total",
+          "min_last_age_seconds": 4.266500949859619,
+          "response_sha256": "aaa85b177729a2d08d59f3b15586f45237aff5be61f47ff2592f516fef21a767",
+          "selector_sha256": "be9bdc937f3127ead53061968b10cec6ce387fb1b7cd82989b22cdf7bb36b642",
+          "series_count": 9,
+          "stale_series": 0,
+          "state": "FRESH_COVERED"
+        }
+      ]
+    },
+    {
+      "coverage": "INVALID_SAMPLE_EVIDENCE",
+      "query_key": "prometheus:request_support:fraud-detection",
+      "selectors": [
+        {
+          "gap_over_30_series": 0,
+          "late_first_series": 0,
+          "max_first_offset_seconds": null,
+          "max_gap_seconds": null,
+          "max_last_age_seconds": null,
+          "metric": "kafka_request_count_total",
+          "min_last_age_seconds": null,
+          "response_sha256": "5270461ec81028d05a5dc2cd726f822921a8aacd21927e829d8895b3d662f0cc",
+          "selector_sha256": "0c3d455afcb3ac9c6c046cfec47e77c3260e26168e6662916c2fd38b85256f39",
+          "series_count": 0,
+          "stale_series": 0,
+          "state": "EMPTY"
+        },
+        {
+          "gap_over_30_series": 0,
+          "late_first_series": 1,
+          "max_first_offset_seconds": 110.73649907112122,
+          "max_gap_seconds": 5.007999897003174,
+          "max_last_age_seconds": 4.266500949859619,
+          "metric": "traces_span_metrics_calls_total",
+          "min_last_age_seconds": 4.266500949859619,
+          "response_sha256": "3d70be3f783980aed4f4a869a2b87eff82403356b32934404e351b455e16861c",
+          "selector_sha256": "5a0ba3d43c781103de2558707db9b70ea139325a02fa064e6112de892f70a59c",
+          "series_count": 5,
+          "stale_series": 0,
+          "state": "WINDOW_INCOMPLETE"
+        }
+      ]
+    },
+    {
+      "coverage": "INVALID_SAMPLE_EVIDENCE",
+      "query_key": "prometheus:request_support:kafka",
+      "selectors": [
+        {
+          "gap_over_30_series": 1,
+          "late_first_series": 1,
+          "max_first_offset_seconds": 34.82949900627136,
+          "max_gap_seconds": 60.00200009346008,
+          "max_last_age_seconds": 25.17150092124939,
+          "metric": "kafka_request_count_total",
+          "min_last_age_seconds": 25.17150092124939,
+          "response_sha256": "ea7900a4f1b81aa9a206992c5afe76afac3ccf8982092180bda35ce9da062423",
+          "selector_sha256": "485d0f639795235c81997fa53cd4d9f1195a67f9793cf73b636c9c2fcae19133",
+          "series_count": 1,
+          "stale_series": 0,
+          "state": "WINDOW_INCOMPLETE"
+        },
+        {
+          "gap_over_30_series": 0,
+          "late_first_series": 0,
+          "max_first_offset_seconds": null,
+          "max_gap_seconds": null,
+          "max_last_age_seconds": null,
+          "metric": "traces_span_metrics_calls_total",
+          "min_last_age_seconds": null,
+          "response_sha256": "5270461ec81028d05a5dc2cd726f822921a8aacd21927e829d8895b3d662f0cc",
+          "selector_sha256": "41628dbb41a4a24786c62cf9362e291edddc16480938bf210b55acd0388a7a61",
+          "series_count": 0,
+          "stale_series": 0,
+          "state": "EMPTY"
+        }
+      ]
+    },
+    {
+      "coverage": "INVALID_SAMPLE_EVIDENCE",
+      "query_key": "prometheus:request_support:payment",
+      "selectors": [
+        {
+          "gap_over_30_series": 0,
+          "late_first_series": 0,
+          "max_first_offset_seconds": null,
+          "max_gap_seconds": null,
+          "max_last_age_seconds": null,
+          "metric": "kafka_request_count_total",
+          "min_last_age_seconds": null,
+          "response_sha256": "5270461ec81028d05a5dc2cd726f822921a8aacd21927e829d8895b3d662f0cc",
+          "selector_sha256": "e0ddaf848c4ee844b8572fa7304c8def18cb04244f016224f421314729a980ff",
+          "series_count": 0,
+          "stale_series": 0,
+          "state": "EMPTY"
+        },
+        {
+          "gap_over_30_series": 0,
+          "late_first_series": 1,
+          "max_first_offset_seconds": 120.73649907112122,
+          "max_gap_seconds": 5.007999897003174,
+          "max_last_age_seconds": 4.266500949859619,
+          "metric": "traces_span_metrics_calls_total",
+          "min_last_age_seconds": 4.266500949859619,
+          "response_sha256": "4a90300795e8ba7da4cf6fa27b87aedcf00623f3f1ee55c95bc2d891cdd567b9",
+          "selector_sha256": "a1851ae3b72b2cf84d33d1c1cceab706c7e18178a122f89474cd9c0c987df876",
+          "series_count": 6,
+          "stale_series": 0,
+          "state": "WINDOW_INCOMPLETE"
+        }
+      ]
+    }
+  ],
+  "raw_sample_queries": 33,
+  "recurrence": "NOT_RUN",
+  "registration_id": "registration-validation-c68111da1a8f0706516046d1",
+  "removed": {
+    "container": 22,
+    "network": 1,
+    "volume": 5
+  },
+  "revocation": "NOT_APPLICABLE_NEVER_ACTIVE",
+  "shadow": "NOT_RUN",
+  "states": {
+    "registration-ae3902fb32fd96d87608cb93": "REVOKED",
+    "registration-validation-688460a30572ae84c676debb": "DRAFT",
+    "registration-validation-c68111da1a8f0706516046d1": "DRAFT"
+  },
+  "stops": {
+    "fixed-rule-independent-validation-20260927": true,
+    "fixed-rule-otlp-validation-20260927": true
+  }
+}
