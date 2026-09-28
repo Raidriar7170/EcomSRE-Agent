@@ -295,20 +295,56 @@ def test_only_five_public_paths_are_allowed() -> None:
         validate_allowed_paths((*ALLOWED_PUBLIC_PATHS, "src/ecomsre_rcaeval/runner.py"))
 
 
-def test_live_worktree_has_no_frozen_or_undeclared_changes() -> None:
-    completed = subprocess.run(
-        ["git", "status", "--porcelain=v1", "-uall"],
-        cwd=REPO_ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    paths = tuple(
-        line[3:].split(" -> ")[-1]
-        for line in completed.stdout.splitlines()
-        if line
-    )
-    validate_allowed_paths(paths)
+def test_live_worktree_has_no_frozen_or_undeclared_changes(tmp_path: Path) -> None:
+    """Exercise the historical task boundary, not every future user's checkout.
+
+    The allowlist still rejects current Product edits when submitted as an
+    attribution change. An isolated real Git worktree makes that contract
+    independent of whether an unrelated engineering task has been committed.
+    """
+    repo = tmp_path / "attribution-worktree"
+    repo.mkdir()
+
+    def git(*arguments: str) -> str:
+        return subprocess.run(
+            ["git", *arguments], cwd=repo, check=True, capture_output=True, text=True,
+        ).stdout
+
+    def changed_paths() -> tuple[str, ...]:
+        return tuple(
+            line[3:].split(" -> ")[-1]
+            for line in git("status", "--porcelain=v1", "-uall").splitlines()
+            if line
+        )
+
+    allowed = ALLOWED_PUBLIC_PATHS[0]
+    protected = "src/ecomsre_rcaeval/runner.py"
+    git("init", "--quiet")
+    for name in (allowed, protected):
+        path = repo / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("retained baseline\n")
+    git("add", "--", allowed, protected)
+    git("-c", "user.name=Scope Fixture", "-c", "user.email=fixture@example.invalid",
+        "-c", "commit.gpgsign=false", "commit", "--quiet", "-m", "fixture baseline")
+    assert changed_paths() == ()
+    validate_allowed_paths(changed_paths())
+    (repo / allowed).write_text("permitted attribution output\n")
+    assert changed_paths() == (allowed,)
+    validate_allowed_paths(changed_paths())
+    git("add", "--", allowed)
+    validate_allowed_paths(changed_paths())
+
+    # Both tracked frozen code and new current-task pointers remain forbidden
+    # to the old attribution task, whether staged or unstaged.
+    (repo / protected).write_text("unauthorized historical-code change\n")
+    (repo / "AGENTS.md").write_text("unrelated current engineering task\n")
+    assert set(changed_paths()) == {allowed, protected, "AGENTS.md"}
+    with pytest.raises(ValueError, match="frozen or undeclared"):
+        validate_allowed_paths(changed_paths())
+    git("add", "--", protected, "AGENTS.md")
+    with pytest.raises(ValueError, match="frozen or undeclared"):
+        validate_allowed_paths(changed_paths())
 
 
 def test_analysis_has_no_provider_or_holdout_execution_entrypoint() -> None:

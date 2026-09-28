@@ -1,4 +1,9 @@
-# 当前状态 · Product v0.5 固定规则新验证停止，完整学习闭环未通过
+# 当前任务 · 离线工程校准与回放
+
+用户于2026-09-27终止旧未完成Goal的自动推进，以[Fresh Start Brief](../goals/EcomSRE_Fresh_Start_Brief.md)作为唯一当前入口。仅源码修复、离线测试与保留材料回放；历史失败、REVOKED/DRAFT及停止批次不变，不调用Provider/Docker或新live。工程交付与具体数据限制见[汇总](../results/product-v050/engineering-calibration/README.md)。旧协议的一次性约束继续适用于对应批次，不约束普通离线回归。没有v0.5验收PASS。
+
+## 历史最新真实执行（不是当前待办）
+
 
 最新真实执行：[OTLP v2替代批次](../results/product-v050/final-learning-closure/otlp-validation-20260927-result.md)。owned部署与固定基线成功；一次54请求的v2准备取得原始样本，但9/21业务查询窗口覆盖不完整，在N4预留/故障之前停止。三个holdout资格、Shadow、晋升、正常复用均NOT_RUN。新版本DRAFT、原规则REVOKED；22容器/1网络/5卷清理完毕，非项目未变。新增Provider/费用/live槽均0，累计14/18、闭环9/13；旧批次三个未用槽已退役，新批次亦停止。Level A未完成，Level B未恢复，不自动重试。
 

@@ -15,8 +15,15 @@ invalidates one, stop and propose a new Decision Record.
 
 ## Current state
 
-Current Product status: [STATUS](docs/product/STATUS.md). The user activated
-[Product v0.5 Goal](docs/goals/EcomSRE_v0.5_Codex_Goal.md) on 2026-09-17.
+Current Product status: [STATUS](docs/product/STATUS.md). On 2026-09-27 the user
+terminated the unfinished automatic v0.5 Goal and designated
+[Fresh Start Brief](docs/goals/EcomSRE_Fresh_Start_Brief.md) as the sole current
+engineering task. Only source repair, offline tests and retained-data replay are
+authorized. A subsequent user instruction also authorizes committing and pushing
+this task's scoped changes to Draft PR #104 and checking exact-head CI; no merge,
+release or live work. Prior Goals/amendments are historical, not active continuation work.
+Consumed/stopped campaigns remain stopped; their one-shot restrictions do not
+ban repeatable offline engineering tests. Permanent safety rules remain binding.
 The historical Phase 0 state below applies only to that consumed campaign;
 it does not prohibit separately authorized Product work. Safety, evidence
 and change discipline remain binding.

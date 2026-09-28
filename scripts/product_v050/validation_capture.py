@@ -223,3 +223,32 @@ def protocol_v2(
     plan["ingestion"] = topology(collector, prometheus_command, queries)
     plan["preparation_query_keys"] = sorted(set(preparation_query_keys))
     return plan
+
+
+def protocol_v3(
+    queries,
+    *,
+    collector,
+    prometheus_command,
+    preparation_query_keys,
+    target_service=None,
+    application_object_sha256=None,
+):
+    """Explicit future support protocol; historical live entrypoints stay v1/v2."""
+    from scripts.product_v050.ingestion_evidence import topology_v3
+
+    plan = protocol_v2(
+        queries,
+        collector=collector,
+        prometheus_command=prometheus_command,
+        preparation_query_keys=preparation_query_keys,
+        target_service=target_service,
+    )
+    plan["ingestion"] = topology_v3(
+        collector,
+        prometheus_command,
+        queries,
+        application_object_sha256=application_object_sha256,
+    )
+    plan["version"] = plan["ingestion"]["version"]
+    return plan

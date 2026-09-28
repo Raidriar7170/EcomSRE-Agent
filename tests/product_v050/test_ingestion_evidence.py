@@ -259,10 +259,13 @@ def test_v2_cannot_accept_a_legacy_scrape_receipt():
         )
 
 
-@pytest.mark.parametrize("replacement", [False, True])
+@pytest.mark.parametrize(
+    "replacement,modern", [(False, False), (True, False), (False, True)]
+)
 def test_v2_evidence_reaches_qualification_freeze_and_direct_promotion(
     closure,  # noqa: F811
     replacement,
+    modern,
 ):
     """Synthetic samples, actual normal fixture diagnoses, no validator stubs."""
     from datetime import timedelta
@@ -274,6 +277,15 @@ def test_v2_evidence_reaches_qualification_freeze_and_direct_promotion(
 
     c = closure
     original = parent(c)
+    from scripts.product_v050.validation_capture import protocol_v3
+
+    objects = c.app.state.object_store
+    application = {
+        "effective_environments": {
+            s: {"OTEL_METRIC_EXPORT_INTERVAL": "10000"} for s in ("checkout", "payment")
+        }
+    }
+    app_sha = objects.put_json(application).object_sha256
     queries = {}
     for service in ("checkout", "payment"):
         for kind, metric in [
@@ -297,11 +309,19 @@ def test_v2_evidence_reaches_qualification_freeze_and_direct_promotion(
                 if kind == "request_support"
                 else f"sum({selector})"
             )
-    collection = protocol_v2(
+    if modern:
+        for service in ("checkout", "payment"):
+            failed = f'kafka_request_failed_total{{service_name="{service}"}}'
+            total = failed.replace("failed", "count")
+            queries[f"prometheus:error_rate:{service}"] = (
+                f"sum(rate({failed}[5m])) / sum(rate({total}[5m]))"
+            )
+    collection = (protocol_v3 if modern else protocol_v2)(
         queries,
         collector=FIXTURE["collector"],
         prometheus_command=FIXTURE["prometheus_command"],
         preparation_query_keys=list(queries),
+        **({"application_object_sha256": app_sha} if modern else {}),
     )
     batch_id = batch.REPLACEMENT if replacement else batch.BATCH
     if replacement:
@@ -366,7 +386,10 @@ def test_v2_evidence_reaches_qualification_freeze_and_direct_promotion(
                     start = end - width + 1
                 else:
                     start, end = params["start"], params["end"]
-                times = [start + 10 * n for n in range(int((end - start) // 10) + 1)]
+                stride = 2 if modern and selector.startswith("container_") else 10
+                times = [
+                    start + stride * n for n in range(int((end - start) // stride) + 1)
+                ]
                 if times[-1] != end:
                     times.append(end)
                 payload = {
@@ -391,7 +414,7 @@ def test_v2_evidence_reaches_qualification_freeze_and_direct_promotion(
                         received_at=now,
                         response_object_sha256=objects.put_json(payload).object_sha256,
                         action_context=dict(
-                            ingestion_version=ie.VERSION,
+                            ingestion_version=collection["ingestion"]["version"],
                             incident_id=iid,
                             binding_sha256=collection["ingestion"]["sha256"],
                         ),
@@ -420,7 +443,7 @@ def test_v2_evidence_reaches_qualification_freeze_and_direct_promotion(
         )
         assert assessment["passed"]
         return entries, dict(
-            version=ie.VERSION,
+            version=collection["ingestion"]["version"],
             collector_object_sha256=collector_digest,
             prometheus_command_object_sha256=command_digest,
             requirements=requirements,

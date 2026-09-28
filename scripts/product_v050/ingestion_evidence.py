@@ -90,8 +90,50 @@ def topology(collector, prometheus_command, queries):
     return result
 
 
+def topology_v3(collector, command, queries, *, application_object_sha256=None):
+    """Future explicit protocol; no batch installation or historical upgrade."""
+    from scripts.product_v050.sampling_support import VERSION as V3
+
+    for query in queries.values():
+        windows = {
+            int(n) * {"s": 1, "m": 60}[u]
+            for n, u in re.findall(r"\[(\d+)([sm])\]", query)
+        }
+        if len(windows) > 1:
+            raise ValueError("v3 mixed selector lookbacks are unsupported")
+        if (
+            query.count("[") != len(re.findall(r"\[\d+[sm]\]", query))
+            or " offset " in query
+            or "@" in query
+        ):
+            raise ValueError("v3 unsupported temporal query syntax")
+    result = topology(collector, command, queries)
+    result.pop("sha256")
+    result.pop("max_sample_age_seconds")
+    result.update(
+        version=V3,
+        application_object_sha256=application_object_sha256,
+        maximum_request_start_delay_seconds=30,
+        sampling_policy="producer-cycle-25pct-plus-1s-v1",
+    )
+    result["sha256"] = sha(result)
+    return result
+
+
 def validate_topology(binding, collector, command, queries):
-    if binding != topology(collector, command, queries):
+    from scripts.product_v050.sampling_support import VERSION as V3
+
+    expected = (
+        topology_v3(
+            collector,
+            command,
+            queries,
+            application_object_sha256=binding.get("application_object_sha256"),
+        )
+        if binding.get("version") == V3
+        else topology(collector, command, queries)
+    )
+    if binding != expected:
         raise ValueError("deployment ingestion mode/configuration differs")
 
 
@@ -112,7 +154,7 @@ def selectors(query):
     return found
 
 
-def expected_reads(query, start, end):
+def expected_reads(query, start, end, *, version=VERSION):
     inner = max(
         [
             int(n) * {"s": 1, "m": 60}[u]
@@ -123,6 +165,8 @@ def expected_reads(query, start, end):
     support_start = start - inner
     # Instant range selector returns stored sample timestamps, unlike query_range.
     width = math.ceil(end - support_start) + 1
+    if version == "ingestion-sample-evidence-v3" and not inner:
+        width += 300  # retain predecessor evidence for the first instant query
     return [
         (s, support_start, {"query": f"{s}[{width}s]", "time": end})
         for s in selectors(query)
@@ -225,11 +269,20 @@ def verify(
         raise ValueError("fixed required metric queries missing")
     if any(e.get("occurrence") != occurrence or e.get("truncated") for e in entries):
         raise ValueError("sample occurrence/truncation differs")
+    from scripts.product_v050 import sampling_support as support
+
+    version = binding["version"]
+    modern = version == support.VERSION
+    application = None
+    if modern and binding.get("application_object_sha256"):
+        application = __import__("json").loads(
+            read_bytes(binding["application_object_sha256"])
+        )
     report = []
     sample_entries = [
         e
         for e in entries
-        if (e.get("action_context") or {}).get("ingestion_version") == VERSION
+        if (e.get("action_context") or {}).get("ingestion_version") == version
     ]
     if not sample_entries or len(sample_entries) > binding["max_requests"]:
         raise ValueError("sample request cap exceeded or no samples")
@@ -241,8 +294,10 @@ def verify(
         query, start, end = req["query"], req["start"], req["end"]
         if query != queries.get(req["query_key"]) or not start < end:
             raise ValueError("required query identity/window differs")
-        states = {}
-        for selector, support_start, params in expected_reads(query, start, end):
+        states, details, bodies = {}, {}, {}
+        for selector, support_start, params in expected_reads(
+            query, start, end, version=binding["version"]
+        ):
             matches = [
                 e
                 for e in sample_entries
@@ -262,18 +317,51 @@ def verify(
                 states[selector] = "WRONG_SAMPLE_REQUEST"
                 continue
             body = __import__("json").loads(read_bytes(e["response_object_sha256"]))
-            states[selector] = sample_state(
-                body, selector, support_start, end, binding["max_sample_age_seconds"]
-            )
+            if modern:
+                details[selector] = support.assess(
+                    body,
+                    selector,
+                    support_start,
+                    end,
+                    support.profile(collector, selector, application),
+                    query_start=start,
+                    inner_seconds=start - support_start,
+                )
+                details[selector]["raw_response_sha256"] = e["response_object_sha256"]
+                states[selector] = details[selector]["state"]
+                if states[selector] in {"EMPTY", "FRESH_COVERED"}:
+                    bodies[selector] = body
+            else:
+                states[selector] = sample_state(
+                    body,
+                    selector,
+                    support_start,
+                    end,
+                    binding["max_sample_age_seconds"],
+                )
+        correspondence = support.correspondence(bodies) if modern else []
         report.append(
             dict(
                 requirement=req,
                 selectors=states,
-                coverage=query_coverage(query, states),
+                coverage=(
+                    "INVALID_SAMPLE_EVIDENCE"
+                    if correspondence
+                    else query_coverage(query, states)
+                ),
+            )
+            | (
+                dict(
+                    sample_diagnostics=details,
+                    correspondence_reasons=correspondence,
+                    evidence_scope="RETURNED_SERIES_ONLY_NOT_COMPLETE_NEGATIVE",
+                )
+                if modern
+                else {}
             )
         )
     return dict(
-        version=VERSION,
+        version=version,
         mode=binding["mode"],
         binding_sha256=binding["sha256"],
         occurrence=occurrence,
@@ -293,7 +381,9 @@ def acquire(
 
     requests = {}
     for req in requirements:
-        for _, _, params in expected_reads(req["query"], req["start"], req["end"]):
+        for _, _, params in expected_reads(
+            req["query"], req["start"], req["end"], version=binding["version"]
+        ):
             requests[(params["query"], params["time"])] = params
     if (
         not requests
@@ -304,7 +394,7 @@ def acquire(
     started = monotonic()
     token = raw_request_context.set(
         dict(
-            ingestion_version=VERSION,
+            ingestion_version=binding["version"],
             incident_id=incident_id,
             binding_sha256=binding["sha256"],
         )
@@ -365,7 +455,9 @@ def verify_receipt(
     read_bytes,
     requirements,
 ):
-    if receipt.get("version") != VERSION:
+    if receipt.get("version") != binding.get("version") or receipt.get(
+        "version"
+    ) not in {VERSION, "ingestion-sample-evidence-v3"}:
         raise ValueError("ingestion protocol receipt version differs")
     collector = __import__("json").loads(read_bytes(receipt["collector_object_sha256"]))
     command = __import__("json").loads(

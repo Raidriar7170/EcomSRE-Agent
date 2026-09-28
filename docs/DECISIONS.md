@@ -1601,3 +1601,21 @@ All actual Provider requests (including failures/repairs) reserve bounded costs
 before dispatch. Unknown pricing blocks paid execution. Campaign maxima are
 200 requests, USD 20, 12 owned live episodes; stricter existing limits win.
 No model fallback, historical rerun, merge, release or production deployment.
+
+
+## DEC-065 — Offline engineering calibration successor
+
+Accepted under the user's 2026-09-27 [Fresh Start Brief](goals/EcomSRE_Fresh_Start_Brief.md).
+The unfinished automatic v0.5 Goal is terminated, not completed. Its stopped
+campaigns, fixed candidate, budgets, records and v1/v2 validation semantics stay
+historical and immutable. Their one-attempt restrictions do not apply to new
+repeatable offline development replay. No live authority is inherited.
+
+A future explicitly selected v3 sample-support protocol separates producer
+cadence, freshness, internal gaps, left support and inner-query sample count.
+Effective configuration and observed intervals remain separate evidence;
+unknown birth/reset and missing pre-birth samples cannot become zeros or a
+complete negative control. The same sample assessment is recalculated at
+acquisition, qualification, freeze and promotion. Core priority, rule semantics,
+control qualification and safety boundaries remain unchanged. Engineering
+replay is seen development data, not an admissible formal receipt or promotion.

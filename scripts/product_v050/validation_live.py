@@ -330,7 +330,7 @@ def ingestion_support(
         http.close()
     objects = campaign.app.state.object_store
     return dict(
-        version=ingestion.VERSION,
+        version=binding["version"],
         collector_object_sha256=objects.put_json(collector).object_sha256,
         prometheus_command_object_sha256=objects.put_json(command).object_sha256,
         requirements=requirements,

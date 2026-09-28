@@ -748,7 +748,9 @@ def verify_ingestion_preparation(evo, value):
     if (
         not 0
         <= first_request - requirements[0]["end"]
-        <= collection["ingestion"]["max_sample_age_seconds"]
+        <= (collection["ingestion"]["maximum_request_start_delay_seconds"]
+            if collection["ingestion"]["version"] == "ingestion-sample-evidence-v3"
+            else collection["ingestion"]["max_sample_age_seconds"])
     ):
         raise ValueError("preparation evaluation time is not current")
     verify_receipt(
