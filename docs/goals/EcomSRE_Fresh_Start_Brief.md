@@ -30,6 +30,9 @@
 
 ## 本阶段授权
 
+用户已明确批准提交`7bbf88d`的[同一汇总报告](../results/product-v050/engineering-calibration/README.md)真实工程校准完整范围：一个owned部署、最多三轮、含准备清理90分钟、HTTP读取500、Docker/容器白名单只读60、正常串行流量30、一次范围内采集修复重试（计入原预算）。Provider、故障、恢复写入、正式holdout、晋升均0；原库和旧批次只读。下文“禁止live”是初始离线阶段边界，此次只按上述明确范围扩展，其他禁令继续适用。完成精确清理、报告、提交推送PR #104并核对精确CI，不merge/release。不新增Goal。本次校准现已消耗并CLEAN：1部署/3轮、239 HTTP读取、59 Docker只读、30正常请求、1修复；总占用32分26.532秒，后续不自动重跑。
+
+
 可以读取保留材料、修改窄范围源码、跑离线单测/回放、最小更新任务指针和必要决策记录、交付一份汇总报告及下一次有界真实校准计划。原库只读，诊断输出用独立路径，数据库写入仅临时测试库。
 
 禁止新Provider、启动/修改Docker、故障激活、新live/正式holdout、旧槽位消耗、历史记录修改、恢复ACTIVE、生产/非项目资源修改、自动merge/release。初始阶段未授权commit/push/PR写入；同一任务后续用户明确授权仅提交并推送本任务相关修改到现有Draft PR #104分支，并核对精确提交CI。不合并、不发布，不包含私有CAS、凭据或无关修改。先完成所有可离线实现；缺材料须指出具体缺口及最小取得方式，不仅交问题报告。
@@ -49,6 +52,6 @@
 
 ## 后续（本次不执行）
 
-先单独批准短工程校准，使协议与动态序列行为稳定；然后对同一固定规则做新的独立目标/健康/Core/正常复发验证，通过资格和Shadow后才测试晋升。实际learned binding、当前事件证据和零Provider增量同时成立才算复用。基础流程可靠后才研究LLM额外价值；当前简单合取不能支持复杂新机制或优于miner的结论。
+上述短工程校准已单独批准并执行，结果与剩余缺口见同一汇总；任何进一步live均须新授权。之后才能对同一固定规则做新的独立目标/健康/Core/正常复发验证，通过资格和Shadow后才测试晋升。实际learned binding、当前事件证据和零Provider增量同时成立才算复用。基础流程可靠后才研究LLM额外价值；当前简单合取不能支持复杂新机制或优于miner的结论。
 
 来源：[STATUS](../product/STATUS.md)、[OTLP结果](../results/product-v050/final-learning-closure/otlp-validation-20260927-result.md)、[闭环](../results/product-v050/final-learning-closure/README.md)、[控制资格修复](../results/product-v050/control-qualification-repair/README.md)、[摄入修复](../results/product-v050/ingestion-protocol-repair/README.md)。

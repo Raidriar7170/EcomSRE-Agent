@@ -278,6 +278,10 @@ def verify(
         application = __import__("json").loads(
             read_bytes(binding["application_object_sha256"])
         )
+    # Engineering declarations bind retained bytes, not their source semantics.
+    # Do not admit them into qualification/freeze/promotion as proven defaults.
+    if (application or {}).get("versioned_producer_defaults"):
+        raise ValueError("engineering default declarations are not formal evidence")
     report = []
     sample_entries = [
         e

@@ -22,6 +22,27 @@ def seconds(value):
 
 def profile(collector, selector, application=None):
     name = selector.split("{", 1)[0]
+    defaults = (application or {}).get("versioned_producer_defaults", {})
+
+    def declared_default(key):
+        value = defaults.get(key)
+        if value is None:
+            return None
+        refs = value.get("evidence_sha256", [])
+        if (
+            value.get("basis") != "RUNTIME_VERSION_BOUND_DEFAULT"
+            or not value.get("runtime_version")
+            or not value.get("runtime_image_id", "").startswith("sha256:")
+            or len(refs) < 2
+            or any(
+                not isinstance(h, str) or not re.fullmatch(r"[0-9a-f]{64}", h)
+                for h in refs
+            )
+            or value.get("overrides_absent") is not True
+        ):
+            raise ValueError("incomplete runtime default evidence")
+        return value
+
     if name.startswith("container_"):
         period = seconds(collector["receivers"]["docker_stats"]["collection_interval"])
         source = "collector.receivers.docker_stats.collection_interval"
@@ -34,8 +55,8 @@ def profile(collector, selector, application=None):
         )
         source = "collector.connectors.span_metrics.metrics_flush_interval"
     else:
-        # An SDK default and observed cadence are separate evidence, not a
-        # substitute for retained effective application configuration.
+        # Defaults require retained running-version and override-absence evidence.
+        # Observed cadence alone never declares the producer period.
         from scripts.product_v050.ingestion_evidence import MATCHER
 
         service = next(
@@ -51,8 +72,15 @@ def profile(collector, selector, application=None):
         period = float(raw) / 1000 if raw is not None else None
         if period is not None and (not math.isfinite(period) or period <= 0):
             raise ValueError("invalid effective export interval")
+        default = declared_default(service) if raw is None else None
+        if default is not None:
+            period = float(default["period_seconds"])
+            if not math.isfinite(period) or period <= 0:
+                raise ValueError("invalid runtime default interval")
         source = (
-            "effective_environment.OTEL_METRIC_EXPORT_INTERVAL"
+            "runtime_version_bound_default"
+            if default is not None
+            else "effective_environment.OTEL_METRIC_EXPORT_INTERVAL"
             if raw
             else "UNKNOWN_EFFECTIVE_APPLICATION_INTERVAL"
         )
@@ -83,7 +111,39 @@ def profile(collector, selector, application=None):
             if histogram_bounds != sorted(set(histogram_bounds)):
                 raise ValueError("invalid explicit histogram boundaries")
             histogram_bounds.append("+Inf")
+    histogram_source = (
+        "explicit_collector_configuration"
+        if histogram_bounds is not None
+        else "UNKNOWN"
+    )
+    if (
+        name.endswith("_milliseconds_bucket")
+        and name.startswith("traces_span_metrics_")
+        and histogram_bounds is None
+    ):
+        default = declared_default("span_metrics")
+        if default is not None:
+            from scripts.product_v050.ingestion_evidence import sha
+
+            if default.get("collector_sha256") != sha(collector):
+                raise ValueError("runtime histogram configuration binding differs")
+            bounds = default["histogram_bounds_milliseconds"]
+            if (
+                not bounds
+                or any(
+                    not isinstance(v, (int, float)) or not math.isfinite(v) or v < 0
+                    for v in bounds
+                )
+                or bounds != sorted(set(bounds))
+            ):
+                raise ValueError("invalid runtime default histogram bounds")
+            histogram_bounds = list(bounds) + ["+Inf"]
+            histogram_source = "runtime_version_bound_default"
     return dict(
+        default_evidence_sha256=sorted(
+            {h for value in defaults.values() for h in value.get("evidence_sha256", [])}
+        ),
+        histogram_source=histogram_source,
         expected_histogram_bounds=histogram_bounds,
         declared_period_seconds=period,
         period_source=source,
@@ -375,3 +435,20 @@ def correspondence(bodies):
                 except (KeyError, TypeError, ValueError):
                     reasons.append("HISTOGRAM_BUCKET_GROUP_INCOMPLETE")
     return sorted(set(reasons))
+
+
+def verify_default_evidence(application, read_bytes):
+    """Check engineering source bytes only; this does not prove default semantics.
+
+    Formal ingestion verification rejects these manually reviewed declarations.
+    """
+    import hashlib
+
+    for value in (application or {}).get("versioned_producer_defaults", {}).values():
+        for h in value.get("evidence_sha256", []):
+            if (
+                not isinstance(h, str)
+                or not re.fullmatch(r"[0-9a-f]{64}", h)
+                or hashlib.sha256(read_bytes(h)).hexdigest() != h
+            ):
+                raise ValueError("runtime default evidence digest differs")

@@ -772,3 +772,46 @@ def test_preparation_cannot_omit_required_metric_queries():
             preparation_query_keys=list(QUERIES),
             target_service="fraud-detection",
         )
+
+
+@pytest.mark.parametrize("period", [60, 180])
+def test_engineering_default_declarations_cannot_enter_formal_verification(period):
+    """Unchanged source hashes do not authenticate a changed period declaration."""
+    import hashlib
+
+    proof = b"fixture source declaring a sixty second default"
+    proof_sha = hashlib.sha256(proof).hexdigest()
+    application = {
+        "versioned_producer_defaults": {
+            "kafka": {
+                "basis": "RUNTIME_VERSION_BOUND_DEFAULT",
+                "period_seconds": period,
+                "evidence_sha256": [proof_sha],
+            }
+        }
+    }
+    application_bytes = json.dumps(application).encode()
+    app_sha = hashlib.sha256(application_bytes).hexdigest()
+    objects = {app_sha: application_bytes, proof_sha: proof}
+    binding = ie.topology_v3(
+        FIXTURE["collector"],
+        FIXTURE["prometheus_command"],
+        QUERIES,
+        application_object_sha256=app_sha,
+    )
+    _, req = setup()
+    from scripts.product_v050 import sampling_support as support
+
+    support.verify_default_evidence(application, objects.__getitem__)
+    with pytest.raises(ValueError, match="engineering default declarations"):
+        ie.verify(
+            binding,
+            entries=[],
+            occurrence="fixture",
+            incident_id="i",
+            queries=QUERIES,
+            read_bytes=objects.__getitem__,
+            collector=FIXTURE["collector"],
+            command=FIXTURE["prometheus_command"],
+            requirements=[req],
+        )

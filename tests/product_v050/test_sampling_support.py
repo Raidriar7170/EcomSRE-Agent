@@ -301,3 +301,51 @@ def test_histogram_binds_complete_configured_bucket_set():
         "HISTOGRAM_EXPECTED_BUCKETS_UNPROVEN"
         in check(ss.profile(FIXTURE["collector"], selector))["reasons"]
     )
+
+
+def test_version_bound_defaults_are_distinct_from_explicit_environment():
+    common = dict(
+        basis="RUNTIME_VERSION_BOUND_DEFAULT",
+        runtime_version="fixture",
+        runtime_image_id="sha256:" + "a" * 64,
+        evidence_sha256=["a" * 64, "b" * 64],
+        overrides_absent=True,
+    )
+    app = {
+        "versioned_producer_defaults": {
+            "kafka": dict(common, period_seconds=60),
+            "span_metrics": dict(
+                common,
+                collector_sha256=ie.sha(FIXTURE["collector"]),
+                histogram_bounds_milliseconds=[2, 4, 8],
+            ),
+        }
+    }
+    p = ss.profile(FIXTURE["collector"], S, app)
+    assert (
+        p["declared_period_seconds"] == 60
+        and p["period_source"] == "runtime_version_bound_default"
+    )
+    selector = 'traces_span_metrics_duration_milliseconds_bucket{service_name="kafka"}'
+    assert ss.profile(FIXTURE["collector"], selector, app)[
+        "expected_histogram_bounds"
+    ] == [2, 4, 8, "+Inf"]
+    broken = deepcopy(app)
+    broken["versioned_producer_defaults"]["kafka"]["overrides_absent"] = False
+    with pytest.raises(ValueError, match="evidence"):
+        ss.profile(FIXTURE["collector"], S, broken)
+    broken = deepcopy(app)
+    broken["versioned_producer_defaults"]["span_metrics"]["collector_sha256"] = "f" * 64
+    with pytest.raises(ValueError, match="binding"):
+        ss.profile(FIXTURE["collector"], selector, broken)
+
+
+def test_default_proof_objects_are_reverified():
+    import hashlib
+
+    raw = b"fixed runtime proof"
+    h = hashlib.sha256(raw).hexdigest()
+    app = {"versioned_producer_defaults": {"kafka": {"evidence_sha256": [h]}}}
+    ss.verify_default_evidence(app, lambda _: raw)
+    with pytest.raises(ValueError, match="digest"):
+        ss.verify_default_evidence(app, lambda _: b"changed")

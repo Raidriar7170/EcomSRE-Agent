@@ -74,6 +74,7 @@ def replay(capture_root, objects, output, *, application_config=None, context=No
         if application_config
         else None
     )
+    support.verify_default_evidence(application, cas)
     context_doc = json.loads(read(Path(context).resolve())) if context else {}
     retained_context = {}
     for name in (

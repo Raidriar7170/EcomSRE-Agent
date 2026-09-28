@@ -15,13 +15,15 @@ invalidates one, stop and propose a new Decision Record.
 
 ## Current state
 
+Current bounded engineering calibration is explicitly authorized by the user against commit `7bbf88d`: one owned deployment, three rounds, 90 minutes including cleanup, 500 HTTP reads, 60 Docker/allowlisted in-container reads, 30 serial normal requests, and one bounded collection repair/retry. Provider, faults, recovery writes, formal holdout and promotion remain zero. The authorized calibration is now consumed and CLEAN; further live work requires new explicit authorization. The same [summary report](docs/results/product-v050/engineering-calibration/README.md) records execution; no historical campaign is resumed.
+
+
 Current Product status: [STATUS](docs/product/STATUS.md). On 2026-09-27 the user
 terminated the unfinished automatic v0.5 Goal and designated
 [Fresh Start Brief](docs/goals/EcomSRE_Fresh_Start_Brief.md) as the sole current
-engineering task. Only source repair, offline tests and retained-data replay are
-authorized. A subsequent user instruction also authorizes committing and pushing
-this task's scoped changes to Draft PR #104 and checking exact-head CI; no merge,
-release or live work. Prior Goals/amendments are historical, not active continuation work.
+engineering task. The initial offline-only scope was explicitly extended by the
+bounded authorization above. Committing and pushing this task's scoped changes
+to Draft PR #104 and checking exact-head CI are authorized; no merge or release. Prior Goals/amendments are historical, not active continuation work.
 Consumed/stopped campaigns remain stopped; their one-shot restrictions do not
 ban repeatable offline engineering tests. Permanent safety rules remain binding.
 The historical Phase 0 state below applies only to that consumed campaign;

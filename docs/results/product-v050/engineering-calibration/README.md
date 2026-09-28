@@ -89,7 +89,7 @@ PYTHONPATH=src:. uv run pytest tests/analysis/test_rcaeval_re2_v1_attribution.py
 
 修复后完整归因测试文件30项通过；本次最终v0.5与归因套件347 passed（119.34s），Ruff与Product mypy（173文件）通过；两次同源码真实保留数据回放的21项诊断完全相同，原库及08/09共167文件摘要不变。最终新采样/回放及历史范围聚焦测试日志见`publication-focused.log`，v0.5与归因回归见`publication-product.log`，完整回归见`publication-full-regression.log`。提交后再次在真实干净worktree运行上述完整节点，并把Git HEAD/status与输出保存在`publication-clean-commit-check.log`。PR的Agent mainline显式checkout pull_request.head.sha；最终提交CI以该SHA的GitHub Actions记录为准，运行链接与提交号在交付回复中给出，不把旧HEAD成功冒充当前结果。
 
-## 下一次真实工程校准建议（等待一次性明确授权，本次未执行）
+## 下一次真实工程校准建议（7bbf88d时待授权；后续批准与执行见下节）
 
 这是开发观察计划，不是新正式盲测。首选同一owned部署完成全部观察，不把每轮准备失败拆成新验收批次。所有原始响应、失败、修复前后参数与版本分别留存为已见开发数据，无独立成绩、Provider、事件槽位或知识晋升。
 
@@ -100,3 +100,90 @@ PYTHONPATH=src:. uv run pytest tests/analysis/test_rcaeval_re2_v1_attribution.py
 5. **工程修复与停止。** 最多一次采集代码的离线修复后重试，重试占上述3轮/500请求/90分钟预算，不重置额度；只允许范围内查询/解析/诊断错误，修复需先过聚焦离线检查，冻结每轮参数与源码。普通证据不足允许同轮独立检查继续；不得因候选是否命中调参数。归属不明、非owned漂移、秘密泄漏、安全/权限冲突立即停止相关操作；重复同类基础设施错误、无法证明配置、无法取得出生证据或任何上限耗尽则结束本轮并保留诊断。不得global prune、扩大权限或更换布局。结束清理由现有exact owned协议执行；失败如实保留，不操作未知资源。成功也不触发新holdout或晋升。
 
 以上完整范围需后续一次性明确批准；本次没有任何新增live操作。结论：工程校准路径已交付；有效Kafka配置、完整默认桶配置与标签出生/启动因果仍有具体数据阻塞。不是 `v0.5 ACCEPTANCE_PASS`，不代表已修复全部live问题。
+
+## 本轮已获授权的真实工程校准
+
+用户在同一会话明确批准`7bbf88d`中上述完整方案，执行范围与硬上限不变。本轮记录根为`.local/engineering-calibration/live-01`，独立授权、计数与输出，不消费或恢复旧停止批次。启动计时、准备与清理均计入90分钟。下方将记录真实Docker操作、每轮采集与最终清理；历史离线段落的零live计数仅代表前次检查点。
+
+### 实际执行与资源账本（2026-09-28 UTC）
+
+本轮已结束，授权额度不自动续用。授权计时05:22:55.594636，启动确认05:31:55.066013，精确清理完成05:55:22.126983；含准备与清理共1946.532347秒（32分26.532秒）。当前daemon/context/Unix endpoint与接受的本机布局核对一致，执行前没有其他运行容器；三个builtin网络与三个既有匿名卷作为非owned只读基线保留，不凭旧暂停状态推定安全。新的nonce绑定owned 22容器、1网络、5卷；固定cached ARM64镜像、端口、配置与原布局，未build/pull、改SDK周期或拆除重建。
+
+| 独立工程计数 | 实际 / 授权上限 |
+|---|---:|
+| 部署启动 | 1 / 1 |
+| 采集轮次 | 3 / 3 |
+| HTTP读取（含失败） | 239 / 500 |
+| Docker及容器白名单只读（含归属/清理检查） | 59 / 60 |
+| 额外正常物理业务请求 | 30 / 30 |
+| 采集代码修复重试 | 1 / 1 |
+| Provider、故障、恢复写入、holdout、晋升 | 各0 |
+
+239次读取包括固定版本源码材料8次，以及每轮62次正常/原始Metrics和15次生命周期/Logs/Traces。235次HTTP 200，首轮4次错误Jaeger路径返回404；没有响应体截断。Kafka日志受300条查询上限限制，不是完整日志。正常请求为15组既有cart/checkout、合计30次物理POST，全部成功，串行间隔至少1.01秒；没有把一组两个请求算成一次。Docker真实变更共12次CLI调用：创建1网络、5卷、Compose create/start、exact stop/rm/network rm/volume rm；涉及的实际资源数量为22/1/5，不能把CLI次数当成资源数量，也不能宣称零Docker操作。
+
+清理前重新核对daemon、完整ownership、birth IDs及非owned基线，只删除精确本任务资源。最终`cleanup.json`为`clean=true, owned_remaining=0, non_owned_unchanged=true`。未执行global prune。记录根内`operations.jsonl`在操作前计数，`receipts/`保留返回摘要；保留失败和修复前结果。旧账本继续为60 Provider请求、USD1.067489预算承诺、14/18历史live及旧闭环9/13，**另列本轮1次工程部署/3轮采集**，未借用旧槽位。原SQLite/WAL/SHM及08/09材料167文件摘要再次一致，旧注册、规则、停止状态和原结果未修改。
+
+### 已证实的生产者配置与观测
+
+- **Kafka broker与agent。** 本轮运行日志报告Kafka **4.3.1**、commit `26b251a451ce941d`。owned Kafka PID1实际Java命令加载`/tmp/opentelemetry-javaagent.jar`；容器内jar manifest为**2.29.0**，jar SHA-256为`546531ca690a8603d2923b6db26bbda35c6409327b1e610430ae33c2f8f68050`。只保留白名单OTel环境/系统属性和摘要，未持久化整份环境或jar。`KAFKA_OPTS`中的系统属性也展开核对；JMX目标为kafka-broker、已绑定JMX文件、cumulative temporality，没有显式export interval、agent配置文件/扩展或实验配置文件覆盖。
+- **有效默认周期的依据。** [agent2.29.0依赖](https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/v2.29.0/dependencyManagement/build.gradle.kts)绑定SDK1.63.0；[MetricExporterConfiguration](https://github.com/open-telemetry/opentelemetry-java/blob/v1.63.0/sdk-extensions/autoconfigure/src/main/java/io/opentelemetry/sdk/autoconfigure/MetricExporterConfiguration.java)及[PeriodicMetricReaderBuilder](https://github.com/open-telemetry/opentelemetry-java/blob/v1.63.0/sdk/metrics/src/main/java/io/opentelemetry/sdk/metrics/export/PeriodicMetricReaderBuilder.java)声明60秒默认值。实际jar、配置排除与固定源码共同支持本轮60秒工程声明，观测周期仅作为一致性核对。没有向配置伪造显式`OTEL_METRIC_EXPORT_INTERVAL`。材料语义经源审阅，摘要校验本身不证明源码语义，正式准入限制见下文。
+- **Collector与桶。** 实际容器Image与固定cached镜像身份一致，镜像元数据版本**0.157.0**，配置路径/命令无额外覆盖；不是另执行`--version`所得。绑定配置明确docker_stats **2s**、kafkametrics **10s**、span metrics flush **5s**，没有显式histogram覆盖。[v0.157.0默认配置](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.157.0/connector/spanmetricsconnector/config.go)与[connector实现](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.157.0/connector/spanmetricsconnector/connector.go)对应有限毫秒桶`2,4,6,8,10,50,100,200,400,800,1000,1400,2000,5000,10000,15000`及`+Inf`，共17桶；并非从返回桶反推期望全集。
+
+| 生产者 | 三轮原始中位周期范围 | 最大相邻间隔 | 末样本年龄范围 |
+|---|---:|---:|---:|
+| container | 2.000s | 2.010s | 0.038–1.707s |
+| queue | 10.000s | 10.010s | 2.176–9.845s |
+| span metrics | 5.000–5.001s | 5.010s | 0.861–3.588s |
+| Kafka应用/JMX | 59.999–60.001s | 60.006s | 6.733–39.057s |
+
+第一轮Kafka末样本年龄39.057秒没有仅因超过旧统一30秒常量被误判断流。三轮没有发现已建立序列中断、陈旧末点、counter reset或histogram/子集错配。这里的“没有发现”限保留的返回序列与观察窗口；不能证明所有潜在标签从未漏采。固定25%周期+1秒调度裕量未根据匹配结果修改；真实漏整周期、末点新但中间断流等仍由fixture拒绝。
+
+### 三轮支持、生命周期与唯一修复
+
+| 轮次 | 查询窗口（UTC） | 具备支持 / 证据不足 | 主要不足 |
+|---|---|---:|---|
+| 1 | 05:37:21.759–05:42:21.759 | 11 / 10 | checkout/fraud/payment业务序列及Kafka Produce p95缺左侧支持；部分rate内窗不足 |
+| 2 | 05:42:49.359–05:47:49.359 | 15 / 6 | fraud/payment的error_rate、latency、request_support仍缺左侧支持 |
+| 3 | 05:49:52.077–05:54:52.077 | 21 / 0 | 返回序列在固定窗口内均具备支持 |
+
+三轮使用相同查询、周期参数、外窗300秒、各查询原内窗及首评估点前驱采集；没有缩短业务窗口、补出生前零、调候选或改Core优先级。等待已观察的新标签积累支持后，第三轮自然具备窗口支持；21/21不是预设目标，也不是正式成绩。每轮`result.json`中的`formal_pass`与`promotion_eligible`始终false，三份离线回放均精确复现。
+
+三轮22容器均RUNNING、RestartCount=0；保留StartedAt、完整metric标签和同实例span。fraud/payment的EventStream ERROR标签分别首次采样于05:41:58.568及05:44:38.571。第二轮查到对应同一`service.instance.id`的client span：duration599.991826/600.004183秒，结束于05:41:50.134887/05:44:30.653183，gRPC status4；首次错误指标晚约8.433/7.918秒。相同操作的flagd server span报告server-side timeout；第三轮又查到下一组约600秒的完成span。all/errors查询有重叠，按trace+span去重后第二轮4条（2client+2server），第三轮8条，不能将原始汇总的8/16条当成独立事件数。
+
+同实例其他标签更早存在，相关counter不下降，相同标签的17桶组一起出现。这支持**长寿命RPC结束后产生新的错误标签**，没有证据把它归为服务重启或已建立序列漏采。首轮checkout及Kafka p95在启动后尚未积累完整查询支持，后续已补足；最早发射前是否存在未返回样本仍未知。首次观察不是通用出生证明，OTLP start timestamp未由当前链保留。queue是gauge，context中的下降仅为`decreases`，不能被当成counter reset。fraud/payment返回日志没有EventStream文本，关联依据是span；Kafka日志只取最早300条（第三轮total1631），不宣称全日志无异常。
+
+唯一工程修复发生于首轮后：Jaeger错误路径`/api/traces`返回4次404，改为已有允许路径`/jaeger/ui/api/traces`；同时将上下文缺失显式表示为unavailable、计数null并暴露日志返回上限。35项聚焦检查通过后才用原剩余预算采第二轮，没有重建部署或重置额度。首轮原始404和原摘要保留；`round-1/context/assessment-correction.json`追加说明“不可用”，不能把原零条当成不存在span。第三轮没有第二次修复重试。
+
+### 源码、离线回放与正式准入限制
+
+新增`engineering_capture.py`复用现有Owned.validate与采样支持函数，以固定步骤实现计数、资源连续性、采集及清理；`engineering_configuration.py`只允许两类Kafka只读观察；`engineering_context.py`补生命周期/日志/span；`engineering_traffic.py`逐物理请求计数。每轮独立目录拒绝覆盖，保存源码摘要、参数、请求和原始结果；运行时源码与最终离线guard不同，保留的source_sha256不被改成最终Git提交。
+
+新增`engineering_replay.py`只读取保留文件和独立proof CAS，不打开原库、不请求网络、不操作Docker。实际已运行：
+
+```sh
+PYTHONPATH=src:. uv run python -m scripts.product_v050.engineering_replay \
+  --root .local/engineering-calibration/live-01 --round 1 \
+  --output .local/engineering-calibration/live-01-replay-round-1
+PYTHONPATH=src:. uv run python -m scripts.product_v050.engineering_replay \
+  --root .local/engineering-calibration/live-01 --round 2 \
+  --output .local/engineering-calibration/live-01-replay-round-2
+PYTHONPATH=src:. uv run python -m scripts.product_v050.engineering_replay \
+  --root .local/engineering-calibration/live-01 --round 3 \
+  --output .local/engineering-calibration/live-01-replay-round-3
+```
+
+输出均为指定目录的`replay.json`，支持数分别11/15/21且`original_diagnostics_reproduced=true`。再次离线运行须选择全新`--output`；已存在路径拒绝覆盖，输入前后摘要重验。输入根及objects是本机私有材料，不随Git推送。旧09回放入口与结果保留，本轮有效配置不能反向证明旧09运行时默认值。实际live步骤为同一根上的`engineering_capture prepare/start`、`engineering_configuration`、正常traffic三组、`engineering_capture collect --round N`与`engineering_context N`、最后`engineering_capture cleanup`；这些历史命令**不构成再次执行授权**，该根的额度已消耗。
+
+工程默认声明与显式配置分开。`versioned_producer_defaults`要求版本、镜像、override缺省与材料摘要，工程回放检查原材料字节完整性；**它不能自动验证材料是否真的声明该默认值**。独立审阅给出反例：保留真实材料摘要却把60改成180，单纯摘要校验仍成立。因此清理后加了离线准入守卫：共同`ingestion_evidence.verify`拒绝任何非空工程默认声明；资格、freeze、evaluate、promotion均经现有收据重验链拒绝，不靠报告的false标志。60/180同proof的反例均拒绝。这里没有第二次live修复或重试，已采集原始数据/结果不改写；工程回放仍可解释同一手工审阅声明。这是明确的正式准备缺口，不宣称配置默认值已经自动获得正式资格。
+
+### 验证范围与正式验证前剩余项
+
+- fixture验证：正常60秒与漏采、内部中断、新标签/未知出生/reset、错误子集/总量及桶对应、rate不足、清理归属/预算保留、Kafka白名单解析、404不可用语义、输入篡改/重复回放拒绝，以及工程声明不得进入正式重验。fixture不证明真实丢包/重启恢复行为。
+- 真实保留数据验证：上述有效配置材料、三轮实际周期与窗口、StartedAt/RestartCount、同实例EventStream关联、无reset/桶错配、11→15→21支持、三份精确离线复现及owned清理。没有注入真实漏采、重启或故障，不能声称这些live动态分支全部验证。
+- 正式前仍需：冻结并审阅可正式接受的默认配置语义绑定（或另行授权显式配置），不能直接复用本工程声明；明确既有业务查询中EventStream超时与“健康控制”的语义关系及完整负例资格；按独立协议重新固定候选/采集/资格和未见事件；需要真实故障/恢复的动态支持验证须另行授权。OTLP出生时间不可用、未返回标签总体、启动前缺失和完整日志范围继续保留UNKNOWN。正常Core优先级与原规则不变。
+
+工程校准路径已交付，本轮授权已结束。全部新数据都是已见开发数据；不生成`v0.5 ACCEPTANCE_PASS`、不晋升、不重启旧批次、不自动进行正式验收。
+
+本轮离线验证：采样、摄入贯通、工程生命周期与回放聚焦58 passed；最终回放来源/UTC记录补充再经入口测试1 passed。完整回归`PYTHONPATH=src:. uv run pytest -q`为**6876 passed、21 skipped**（809.47秒），跳过项是既有私有材料/历史冻结条件，未新增skip/xfail。全库Ruff、Product mypy173文件和前述六个历史/后继验证器通过。独立只读复核确认默认声明守卫在共同正式验证链生效，无新增必须修复项。日志分别为`.local/engineering-calibration/live-01-offline-focused.log`、`live-01-full-regression.log`及`live-01-verifiers.log`。
+
+最终源码另两次重放第三轮到`live-01-replay-final/replay.json`与`live-01-replay-repeat/replay.json`，均21项支持且精确复现，并记录回放源码摘要、原采集源码摘要及UTC；重跑只需在上方第三轮命令替换新输出目录。旧09材料重放到`live-01-old09-replay/replay.json`仍为10支持/11不足，历史assessment精确复现。本轮提交后的干净状态历史范围节点结果保存`live-01-clean-commit-check.log`；精确提交CI与最终完整tracked-diff/冻结材料校验另存同一私有目录的`live-01-ci-*`及`live-01-integrity.json`。这些后置结果以机器记录及交付回复为准，不用旧提交成功替代新提交CI。
