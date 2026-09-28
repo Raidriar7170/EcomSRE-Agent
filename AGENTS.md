@@ -15,9 +15,11 @@ invalidates one, stop and propose a new Decision Record.
 
 ## Current state
 
-Current follow-up is offline only: reviewed default credentials and retained EventStream health-query semantics. Scoped implementation, tests, the same report, commit/push to Draft PR #104 and exact-head CI are authorized. No Provider, Docker, faults, formal events or registry changes; consumed calibration and historical results stay unchanged.
+Most recent authorized follow-up (now ended): 用户于2026-09-28进一步明确授权同一任务的无故障工程联调：最多1次owned部署、3轮、90分钟含准备清理、600 HTTP读取、90 Docker/白名单容器只读、30串行正常物理请求（≤1/s）、一次范围内采集修复重试及最多2个无故障工程诊断事件。Provider、故障、恢复写入、正式验收及晋升均0；旧批次和原库只读不变。新环境、提前固定的同部署基线、完整Typed Runtime和正常API/Worker记录仅写独立工程目录。固定时间观察，不以NO_INCIDENT为目标，不改PromQL/阈值/Core顺序；按归属清理、同报告更新、提交推送PR #104并核对精确CI，不merge/release。
 
-Current bounded engineering calibration is explicitly authorized by the user against commit `7bbf88d`: one owned deployment, three rounds, 90 minutes including cleanup, 500 HTTP reads, 60 Docker/allowlisted in-container reads, 30 serial normal requests, and one bounded collection repair/retry. Provider, faults, recovery writes, formal holdout and promotion remain zero. The authorized calibration is now consumed and CLEAN; further live work requires new explicit authorization. The same [summary report](docs/results/product-v050/engineering-calibration/README.md) records execution; no historical campaign is resumed.
+本次无故障工程联调已终止并CLEAN：1部署、1轮尝试（0完整轮）、51 Docker只读、12资源操作命令、0 HTTP读取、10正常物理请求、1修复、0事件，占用603.996秒。首轮环境创建因Runtime snapshot_ref缺pilot/前缀返回422，尚未取得v4凭证/基线/正常诊断。清理后接线修复仅经fixture，不改写失败；新live需另行明确授权，不自动恢复。
+
+The prior bounded engineering calibration was explicitly authorized by the user against commit `7bbf88d`: one owned deployment, three rounds, 90 minutes including cleanup, 500 HTTP reads, 60 Docker/allowlisted in-container reads, 30 serial normal requests, and one bounded collection repair/retry. Provider, faults, recovery writes, formal holdout and promotion remain zero. The authorized calibration is now consumed and CLEAN; further live work requires new explicit authorization. The same [summary report](docs/results/product-v050/engineering-calibration/README.md) records execution; no historical campaign is resumed.
 
 
 Current Product status: [STATUS](docs/product/STATUS.md). On 2026-09-27 the user

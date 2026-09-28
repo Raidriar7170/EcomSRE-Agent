@@ -19,6 +19,7 @@ from ecomsre.product.connectors.credentials import (
 
 
 # Harness-local capture; credentials/headers are deliberately excluded.
+raw_request_guard: ContextVar[Callable[[dict], None] | None] = ContextVar("product_raw_request_guard", default=None)
 raw_request_context: ContextVar[dict | None] = ContextVar("product_raw_request_context", default=None)
 raw_response_observer: ContextVar[Callable[[dict], None] | None] = ContextVar("product_raw_response_observer", default=None)
 
@@ -118,6 +119,9 @@ class BoundedHttpTransportV1:
         started = time.monotonic()
         requested_at = datetime.now(UTC).isoformat()
         try:
+            guard = raw_request_guard.get()
+            if guard is not None:
+                guard(dict(method=method, url=url, params=dict(params or {})))
             if self._before_request is not None:
                 self._before_request()
             headers = self._resolver.resolve_http_headers(

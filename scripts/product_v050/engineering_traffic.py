@@ -11,10 +11,38 @@ from ecomsre.product.pilot.baseline_readiness_v021 import (
 from scripts.product_v050 import engineering_capture as ec
 
 
-def traffic(group):
+def traffic(group, *, anchor=None, pair_offsets=None, start_ordinal=1):
     target = ec.ROOT / f"traffic-{group}"
-    target.mkdir(mode=0o700)
-    for ordinal in range(1, 6):
+    if start_ordinal not in range(1, 7):
+        raise ValueError("INVALID_TRAFFIC_RESUME_ORDINAL")
+    if start_ordinal == 1:
+        target.mkdir(mode=0o700)
+    else:
+        for ordinal in range(1, start_ordinal):
+            for name in ("cart", "checkout"):
+                meta = ec.load(target / f"{ordinal}-{name}.json")
+                if (
+                    meta["status"] not in range(200, 300)
+                    or meta["error"]
+                    or meta["truncated"]
+                ):
+                    raise ValueError("INCOMPLETE_TRAFFIC_PREFIX")
+                if (
+                    hashlib.sha256(
+                        (target / f"{ordinal}-{name}.body").read_bytes()
+                    ).hexdigest()
+                    != meta["response_sha256"]
+                ):
+                    raise ValueError("TRAFFIC_PREFIX_CHANGED")
+    if any(any(target.glob(f"{n}-*")) for n in range(start_ordinal, 6)):
+        raise ValueError("TRAFFIC_OUTPUT_EXISTS")
+    if pair_offsets is not None and (len(pair_offsets) != 5 or anchor is None):
+        raise ValueError("FIXED_TRAFFIC_SCHEDULE_REQUIRED")
+    for ordinal in range(start_ordinal, 6):
+        if pair_offsets is not None:
+            from scripts.product_v050.engineering_integration import wait_until
+
+            wait_until(anchor, pair_offsets[ordinal - 1])
         for name, payload in [
             (
                 "cart",
@@ -84,7 +112,11 @@ def traffic(group):
                 return
     print(
         json.dumps(
-            {"group": group, "physical_requests": 10, "successful_checkouts": 5}
+            {
+                "group": group,
+                "physical_requests": 2 * (6 - start_ordinal),
+                "successful_checkouts": 6 - start_ordinal,
+            }
         ),
         flush=True,
     )

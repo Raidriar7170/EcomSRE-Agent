@@ -172,6 +172,22 @@ def complete_process_projection(raw, *, container_id, observed_at):
         }:
             options.extend(shlex.split(value))
     result = selected_process_configuration(raw)
+    expected_environment = {
+        "OTEL_SERVICE_NAME": "kafka",
+        "OTEL_JMX_CONFIG": "/etc/ecomsre/kafka-jmx.yml",
+        "OTEL_INSTRUMENTATION_METHODS_INCLUDE": "kafka.server.KafkaApis[handleProduceRequest]",
+        "OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE": "cumulative",
+    }
+    result["allowed_environment"] = {
+        k: v if expected_environment.get(k) == v else "UNKNOWN_VALUE"
+        for k, v in result["allowed_environment"].items()
+    }
+    result["allowed_system_properties"] = {
+        k: v
+        if (k, v) == ("otel.jmx.target.system", "kafka-broker")
+        else "UNKNOWN_VALUE"
+        for k, v in result["allowed_system_properties"].items()
+    }
     result.update(
         version="complete-jvm-default-projection-v1",
         container_id=container_id,

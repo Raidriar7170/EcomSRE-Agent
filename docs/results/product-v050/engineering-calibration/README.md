@@ -246,3 +246,67 @@ PYTHONPATH=src:. uv run pytest tests/product_v050/test_default_credentials.py \
 本节聚焦验证58 passed；随后补充默认值向sampling profile传递的断言，凭证测试28 passed。全库Ruff、Product mypy（173文件）及六个历史/后继验证器通过；独立只读审阅发现的JVM参数文件、Collector挂载绑定和冻结代码范围三项已修复并复核关闭。两次回放的typed records、贡献、覆盖、输入/源码摘要一致；实际MockTransport耗时、其派生result摘要和回放UTC随运行变化，不宣称输出文件逐字节相等。原库/旧08/09证据及已结束live-01共811个冻结文件摘要未变。
 
 完整回归命令为`PYTHONPATH=src:. uv run pytest -q`；日志位于独立`.local/engineering-calibration/semantic-01/full-regression.log`。同目录保留`focused-final.log`、`default-profile-final.log`、`ruff-final.log`、`mypy.log`、`verifiers.log`、干净提交检查、精确HEAD CI及最终tracked-diff/冻结证据完整性结果。完整回归与提交后CI以这些最终机器记录及交付回复为准，不复用上一节6876项或旧提交CI成功作为本节结论。没有新增skip/xfail或删除历史检查。
+
+
+## 2026-09-28 同部署无故障工程联调（live-02）
+
+用户于2026-09-28进一步明确授权同一任务的无故障工程联调：最多1次owned部署、3轮、90分钟含准备清理、600 HTTP读取、90 Docker/白名单容器只读、30串行正常物理请求（≤1/s）、一次范围内采集修复重试及最多2个无故障工程诊断事件。Provider、故障、恢复写入、正式验收及晋升均0；旧批次和原库只读不变。新环境、提前固定的同部署基线、完整Typed Runtime和正常API/Worker记录仅写独立工程目录。固定时间观察，不以NO_INCIDENT为目标，不改PromQL/阈值/Core顺序；按归属清理、同报告更新、提交推送PR #104并核对精确CI，不merge/release。
+
+执行前固定清单：复用v4映射，逐轮读取Kafka进程白名单/未知存在性、jar/class摘要、Collector实际挂载配置和最新同实例身份；各操作保留真实UTC，验证为窗口结束后120秒内独立采集，不要求伪造同时刻。全部4服务Typed Runtime包含Kafka consumer实际membership；新独立Product API/Worker和数据库记录环境、实际DEPLOYMENT Changes、基线、最多2诊断和实际行动证据。无Provider配置加载，不复用原Campaign。
+
+固定时间表相对唯一部署start完成：第1轮9分30秒保留配置/Runtime/context；12分钟通过既有DEMO_ONLY baseline builder构建5×36秒窗口（lookback180、warmup180、minimum5），因此基线窗口约6–9分钟，先固定再进入检查窗口。第2、3轮23及28分钟，各检查前300秒；最大时间偏差120秒，超过停止采集并清理，不等待理想诊断。正常流量分3组各5对cart/checkout，每对2次物理请求；组内时间分别30/150/270/390/480，1080/1140/1200/1260/1320，1440/1480/1520/1560/1600秒，每次串行间隔≥1秒。首次观测不作为出生证明；基线构建失败保留NOT_AVAILABLE，不伪造诊断。
+
+读取范围：已保留fixed layout/images/source材料、现有产品/摄入实现；写入范围：engineering integration/capture/configuration/traffic/v4 collector、默认凭证真实时点检查、HTTP计数hook、聚焦测试、现有任务指针与本报告及STATUS后继摘要。新数据仅`.local/engineering-calibration/live-02`，计数单独账本；冻结范围为原库、旧08/09、已结束live-01及semantic-01保留材料。最终仓库范围为本worktree相对`e03a0aa8036b683076eef0c407fa10c6db7d17e0`完整tracked delta；私有CAS/数据库/凭据不提交。
+
+预定执行入口：`PYTHONPATH=src:. uv run python -m scripts.product_v050.engineering_integration run`。create-once目录拒绝重启；普通采集缺失保留诊断，权限/归属/秘密失败停止相关操作，finally使用现有精确owned清理。HTTP及Docker读取在操作前计数，保留13次Docker读取与15分钟供清理。此命令的存在不授予后续再次执行权限。
+
+
+### 本轮实际结果：联调未完成，资源已清理
+
+实际开始2026-09-28 20:46:50.538630 UTC，结束20:56:54.534661 UTC，占用**603.996秒**。资源检查证明当时没有其他容器或Docker CLI任务；保留的非项目网络/卷语义与此前快照一致。仅启动同一owned部署一次，固定镜像/布局未变，没有修改SDK或Collector配置。
+
+| 账目 | 本轮实际 |
+|---|---:|
+| owned部署 / 采集轮次尝试 / 完整轮次 | 1 / 1 / 0 |
+| Docker白名单只读 / Docker资源操作命令 | 51 / 12 |
+| HTTP读取 / 正常物理请求 / 成功checkout | 0 / 10 / 5 |
+| 采集接线修复续接 / 新工程诊断事件 | 1 / 0 |
+| Provider / 故障 / 恢复写入 / 正式事件 / 晋升 | 全部0 |
+
+资源操作12条包括创建网络/卷/容器、唯一start及最终stop/rm；不是把真实Docker操作计为零。精确删除22容器、1网络、5卷，`cleanup.json`确认owned剩余0、non-owned unchanged。旧live-01账目239 HTTP/59 Docker只读/30正常请求/1修复保持原值；旧Provider60次、USD1.067489承诺、14/18 live和旧闭环9/13均未消费或复活。
+
+两项接线问题按时间如实保留：
+
+1. 启动后、首轮前代码复查发现事件API要求service ID规范排序，而目录按逻辑服务名排序。暂停并结束本任务采集进程，使用唯一获准修复额度加入`sorted(ids)`和反例测试；保持owned部署、原anchor/截止时间，确认当前归属后从第一组第2对流量续接。已完成第一对2个请求未重复。此处未发生API事件创建；是预先发现的确定性接线错误。修复前源码、暂停/续接UTC、进程与前缀响应摘要分别保留，未把续接当成第二次部署。
+2. 首轮在固定9分30秒时点开始，Kafka CLI显示fraud consumer Stable且一个成员获orders:0；四服务均RUNNING/healthy、RestartCount=0。随后正常环境创建API返回**422 INVALID_REQUEST**：实际payload的`connector_configs[3].snapshot_ref`为`runtime-current.json`，不满足`^pilot/[a-zA-Z0-9_.-]{1,120}\.json$`。这是本次采集接线错误，**不是遥测不健康或v4配置被拒绝**。当时流程尚未读取完整配置/jar，也未生成环境绑定Typed Runtime、基线、诊断、Changes或指标/日志/span输入；不能从源Runtime健康推导NO_INCIDENT。唯一修复额度已用，finally立即清理；没有重建或再次live。
+
+因此逐项结论为：**v4真实凭证未取得；本轮指标/基线覆盖未评估；正常入口没有实际诊断，谓词及EventStream对健康拒绝/Core命中的作用均NOT_EVALUATED。** 不将上一轮EventStream贡献或21/21支持移植为本轮结果，不补造诊断，不将失败称为健康holdout。先前受控默认映射仍具备正式校验能力，但本轮没有新的真实凭证来证明它通过。
+
+### 清理后的离线修复与验证边界
+
+Runtime引用及原子更新位置统一到`pilot/runtime-current.json`，原逐轮快照保持独立。新增`offline_preflight()`在任何Docker操作之前，用临时数据库调用真实环境创建API；坏路径复现422，正确路径201。新增实际API/Worker贯通fixture覆盖同一payload、四条真实格式DEPLOYMENT Changes、五窗基线、两类规范排序和正常诊断；网络仅由MockTransport提供。该贯通检查又暴露并修复严格typed JSON解析及Core动作排序、queue最后的memory重建问题；现在对正常诊断memory SHA逐值重验，未绕过摘要检查。配置采集移到独立于环境API的位置，避免普通API拒绝丢失独立配置证据。续接只认可完整成功前缀并拒绝已有后续输出，不宣称任意中断点都可重试。
+
+**上述清理后修复均仅经fixture，未再次部署验证。** 原失败请求、运行源码摘要、修复续接源码摘要及结果不升级为最终代码执行证据。新聚焦检查84 passed；完整回归、Ruff、Product类型检查、六个历史验证器及精确提交CI另存下述机器记录，不以旧提交成功替代。
+
+实际命令与证据位置：
+
+```sh
+# 本轮真实命令，授权现已结束；不得据此重跑。
+PYTHONPATH=src:. uv run python -m scripts.product_v050.engineering_integration run
+PYTHONPATH=src:. uv run python .local/engineering-calibration/integration-02/resume.py
+
+# 可重复离线验证，全部使用临时测试库/fixture，无Docker/外部HTTP。
+PYTHONPATH=src:. uv run pytest tests/product_v050/test_engineering_integration.py -q
+PYTHONPATH=src:. uv run pytest tests/product_v050/test_engineering_integration.py \
+  tests/product_v050/test_engineering_capture.py \
+  tests/product_v050/test_default_credentials.py \
+  tests/product_v050/test_ingestion_evidence.py \
+  tests/product_v050/test_health_semantics_replay.py -q
+PYTHONPATH=src:. uv run pytest -q
+```
+
+私有采集根`.local/engineering-calibration/live-02`保存authorization、source-version、operations、逐操作receipt、repair/repair-resume、traffic、round-1 Runtime源投影、原422 payload、failure与cleanup；`.local/engineering-calibration/integration-02`保存原进程/续接日志、只读失败复现、临时库测试、汇总`result.json`、冻结833文件清单、全量回归及后置CI/完整性。API拒绝发生在外部读取前，所以HTTP原始响应CAS为空；独立新Product库的环境/事件/注册均0。私有根、数据库、CAS和凭据不提交，旧原库只读，历史原始材料不改写。
+
+### 剩余最小真实范围
+
+本轮用户要求的完整同部署输入仍未收齐，目标未达成。下次仍只需同一既有布局的一次owned无故障工程观察，沿用前述固定时序与上限（1部署、3轮、90分钟、600 HTTP/90 Docker读取、30串行正常物理请求、最多2工程事件），在部署前先通过现在的真实API/Worker离线接线检查；按真实时点收全v4投影与实例绑定、提前固定基线、完整Typed Runtime及正常入口输入，并覆盖EventStream结束窗口。没有现成数据能替代这些观测。当前1次部署授权已经消费且资源清理，剩余额度不授权重新部署；**本报告不启动或请求逐条读取审批，不自动重跑，也不转为正式验收。** Provider、故障、恢复写入与晋升继续0。业务PromQL、阈值、Core/Extension顺序及固定规则均未修改。

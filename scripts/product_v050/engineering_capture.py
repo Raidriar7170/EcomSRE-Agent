@@ -69,7 +69,7 @@ def reserve(category, detail):
     # The precheck uses docker_read; retain the same spelling throughout.
     if (
         category == "docker_read"
-        and sum(e["category"] == category for e in entries) >= 60
+        and sum(e["category"] == category for e in entries) >= auth["caps"].get("docker_reads", 60)
     ):
         raise ValueError("DOCKER_READ_CAP")
     entry = dict(
@@ -106,11 +106,16 @@ def docker(args, *, mutation=False, timeout=30):
     pre = load(ROOT / "precheck.json")
     argv = ["docker", "--host", pre["endpoint"], *args]
     seq = reserve("docker_mutation" if mutation else "docker_reads", {"argv": argv})
+    started_at = datetime.now(UTC).isoformat()
+    started_mono = time.monotonic()
     result = subprocess.run(argv, capture_output=True, timeout=timeout)
     save(
         ROOT / "receipts" / f"{seq:04}.json",
         dict(
             returncode=result.returncode,
+            started_at=started_at,
+            received_at=datetime.now(UTC).isoformat(),
+            elapsed_seconds=time.monotonic() - started_mono,
             stdout_sha256=hashlib.sha256(result.stdout).hexdigest(),
             stderr_sha256=hashlib.sha256(result.stderr).hexdigest(),
         ),

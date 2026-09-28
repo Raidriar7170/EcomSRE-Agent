@@ -88,12 +88,17 @@ def resolve(
         for r in requirements
         for p in expected_reads(r["query"], r["start"], r["end"], version=VERSION)
     )
-    at = runtime.get("observed_at")
-    if (
-        not isinstance(at, (int, float))
-        or not math.isfinite(at)
-        or not end <= at <= end + 120
-    ):
+
+    def current(observation):
+        value = observation.get("observed_at")
+        return (
+            isinstance(value, (int, float))
+            and not isinstance(value, bool)
+            and math.isfinite(value)
+            and end <= value <= end + 120
+        )
+
+    if not all(current(p) for p in (runtime, process, jar)):
         raise ValueError("runtime default observation is not current")
     roles = runtime.get("services", {})
     if set(roles) != {"kafka", "otel-collector"}:
@@ -119,7 +124,7 @@ def resolve(
     if (
         process.get("version") != "complete-jvm-default-projection-v1"
         or process.get("container_id") != roles["kafka"]["container_id"]
-        or process.get("observed_at") != at
+        or not current(process)
     ):
         raise ValueError("UNKNOWN_COMPLETE_PROCESS_CONFIGURATION")
     from scripts.product_v050.engineering_configuration import (
@@ -130,7 +135,7 @@ def resolve(
         raise ValueError("explicit or unknown JVM configuration override")
     if (
         jar.get("container_id") != roles["kafka"]["container_id"]
-        or jar.get("observed_at") != at
+        or not current(jar)
         or jar.get("process_configuration_sha256") != sha(process)
         or jar.get("image_id") != m["kafka_image_id"]
         or jar.get("jar_sha256") != m["jar_sha256"]
@@ -142,7 +147,7 @@ def resolve(
     mounted = read_object(refs["mounted_config"], read_bytes)
     if (
         mounted.get("container_id") != col["container_id"]
-        or mounted.get("observed_at") != at
+        or not current(mounted)
         or mounted.get("destination") != "/etc/ecomsre/collector.json"
         or mounted.get("read_only") is not True
         or not re.fullmatch(r"[0-9a-f]{64}", mounted.get("source_identity_sha256", ""))
@@ -210,7 +215,14 @@ def build_credential(*, binding, requirements, occurrence, incident_id, proofs):
 
 
 def project_runtime_observation(
-    rows, *, deployment_id, collector, observed_at, config_source, config_bytes
+    rows,
+    *,
+    deployment_id,
+    collector,
+    observed_at,
+    config_source,
+    config_bytes,
+    config_observed_at=None,
 ):
     """Pure whitelist projection of fresh full owned Docker inspections.
 
@@ -259,7 +271,9 @@ def project_runtime_observation(
                 raise ValueError("UNKNOWN_RUNTIME_CONFIG_MOUNT_BINDING")
             mounted = dict(
                 container_id=row["Id"],
-                observed_at=observed_at,
+                observed_at=observed_at
+                if config_observed_at is None
+                else config_observed_at,
                 destination="/etc/ecomsre/collector.json",
                 read_only=True,
                 source_identity_sha256=hashlib.sha256(
