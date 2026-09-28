@@ -98,6 +98,9 @@ def evaluation_bindings() -> dict[str, str]:
         "scripts/product_v050/validation_capture.py",
         "scripts/product_v050/ingestion_evidence.py",
         "scripts/product_v050/sampling_support.py",
+        "scripts/product_v050/default_credentials.py",
+        "scripts/product_v050/engineering_configuration.py",
+        "config/product-v050/reviewed-producer-defaults-v1.json",
         "scripts/product_v050/validation_live.py",
         "scripts/product_v050/live_environment.py", "scripts/product_v050/live_product.py",
     )}

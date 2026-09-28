@@ -120,9 +120,40 @@ def topology_v3(collector, command, queries, *, application_object_sha256=None):
     return result
 
 
+def topology_v4(
+    collector, command, queries, *, deployment_id, application_object_sha256=None
+):
+    from scripts.product_v050 import default_credentials as defaults
+
+    if not isinstance(deployment_id, str) or not deployment_id:
+        raise ValueError("explicit deployment identity required")
+    result = topology_v3(
+        collector, command, queries, application_object_sha256=application_object_sha256
+    )
+    result.pop("sha256")
+    result.update(
+        version=defaults.VERSION,
+        deployment_id=deployment_id,
+        defaults_mapping_sha256=sha(defaults.mapping()),
+    )
+    result["sha256"] = sha(result)
+    return result
+
+
 def validate_topology(binding, collector, command, queries):
     from scripts.product_v050.sampling_support import VERSION as V3
 
+    if binding.get("version") == "ingestion-sample-evidence-v4":
+        expected = topology_v4(
+            collector,
+            command,
+            queries,
+            deployment_id=binding.get("deployment_id"),
+            application_object_sha256=binding.get("application_object_sha256"),
+        )
+        if expected != binding:
+            raise ValueError("deployment ingestion mode/configuration differs")
+        return
     expected = (
         topology_v3(
             collector,
@@ -165,7 +196,10 @@ def expected_reads(query, start, end, *, version=VERSION):
     support_start = start - inner
     # Instant range selector returns stored sample timestamps, unlike query_range.
     width = math.ceil(end - support_start) + 1
-    if version == "ingestion-sample-evidence-v3" and not inner:
+    if (
+        version in {"ingestion-sample-evidence-v3", "ingestion-sample-evidence-v4"}
+        and not inner
+    ):
         width += 300  # retain predecessor evidence for the first instant query
     return [
         (s, support_start, {"query": f"{s}[{width}s]", "time": end})
@@ -263,6 +297,7 @@ def verify(
     collector,
     command,
     requirements,
+    default_credential_sha256=None,
 ):
     validate_topology(binding, collector, command, queries)
     if not requirements:
@@ -272,7 +307,7 @@ def verify(
     from scripts.product_v050 import sampling_support as support
 
     version = binding["version"]
-    modern = version == support.VERSION
+    modern = version in {support.VERSION, "ingestion-sample-evidence-v4"}
     application = None
     if modern and binding.get("application_object_sha256"):
         application = __import__("json").loads(
@@ -282,6 +317,25 @@ def verify(
     # Do not admit them into qualification/freeze/promotion as proven defaults.
     if (application or {}).get("versioned_producer_defaults"):
         raise ValueError("engineering default declarations are not formal evidence")
+    resolved_defaults = None
+    if version == "ingestion-sample-evidence-v4":
+        from scripts.product_v050.default_credentials import resolve
+
+        if (application or {}).get("effective_environments", {}).get("kafka"):
+            raise ValueError(
+                "explicit application configuration conflicts with reviewed defaults"
+            )
+        resolved_defaults = resolve(
+            default_credential_sha256,
+            read_bytes,
+            collector=collector,
+            binding=binding,
+            occurrence=occurrence,
+            incident_id=incident_id,
+            requirements=requirements,
+        )
+    elif default_credential_sha256 is not None:
+        raise ValueError("legacy protocol cannot accept default credential")
     report = []
     sample_entries = [
         e
@@ -327,7 +381,12 @@ def verify(
                     selector,
                     support_start,
                     end,
-                    support.profile(collector, selector, application),
+                    support.profile(
+                        collector,
+                        selector,
+                        application,
+                        resolved_defaults=resolved_defaults,
+                    ),
                     query_start=start,
                     inner_seconds=start - support_start,
                 )
@@ -461,7 +520,7 @@ def verify_receipt(
 ):
     if receipt.get("version") != binding.get("version") or receipt.get(
         "version"
-    ) not in {VERSION, "ingestion-sample-evidence-v3"}:
+    ) not in {VERSION, "ingestion-sample-evidence-v3", "ingestion-sample-evidence-v4"}:
         raise ValueError("ingestion protocol receipt version differs")
     collector = __import__("json").loads(read_bytes(receipt["collector_object_sha256"]))
     command = __import__("json").loads(
@@ -477,6 +536,7 @@ def verify_receipt(
         collector=collector,
         command=command,
         requirements=requirements,
+        default_credential_sha256=receipt.get("default_credential_sha256"),
     )
     if receipt.get("assessment") != actual or not actual["passed"]:
         raise ValueError("target sample freshness/coverage not established")

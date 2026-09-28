@@ -152,3 +152,85 @@ def read_configuration():
 
 if __name__ == "__main__":
     read_configuration()
+
+
+def complete_process_projection(raw, *, container_id, observed_at):
+    """Finite complete option inventory; retain only allowed values, never secrets.
+
+    This new projection must be captured from actual bytes, not synthesized from
+    the incomplete legacy projection. It performs no Docker or other I/O.
+    """
+    tokens = raw.split("\0")
+    options = list(tokens)
+    for token in tokens:
+        key, _, value = token.partition("=")
+        if key in {
+            "JAVA_TOOL_OPTIONS",
+            "JDK_JAVA_OPTIONS",
+            "_JAVA_OPTIONS",
+            "KAFKA_OPTS",
+        }:
+            options.extend(shlex.split(value))
+    result = selected_process_configuration(raw)
+    result.update(
+        version="complete-jvm-default-projection-v1",
+        container_id=container_id,
+        observed_at=observed_at,
+        otel_environment_names=sorted(
+            {t.split("=", 1)[0] for t in tokens if t.startswith("OTEL_") and "=" in t}
+        ),
+        otel_property_names=sorted(
+            {t[2:].split("=", 1)[0] for t in options if t.startswith("-Dotel.")}
+        ),
+        agent_options=sorted(
+            {
+                t
+                for t in options
+                if t.startswith("-javaagent:")
+                and t == "-javaagent:/tmp/opentelemetry-javaagent.jar"
+            }
+        ),
+        opaque_argument_file_present=any(
+            t.startswith(("@", "-XX:VMOptionsFile=", "-XX:Flags=")) for t in options
+        ),
+        unknown_agent_option_present=any(
+            t.startswith(("-javaagent:", "-agentpath:", "-agentlib:"))
+            and t != "-javaagent:/tmp/opentelemetry-javaagent.jar"
+            for t in options
+        ),
+    )
+    return result
+
+
+def default_override_conflicts(p):
+    """Only this reviewed JVM configuration surface is understood."""
+    allowed_names = {
+        "OTEL_SERVICE_NAME",
+        "OTEL_JMX_CONFIG",
+        "OTEL_RESOURCE_ATTRIBUTES",
+        "OTEL_INSTRUMENTATION_METHODS_INCLUDE",
+        "OTEL_EXPORTER_OTLP_ENDPOINT",
+        "OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE",
+        "OTEL_EXPERIMENTAL_SDK_TELEMETRY_VERSION",
+    }
+    return (
+        p.get("jvm_pid1") is not True
+        or p.get("javaagent_arguments")
+        != ["-javaagent:/tmp/opentelemetry-javaagent.jar"]
+        or p.get("agent_options") != ["-javaagent:/tmp/opentelemetry-javaagent.jar"]
+        or p.get("unknown_agent_option_present") is not False
+        or p.get("opaque_argument_file_present") is not False
+        or p.get("config_file_override_present") is not False
+        or not isinstance(p.get("otel_environment_names"), list)
+        or bool(set(p.get("otel_environment_names", [])) - allowed_names)
+        or p.get("otel_property_names") != ["otel.jmx.target.system"]
+        or p.get("allowed_system_properties")
+        != {"otel.jmx.target.system": "kafka-broker"}
+        or p.get("allowed_environment")
+        != {
+            "OTEL_SERVICE_NAME": "kafka",
+            "OTEL_JMX_CONFIG": "/etc/ecomsre/kafka-jmx.yml",
+            "OTEL_INSTRUMENTATION_METHODS_INCLUDE": "kafka.server.KafkaApis[handleProduceRequest]",
+            "OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE": "cumulative",
+        }
+    )

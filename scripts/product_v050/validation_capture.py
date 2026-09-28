@@ -252,3 +252,35 @@ def protocol_v3(
     )
     plan["version"] = plan["ingestion"]["version"]
     return plan
+
+
+def protocol_v4(
+    queries,
+    *,
+    collector,
+    prometheus_command,
+    preparation_query_keys,
+    deployment_id,
+    target_service=None,
+    application_object_sha256=None,
+):
+    """New explicit opt-in; per-occurrence credentials are required on receipts."""
+    from scripts.product_v050.ingestion_evidence import topology_v4
+
+    plan = protocol_v3(
+        queries,
+        collector=collector,
+        prometheus_command=prometheus_command,
+        preparation_query_keys=preparation_query_keys,
+        target_service=target_service,
+        application_object_sha256=application_object_sha256,
+    )
+    plan["ingestion"] = topology_v4(
+        collector,
+        prometheus_command,
+        queries,
+        deployment_id=deployment_id,
+        application_object_sha256=application_object_sha256,
+    )
+    plan["version"] = plan["ingestion"]["version"]
+    return plan

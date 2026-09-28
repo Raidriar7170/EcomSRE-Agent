@@ -260,12 +260,13 @@ def test_v2_cannot_accept_a_legacy_scrape_receipt():
 
 
 @pytest.mark.parametrize(
-    "replacement,modern", [(False, False), (True, False), (False, True)]
+    "replacement,modern", [(False, False), (True, False), (False, True), (False, "v4")]
 )
 def test_v2_evidence_reaches_qualification_freeze_and_direct_promotion(
     closure,  # noqa: F811
     replacement,
     modern,
+    request,
 ):
     """Synthetic samples, actual normal fixture diagnoses, no validator stubs."""
     from datetime import timedelta
@@ -277,8 +278,9 @@ def test_v2_evidence_reaches_qualification_freeze_and_direct_promotion(
 
     c = closure
     original = parent(c)
-    from scripts.product_v050.validation_capture import protocol_v3
+    from scripts.product_v050.validation_capture import protocol_v3, protocol_v4
 
+    factory = request.getfixturevalue("credential_factory") if modern == "v4" else None
     objects = c.app.state.object_store
     application = {
         "effective_environments": {
@@ -316,12 +318,13 @@ def test_v2_evidence_reaches_qualification_freeze_and_direct_promotion(
             queries[f"prometheus:error_rate:{service}"] = (
                 f"sum(rate({failed}[5m])) / sum(rate({total}[5m]))"
             )
-    collection = (protocol_v3 if modern else protocol_v2)(
+    collection = (protocol_v4 if factory else protocol_v3 if modern else protocol_v2)(
         queries,
         collector=FIXTURE["collector"],
         prometheus_command=FIXTURE["prometheus_command"],
         preparation_query_keys=list(queries),
         **({"application_object_sha256": app_sha} if modern else {}),
+        **({"deployment_id": "fixture-default-deployment"} if factory else {}),
     )
     batch_id = batch.REPLACEMENT if replacement else batch.BATCH
     if replacement:
@@ -430,6 +433,16 @@ def test_v2_evidence_reaches_qualification_freeze_and_direct_promotion(
             monotonic=lambda: 0,
             preparation=preparation,
         )
+        default_ref = None
+        if factory:
+            c, _ = factory(
+                lambda d: objects.put_json(d).object_sha256,
+                collection["ingestion"],
+                requirements,
+                occurrence,
+                iid,
+            )
+            default_ref = objects.put_json(c).object_sha256
         assessment = ie.verify(
             collection["ingestion"],
             entries=entries,
@@ -440,6 +453,7 @@ def test_v2_evidence_reaches_qualification_freeze_and_direct_promotion(
             collector=FIXTURE["collector"],
             command=FIXTURE["prometheus_command"],
             requirements=requirements,
+            default_credential_sha256=default_ref,
         )
         assert assessment["passed"]
         return entries, dict(
@@ -448,6 +462,7 @@ def test_v2_evidence_reaches_qualification_freeze_and_direct_promotion(
             prometheus_command_object_sha256=command_digest,
             requirements=requirements,
             assessment=assessment,
+            **({"default_credential_sha256": default_ref} if factory else {}),
         )
 
     at = datetime.now(UTC)
@@ -603,6 +618,25 @@ def test_v2_evidence_reaches_qualification_freeze_and_direct_promotion(
         candidate.registration_id, cases, derived_controls_version=CONTROL_VERSION
     )
     assert c.evo.evaluate(candidate.registration_id).gate_passed
+    if factory:
+        credential_path = objects._path_for(proof["default_credential_sha256"])
+        credential_before = credential_path.read_bytes()
+        altered = json.loads(credential_before)
+        altered["defaults"]["kafka_period_seconds"] = 180
+        credential_path.write_text(json.dumps(altered))
+        for operation in [
+            lambda: c.evo.control_qualifications(candidate, cases),
+            lambda: c.evo.freeze(
+                candidate.registration_id,
+                cases,
+                derived_controls_version=CONTROL_VERSION,
+            ),
+            lambda: c.evo.evaluate(candidate.registration_id),
+            lambda: c.evo.promote(candidate.registration_id),
+        ]:
+            with pytest.raises((ValueError, ProductError, RuntimeError)):
+                operation()
+        credential_path.write_bytes(credential_before)
     # Corruption of a referenced raw object is caught again at direct promotion.
     sample = next(
         e for e in entries if (e.get("action_context") or {}).get("ingestion_version")

@@ -187,3 +187,62 @@ PYTHONPATH=src:. uv run python -m scripts.product_v050.engineering_replay \
 本轮离线验证：采样、摄入贯通、工程生命周期与回放聚焦58 passed；最终回放来源/UTC记录补充再经入口测试1 passed。完整回归`PYTHONPATH=src:. uv run pytest -q`为**6876 passed、21 skipped**（809.47秒），跳过项是既有私有材料/历史冻结条件，未新增skip/xfail。全库Ruff、Product mypy173文件和前述六个历史/后继验证器通过。独立只读复核确认默认声明守卫在共同正式验证链生效，无新增必须修复项。日志分别为`.local/engineering-calibration/live-01-offline-focused.log`、`live-01-full-regression.log`及`live-01-verifiers.log`。
 
 最终源码另两次重放第三轮到`live-01-replay-final/replay.json`与`live-01-replay-repeat/replay.json`，均21项支持且精确复现，并记录回放源码摘要、原采集源码摘要及UTC；重跑只需在上方第三轮命令替换新输出目录。旧09材料重放到`live-01-old09-replay/replay.json`仍为10支持/11不足，历史assessment精确复现。本轮提交后的干净状态历史范围节点结果保存`live-01-clean-commit-check.log`；精确提交CI与最终完整tracked-diff/冻结材料校验另存同一私有目录的`live-01-ci-*`及`live-01-integrity.json`。这些后置结果以机器记录及交付回复为准，不用旧提交成功替代新提交CI。
+
+## 2026-09-28 离线收口：默认语义绑定与健康查询核对
+
+本节是同一工程任务的后续，基线`6ef5867b02a8220b1c1dc997d64c26c281126d04`。用户仅授权窄范围离线实现、保留材料回放、测试、报告及PR #104提交推送/精确CI；不新增活动Goal。本轮Provider、Docker、故障、恢复写入、正式事件、晋升均0，上一节真实校准的清理、计数、失败和原始结果不变。
+
+### 默认配置现在能验证什么
+
+新增受控`config/product-v050/reviewed-producer-defaults-v1.json`，只对应本次审阅的arm64 Kafka镜像、agent2.29.0 jar摘要及嵌入SDK1.63.0 PeriodicMetricReaderBuilder类摘要、Collector0.157.0镜像。固定8份来源URL与正文摘要，数值由映射确定：Kafka60秒；span_metrics有限桶2、4、6、8、10、50、100、200、400、800、1000、1400、2000、5000、10000、15000毫秒（另有+Inf）。这不是通用源码推理器，也不接纳未审阅版本。
+
+新增显式`ingestion-sample-evidence-v4` / `reviewed-producer-default-credential-v1`路径。`default_credentials.resolve`从受控映射取数值，要求固定来源、镜像/jar/class/版本身份、独立容器、运行起点早于完整支持窗口、零重启、当前观察时点、deployment/occurrence/incident/requirements绑定。完整JVM投影拒绝显式周期、未知OTel选项、额外agent、配置文件及`@argfile`/VMOptionsFile/Flags不透明输入；只保留白名单值及未知存在性，不读参数文件。Collector只接纳审阅命令、入口、无覆盖环境、实际只读bind目的地/源身份摘要与所读配置内容的一致绑定；默认桶路径不接受显式histogram覆盖。纯投影函数不执行任何Docker或文件读取，调用方必须提供新鲜受控读取的实际字节，不能从旧裁剪记录补字段。
+
+`validation_capture.protocol_v4`可将新凭证纳入现有raw receipt；共同`verify_receipt`在资格、freeze、evaluate及直接promotion重验中执行同一解析。两份解析代码及映射加入现有`evaluation_bindings`，冻结后实现变更也会失效。未自动切换live入口，不改SDK/Collector配置；v2/v3历史行为保留，旧工程`versioned_producer_defaults`继续拒绝。旧收据、旧批次和历史成绩不追溯升级。
+
+**新路径具备正式校验能力；本轮保留材料仍不足以生成正式凭证。** 实际8份来源、镜像、jar、版本和SDK类材料均与映射一致，但旧进程投影裁剪了未知选项，旧Collector快照未保留完整Cmd/Entrypoint/Env，jar检查未保留同实例/同观察时点绑定。现有材料不能补造这些否定性证明；新协议同时要求实际配置挂载及读取内容绑定。离线审计返回`UNKNOWN_INCOMPLETE_RUNTIME_EVIDENCE`、`formal_credential_created=false`。完整新凭证的正例仅由fixture证明，不声称真实正式凭证已取得。
+
+回归覆盖合法映射；同材料60→180；错桶、版本、镜像、jar、实例范围、启动覆盖、显式周期、未知agent、JVM参数文件、Collector命令/挂载/配置内容冲突；缺完整投影；来源内容错误。临时测试库贯通raw capture→资格→freeze→evaluate→promotion，并在篡改凭证后逐层拒绝。没有写原库或修改真实注册。
+
+### EventStream的现行查询贡献
+
+第三轮窗口仍为2026-09-28 05:49:52.077–05:54:52.077 UTC。现有业务查询只按service/status筛选，没有按span_name或span_kind排除EventStream；因此它同时进入错误分子、请求分母、请求支持和延迟histogram。回放使用原始query响应及真实`PrometheusConnectorV1`，保留其丢弃NaN、对有限时点取均值的行为，不补零、不改阈值。
+
+| 服务 | 错误率有限时点均值 | 延迟p95有限时点均值 | 请求支持均值 /s | 延迟时点支持 |
+|---|---:|---:|---:|---|
+| fraud-detection | 0.3759530792 | 8267.204301 ms | 0.0230760442 | 31/31有限，17点为15000ms |
+| payment | 0.0476190476 | 717 ms | 0.0234043964 | 21/31有限、10 NaN，1点为15000ms |
+
+原始counter按各评估点的原300秒内窗做增量归因，仅在所有返回标签具有同一采样网格且无reset时比较，不在首次出现前补零，不另造PromQL引擎。fraud的31个共同网格窗口中17个有错误；payment的31个中21个有正请求增量、1个有错误。**两服务所有观察到的错误增量均来自EventStream**；与原错误率查询的最大绝对差分别为2.78e-17与0。两服务分别17/1个窗口有>15000ms桶外增量，全部来自EventStream。窗口互相重叠，不能把这些窗口数当成独立RPC次数。15000ms是最大有限桶边界处的分位值，并不把已保留约600秒RPC缩短为15秒。
+
+已有同实例span说明这些是长寿命EventStream RPC结束后的超时错误标签；本节不默认超时无害。第三轮21/21仅证明返回序列具备采样支持，不能证明业务健康。没有绑定本部署/本窗口的健康baseline、完整Typed Runtime及正常诊断行动输入，因此只调用现有纯memory/`evaluate_no_incident_v22`做**显式不完整输入诊断**：`METRIC_BASELINE_COVERAGE_INCOMPLETE`、`RUNTIME_COVERAGE_OR_HEALTH_INCOMPLETE`。空baseline表示缺失，不是零健康基线；不以无STRONG异常推导健康。不生成正常诊断、NO_INCIDENT控制资格或正式PASS；`healthy_qualification=NOT_ISSUED`。旧部署baseline不能充当本次基线，22容器running也不等于Typed业务健康。
+
+如果未来希望“业务指标”只覆盖业务入口，需先确定业务SLO的操作/方向语义，并一致界定错误分子、请求分母/支持及histogram；不能只删ERROR标签。调整将需要重新建立基线、复核已见目标/健康/Core/正常复发开发数据及固定规则在新定义下的结果，原5/5仅属于旧定义，不能继承为新定义成绩。本轮未作这种调整，查询、阈值、Core/Extension优先级均不变。
+
+### 可复现命令、输入与输出
+
+在本worktree执行（需本机私有保留材料，不随Git上传）：
+
+```sh
+PYTHONPATH=src:. uv run python -m scripts.product_v050.health_semantics_replay \
+  --root .local/engineering-calibration/live-01 --round 3 \
+  --output .local/engineering-calibration/semantic-01/retained-final
+PYTHONPATH=src:. uv run python -m scripts.product_v050.health_semantics_replay \
+  --root .local/engineering-calibration/live-01 --round 3 \
+  --output .local/engineering-calibration/semantic-01/retained-repeat
+PYTHONPATH=src:. uv run pytest tests/product_v050/test_default_credentials.py \
+  tests/product_v050/test_ingestion_evidence.py \
+  tests/product_v050/test_health_semantics_replay.py -q
+```
+
+输出为各新目录`replay.json`，包含逐时点增量/原始查询摘要/Connector typed facts/partial coverage/默认材料审计、输入和复用源码SHA及UTC。输入包括round-3的result、query/raw元数据和响应、固定来源及运行身份文件；程序核对原查询参数、响应摘要、状态、截断、输入前后摘要。使用MockTransport仅服务保留响应，无网络和数据库读取。重复运行须换全新输出目录，禁止输出位于输入根内、禁止覆盖既有结果。原工程`engineering_replay`入口与历史11/15/21结果保留。
+
+### 尚需真实观测的最小范围（本轮未执行、未授权）
+
+未来单次已授权owned观察需把Kafka实际完整命令/允许环境投影、同实例同观察时点的jar/class检查，以及Collector Cmd/Entrypoint/覆盖名、实际只读挂载与配置读取绑定一并保留；未知或不透明配置仍拒绝，不靠修改周期/桶让默认验证通过。无需重学规则、Provider、故障或新平台。这是填补运行证据，受控版本默认数值已经审阅，不再重复周期排障。
+
+若还要判断现行健康控制，需要同部署同定义下的绑定健康baseline、完整Typed Runtime/服务集合和正常入口行动输入，并覆盖EventStream结束的原业务查询窗口。先保留超时原貌；没有健康语义依据时仍UNKNOWN，不能承诺正常流量必然得到健康资格。是否调整业务范围是另一个明确语义决策；本轮不授权或启动新的真实采集、正式控制、独立holdout或晋升。
+
+本节聚焦验证58 passed；随后补充默认值向sampling profile传递的断言，凭证测试28 passed。全库Ruff、Product mypy（173文件）及六个历史/后继验证器通过；独立只读审阅发现的JVM参数文件、Collector挂载绑定和冻结代码范围三项已修复并复核关闭。两次回放的typed records、贡献、覆盖、输入/源码摘要一致；实际MockTransport耗时、其派生result摘要和回放UTC随运行变化，不宣称输出文件逐字节相等。原库/旧08/09证据及已结束live-01共811个冻结文件摘要未变。
+
+完整回归命令为`PYTHONPATH=src:. uv run pytest -q`；日志位于独立`.local/engineering-calibration/semantic-01/full-regression.log`。同目录保留`focused-final.log`、`default-profile-final.log`、`ruff-final.log`、`mypy.log`、`verifiers.log`、干净提交检查、精确HEAD CI及最终tracked-diff/冻结证据完整性结果。完整回归与提交后CI以这些最终机器记录及交付回复为准，不复用上一节6876项或旧提交CI成功作为本节结论。没有新增skip/xfail或删除历史检查。

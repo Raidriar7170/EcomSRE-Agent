@@ -1,0 +1,67 @@
+{
+  "mapping_id": "otel-java-2.29.0-sdk-1.63.0-collector-0.157.0-arm64-v1",
+  "kafka_image_id": "sha256:0601750a3ca4db7d27f746dc73f4180fda162e7a92a1a4847f5b6ae9ac51d477",
+  "collector_image_id": "sha256:f2f01157055a9b2aab9df7118e1f1c9abf345e99b23bc7a2bc791db374a7d0f6",
+  "agent_version": "2.29.0",
+  "sdk_version": "1.63.0",
+  "collector_version": "0.157.0",
+  "jar_sha256": "546531ca690a8603d2923b6db26bbda35c6409327b1e610430ae33c2f8f68050",
+  "metric_reader_classes": {
+    "inst/io/opentelemetry/sdk/metrics/export/PeriodicMetricReaderBuilder.classdata": "f0c30ac748236f96c09189b6f17965d773563e95622ba1cb487bcb2e86c0de00"
+  },
+  "defaults": {
+    "kafka_period_seconds": 60,
+    "histogram_bounds_milliseconds": [
+      2.0,
+      4.0,
+      6.0,
+      8.0,
+      10.0,
+      50.0,
+      100.0,
+      200.0,
+      400.0,
+      800.0,
+      1000.0,
+      1400.0,
+      2000.0,
+      5000.0,
+      10000.0,
+      15000.0
+    ]
+  },
+  "sources": [
+    {
+      "url": "https://raw.githubusercontent.com/open-telemetry/opentelemetry-collector-contrib/v0.157.0/connector/spanmetricsconnector/factory.go",
+      "text_sha256": "a53be2b43ce85b31a6c77f0ac2a9bbe6ad09675f92cbb0f886cdf3d4daa56253"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/open-telemetry/opentelemetry-collector-contrib/v0.157.0/connector/spanmetricsconnector/config.go",
+      "text_sha256": "502e51ba7c44d80030ef99618ef0b4a1422e3cbbd5f409efcaafbbaf9675b5df"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/open-telemetry/opentelemetry-java-instrumentation/v2.29.0/dependencyManagement/build.gradle.kts",
+      "text_sha256": "a45009d499bf9829f3756a51cb084f3df361f8c128926b7ee3f7d5ec5461a14e"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/open-telemetry/opentelemetry-java/v1.63.0/sdk/metrics/src/main/java/io/opentelemetry/sdk/metrics/export/PeriodicMetricReaderBuilder.java",
+      "text_sha256": "705e23ac4d052817c7abf1c93d0add6791302b6537ae7df285dd1ee25f949c70"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/open-telemetry/opentelemetry-java/v1.63.0/sdk-extensions/autoconfigure/src/main/java/io/opentelemetry/sdk/autoconfigure/MeterProviderConfiguration.java",
+      "text_sha256": "df4ea6df00778a182b1e3556e648f04d5aaf7d6371d4fb3f19638f695318523d"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/open-telemetry/opentelemetry-collector-contrib/v0.157.0/connector/spanmetricsconnector/connector.go",
+      "text_sha256": "bee9454f0411968193c3999ac88818100c4df89d593d4ca725bca3381833dc64"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/open-telemetry/opentelemetry-java/v1.63.0/sdk-extensions/autoconfigure/src/main/java/io/opentelemetry/sdk/autoconfigure/MetricExporterConfiguration.java",
+      "text_sha256": "eb10551fc293d6f912acb91c1f188baaf35a0960e05051373e1316d447948769"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/open-telemetry/opentelemetry-collector-contrib/v0.157.0/connector/spanmetricsconnector/internal/metadata/generated_status.go",
+      "text_sha256": "e57932bc617a88277790f2684c38920a2a857287584ceb27c011b93908cc0e3b"
+    }
+  ]
+}

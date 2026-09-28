@@ -20,9 +20,13 @@ def seconds(value):
     return result
 
 
-def profile(collector, selector, application=None):
+def profile(collector, selector, application=None, *, resolved_defaults=None):
     name = selector.split("{", 1)[0]
-    defaults = (application or {}).get("versioned_producer_defaults", {})
+    defaults = (
+        resolved_defaults
+        if resolved_defaults is not None
+        else (application or {}).get("versioned_producer_defaults", {})
+    )
 
     def declared_default(key):
         value = defaults.get(key)

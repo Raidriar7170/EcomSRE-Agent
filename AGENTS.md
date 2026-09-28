@@ -15,6 +15,8 @@ invalidates one, stop and propose a new Decision Record.
 
 ## Current state
 
+Current follow-up is offline only: reviewed default credentials and retained EventStream health-query semantics. Scoped implementation, tests, the same report, commit/push to Draft PR #104 and exact-head CI are authorized. No Provider, Docker, faults, formal events or registry changes; consumed calibration and historical results stay unchanged.
+
 Current bounded engineering calibration is explicitly authorized by the user against commit `7bbf88d`: one owned deployment, three rounds, 90 minutes including cleanup, 500 HTTP reads, 60 Docker/allowlisted in-container reads, 30 serial normal requests, and one bounded collection repair/retry. Provider, faults, recovery writes, formal holdout and promotion remain zero. The authorized calibration is now consumed and CLEAN; further live work requires new explicit authorization. The same [summary report](docs/results/product-v050/engineering-calibration/README.md) records execution; no historical campaign is resumed.
 
 
