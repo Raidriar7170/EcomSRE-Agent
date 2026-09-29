@@ -495,7 +495,8 @@
   },
   "source_version": {
     "base": "c7dce3720b2d877a10db30a940dd238c275b06e1",
-    "config_sha256": "4765d12eadc4cc09917f3c66ddeb80bdfbd1d2d32c83370613c3042137c91f21"
+    "config_sha256": "4765d12eadc4cc09917f3c66ddeb80bdfbd1d2d32c83370613c3042137c91f21",
+    "implementation_commit": "cc8a44ba6279afd9206cc5df516ba464a8e1b2ef"
   },
   "limits": [
     "One already-seen event group; no root labels or independent held-out test.",

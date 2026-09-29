@@ -4,9 +4,9 @@
 
 ## 1. 范围与代码
 
-起始版本 `c7dce3720b2d877a10db30a940dd238c275b06e1`。三个只读工具、研究策略、独立 CLI 和账本已实现；旧调查入口及 Product 库不参与研究。旧计数器纯函数抽取共用，不改变历史计算含义。最终算法输入、配置与源码由逐运行私有intent中的SHA-256绑定，公共摘要见 [summary.json](summary.json)；交付源码版本见下文。93项相关检查通过。
+起始版本 `c7dce3720b2d877a10db30a940dd238c275b06e1`。三个只读工具、研究策略、独立 CLI 和账本已实现；旧调查入口及 Product 库不参与研究。旧计数器纯函数抽取共用，不改变历史计算含义。最终算法输入、配置与源码由逐运行私有intent中的SHA-256绑定，公共摘要见 [summary.json](summary.json)；交付源码版本 `cc8a44ba6279afd9206cc5df516ba464a8e1b2ef`（后续仅补充本报告的版本引用）。93项相关检查通过。
 
-read scope：本轮直接依赖的 investigation、连接器、旧回放与保留 live-03 输入；write scope：新增 semantic 模块、Provider 的新任务提示窄适配、研究 CLI/config/tests/report/Goal、旧回放纯函数导入和活动指针。frozen asset scope：live-03 清单列出的输入、旧 Product 库、历史结果和规则；final repository scope：此工作树相对起始版本的完整 tracked delta。私有新产物只写 `.local/semantic-investigation-v1`；全工作树共用付费账本保存在 Git common-dir 的同名命名空间。无 Docker/live/故障/知识晋升/远程发布。
+read scope：本轮直接依赖的 investigation、连接器、旧回放与保留 live-03 输入；write scope：新增 semantic 模块、Provider 的新任务提示窄适配、研究 CLI/config/tests/report/Goal、旧回放纯函数导入和活动指针。frozen asset scope：live-03 清单列出的输入、旧 Product 库、旧语义结果目录与正式 `config/product-v050`；其他历史记录由全tracked-delta检查确认未修改；final repository scope：此工作树相对起始版本的完整 tracked delta。私有新产物只写 `.local/semantic-investigation-v1`；全工作树共用付费账本保存在 Git common-dir 的同名命名空间。无 Docker/live/故障/知识晋升/远程发布。
 
 ## 2. 数据与划分
 
