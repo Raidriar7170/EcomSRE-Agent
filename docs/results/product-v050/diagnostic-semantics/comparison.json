@@ -1,0 +1,1831 @@
+{
+  "mode": "SEEN_ENGINEERING / POST_HOC_EXPLORATORY",
+  "projection": "PER_WINDOW_SUMMARY_FULL_POINTS_IN_PRIVATE_COMPARISON",
+  "windows": [
+    {
+      "round": 2,
+      "window": {
+        "start": 1790647897.587622,
+        "end": 1790648197.587622
+      },
+      "A": {
+        "level": "EXACT_REPLAY",
+        "terminal": "INSUFFICIENT_EVIDENCE",
+        "lane": "ABSTAIN",
+        "memory_sha256": "dc0afa675a6b995e1434ffc145d29b51103e05fb817138d4bb2ad2238bb80c24",
+        "decision_trace_sha256": "8db45b97e226a9a9f1c7ca94e1bee9b52517a7412fb3bc169775803b149a887d",
+        "numeric": [
+          {
+            "service": "checkout",
+            "kind": "ERROR_RATE",
+            "status": "EXACT_REPLAY",
+            "record": {
+              "metric_kind": "ERROR_RATE",
+              "sample_count": 30,
+              "schema_version": "dta-v22.metric-fact.v1",
+              "service": "checkout",
+              "support_status": "SUPPORTED",
+              "unit": "RATIO",
+              "value": 0.0,
+              "window_ended_at": "2026-09-29T02:16:37.587622Z",
+              "window_started_at": "2026-09-29T02:11:37.587622Z"
+            },
+            "returned_points": 30,
+            "finite_points": 30,
+            "nonfinite_points": 0
+          },
+          {
+            "service": "checkout",
+            "kind": "LATENCY_P95_MS",
+            "status": "EXACT_REPLAY",
+            "record": {
+              "metric_kind": "LATENCY_P95_MS",
+              "sample_count": 30,
+              "schema_version": "dta-v22.metric-fact.v1",
+              "service": "checkout",
+              "support_status": "SUPPORTED",
+              "unit": "MILLISECONDS",
+              "value": 35.77714285714284,
+              "window_ended_at": "2026-09-29T02:16:37.587622Z",
+              "window_started_at": "2026-09-29T02:11:37.587622Z"
+            },
+            "returned_points": 31,
+            "finite_points": 30,
+            "nonfinite_points": 1
+          },
+          {
+            "service": "checkout",
+            "kind": "REQUEST_SUPPORT",
+            "status": "EXACT_REPLAY",
+            "record": {
+              "metric_kind": "REQUEST_SUPPORT",
+              "sample_count": 31,
+              "schema_version": "dta-v22.metric-fact.v1",
+              "service": "checkout",
+              "support_status": "SUPPORTED",
+              "unit": "COUNT",
+              "value": 0.11809678717308307,
+              "window_ended_at": "2026-09-29T02:16:37.587622Z",
+              "window_started_at": "2026-09-29T02:11:37.587622Z"
+            },
+            "returned_points": 31,
+            "finite_points": 31,
+            "nonfinite_points": 0
+          },
+          {
+            "service": "fraud-detection",
+            "kind": "ERROR_RATE",
+            "status": "EXACT_REPLAY",
+            "record": {
+              "metric_kind": "ERROR_RATE",
+              "sample_count": 30,
+              "schema_version": "dta-v22.metric-fact.v1",
+              "service": "fraud-detection",
+              "support_status": "SUPPORTED",
+              "unit": "RATIO",
+              "value": 0.04723646723646724,
+              "window_ended_at": "2026-09-29T02:16:37.587622Z",
+              "window_started_at": "2026-09-29T02:11:37.587622Z"
+            },
+            "returned_points": 30,
+            "finite_points": 30,
+            "nonfinite_points": 0
+          },
+          {
+            "service": "fraud-detection",
+            "kind": "LATENCY_P95_MS",
+            "status": "EXACT_REPLAY",
+            "record": {
+              "metric_kind": "LATENCY_P95_MS",
+              "sample_count": 30,
+              "schema_version": "dta-v22.metric-fact.v1",
+              "service": "fraud-detection",
+              "support_status": "SUPPORTED",
+              "unit": "MILLISECONDS",
+              "value": 8528.438458117593,
+              "window_ended_at": "2026-09-29T02:16:37.587622Z",
+              "window_started_at": "2026-09-29T02:11:37.587622Z"
+            },
+            "returned_points": 31,
+            "finite_points": 30,
+            "nonfinite_points": 1
+          },
+          {
+            "service": "fraud-detection",
+            "kind": "REQUEST_SUPPORT",
+            "status": "EXACT_REPLAY",
+            "record": {
+              "metric_kind": "REQUEST_SUPPORT",
+              "sample_count": 31,
+              "schema_version": "dta-v22.metric-fact.v1",
+              "service": "fraud-detection",
+              "support_status": "SUPPORTED",
+              "unit": "COUNT",
+              "value": 0.030727035428878356,
+              "window_ended_at": "2026-09-29T02:16:37.587622Z",
+              "window_started_at": "2026-09-29T02:11:37.587622Z"
+            },
+            "returned_points": 31,
+            "finite_points": 31,
+            "nonfinite_points": 0
+          },
+          {
+            "service": "kafka",
+            "kind": "ERROR_RATE",
+            "status": "EXACT_REPLAY",
+            "record": {
+              "metric_kind": "ERROR_RATE",
+              "sample_count": 31,
+              "schema_version": "dta-v22.metric-fact.v1",
+              "service": "kafka",
+              "support_status": "SUPPORTED",
+              "unit": "RATIO",
+              "value": 0.0,
+              "window_ended_at": "2026-09-29T02:16:37.587622Z",
+              "window_started_at": "2026-09-29T02:11:37.587622Z"
+            },
+            "returned_points": 31,
+            "finite_points": 31,
+            "nonfinite_points": 0
+          },
+          {
+            "service": "kafka",
+            "kind": "LATENCY_P95_MS",
+            "status": "EXACT_REPLAY",
+            "record": {
+              "metric_kind": "LATENCY_P95_MS",
+              "sample_count": 31,
+              "schema_version": "dta-v22.metric-fact.v1",
+              "service": "kafka",
+              "support_status": "SUPPORTED",
+              "unit": "MILLISECONDS",
+              "value": 10.0,
+              "window_ended_at": "2026-09-29T02:16:37.587622Z",
+              "window_started_at": "2026-09-29T02:11:37.587622Z"
+            },
+            "returned_points": 31,
+            "finite_points": 31,
+            "nonfinite_points": 0
+          },
+          {
+            "service": "kafka",
+            "kind": "REQUEST_SUPPORT",
+            "status": "EXACT_REPLAY",
+            "record": {
+              "metric_kind": "REQUEST_SUPPORT",
+              "sample_count": 31,
+              "schema_version": "dta-v22.metric-fact.v1",
+              "service": "kafka",
+              "support_status": "SUPPORTED",
+              "unit": "COUNT",
+              "value": 0.20914019154445293,
+              "window_ended_at": "2026-09-29T02:16:37.587622Z",
+              "window_started_at": "2026-09-29T02:11:37.587622Z"
+            },
+            "returned_points": 31,
+            "finite_points": 31,
+            "nonfinite_points": 0
+          },
+          {
+            "service": "payment",
+            "kind": "ERROR_RATE",
+            "status": "EXACT_REPLAY",
+            "record": {
+              "metric_kind": "ERROR_RATE",
+              "sample_count": 30,
+              "schema_version": "dta-v22.metric-fact.v1",
+              "service": "payment",
+              "support_status": "SUPPORTED",
+              "unit": "RATIO",
+              "value": 0.03773310023310023,
+              "window_ended_at": "2026-09-29T02:16:37.587622Z",
+              "window_started_at": "2026-09-29T02:11:37.587622Z"
+            },
+            "returned_points": 30,
+            "finite_points": 30,
+            "nonfinite_points": 0
+          },
+          {
+            "service": "payment",
+            "kind": "LATENCY_P95_MS",
+            "status": "EXACT_REPLAY",
+            "record": {
+              "metric_kind": "LATENCY_P95_MS",
+              "sample_count": 30,
+              "schema_version": "dta-v22.metric-fact.v1",
+              "service": "payment",
+              "support_status": "SUPPORTED",
+              "unit": "MILLISECONDS",
+              "value": 6502.128333333333,
+              "window_ended_at": "2026-09-29T02:16:37.587622Z",
+              "window_started_at": "2026-09-29T02:11:37.587622Z"
+            },
+            "returned_points": 31,
+            "finite_points": 30,
+            "nonfinite_points": 1
+          },
+          {
+            "service": "payment",
+            "kind": "REQUEST_SUPPORT",
+            "status": "EXACT_REPLAY",
+            "record": {
+              "metric_kind": "REQUEST_SUPPORT",
+              "sample_count": 31,
+              "schema_version": "dta-v22.metric-fact.v1",
+              "service": "payment",
+              "support_status": "SUPPORTED",
+              "unit": "COUNT",
+              "value": 0.025696985850751752,
+              "window_ended_at": "2026-09-29T02:16:37.587622Z",
+              "window_started_at": "2026-09-29T02:11:37.587622Z"
+            },
+            "returned_points": 31,
+            "finite_points": 31,
+            "nonfinite_points": 0
+          },
+          {
+            "service": "fraud-detection",
+            "kind": "QUEUE_LAG",
+            "status": "EXACT_REPLAY",
+            "record": {
+              "metric_kind": "QUEUE_LAG",
+              "sample_count": 7,
+              "schema_version": "dta-v22.metric-fact.v1",
+              "service": "fraud-detection",
+              "support_status": "SUPPORTED",
+              "unit": "COUNT",
+              "value": 0.14285714285714285,
+              "window_ended_at": "2026-09-29T02:16:37.587622Z",
+              "window_started_at": "2026-09-29T02:15:37.587622Z"
+            },
+            "returned_points": 7,
+            "finite_points": 7,
+            "nonfinite_points": 0
+          }
+        ],
+        "health_accepted": false,
+        "predicates": [
+          {
+            "service": "fraud-detection",
+            "kind": "METRIC_LATENCY_STRONG"
+          },
+          {
+            "service": "payment",
+            "kind": "METRIC_LATENCY_STRONG"
+          },
+          {
+            "service": "fraud-detection",
+            "kind": "RESOURCE_MEMORY_GROWTH_STRONG"
+          },
+          {
+            "service": "kafka",
+            "kind": "RESOURCE_MEMORY_GROWTH_STRONG"
+          },
+          {
+            "service": "payment",
+            "kind": "RESOURCE_MEMORY_GROWTH_STRONG"
+          },
+          {
+            "service": "checkout",
+            "kind": "RUNTIME_HEALTHY"
+          },
+          {
+            "service": "fraud-detection",
+            "kind": "RUNTIME_HEALTHY"
+          },
+          {
+            "service": "kafka",
+            "kind": "RUNTIME_HEALTHY"
+          },
+          {
+            "service": "payment",
+            "kind": "RUNTIME_HEALTHY"
+          }
+        ]
+      },
+      "B": {
+        "level": "DIAGNOSTIC_PROXY_ONLY",
+        "decision": "NOT_COMPUTABLE_SEMANTIC_BASELINE_AND_RATE_UNAVAILABLE",
+        "operations": [
+          {
+            "service": "checkout",
+            "operation": "orders publish",
+            "direction": "SPAN_KIND_PRODUCER",
+            "group": "BUSINESS_ASYNC",
+            "ranges": {
+              "total": [
+                0.0,
+                5.0
+              ],
+              "errors": [
+                0,
+                0
+              ],
+              "above_15000ms": [
+                0.0,
+                0.0
+              ],
+              "error_fraction": [
+                0.0,
+                0.0
+              ]
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          },
+          {
+            "service": "checkout",
+            "operation": "oteldemo.CartService/EmptyCart",
+            "direction": "SPAN_KIND_CLIENT",
+            "group": "BUSINESS_REQUEST",
+            "ranges": {
+              "total": [
+                0.0,
+                5.0
+              ],
+              "errors": [
+                0,
+                0
+              ],
+              "above_15000ms": [
+                0.0,
+                0.0
+              ],
+              "error_fraction": [
+                0.0,
+                0.0
+              ]
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          },
+          {
+            "service": "checkout",
+            "operation": "oteldemo.CartService/GetCart",
+            "direction": "SPAN_KIND_CLIENT",
+            "group": "BUSINESS_REQUEST",
+            "ranges": {
+              "total": [
+                0.0,
+                5.0
+              ],
+              "errors": [
+                0,
+                0
+              ],
+              "above_15000ms": [
+                0.0,
+                0.0
+              ],
+              "error_fraction": [
+                0.0,
+                0.0
+              ]
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          },
+          {
+            "service": "checkout",
+            "operation": "oteldemo.CheckoutService/PlaceOrder",
+            "direction": "SPAN_KIND_SERVER",
+            "group": "BUSINESS_REQUEST",
+            "ranges": {
+              "total": [
+                0.0,
+                5.0
+              ],
+              "errors": [
+                0,
+                0
+              ],
+              "above_15000ms": [
+                0.0,
+                0.0
+              ],
+              "error_fraction": [
+                0.0,
+                0.0
+              ]
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          },
+          {
+            "service": "checkout",
+            "operation": "oteldemo.CurrencyService/Convert",
+            "direction": "SPAN_KIND_CLIENT",
+            "group": "BUSINESS_REQUEST",
+            "ranges": {
+              "total": [
+                0.0,
+                10.0
+              ],
+              "errors": [
+                0,
+                0
+              ],
+              "above_15000ms": [
+                0.0,
+                0.0
+              ],
+              "error_fraction": [
+                0.0,
+                0.0
+              ]
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          },
+          {
+            "service": "checkout",
+            "operation": "oteldemo.PaymentService/Charge",
+            "direction": "SPAN_KIND_CLIENT",
+            "group": "BUSINESS_REQUEST",
+            "ranges": {
+              "total": [
+                0.0,
+                5.0
+              ],
+              "errors": [
+                0,
+                0
+              ],
+              "above_15000ms": [
+                0.0,
+                0.0
+              ],
+              "error_fraction": [
+                0.0,
+                0.0
+              ]
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          },
+          {
+            "service": "checkout",
+            "operation": "oteldemo.ProductCatalogService/GetProduct",
+            "direction": "SPAN_KIND_CLIENT",
+            "group": "BUSINESS_REQUEST",
+            "ranges": {
+              "total": [
+                0.0,
+                5.0
+              ],
+              "errors": [
+                0,
+                0
+              ],
+              "above_15000ms": [
+                0.0,
+                0.0
+              ],
+              "error_fraction": [
+                0.0,
+                0.0
+              ]
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          },
+          {
+            "service": "checkout",
+            "operation": "HTTP POST",
+            "direction": "SPAN_KIND_CLIENT",
+            "group": "UNCLASSIFIED",
+            "ranges": {
+              "total": [
+                0.0,
+                15.0
+              ],
+              "errors": [
+                0,
+                0
+              ],
+              "above_15000ms": [
+                0.0,
+                0.0
+              ],
+              "error_fraction": [
+                0.0,
+                0.0
+              ]
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          },
+          {
+            "service": "checkout",
+            "operation": "prepareOrderItemsAndShippingQuoteFromCart",
+            "direction": "SPAN_KIND_INTERNAL",
+            "group": "UNCLASSIFIED",
+            "ranges": {
+              "total": [
+                0.0,
+                5.0
+              ],
+              "errors": [
+                0,
+                0
+              ],
+              "above_15000ms": [
+                0.0,
+                0.0
+              ],
+              "error_fraction": [
+                0.0,
+                0.0
+              ]
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          },
+          {
+            "service": "fraud-detection",
+            "operation": "orders process",
+            "direction": "SPAN_KIND_CONSUMER",
+            "group": "BUSINESS_ASYNC",
+            "ranges": {
+              "total": [
+                0.0,
+                5.0
+              ],
+              "errors": [
+                0,
+                0
+              ],
+              "above_15000ms": [
+                0.0,
+                0.0
+              ],
+              "error_fraction": [
+                0.0,
+                0.0
+              ]
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          },
+          {
+            "service": "fraud-detection",
+            "operation": "orders receive",
+            "direction": "SPAN_KIND_CONSUMER",
+            "group": "BUSINESS_ASYNC",
+            "ranges": {
+              "total": [
+                0.0,
+                5.0
+              ],
+              "errors": [
+                0,
+                0
+              ],
+              "above_15000ms": [
+                0.0,
+                0.0
+              ],
+              "error_fraction": [
+                0.0,
+                0.0
+              ]
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          },
+          {
+            "service": "fraud-detection",
+            "operation": "flagd.evaluation.v2.Service/EventStream",
+            "direction": "SPAN_KIND_CLIENT",
+            "group": "CONTROL_STREAM",
+            "ranges": {
+              "total": [
+                0.0,
+                1.0
+              ],
+              "errors": [
+                0.0,
+                1.0
+              ],
+              "above_15000ms": [
+                0.0,
+                1.0
+              ],
+              "error_fraction": [
+                1.0,
+                1.0
+              ]
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          },
+          {
+            "service": "fraud-detection",
+            "operation": "flagd.evaluation.v2.Service/ResolveInt",
+            "direction": "SPAN_KIND_CLIENT",
+            "group": "UNCLASSIFIED",
+            "ranges": {
+              "total": [
+                0.0,
+                2.0
+              ],
+              "errors": [
+                0,
+                0
+              ],
+              "above_15000ms": [
+                0.0,
+                0.0
+              ],
+              "error_fraction": [
+                0.0,
+                0.0
+              ]
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          },
+          {
+            "service": "fraud-detection",
+            "operation": "resolve",
+            "direction": "SPAN_KIND_CLIENT",
+            "group": "UNCLASSIFIED",
+            "ranges": {
+              "total": [
+                0.0,
+                2.0
+              ],
+              "errors": [
+                0,
+                0
+              ],
+              "above_15000ms": [
+                0.0,
+                0.0
+              ],
+              "error_fraction": [
+                0.0,
+                0.0
+              ]
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          },
+          {
+            "service": "payment",
+            "operation": "grpc.oteldemo.PaymentService/Charge",
+            "direction": "SPAN_KIND_SERVER",
+            "group": "BUSINESS_REQUEST",
+            "ranges": {
+              "total": [
+                0.0,
+                5.0
+              ],
+              "errors": [
+                0,
+                0
+              ],
+              "above_15000ms": [
+                0.0,
+                0.0
+              ],
+              "error_fraction": [
+                0.0,
+                0.0
+              ]
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          },
+          {
+            "service": "payment",
+            "operation": "grpc.flagd.evaluation.v2.Service/EventStream",
+            "direction": "SPAN_KIND_CLIENT",
+            "group": "CONTROL_STREAM",
+            "ranges": {
+              "total": [
+                0.0,
+                1.0
+              ],
+              "errors": [
+                0.0,
+                1.0
+              ],
+              "above_15000ms": [
+                0.0,
+                1.0
+              ],
+              "error_fraction": [
+                1.0,
+                1.0
+              ]
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          },
+          {
+            "service": "payment",
+            "operation": "charge",
+            "direction": "SPAN_KIND_INTERNAL",
+            "group": "UNCLASSIFIED",
+            "ranges": {
+              "total": [
+                0.0,
+                5.0
+              ],
+              "errors": [
+                0,
+                0
+              ],
+              "above_15000ms": [
+                0.0,
+                0.0
+              ],
+              "error_fraction": [
+                0.0,
+                0.0
+              ]
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          },
+          {
+            "service": "payment",
+            "operation": "dns.lookup",
+            "direction": "SPAN_KIND_CLIENT",
+            "group": "UNCLASSIFIED",
+            "ranges": {
+              "total": [
+                0.0,
+                0.0
+              ],
+              "errors": [
+                0,
+                0
+              ],
+              "above_15000ms": [
+                0.0,
+                0.0
+              ],
+              "error_fraction": null
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          },
+          {
+            "service": "payment",
+            "operation": "grpc.flagd.evaluation.v2.Service/ResolveFloat",
+            "direction": "SPAN_KIND_CLIENT",
+            "group": "UNCLASSIFIED",
+            "ranges": {
+              "total": [
+                0.0,
+                2.0
+              ],
+              "errors": [
+                0,
+                0
+              ],
+              "above_15000ms": [
+                0.0,
+                0.0
+              ],
+              "error_fraction": [
+                0.0,
+                0.0
+              ]
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          },
+          {
+            "service": "payment",
+            "operation": "tcp.connect",
+            "direction": "SPAN_KIND_INTERNAL",
+            "group": "UNCLASSIFIED",
+            "ranges": {
+              "total": [
+                0.0,
+                0.0
+              ],
+              "errors": [
+                0,
+                0
+              ],
+              "above_15000ms": [
+                0.0,
+                0.0
+              ],
+              "error_fraction": null
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          }
+        ],
+        "predicate_changes": null,
+        "qualification": "NOT_ISSUED"
+      },
+      "C": {
+        "decision": "NOT_COMPUTABLE_SEMANTIC_BASELINE_AND_RATE_UNAVAILABLE",
+        "augmentation": "POST_HOC_AUGMENTED",
+        "controls": [
+          {
+            "service": "fraud-detection",
+            "operation": "flagd.evaluation.v2.Service/EventStream",
+            "direction": "client",
+            "start": 1790647421.9152,
+            "end": 1790648021.921935,
+            "duration_us": 600006735,
+            "association_types": [
+              "END_IN_SUPPORT_WINDOW",
+              "OVERLAPS_WINDOW"
+            ],
+            "counter_intervals": [],
+            "shared_support_candidates": [
+              {
+                "start": 1790648023.495,
+                "end": 1790648028.496,
+                "increment": 1.0,
+                "completion_to_first_changed_sample_seconds": 6.5740649700164795
+              }
+            ],
+            "online_availability": "ONLINE_AVAILABILITY_UNPROVEN",
+            "original_input_present": false,
+            "capture_after_cutoff": true,
+            "original_start_query_excluded": true,
+            "causal_root": "UNPROVEN"
+          },
+          {
+            "service": "payment",
+            "operation": "grpc.flagd.evaluation.v2.Service/EventStream",
+            "direction": "client",
+            "start": 1790647459.13,
+            "end": 1790648059.132936,
+            "duration_us": 600002936,
+            "association_types": [
+              "END_IN_SUPPORT_WINDOW",
+              "OVERLAPS_WINDOW"
+            ],
+            "counter_intervals": [],
+            "shared_support_candidates": [
+              {
+                "start": 1790648063.496,
+                "end": 1790648068.496,
+                "increment": 1.0,
+                "completion_to_first_changed_sample_seconds": 9.363064050674438
+              }
+            ],
+            "online_availability": "ONLINE_AVAILABILITY_UNPROVEN",
+            "original_input_present": false,
+            "capture_after_cutoff": true,
+            "original_start_query_excluded": true,
+            "causal_root": "UNPROVEN"
+          }
+        ],
+        "counts": {
+          "original_unique_spans": 201,
+          "extra_unique_spans": 512,
+          "new_unique_spans": 315,
+          "new_supported_associations": 2,
+          "new_exact_interval_associations": 0,
+          "new_control_support_associations": 2
+        },
+        "metric_view_sha256": "b7e5e5503625bf5bdda8d01359d4f445ee4eaea2d754e908edbdbddcde9d743d"
+      }
+    },
+    {
+      "round": 3,
+      "window": {
+        "start": 1790648197.489415,
+        "end": 1790648497.489415
+      },
+      "A": {
+        "level": "EXACT_REPLAY",
+        "terminal": "INSUFFICIENT_EVIDENCE",
+        "lane": "ABSTAIN",
+        "memory_sha256": "47b6006d480c0852a5c4dac43a062dc413a230f26ff9568e452bad841bb4ca20",
+        "decision_trace_sha256": "90c0e0cb3a6e4e1f33b60cdb570ba8f221d981156805162704e2d944650d8291",
+        "numeric": [
+          {
+            "service": "checkout",
+            "kind": "ERROR_RATE",
+            "status": "EXACT_REPLAY",
+            "record": {
+              "metric_kind": "ERROR_RATE",
+              "sample_count": 31,
+              "schema_version": "dta-v22.metric-fact.v1",
+              "service": "checkout",
+              "support_status": "SUPPORTED",
+              "unit": "RATIO",
+              "value": 0.0,
+              "window_ended_at": "2026-09-29T02:21:37.489415Z",
+              "window_started_at": "2026-09-29T02:16:37.489415Z"
+            },
+            "returned_points": 31,
+            "finite_points": 31,
+            "nonfinite_points": 0
+          },
+          {
+            "service": "checkout",
+            "kind": "LATENCY_P95_MS",
+            "status": "EXACT_REPLAY",
+            "record": {
+              "metric_kind": "LATENCY_P95_MS",
+              "sample_count": 31,
+              "schema_version": "dta-v22.metric-fact.v1",
+              "service": "checkout",
+              "support_status": "SUPPORTED",
+              "unit": "MILLISECONDS",
+              "value": 35.524116743471566,
+              "window_ended_at": "2026-09-29T02:21:37.489415Z",
+              "window_started_at": "2026-09-29T02:16:37.489415Z"
+            },
+            "returned_points": 31,
+            "finite_points": 31,
+            "nonfinite_points": 0
+          },
+          {
+            "service": "checkout",
+            "kind": "REQUEST_SUPPORT",
+            "status": "EXACT_REPLAY",
+            "record": {
+              "metric_kind": "REQUEST_SUPPORT",
+              "sample_count": 31,
+              "schema_version": "dta-v22.metric-fact.v1",
+              "service": "checkout",
+              "support_status": "SUPPORTED",
+              "unit": "COUNT",
+              "value": 0.19026650482920635,
+              "window_ended_at": "2026-09-29T02:21:37.489415Z",
+              "window_started_at": "2026-09-29T02:16:37.489415Z"
+            },
+            "returned_points": 31,
+            "finite_points": 31,
+            "nonfinite_points": 0
+          },
+          {
+            "service": "fraud-detection",
+            "kind": "ERROR_RATE",
+            "status": "EXACT_REPLAY",
+            "record": {
+              "metric_kind": "ERROR_RATE",
+              "sample_count": 31,
+              "schema_version": "dta-v22.metric-fact.v1",
+              "service": "fraud-detection",
+              "support_status": "SUPPORTED",
+              "unit": "RATIO",
+              "value": 0.036438829987217085,
+              "window_ended_at": "2026-09-29T02:21:37.489415Z",
+              "window_started_at": "2026-09-29T02:16:37.489415Z"
+            },
+            "returned_points": 31,
+            "finite_points": 31,
+            "nonfinite_points": 0
+          },
+          {
+            "service": "fraud-detection",
+            "kind": "LATENCY_P95_MS",
+            "status": "EXACT_REPLAY",
+            "record": {
+              "metric_kind": "LATENCY_P95_MS",
+              "sample_count": 31,
+              "schema_version": "dta-v22.metric-fact.v1",
+              "service": "fraud-detection",
+              "support_status": "SUPPORTED",
+              "unit": "MILLISECONDS",
+              "value": 6344.94623655914,
+              "window_ended_at": "2026-09-29T02:21:37.489415Z",
+              "window_started_at": "2026-09-29T02:16:37.489415Z"
+            },
+            "returned_points": 31,
+            "finite_points": 31,
+            "nonfinite_points": 0
+          },
+          {
+            "service": "fraud-detection",
+            "kind": "REQUEST_SUPPORT",
+            "status": "EXACT_REPLAY",
+            "record": {
+              "metric_kind": "REQUEST_SUPPORT",
+              "sample_count": 31,
+              "schema_version": "dta-v22.metric-fact.v1",
+              "service": "fraud-detection",
+              "support_status": "SUPPORTED",
+              "unit": "COUNT",
+              "value": 0.037506560040274146,
+              "window_ended_at": "2026-09-29T02:21:37.489415Z",
+              "window_started_at": "2026-09-29T02:16:37.489415Z"
+            },
+            "returned_points": 31,
+            "finite_points": 31,
+            "nonfinite_points": 0
+          },
+          {
+            "service": "kafka",
+            "kind": "ERROR_RATE",
+            "status": "EXACT_REPLAY",
+            "record": {
+              "metric_kind": "ERROR_RATE",
+              "sample_count": 31,
+              "schema_version": "dta-v22.metric-fact.v1",
+              "service": "kafka",
+              "support_status": "SUPPORTED",
+              "unit": "RATIO",
+              "value": 0.0,
+              "window_ended_at": "2026-09-29T02:21:37.489415Z",
+              "window_started_at": "2026-09-29T02:16:37.489415Z"
+            },
+            "returned_points": 31,
+            "finite_points": 31,
+            "nonfinite_points": 0
+          },
+          {
+            "service": "kafka",
+            "kind": "LATENCY_P95_MS",
+            "status": "EXACT_REPLAY",
+            "record": {
+              "metric_kind": "LATENCY_P95_MS",
+              "sample_count": 31,
+              "schema_version": "dta-v22.metric-fact.v1",
+              "service": "kafka",
+              "support_status": "SUPPORTED",
+              "unit": "MILLISECONDS",
+              "value": 10.0,
+              "window_ended_at": "2026-09-29T02:21:37.489415Z",
+              "window_started_at": "2026-09-29T02:16:37.489415Z"
+            },
+            "returned_points": 31,
+            "finite_points": 31,
+            "nonfinite_points": 0
+          },
+          {
+            "service": "kafka",
+            "kind": "REQUEST_SUPPORT",
+            "status": "EXACT_REPLAY",
+            "record": {
+              "metric_kind": "REQUEST_SUPPORT",
+              "sample_count": 31,
+              "schema_version": "dta-v22.metric-fact.v1",
+              "service": "kafka",
+              "support_status": "SUPPORTED",
+              "unit": "COUNT",
+              "value": 0.21693348910446691,
+              "window_ended_at": "2026-09-29T02:21:37.489415Z",
+              "window_started_at": "2026-09-29T02:16:37.489415Z"
+            },
+            "returned_points": 31,
+            "finite_points": 31,
+            "nonfinite_points": 0
+          },
+          {
+            "service": "payment",
+            "kind": "ERROR_RATE",
+            "status": "EXACT_REPLAY",
+            "record": {
+              "metric_kind": "ERROR_RATE",
+              "sample_count": 31,
+              "schema_version": "dta-v22.metric-fact.v1",
+              "service": "payment",
+              "support_status": "SUPPORTED",
+              "unit": "RATIO",
+              "value": 0.05194375516956162,
+              "window_ended_at": "2026-09-29T02:21:37.489415Z",
+              "window_started_at": "2026-09-29T02:16:37.489415Z"
+            },
+            "returned_points": 31,
+            "finite_points": 31,
+            "nonfinite_points": 0
+          },
+          {
+            "service": "payment",
+            "kind": "LATENCY_P95_MS",
+            "status": "EXACT_REPLAY",
+            "record": {
+              "metric_kind": "LATENCY_P95_MS",
+              "sample_count": 31,
+              "schema_version": "dta-v22.metric-fact.v1",
+              "service": "payment",
+              "support_status": "SUPPORTED",
+              "unit": "MILLISECONDS",
+              "value": 8226.764516129033,
+              "window_ended_at": "2026-09-29T02:21:37.489415Z",
+              "window_started_at": "2026-09-29T02:16:37.489415Z"
+            },
+            "returned_points": 31,
+            "finite_points": 31,
+            "nonfinite_points": 0
+          },
+          {
+            "service": "payment",
+            "kind": "REQUEST_SUPPORT",
+            "status": "EXACT_REPLAY",
+            "record": {
+              "metric_kind": "REQUEST_SUPPORT",
+              "sample_count": 31,
+              "schema_version": "dta-v22.metric-fact.v1",
+              "service": "payment",
+              "support_status": "SUPPORTED",
+              "unit": "COUNT",
+              "value": 0.035756981591210116,
+              "window_ended_at": "2026-09-29T02:21:37.489415Z",
+              "window_started_at": "2026-09-29T02:16:37.489415Z"
+            },
+            "returned_points": 31,
+            "finite_points": 31,
+            "nonfinite_points": 0
+          },
+          {
+            "service": "fraud-detection",
+            "kind": "QUEUE_LAG",
+            "status": "EXACT_REPLAY",
+            "record": {
+              "metric_kind": "QUEUE_LAG",
+              "sample_count": 7,
+              "schema_version": "dta-v22.metric-fact.v1",
+              "service": "fraud-detection",
+              "support_status": "SUPPORTED",
+              "unit": "COUNT",
+              "value": 0.0,
+              "window_ended_at": "2026-09-29T02:21:37.489415Z",
+              "window_started_at": "2026-09-29T02:20:37.489415Z"
+            },
+            "returned_points": 7,
+            "finite_points": 7,
+            "nonfinite_points": 0
+          }
+        ],
+        "health_accepted": false,
+        "predicates": [
+          {
+            "service": "payment",
+            "kind": "METRIC_ERROR_RATE_STRONG"
+          },
+          {
+            "service": "fraud-detection",
+            "kind": "METRIC_LATENCY_STRONG"
+          },
+          {
+            "service": "payment",
+            "kind": "METRIC_LATENCY_STRONG"
+          },
+          {
+            "service": "kafka",
+            "kind": "RESOURCE_MEMORY_GROWTH_STRONG"
+          },
+          {
+            "service": "checkout",
+            "kind": "RUNTIME_HEALTHY"
+          },
+          {
+            "service": "fraud-detection",
+            "kind": "RUNTIME_HEALTHY"
+          },
+          {
+            "service": "kafka",
+            "kind": "RUNTIME_HEALTHY"
+          },
+          {
+            "service": "payment",
+            "kind": "RUNTIME_HEALTHY"
+          }
+        ]
+      },
+      "B": {
+        "level": "DIAGNOSTIC_PROXY_ONLY",
+        "decision": "NOT_COMPUTABLE_SEMANTIC_BASELINE_AND_RATE_UNAVAILABLE",
+        "operations": [
+          {
+            "service": "checkout",
+            "operation": "orders publish",
+            "direction": "SPAN_KIND_PRODUCER",
+            "group": "BUSINESS_ASYNC",
+            "ranges": {
+              "total": [
+                4.0,
+                6.0
+              ],
+              "errors": [
+                0,
+                0
+              ],
+              "above_15000ms": [
+                0.0,
+                0.0
+              ],
+              "error_fraction": [
+                0.0,
+                0.0
+              ]
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          },
+          {
+            "service": "checkout",
+            "operation": "oteldemo.CartService/EmptyCart",
+            "direction": "SPAN_KIND_CLIENT",
+            "group": "BUSINESS_REQUEST",
+            "ranges": {
+              "total": [
+                4.0,
+                6.0
+              ],
+              "errors": [
+                0,
+                0
+              ],
+              "above_15000ms": [
+                0.0,
+                0.0
+              ],
+              "error_fraction": [
+                0.0,
+                0.0
+              ]
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          },
+          {
+            "service": "checkout",
+            "operation": "oteldemo.CartService/GetCart",
+            "direction": "SPAN_KIND_CLIENT",
+            "group": "BUSINESS_REQUEST",
+            "ranges": {
+              "total": [
+                4.0,
+                6.0
+              ],
+              "errors": [
+                0,
+                0
+              ],
+              "above_15000ms": [
+                0.0,
+                0.0
+              ],
+              "error_fraction": [
+                0.0,
+                0.0
+              ]
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          },
+          {
+            "service": "checkout",
+            "operation": "oteldemo.CheckoutService/PlaceOrder",
+            "direction": "SPAN_KIND_SERVER",
+            "group": "BUSINESS_REQUEST",
+            "ranges": {
+              "total": [
+                4.0,
+                6.0
+              ],
+              "errors": [
+                0,
+                0
+              ],
+              "above_15000ms": [
+                0.0,
+                0.0
+              ],
+              "error_fraction": [
+                0.0,
+                0.0
+              ]
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          },
+          {
+            "service": "checkout",
+            "operation": "oteldemo.CurrencyService/Convert",
+            "direction": "SPAN_KIND_CLIENT",
+            "group": "BUSINESS_REQUEST",
+            "ranges": {
+              "total": [
+                8.0,
+                12.0
+              ],
+              "errors": [
+                0,
+                0
+              ],
+              "above_15000ms": [
+                0.0,
+                0.0
+              ],
+              "error_fraction": [
+                0.0,
+                0.0
+              ]
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          },
+          {
+            "service": "checkout",
+            "operation": "oteldemo.PaymentService/Charge",
+            "direction": "SPAN_KIND_CLIENT",
+            "group": "BUSINESS_REQUEST",
+            "ranges": {
+              "total": [
+                4.0,
+                6.0
+              ],
+              "errors": [
+                0,
+                0
+              ],
+              "above_15000ms": [
+                0.0,
+                0.0
+              ],
+              "error_fraction": [
+                0.0,
+                0.0
+              ]
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          },
+          {
+            "service": "checkout",
+            "operation": "oteldemo.ProductCatalogService/GetProduct",
+            "direction": "SPAN_KIND_CLIENT",
+            "group": "BUSINESS_REQUEST",
+            "ranges": {
+              "total": [
+                4.0,
+                6.0
+              ],
+              "errors": [
+                0,
+                0
+              ],
+              "above_15000ms": [
+                0.0,
+                0.0
+              ],
+              "error_fraction": [
+                0.0,
+                0.0
+              ]
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          },
+          {
+            "service": "checkout",
+            "operation": "HTTP POST",
+            "direction": "SPAN_KIND_CLIENT",
+            "group": "UNCLASSIFIED",
+            "ranges": {
+              "total": [
+                12.0,
+                18.0
+              ],
+              "errors": [
+                0,
+                0
+              ],
+              "above_15000ms": [
+                0.0,
+                0.0
+              ],
+              "error_fraction": [
+                0.0,
+                0.0
+              ]
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          },
+          {
+            "service": "checkout",
+            "operation": "prepareOrderItemsAndShippingQuoteFromCart",
+            "direction": "SPAN_KIND_INTERNAL",
+            "group": "UNCLASSIFIED",
+            "ranges": {
+              "total": [
+                4.0,
+                6.0
+              ],
+              "errors": [
+                0,
+                0
+              ],
+              "above_15000ms": [
+                0.0,
+                0.0
+              ],
+              "error_fraction": [
+                0.0,
+                0.0
+              ]
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          },
+          {
+            "service": "fraud-detection",
+            "operation": "orders process",
+            "direction": "SPAN_KIND_CONSUMER",
+            "group": "BUSINESS_ASYNC",
+            "ranges": {
+              "total": [
+                4.0,
+                6.0
+              ],
+              "errors": [
+                0,
+                0
+              ],
+              "above_15000ms": [
+                0.0,
+                0.0
+              ],
+              "error_fraction": [
+                0.0,
+                0.0
+              ]
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          },
+          {
+            "service": "fraud-detection",
+            "operation": "orders receive",
+            "direction": "SPAN_KIND_CONSUMER",
+            "group": "BUSINESS_ASYNC",
+            "ranges": {
+              "total": [
+                4.0,
+                6.0
+              ],
+              "errors": [
+                0,
+                0
+              ],
+              "above_15000ms": [
+                0.0,
+                0.0
+              ],
+              "error_fraction": [
+                0.0,
+                0.0
+              ]
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          },
+          {
+            "service": "fraud-detection",
+            "operation": "flagd.evaluation.v2.Service/EventStream",
+            "direction": "SPAN_KIND_CLIENT",
+            "group": "CONTROL_STREAM",
+            "ranges": {
+              "total": [
+                0.0,
+                1.0
+              ],
+              "errors": [
+                0.0,
+                1.0
+              ],
+              "above_15000ms": [
+                0.0,
+                1.0
+              ],
+              "error_fraction": [
+                1.0,
+                1.0
+              ]
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          },
+          {
+            "service": "fraud-detection",
+            "operation": "flagd.evaluation.v2.Service/ResolveInt",
+            "direction": "SPAN_KIND_CLIENT",
+            "group": "UNCLASSIFIED",
+            "ranges": {
+              "total": [
+                0.0,
+                2.0
+              ],
+              "errors": [
+                0,
+                0
+              ],
+              "above_15000ms": [
+                0.0,
+                0.0
+              ],
+              "error_fraction": [
+                0.0,
+                0.0
+              ]
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          },
+          {
+            "service": "fraud-detection",
+            "operation": "resolve",
+            "direction": "SPAN_KIND_CLIENT",
+            "group": "UNCLASSIFIED",
+            "ranges": {
+              "total": [
+                0.0,
+                2.0
+              ],
+              "errors": [
+                0,
+                0
+              ],
+              "above_15000ms": [
+                0.0,
+                0.0
+              ],
+              "error_fraction": [
+                0.0,
+                0.0
+              ]
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          },
+          {
+            "service": "payment",
+            "operation": "grpc.oteldemo.PaymentService/Charge",
+            "direction": "SPAN_KIND_SERVER",
+            "group": "BUSINESS_REQUEST",
+            "ranges": {
+              "total": [
+                4.0,
+                6.0
+              ],
+              "errors": [
+                0,
+                0
+              ],
+              "above_15000ms": [
+                0.0,
+                0.0
+              ],
+              "error_fraction": [
+                0.0,
+                0.0
+              ]
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          },
+          {
+            "service": "payment",
+            "operation": "grpc.flagd.evaluation.v2.Service/EventStream",
+            "direction": "SPAN_KIND_CLIENT",
+            "group": "CONTROL_STREAM",
+            "ranges": {
+              "total": [
+                0.0,
+                1.0
+              ],
+              "errors": [
+                0.0,
+                1.0
+              ],
+              "above_15000ms": [
+                0.0,
+                1.0
+              ],
+              "error_fraction": [
+                1.0,
+                1.0
+              ]
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          },
+          {
+            "service": "payment",
+            "operation": "charge",
+            "direction": "SPAN_KIND_INTERNAL",
+            "group": "UNCLASSIFIED",
+            "ranges": {
+              "total": [
+                4.0,
+                6.0
+              ],
+              "errors": [
+                0,
+                0
+              ],
+              "above_15000ms": [
+                0.0,
+                0.0
+              ],
+              "error_fraction": [
+                0.0,
+                0.0
+              ]
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          },
+          {
+            "service": "payment",
+            "operation": "dns.lookup",
+            "direction": "SPAN_KIND_CLIENT",
+            "group": "UNCLASSIFIED",
+            "ranges": {
+              "total": [
+                0.0,
+                0.0
+              ],
+              "errors": [
+                0,
+                0
+              ],
+              "above_15000ms": [
+                0.0,
+                0.0
+              ],
+              "error_fraction": null
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          },
+          {
+            "service": "payment",
+            "operation": "grpc.flagd.evaluation.v2.Service/ResolveFloat",
+            "direction": "SPAN_KIND_CLIENT",
+            "group": "UNCLASSIFIED",
+            "ranges": {
+              "total": [
+                0.0,
+                2.0
+              ],
+              "errors": [
+                0,
+                0
+              ],
+              "above_15000ms": [
+                0.0,
+                0.0
+              ],
+              "error_fraction": [
+                0.0,
+                0.0
+              ]
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          },
+          {
+            "service": "payment",
+            "operation": "tcp.connect",
+            "direction": "SPAN_KIND_INTERNAL",
+            "group": "UNCLASSIFIED",
+            "ranges": {
+              "total": [
+                0.0,
+                0.0
+              ],
+              "errors": [
+                0,
+                0
+              ],
+              "above_15000ms": [
+                0.0,
+                0.0
+              ],
+              "error_fraction": null
+            },
+            "points": 31,
+            "uncomputable_points": 0,
+            "baseline_status": "BASELINE_SCOPE_UNAVAILABLE_FOR_EXACT_RATE_PROFILE"
+          }
+        ],
+        "predicate_changes": null,
+        "qualification": "NOT_ISSUED"
+      },
+      "C": {
+        "decision": "NOT_COMPUTABLE_SEMANTIC_BASELINE_AND_RATE_UNAVAILABLE",
+        "augmentation": "POST_HOC_AUGMENTED",
+        "controls": [
+          {
+            "service": "fraud-detection",
+            "operation": "flagd.evaluation.v2.Service/EventStream",
+            "direction": "client",
+            "start": 1790647421.9152,
+            "end": 1790648021.921935,
+            "duration_us": 600006735,
+            "association_types": [
+              "END_IN_SUPPORT_WINDOW"
+            ],
+            "counter_intervals": [],
+            "shared_support_candidates": [
+              {
+                "start": 1790648023.495,
+                "end": 1790648028.496,
+                "increment": 1.0,
+                "completion_to_first_changed_sample_seconds": 6.5740649700164795
+              }
+            ],
+            "online_availability": "ONLINE_AVAILABILITY_UNPROVEN",
+            "original_input_present": false,
+            "capture_after_cutoff": true,
+            "original_start_query_excluded": true,
+            "causal_root": "UNPROVEN"
+          },
+          {
+            "service": "payment",
+            "operation": "grpc.flagd.evaluation.v2.Service/EventStream",
+            "direction": "client",
+            "start": 1790647459.13,
+            "end": 1790648059.132936,
+            "duration_us": 600002936,
+            "association_types": [
+              "END_IN_SUPPORT_WINDOW"
+            ],
+            "counter_intervals": [],
+            "shared_support_candidates": [
+              {
+                "start": 1790648063.496,
+                "end": 1790648068.496,
+                "increment": 1.0,
+                "completion_to_first_changed_sample_seconds": 9.363064050674438
+              }
+            ],
+            "online_availability": "ONLINE_AVAILABILITY_UNPROVEN",
+            "original_input_present": false,
+            "capture_after_cutoff": true,
+            "original_start_query_excluded": true,
+            "causal_root": "UNPROVEN"
+          }
+        ],
+        "counts": {
+          "original_unique_spans": 240,
+          "extra_unique_spans": 747,
+          "new_unique_spans": 512,
+          "new_supported_associations": 2,
+          "new_exact_interval_associations": 0,
+          "new_control_support_associations": 2
+        },
+        "metric_view_sha256": "b20f3507eec7e315747d54bfaa989aa7aa2365ce4805126cf782fea689d3e9f8"
+      }
+    }
+  ],
+  "spec_sha256": "fdec5729b36bf94ec44c3f3bc67dfaf40376050e14e3b3da2867cb98d43eab8c",
+  "source_sha256": "6f6e8e7b23e822e7ef8f9eb2abd56bd9f5bce1f00b90ae8c055143c0552f00b8",
+  "input_file_count": 159,
+  "formal_acceptance": false,
+  "limits": [
+    "Two seen, adjacent windows of one deployment, not independent fault families.",
+    "No independent root/health labels; no accuracy or false-positive claims.",
+    "Counter proxies do not establish a new diagnostic baseline or online availability."
+  ]
+}

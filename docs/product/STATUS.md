@@ -1,4 +1,10 @@
-# 当前任务 · 有界工程校准与回放
+# 当前任务 · 离线诊断语义 A/B/C 对照
+
+唯一活动目标：[Diagnostic Semantics Goal](../goals/EcomSRE_v0.5_Diagnostic_Semantics_Goal.md)。仅已有 live-03 数据的离线实现、回放与交付；旧正式验收不恢复。Provider、Docker、新采集、故障、事件和注册修改均不授权。以下工程执行为历史记录。
+
+实验结果：[逐窗 A/B/C 报告](../results/product-v050/diagnostic-semantics/README.md)。两窗 A 精确复现，B/C 保留基线不足；每窗2条控制流关联候选、0精确增量区间配对，未证明健康或根因改善。
+
+# 历史工程校准与回放
 
 最新同任务补跑：live-03 已结束并 CLEAN：1次新owned部署、3完整轮、372 HTTP读取、71 Docker白名单只读、12 Docker资源操作命令、30正常物理请求、2工程事件、0修复；总占用1715.816813秒。基线及两诊断窗口的真实v4配置均VERIFIED、每组21/21原始样本支持；同部署DEMO_ONLY基线5/5窗口固定，四服务Typed Runtime齐全。两正常API/Worker诊断均SUCCEEDED且memory重验一致，诊断为INSUFFICIENT_EVIDENCE/ABSTAIN：required_coverage=true、failed_sources=[]，多个服务强残余异常导致OPEN_WORLD_ROOT_AMBIGUOUS；健康谓词STRONG_ANOMALY_PRESENT拒绝。owned剩余0、非项目未变，Provider/故障/恢复写/正式holdout/晋升0。采样支持不等于健康验收；此授权已消费，不自动重启，旧live-02失败和停止账本不变。
 
