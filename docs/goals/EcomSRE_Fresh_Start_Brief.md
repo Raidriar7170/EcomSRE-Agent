@@ -30,6 +30,10 @@
 
 ## 本阶段授权
 
+本轮结果：live-03 已结束并 CLEAN：1次新owned部署、3完整轮、372 HTTP读取、71 Docker白名单只读、12 Docker资源操作命令、30正常物理请求、2工程事件、0修复；总占用1715.816813秒。基线及两诊断窗口的真实v4配置均VERIFIED、每组21/21原始样本支持；同部署DEMO_ONLY基线5/5窗口固定，四服务Typed Runtime齐全。两正常API/Worker诊断均SUCCEEDED且memory重验一致，诊断为INSUFFICIENT_EVIDENCE/ABSTAIN：required_coverage=true、failed_sources=[]，多个服务强残余异常导致OPEN_WORLD_ROOT_AMBIGUOUS；健康谓词STRONG_ANOMALY_PRESENT拒绝。owned剩余0、非项目未变，Provider/故障/恢复写/正式holdout/晋升0。采样支持不等于健康验收；此授权已消费，不自动重启，旧live-02失败和停止账本不变。
+
+当前新增授权（live-03）：先通过不替换 samples 的完整离线 API/Worker/v4 预演，再执行一次新的有界无故障补跑。新目录 `.local/engineering-calibration/live-03`，最多1 owned部署、3轮、90分钟含准备清理、600 HTTP读取、90 Docker/容器白名单只读、30正常串行物理请求（≤1/s）、2工程事件、2次范围内接线/采集修复。离线修改不占live修复额度。保持固定观察时钟，不重建、不重复已完成动作；安全/秘密/归属问题、无法安全续接、错过时间或额度耗尽即清理停止。Provider/故障/恢复写/正式holdout/晋升均0；旧live-02及原账本只读不变。先独立保存配置，再走同部署提前固定基线、完整Typed Runtime和正常API/Worker；不以健康为目标。完成同报告更新、提交推送PR #104与精确CI，不merge/release。
+
 用户于2026-09-28进一步明确授权同一任务的无故障工程联调：最多1次owned部署、3轮、90分钟含准备清理、600 HTTP读取、90 Docker/白名单容器只读、30串行正常物理请求（≤1/s）、一次范围内采集修复重试及最多2个无故障工程诊断事件。Provider、故障、恢复写入、正式验收及晋升均0；旧批次和原库只读不变。新环境、提前固定的同部署基线、完整Typed Runtime和正常API/Worker记录仅写独立工程目录。固定时间观察，不以NO_INCIDENT为目标，不改PromQL/阈值/Core顺序；按归属清理、同报告更新、提交推送PR #104并核对精确CI，不merge/release。本次无故障工程联调已终止并CLEAN：1部署、1轮尝试（0完整轮）、51 Docker只读、12资源操作命令、0 HTTP读取、10正常物理请求、1修复、0事件，占用603.996秒。首轮环境创建因Runtime snapshot_ref缺pilot/前缀返回422，尚未取得v4凭证/基线/正常诊断。清理后接线修复仅经fixture，不改写失败；新live需另行明确授权，不自动恢复。下列旧校准授权已消耗，不恢复；后续“禁止live”描述初始阶段，与本段明确扩展范围一并阅读。
 
 用户已明确批准提交`7bbf88d`的[同一汇总报告](../results/product-v050/engineering-calibration/README.md)真实工程校准完整范围：一个owned部署、最多三轮、含准备清理90分钟、HTTP读取500、Docker/容器白名单只读60、正常串行流量30、一次范围内采集修复重试（计入原预算）。Provider、故障、恢复写入、正式holdout、晋升均0；原库和旧批次只读。下文“禁止live”是初始离线阶段边界，此次只按上述明确范围扩展，其他禁令继续适用。完成精确清理、报告、提交推送PR #104并核对精确CI，不merge/release。不新增Goal。本次校准现已消耗并CLEAN：1部署/3轮、239 HTTP读取、59 Docker只读、30正常请求、1修复；总占用32分26.532秒，后续不自动重跑。

@@ -1,5 +1,7 @@
 # 当前任务 · 有界工程校准与回放
 
+最新同任务补跑：live-03 已结束并 CLEAN：1次新owned部署、3完整轮、372 HTTP读取、71 Docker白名单只读、12 Docker资源操作命令、30正常物理请求、2工程事件、0修复；总占用1715.816813秒。基线及两诊断窗口的真实v4配置均VERIFIED、每组21/21原始样本支持；同部署DEMO_ONLY基线5/5窗口固定，四服务Typed Runtime齐全。两正常API/Worker诊断均SUCCEEDED且memory重验一致，诊断为INSUFFICIENT_EVIDENCE/ABSTAIN：required_coverage=true、failed_sources=[]，多个服务强残余异常导致OPEN_WORLD_ROOT_AMBIGUOUS；健康谓词STRONG_ANOMALY_PRESENT拒绝。owned剩余0、非项目未变，Provider/故障/恢复写/正式holdout/晋升0。采样支持不等于健康验收；此授权已消费，不自动重启，旧live-02失败和停止账本不变。
+
 用户于2026-09-27终止旧未完成Goal的自动推进，以[Fresh Start Brief](../goals/EcomSRE_Fresh_Start_Brief.md)作为唯一当前入口。初始离线交付`7bbf88d`已完成；用户随后明确批准同一汇总中的有界真实工程校准（一部署、三轮、90分钟、500 HTTP读取、60 Docker只读、30正常请求、一次采集修复重试）。历史失败、REVOKED/DRAFT及停止批次不变；Provider、故障、恢复写入、正式holdout与晋升仍为0。工程交付与具体数据限制见[汇总](../results/product-v050/engineering-calibration/README.md)。旧协议的一次性约束继续适用于对应批次，不约束普通离线回归。没有v0.5验收PASS。
 
 此前live-01校准已CLEAN：1部署/3轮，支持11/21→15/21→21/21；Kafka agent2.29.0/SDK1.63.0默认60s与collector0.157.0默认桶取得运行版本对应材料。EventStream错误标签与约600s RPC结束同实例关联，未发现已建立序列漏采或重启。占用32分26.532秒，239 HTTP读取、59 Docker只读、30正常请求、1修复；owned剩余0、非项目未变。21/21只表示返回序列窗口支持，工程默认声明仍禁止进入正式资格/freeze/promotion；未证明完整负例或业务健康。校准授权已消耗，不自动重跑。

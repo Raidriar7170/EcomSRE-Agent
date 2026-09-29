@@ -9,6 +9,7 @@ from datetime import UTC, datetime, timedelta
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import subprocess
@@ -44,7 +45,7 @@ from ecomsre.dta_v2.v22.memory import MemoryReadOutcomeV22, build_memory_views_v
 from ecomsre.dta_v2.v22.predicates import evaluate_no_incident_v22
 from ecomsre.product.incidents.queue_action import build_queue_lag_action_v030
 
-ROOT = ec.REPO / ".local/engineering-calibration/live-02"
+ROOT = ec.REPO / ".local/engineering-calibration/live-03"
 SCHEDULE = {
     "rounds": [570, 1380, 1680],
     "baseline_build": 720,
@@ -61,7 +62,7 @@ CAPS = dict(
     http_reads=600,
     docker_reads=90,
     normal_traffic=30,
-    repairs=1,
+    repairs=2,
     engineering_incidents=2,
     provider=0,
     faults=0,
@@ -621,7 +622,32 @@ def close_and_cleanup(integration):
 
 def run():
     bind()
+    # Full integrated offline gate is outside the live resource/time budget.
+    # It uses a temporary database and mocked transports; no Docker is invoked.
+    rehearsal = subprocess.run(
+        [
+            "uv",
+            "run",
+            "pytest",
+            "tests/product_v050/test_engineering_rehearsal.py",
+            "-q",
+        ],
+        cwd=ec.REPO,
+        capture_output=True,
+        text=True,
+        timeout=180,
+        env=dict(os.environ, PYTHONPATH="src:."),
+    )
+    if rehearsal.returncode:
+        raise ValueError("FULL_OFFLINE_REHEARSAL_FAILED\n" + rehearsal.stdout[-4000:])
     preflight = offline_preflight()
+    preflight["full_rehearsal"] = dict(
+        returncode=rehearsal.returncode,
+        output=rehearsal.stdout,
+        test_sha256=hashlib.sha256(
+            (ec.REPO / "tests/product_v050/test_engineering_rehearsal.py").read_bytes()
+        ).hexdigest(),
+    )
     ROOT.mkdir(mode=0o700)  # create-once; no restart of an ended calibration
     ec.save(ROOT / "offline-preflight.json", preflight)
     started = datetime.now(UTC)

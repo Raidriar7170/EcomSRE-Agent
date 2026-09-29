@@ -310,3 +310,66 @@ PYTHONPATH=src:. uv run pytest -q
 ### 剩余最小真实范围
 
 本轮用户要求的完整同部署输入仍未收齐，目标未达成。下次仍只需同一既有布局的一次owned无故障工程观察，沿用前述固定时序与上限（1部署、3轮、90分钟、600 HTTP/90 Docker读取、30串行正常物理请求、最多2工程事件），在部署前先通过现在的真实API/Worker离线接线检查；按真实时点收全v4投影与实例绑定、提前固定基线、完整Typed Runtime及正常入口输入，并覆盖EventStream结束窗口。没有现成数据能替代这些观测。当前1次部署授权已经消费且资源清理，剩余额度不授权重新部署；**本报告不启动或请求逐条读取审批，不自动重跑，也不转为正式验收。** Provider、故障、恢复写入与晋升继续0。业务PromQL、阈值、Core/Extension顺序及固定规则均未修改。
+
+
+## 新补跑 live-03：离线门禁与执行授权
+
+当前新增授权（live-03）：先通过不替换 samples 的完整离线 API/Worker/v4 预演，再执行一次新的有界无故障补跑。新目录 `.local/engineering-calibration/live-03`，最多1 owned部署、3轮、90分钟含准备清理、600 HTTP读取、90 Docker/容器白名单只读、30正常串行物理请求（≤1/s）、2工程事件、2次范围内接线/采集修复。离线修改不占live修复额度。保持固定观察时钟，不重建、不重复已完成动作；安全/秘密/归属问题、无法安全续接、错过时间或额度耗尽即清理停止。Provider/故障/恢复写/正式holdout/晋升均0；旧live-02及原账本只读不变。先独立保存配置，再走同部署提前固定基线、完整Typed Runtime和正常API/Worker；不以健康为目标。完成同报告更新、提交推送PR #104与精确CI，不merge/release。
+
+完整预演命令：`PYTHONPATH=src:. uv run pytest tests/product_v050/test_engineering_rehearsal.py -q`。真实入口也在任何 Docker 操作前执行该门禁。模拟边界仅为外部 HTTP、白名单 Docker 配置投影输入及时间；受控映射和公开源码材料未替换。凭证解析、采集、原始响应捕获、支持判断、真实 API/Worker、基线绑定、诊断与 memory 摘要重验均执行。实例出生固定为部署起点，基线窗口为起点后360–540秒，配置观测570秒起，构建720秒，诊断1380/1680秒。配置投影是 fixture，不代表真实配置读取成功；真实结果另行追加。
+
+
+### live-03 实际完成：配置有效，正常诊断完整执行，业务健康未通过
+
+UTC 2026-09-29 01:53:15.317815 开始，02:21:51.134628 结束；总占用 **1715.816813秒（28分35.817秒）**。启动前重新确认无其他Docker CLI/容器任务，非owned网络/卷语义与允许的原布局一致；固定镜像/路由/SDK/Collector配置未修改。本次没有采集修复或续接，没有重新部署。
+
+| 工程独立账目 | 实际 / 上限 |
+|---|---:|
+| owned部署 / 完整采集轮 | 1/1；3/3 |
+| HTTP读取 / Docker白名单只读 | 372/600；71/90 |
+| Docker资源操作命令（明确计入） | 12，含create/start和精确清理 |
+| 正常物理请求 / 工程事件 / live修复 | 30/30；2/2；0/2 |
+| Provider / 故障 / 恢复写 / 正式holdout / 晋升 | 全部0 |
+
+30请求为15对cart/checkout，全部200，15个checkout响应成功；物理请求最小间隔1.026374秒。精确清理22容器、1网络、5卷后owned剩余0，非owned未变。旧60 Provider请求/USD1.067489预算承诺/14 of 18 live及旧闭环9 of 13账本保持原样，本次是并列工程记录，不消费停止批次。
+
+**配置凭证。** 首轮在环境API前独立保存完整白名单JVM投影、实际jar/class摘要、Collector命令/挂载内容及实例绑定，保留各操作真实时间（process 02:03:07.569367、jar .694847、挂载 .739707、runtime .783621 UTC）。后两轮重复取得各自窗口的独立证明。实际Kafka固定image/agent2.29.0/jar/class、SDK1.63.0对应源码与Collector0.157.0固定image/挂载配置全部满足现有受控映射；Kafka默认周期60秒、span metrics默认桶集合由验证器从映射导出。基线支持及第2/3轮三个新凭证均为 `VERIFIED`，原始采集 `acquire/verify` 每组21/21支持；清理后再次从原始CAS用同一 `dc.resolve/ie.verify` 重验并逐对象比对原assessment相同。旧凭证/工程声明未升级。
+
+**基线与输入。** 真实环境 `env-9c1a893dea7b9483edd71a8d` 经API创建/验证成功。正常baseline Worker以DEMO_ONLY、lookback180/warmup180、5×36秒窗口构建5/5；使用01:59:34.912020–02:02:34.912020 UTC数据，02:05:34.912020构建，随后固定为 `base-4e251aeb4ae934c625432b23`（SHA `8e7b6456e2a318319367ee9b85b18218a2d117e0fd8e99d22983a2622aab4c29`）。两个检查窗口分别02:11:37.587622–02:16:37.587622、02:16:37.489415–02:21:37.489415 UTC，均晚于基线固定。没有同窗自建、旧部署基线、补零或人为抬高基线。四服务真实StartedAt以DEPLOYMENT Changes入库，Runtime包括Kafka consumer membership；三轮均RUNNING/healthy/restart_count=0。
+
+**正常入口诊断。** 两个工程事件经API创建，两次Worker均SUCCEEDED；实际行动、connector输入/原始响应、Typed Runtime、指标、基线、Changes、日志/trace、evidence index和memory全部保留。两次memory摘要纯函数重验完全一致。两次结果均 `INSUFFICIENT_EVIDENCE / ABSTAIN`：决策trace为 `known_admission_status=NONE`、extension_match_count=0、required_coverage_satisfied=true、failed_sources=[]；novelty识别到强残余，但 `OPEN_WORLD_ROOT_AMBIGUOUS`，未唯一定位根因。没有Core命中、没有learned复用或知识晋升。这不是接线失败，也不是NO_INCIDENT。
+
+| 正常Worker实际指标 | 第2轮 | 第3轮 | 固定基线 |
+|---|---:|---:|---:|
+| fraud-detection latency（ms） | 8528.4385 | 6344.9462 | 95 |
+| payment latency（ms） | 6502.1283 | 8226.7645 | 2.8242 |
+| fraud-detection error ratio | 0.0472365 | 0.0364388 | 0 |
+| payment error ratio | 0.0377331 | 0.0519438 | 0 |
+
+上述是正常connector对窗口查询结果的实际归约值，不是单次RPC时延。两轮fraud/payment的 `METRIC_LATENCY_STRONG` 成立；第3轮另有payment `METRIC_ERROR_RATE_STRONG`。四服务 `RUNTIME_HEALTHY` 成立；第2轮fraud/kafka/payment、第3轮kafka有 `RESOURCE_MEMORY_GROWTH_STRONG`。健康纯函数覆盖四服务，但两次均 `accepted=false / STRONG_ANOMALY_PRESENT`。内存增长是另外的资源证据，未证明泄漏，也不归因于EventStream或默认视为无害。
+
+**EventStream与证据边界。** 从与正常诊断相同评估时点的保留原始calls和histogram矩阵重算可观察counter增量：两窗口fraud/payment全部已观察错误增量、全部>15000ms桶增量均归属于EventStream；每窗口每服务各评估点最大为1次。第3轮末点增量已0，但前面的评估点仍包含这些长RPC，不能用末点替代全窗口。EventStream实际进入现有请求分母、错误分子及延迟分布；它经强延迟（及第3轮payment错误）参与拒绝健康，未造成Core命中。这里证明观测增量归属和查询贡献，不证明根因、完整p95因果分解、用户请求健康或超时无害，也不把离线排除后的假想结果当正式定义。
+
+上下文捕获与正常诊断证据范围不同：第2轮全生命周期上下文检出16条EventStream span，正常诊断的有界trace输入不含EventStream；部分日志/trace存在截断标记。当前Jaeger connector按请求窗口的start/end查询；长寿命RPC的开始与结束跨窗，是需要明确的证据时间语义。`required_coverage=true`表示所需来源/服务可用，不代表所有日志/span被完整枚举。原始请求及截断情况保留，没有补造诊断。部分业务查询为30/31有限点，采样支持不保证每个业务结果点有限；Kafka空span集合的派生零值不能当业务健康证据。原始指标的21/21也仅覆盖返回序列，未证明未知标签人口完整、出生前零或完整负例。短基线早于首个长RPC结束，具备构建与采样支持，仍不等于稳定业务健康总体。
+
+### 交付、验证与后续最小缺口
+
+本轮源码只将新入口绑定live-03/两次修复上限，并把完整离线预演设为任何Docker前的必过门禁；新增集成测试和保留公开源码fixture，没有修改业务PromQL、阈值、Core/Extension顺序或固定规则。保留原来的局部samples空函数测试，新增完整链路没有跳过内部校验。反例覆盖错误pilot路径、逆序ID、过期/错实例凭证、过早基线与重叠检查窗口；源码材料和默认映射不被mock。Docker配置投影/遥测响应/时间的fixture通过只证明接线；上述live-03才证明真实配置读取、真实v4验证和正常诊断。
+
+```sh
+# 重复离线预演：临时库、外部读fixture，不修改原库/历史结果
+PYTHONPATH=src:. uv run pytest tests/product_v050/test_engineering_rehearsal.py -q
+# 实际live-03执行命令：create-once，授权现已消费，不得自动重跑
+PYTHONPATH=src:. uv run python -m scripts.product_v050.engineering_integration run
+# 保留数据离线复核（私有脚本；输出create-once，不覆盖先前结果）
+PYTHONPATH=src:. uv run python .local/engineering-calibration/integration-03/analyze.py
+PYTHONPATH=src:. uv run python .local/engineering-calibration/integration-03/window-audit.py
+```
+
+私有输入根 `.local/engineering-calibration/live-03`：逐操作账本/receipts、三轮proofs/Runtime/context、baseline与baseline-support、两诊断的samples/raw.jsonl、diagnosis-job/raw.jsonl、diagnosis/evidence/index/memory/health-predicate、独立Product库/CAS、finished/cleanup。输出 `.local/engineering-calibration/integration-03/result.json`（v4/支持重验/决策记录）、`window-audit.json`（逐实际评估点EventStream贡献、预算/基线时序）以及测试/CI/完整性记录。需要重复离线审核时选新输出文件/目录；不覆盖历史记录，不打开原库写连接。公开提交不包含这些私有库/CAS/请求或任何凭据。
+
+聚焦预演/接线/默认凭证48项通过；Ruff全库和Product mypy通过。稳定交付的全量回归、六个历史验证器、干净提交范围检查与精确提交CI结果记录于同一私有输出目录的verification/ci文件，不能以旧提交成功替代。最终完整性相对 `eb3b66a274c7125ec0bcd020215c5a0a3b93d751` 校验本次完整tracked delta及976个声明冻结文件；其中包含原库、旧批次和live-02/integration-02，未将本次证据混入旧记录。
+
+本轮两项主要交付已取得：真实v4验证，以及两次输入齐备、原因可追溯的正常API/Worker诊断；**不是正式健康holdout或v0.5 ACCEPTANCE_PASS**。配置/接线不再需要一次部署来证明“能执行”。正式验证前仍需先决定业务总体语义：最小建议是显式区分业务RPC与控制流RPC的指标用途，并明确长RPC按结束时间进入指标、如何关联跨窗trace；保留EventStream自身超时信号，不直接过滤错误标签。若接受范围变化，必须另作明确协议版本、用全部已见目标/健康/Core开发数据重新回放（包括原5/5），旧成绩不改写。本轮没有实施此建议。
+
+仍需真实观测的最小内容是一个未来另行授权的无故障同部署观察：先建立包含完整EventStream结束周期、来源范围明确的基线，再固定后续检查窗口；同时保留连续内存序列及运行时信息，区分启动/GC变化与持续增长。现有短基线及有界trace不能替代该观测，也不需要为本轮结果新增故障或Provider。该建议不自动启动新部署或正式验收，不恢复停止批次。
