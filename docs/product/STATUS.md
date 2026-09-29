@@ -1,6 +1,10 @@
-# 当前任务 · 离线诊断语义 A/B/C 对照
+# 当前任务 · 语义视图选择与对比式故障调查
 
-唯一活动目标：[Diagnostic Semantics Goal](../goals/EcomSRE_v0.5_Diagnostic_Semantics_Goal.md)。仅已有 live-03 数据的离线实现、回放与交付；旧正式验收不恢复。Provider、Docker、新采集、故障、事件和注册修改均不授权。以下工程执行为历史记录。
+唯一活动目标：[Semantic Investigation Algorithm Goal](../goals/EcomSRE_Semantic_Investigation_Algorithm_Codex_Goal.md)。2026-09-29有界研究交付：implementation=ready / experiment=partial / effect=undetermined。1个已见事件、2窗，12条固定对照轨迹及2条早期失败；50请求/USD0.932078，独立根因测试0/24。预算与保护边界见 Goal，详见[新报告](../results/semantic-investigation-v1/README.md)。不自动补采/续费实验。
+
+# 历史离线诊断语义 A/B/C 对照
+
+历史目标：[Diagnostic Semantics Goal](../goals/EcomSRE_v0.5_Diagnostic_Semantics_Goal.md)。仅已有 live-03 数据的离线实现、回放与交付；旧正式验收不恢复。Provider、Docker、新采集、故障、事件和注册修改均不授权。以下工程执行为历史记录。
 
 实验结果：[逐窗 A/B/C 报告](../results/product-v050/diagnostic-semantics/README.md)。两窗 A 精确复现，B/C 保留基线不足；每窗2条控制流关联候选、0精确增量区间配对，未证明健康或根因改善。
 

@@ -19,29 +19,8 @@ from ecomsre.dta_v2.v22.memory import BaselineProfileV22, build_memory_views_v22
 from ecomsre.dta_v2.v22.predicates import evaluate_no_incident_v22
 
 
-def increments(rows, at, width=300):
-    """Observed counter increments only; never synthesize a pre-birth zero."""
-    result = []
-    for row in rows:
-        pairs = [
-            (float(t), float(v))
-            for t, v in row["values"]
-            if at - width < float(t) <= at
-        ]
-        if (
-            len(pairs) < 2
-            or any(not math.isfinite(v) for _, v in pairs)
-            or any(b[1] < a[1] for a, b in zip(pairs, pairs[1:]))
-        ):
-            raise ValueError("counter window insufficient or reset")
-        result.append(
-            dict(
-                labels=row["metric"],
-                increase=pairs[-1][1] - pairs[0][1],
-                grid=[t for t, _ in pairs],
-            )
-        )
-    return result
+
+from ecomsre.product.investigation.semantic_numeric import increments
 
 
 def call_contributions(rows, times):

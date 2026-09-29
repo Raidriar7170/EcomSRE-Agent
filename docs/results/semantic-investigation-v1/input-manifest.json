@@ -1,0 +1,122 @@
+[
+  {
+    "case_id": "case-001",
+    "event_group": "event-001",
+    "split": "development",
+    "root_label": null,
+    "snapshot_sha256": "c69c67602a083f274a152fa1bc5188bd2e8e8212e8106cc3d886f35b91db28bb",
+    "source_files": {
+      "round-2/diagnosis-job/raw.jsonl": "9fbec06a2a9d19112bd80ae6528fa3f41fb9a5919a2e26e1bd2f491071890bab",
+      "product/objects/sha256/ec/ec791f8526a7eb5afb155c9ac494cf273dee5076ecd6d4aaba509447bb43c830.json": "ec791f8526a7eb5afb155c9ac494cf273dee5076ecd6d4aaba509447bb43c830",
+      "product/objects/sha256/66/667290d22d0e920d0cb0f4058f93865667122a65c3284750b2e5b37781ea9636.json": "667290d22d0e920d0cb0f4058f93865667122a65c3284750b2e5b37781ea9636",
+      "product/objects/sha256/a9/a9b5caa7e72931f4dd218c421739c596790023f0853d5480199786ea4f3df09d.json": "a9b5caa7e72931f4dd218c421739c596790023f0853d5480199786ea4f3df09d",
+      "product/objects/sha256/06/060831279df5cd95b26e3bca96cf3c9f38097358cf39bcce315118c6c2145835.json": "060831279df5cd95b26e3bca96cf3c9f38097358cf39bcce315118c6c2145835",
+      "round-2/context/traces-fraud-detection-all.json": "cec3d25aa566ec3918c6cd79aeb113260f7bdecb572f662ae3c63262c486a3d1",
+      "round-2/context/traces-fraud-detection-all.body": "402faefe24c90d4ff15208ff4bda44f55e3ae5988bd73825051841067c606102",
+      "round-2/context/traces-fraud-detection-errors.json": "af6331a0dff595b117300fed21d93e881dfed73a014aa9dae7bce6e80475b86c",
+      "round-2/context/traces-fraud-detection-errors.body": "bf158db8f3754b6cb989c6876b2b753f20e78c417dfc356dc458a9839070cace",
+      "round-2/context/traces-payment-all.json": "f9daa2c5aae96790e468361a77cf8a0cd7d2cc4d18f27187a83ba312148077f8",
+      "round-2/context/traces-payment-all.body": "6fb800ee8673a2d8782e296f7ce96a1854e58b75a6cb5caf668ccaf46f5da0d3",
+      "round-2/context/traces-payment-errors.json": "7be8b09e34b80105b47893a2c9aa7bacb773862673008d70698c24ed99b50d30",
+      "round-2/context/traces-payment-errors.body": "a0108b38fd68683ea7e0f8c046733f4d67e184796fa91a80766ab2ceaf7ce9c0",
+      "round-2/evidence.json": "ca7aee8b66477b3f81ce5ec02db61e57f82157c381014736f608cfdb23a9fe0a",
+      "round-2/samples/raw.jsonl": "72d685782d395023c71c26a9974899ae2d3aae3cc67b6f5812bffcac513fdb92",
+      "product/objects/sha256/44/4442f5b0b9fb4b3d8d4531aa8a041e377f4ffcde0a8ca497d32da68b17bb7aab.json": "4442f5b0b9fb4b3d8d4531aa8a041e377f4ffcde0a8ca497d32da68b17bb7aab",
+      "product/objects/sha256/19/19dc1cab2237d2d5eebe1832ba8027cc0e33964c090a516834c7f701916478da.json": "19dc1cab2237d2d5eebe1832ba8027cc0e33964c090a516834c7f701916478da",
+      "product/objects/sha256/e9/e97a67729d9ea765ac2fe1052903035e1a6dd0fa89683b0b84d6d6688c3d17db.json": "e97a67729d9ea765ac2fe1052903035e1a6dd0fa89683b0b84d6d6688c3d17db",
+      "product/objects/sha256/26/26c68b7b83f24d096b4b8d64ac434a91d0263769bf7a377f8bd179e93db97f9e.json": "26c68b7b83f24d096b4b8d64ac434a91d0263769bf7a377f8bd179e93db97f9e",
+      "product/objects/sha256/52/5270461ec81028d05a5dc2cd726f822921a8aacd21927e829d8895b3d662f0cc.json": "5270461ec81028d05a5dc2cd726f822921a8aacd21927e829d8895b3d662f0cc",
+      "product/objects/sha256/ae/ae8b4fabe3781bd85003388951822d3fc1ca87215544cdb2103007a71bf61092.json": "ae8b4fabe3781bd85003388951822d3fc1ca87215544cdb2103007a71bf61092",
+      "product/objects/sha256/bc/bcc7dc3ef3208c771713c78cfe53e3d8b4868a8b060d4177fc5cb5275fb0f455.json": "bcc7dc3ef3208c771713c78cfe53e3d8b4868a8b060d4177fc5cb5275fb0f455"
+    },
+    "metadata": {
+      "record_count": 516,
+      "counter_points_by_service": {
+        "checkout": 19440,
+        "fraud-detection": 10800,
+        "payment": 12960
+      },
+      "counter_points": 43200,
+      "available_sources": [
+        "traces",
+        "counters"
+      ],
+      "counter_scope": "operation only; final 300s observed increments, not rate",
+      "trace_fields": true,
+      "coverage": "RETAINED_BOUNDED_TRACE_SAMPLES",
+      "truncated": false,
+      "availability": "RETROSPECTIVE_REPLAY_ONLINE_CUTOFF_UNPROVEN",
+      "capture_times": [
+        "2026-09-29T02:16:39.321066+00:00",
+        "2026-09-29T02:16:39.337704+00:00",
+        "2026-09-29T02:16:39.354358+00:00",
+        "2026-09-29T02:16:39.371768+00:00",
+        "2026-09-29T02:16:39.855295+00:00",
+        "2026-09-29T02:16:39.861522+00:00",
+        "2026-09-29T02:16:39.889600+00:00",
+        "2026-09-29T02:16:39.901667+00:00"
+      ],
+      "reference_status": "NO_MATCHED_OPERATION_TRACE_REFERENCE"
+    }
+  },
+  {
+    "case_id": "case-002",
+    "event_group": "event-001",
+    "split": "development",
+    "root_label": null,
+    "snapshot_sha256": "44a870c3562b8cfee37ddceaa88746768ea7903a267f5339778a8992c183ec09",
+    "source_files": {
+      "round-3/diagnosis-job/raw.jsonl": "525063b2058348fecd3b8e9202774cf6a7bb222600d72e0a63f898edf21077ee",
+      "product/objects/sha256/69/69fa6df05b6726de14884faa95aa07bdd319beb0167a5922429ff5ef1d748d0c.json": "69fa6df05b6726de14884faa95aa07bdd319beb0167a5922429ff5ef1d748d0c",
+      "product/objects/sha256/6f/6fe26f1a139a35b90dc553cefd4abd2b516d9e639157fbf3d80bed0434762c65.json": "6fe26f1a139a35b90dc553cefd4abd2b516d9e639157fbf3d80bed0434762c65",
+      "product/objects/sha256/76/76b3c62235c045e33ebcddb8b8acd815aa3a310adc81406ef7224abda353661f.json": "76b3c62235c045e33ebcddb8b8acd815aa3a310adc81406ef7224abda353661f",
+      "product/objects/sha256/78/78df7413c56dd0030e450f2b25c771cc5de068e558a91296211d8eaa1a90c365.json": "78df7413c56dd0030e450f2b25c771cc5de068e558a91296211d8eaa1a90c365",
+      "round-3/context/traces-fraud-detection-all.json": "d347b2374dbce2d72f4ee3e661e2fac70c4d07999c94ab572771b4ffff940693",
+      "round-3/context/traces-fraud-detection-all.body": "3db9e699401257d71c82a2b812a6470c5fc237c120448fbcc61374c55756a94d",
+      "round-3/context/traces-fraud-detection-errors.json": "ccd77cf903a4d217e02ad9db6576295f70eb71beb36d17fd28f9967d4fe4ce67",
+      "round-3/context/traces-fraud-detection-errors.body": "bf158db8f3754b6cb989c6876b2b753f20e78c417dfc356dc458a9839070cace",
+      "round-3/context/traces-payment-all.json": "6d084869db9756eb96ff5bd61a18e30a2845cb22c076c02386ed527935bd1127",
+      "round-3/context/traces-payment-all.body": "cd120537998ca33405f934ae7eaadc18d56be692da2aa731531ab09a5336b393",
+      "round-3/context/traces-payment-errors.json": "3e07586a008afa8e732de7ac9756f4cabbdcbb9c48047a5ab67659bc37dbf6b9",
+      "round-3/context/traces-payment-errors.body": "78f4aa5a7a35fb75c721b11a9f7f85a43bf35faf0619c10f7753122855f4673f",
+      "round-3/evidence.json": "82aae8e6261ac045129d89532fcd0091d0b2544dd606491e2605550d64a6533f",
+      "round-3/samples/raw.jsonl": "f950dec3adf6bae5611d78facace97af3a8303bb19ce0c07747fffa834999bc1",
+      "product/objects/sha256/07/0721531c0c96e4c8f0c4d3c8924f51f0df97a0ca434eefcb9c2b2ba9cfec3fa0.json": "0721531c0c96e4c8f0c4d3c8924f51f0df97a0ca434eefcb9c2b2ba9cfec3fa0",
+      "product/objects/sha256/9d/9d5bf0650ce128c3cae855a142e2f5d3104f8cab4659102bf40b9f55a24868aa.json": "9d5bf0650ce128c3cae855a142e2f5d3104f8cab4659102bf40b9f55a24868aa",
+      "product/objects/sha256/4e/4e392c4593fb69b965719722f188f4fb97b6faed6773a8234c4174d08ff2b3a4.json": "4e392c4593fb69b965719722f188f4fb97b6faed6773a8234c4174d08ff2b3a4",
+      "product/objects/sha256/a7/a76b1dfc5f8067190c593475d2e83f6cce2766f3b35781eac518d58199a49a8f.json": "a76b1dfc5f8067190c593475d2e83f6cce2766f3b35781eac518d58199a49a8f",
+      "product/objects/sha256/52/5270461ec81028d05a5dc2cd726f822921a8aacd21927e829d8895b3d662f0cc.json": "5270461ec81028d05a5dc2cd726f822921a8aacd21927e829d8895b3d662f0cc",
+      "product/objects/sha256/2d/2dff4577a777eade3150230b3f164c34fcc18bfb6675b1cbcc66dfd1e757ff7b.json": "2dff4577a777eade3150230b3f164c34fcc18bfb6675b1cbcc66dfd1e757ff7b",
+      "product/objects/sha256/ea/ea3368f6135c3ed9708b2c265baadd859585e2bd2cb3a17a41d285320cc2af5f.json": "ea3368f6135c3ed9708b2c265baadd859585e2bd2cb3a17a41d285320cc2af5f"
+    },
+    "metadata": {
+      "record_count": 752,
+      "counter_points_by_service": {
+        "checkout": 19440,
+        "fraud-detection": 10800,
+        "payment": 12960
+      },
+      "counter_points": 43200,
+      "available_sources": [
+        "traces",
+        "counters"
+      ],
+      "counter_scope": "operation only; final 300s observed increments, not rate",
+      "trace_fields": true,
+      "coverage": "RETAINED_BOUNDED_TRACE_SAMPLES",
+      "truncated": false,
+      "availability": "RETROSPECTIVE_REPLAY_ONLINE_CUTOFF_UNPROVEN",
+      "capture_times": [
+        "2026-09-29T02:21:39.326468+00:00",
+        "2026-09-29T02:21:39.347203+00:00",
+        "2026-09-29T02:21:39.362569+00:00",
+        "2026-09-29T02:21:39.384504+00:00",
+        "2026-09-29T02:21:39.843529+00:00",
+        "2026-09-29T02:21:39.850235+00:00",
+        "2026-09-29T02:21:39.881795+00:00",
+        "2026-09-29T02:21:39.893260+00:00"
+      ],
+      "reference_status": "NO_MATCHED_OPERATION_TRACE_REFERENCE"
+    }
+  }
+]

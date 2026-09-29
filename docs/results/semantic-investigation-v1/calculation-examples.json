@@ -1,0 +1,347 @@
+[
+  {
+    "analysis_id": "an-21f7c47daae339cda4b8",
+    "request": {
+      "tool": "profile_operations",
+      "target": "payment",
+      "window": "current",
+      "source": "counters",
+      "reference_id": null,
+      "group_by": "operation",
+      "detail_level": "summary",
+      "signal": "error_fraction",
+      "operation": null,
+      "direction": null,
+      "neighbors": [],
+      "offset": 0
+    },
+    "method": "profile_operations",
+    "table": [
+      {
+        "group": "BUSINESS_REQUEST",
+        "operation": "grpc.oteldemo.PaymentService/Charge",
+        "direction": "SPAN_KIND_SERVER",
+        "at": 1790648197.587622,
+        "level": "DIAGNOSTIC_PROXY_ONLY",
+        "unit": "OBSERVED_SPAN_COUNTER_INCREMENT",
+        "series": 1,
+        "baseline_eligible": false,
+        "p95_ms": null,
+        "p95_status": "NOT_COMPUTABLE_NO_VALIDATED_BUCKET_RATES",
+        "total": 5.0,
+        "errors": 0,
+        "error_fraction": 0.0,
+        "status": "OBSERVED_RETURNED_SERIES_ONLY",
+        "samples": 60,
+        "complete_population_proven": false,
+        "above_15000ms": 0.0,
+        "row_key": "payment|grpc.oteldemo.PaymentService/Charge|server",
+        "count": 5.0,
+        "error_count": 0
+      },
+      {
+        "group": "CONTROL_STREAM",
+        "operation": "grpc.flagd.evaluation.v2.Service/EventStream",
+        "direction": "SPAN_KIND_CLIENT",
+        "at": 1790648197.587622,
+        "level": "DIAGNOSTIC_PROXY_ONLY",
+        "unit": "OBSERVED_SPAN_COUNTER_INCREMENT",
+        "series": 1,
+        "baseline_eligible": false,
+        "p95_ms": null,
+        "p95_status": "NOT_COMPUTABLE_NO_VALIDATED_BUCKET_RATES",
+        "total": 1.0,
+        "errors": 1.0,
+        "error_fraction": 1.0,
+        "status": "OBSERVED_RETURNED_SERIES_ONLY",
+        "samples": 60,
+        "complete_population_proven": false,
+        "above_15000ms": 1.0,
+        "row_key": "payment|grpc.flagd.evaluation.v2.Service/EventStream|client",
+        "count": 1.0,
+        "error_count": 1.0
+      },
+      {
+        "group": "UNCLASSIFIED",
+        "operation": "charge",
+        "direction": "SPAN_KIND_INTERNAL",
+        "at": 1790648197.587622,
+        "level": "DIAGNOSTIC_PROXY_ONLY",
+        "unit": "OBSERVED_SPAN_COUNTER_INCREMENT",
+        "series": 1,
+        "baseline_eligible": false,
+        "p95_ms": null,
+        "p95_status": "NOT_COMPUTABLE_NO_VALIDATED_BUCKET_RATES",
+        "total": 5.0,
+        "errors": 0,
+        "error_fraction": 0.0,
+        "status": "OBSERVED_RETURNED_SERIES_ONLY",
+        "samples": 60,
+        "complete_population_proven": false,
+        "above_15000ms": 0.0,
+        "row_key": "payment|charge|internal",
+        "count": 5.0,
+        "error_count": 0
+      },
+      {
+        "group": "UNCLASSIFIED",
+        "operation": "dns.lookup",
+        "direction": "SPAN_KIND_CLIENT",
+        "at": 1790648197.587622,
+        "level": "DIAGNOSTIC_PROXY_ONLY",
+        "unit": "OBSERVED_SPAN_COUNTER_INCREMENT",
+        "series": 1,
+        "baseline_eligible": false,
+        "p95_ms": null,
+        "p95_status": "NOT_COMPUTABLE_NO_VALIDATED_BUCKET_RATES",
+        "total": 0.0,
+        "errors": 0,
+        "error_fraction": null,
+        "status": "ZERO_OBSERVED_TRAFFIC_NOT_HEALTH",
+        "samples": 60,
+        "complete_population_proven": false,
+        "above_15000ms": 0.0,
+        "row_key": "payment|dns.lookup|client",
+        "count": 0.0,
+        "error_count": 0
+      },
+      {
+        "group": "UNCLASSIFIED",
+        "operation": "grpc.flagd.evaluation.v2.Service/ResolveFloat",
+        "direction": "SPAN_KIND_CLIENT",
+        "at": 1790648197.587622,
+        "level": "DIAGNOSTIC_PROXY_ONLY",
+        "unit": "OBSERVED_SPAN_COUNTER_INCREMENT",
+        "series": 1,
+        "baseline_eligible": false,
+        "p95_ms": null,
+        "p95_status": "NOT_COMPUTABLE_NO_VALIDATED_BUCKET_RATES",
+        "total": 2.0,
+        "errors": 0,
+        "error_fraction": 0.0,
+        "status": "OBSERVED_RETURNED_SERIES_ONLY",
+        "samples": 60,
+        "complete_population_proven": false,
+        "above_15000ms": 0.0,
+        "row_key": "payment|grpc.flagd.evaluation.v2.Service/ResolveFloat|client",
+        "count": 2.0,
+        "error_count": 0
+      },
+      {
+        "group": "UNCLASSIFIED",
+        "operation": "tcp.connect",
+        "direction": "SPAN_KIND_INTERNAL",
+        "at": 1790648197.587622,
+        "level": "DIAGNOSTIC_PROXY_ONLY",
+        "unit": "OBSERVED_SPAN_COUNTER_INCREMENT",
+        "series": 1,
+        "baseline_eligible": false,
+        "p95_ms": null,
+        "p95_status": "NOT_COMPUTABLE_NO_VALIDATED_BUCKET_RATES",
+        "total": 0.0,
+        "errors": 0,
+        "error_fraction": null,
+        "status": "ZERO_OBSERVED_TRAFFIC_NOT_HEALTH",
+        "samples": 60,
+        "complete_population_proven": false,
+        "above_15000ms": 0.0,
+        "row_key": "payment|tcp.connect|internal",
+        "count": 0.0,
+        "error_count": 0
+      }
+    ],
+    "total_series": 6,
+    "other_groups": 0,
+    "other_count": 0,
+    "coverage": "RETAINED_BOUNDED_TRACE_SAMPLES",
+    "truncated": false,
+    "limitations": [
+      "OBSERVED_COUNTER_INCREMENT_NOT_RATE",
+      "NO_POPULATION_COMPLETENESS",
+      "NO_P95_RECONSTRUCTION",
+      "OVERLAPPING_SUPPORT_NOT_ADDITIVE"
+    ],
+    "access": {
+      "queries": 1,
+      "records_scanned": 12960,
+      "returned_bytes": 9262
+    }
+  },
+  {
+    "analysis_id": "an-2956276446a2233f8471",
+    "request": {
+      "tool": "compare_dependencies",
+      "target": "checkout",
+      "window": "current",
+      "source": "traces",
+      "reference_id": null,
+      "group_by": "operation",
+      "detail_level": "summary",
+      "signal": "error_fraction",
+      "operation": null,
+      "direction": null,
+      "neighbors": [
+        "cart"
+      ],
+      "offset": 0
+    },
+    "method": "compare_dependencies",
+    "table": [
+      {
+        "row_key": "dependencies",
+        "observed_edges": 8,
+        "edges": [
+          [
+            "checkout",
+            "cart"
+          ]
+        ],
+        "missing_parents": 0,
+        "service_samples": {
+          "cart": {
+            "count": 28,
+            "error_count": 0,
+            "unknown_status": 28
+          },
+          "checkout": {
+            "count": 48,
+            "error_count": 0,
+            "unknown_status": 48
+          }
+        },
+        "shared_trace_errors": [
+          {
+            "trace_handle": "tr-75d4ae77050b",
+            "services": {
+              "cart": {
+                "spans": 7,
+                "errors": 0
+              },
+              "checkout": {
+                "spans": 12,
+                "errors": 0
+              }
+            }
+          },
+          {
+            "trace_handle": "tr-cf785ff6e7d9",
+            "services": {
+              "cart": {
+                "spans": 7,
+                "errors": 0
+              },
+              "checkout": {
+                "spans": 12,
+                "errors": 0
+              }
+            }
+          },
+          {
+            "trace_handle": "tr-2c9d94d22314",
+            "services": {
+              "cart": {
+                "spans": 7,
+                "errors": 0
+              },
+              "checkout": {
+                "spans": 12,
+                "errors": 0
+              }
+            }
+          },
+          {
+            "trace_handle": "tr-69dd057b166a",
+            "services": {
+              "cart": {
+                "spans": 7,
+                "errors": 0
+              },
+              "checkout": {
+                "spans": 12,
+                "errors": 0
+              }
+            }
+          }
+        ],
+        "shared_trace_count": 4,
+        "shared_trace_truncated": false,
+        "onset_order": "UNKNOWN_CLOCK_AND_SAMPLING_RESOLUTION",
+        "onset_times": {},
+        "time_resolution_seconds": null,
+        "relative_changes": {
+          "cart": {
+            "row_key": "comparison",
+            "absolute_difference": null,
+            "relative_change": null,
+            "z": null,
+            "consecutive_deviations": null,
+            "status": "INSUFFICIENT_REFERENCE"
+          },
+          "checkout": {
+            "row_key": "comparison",
+            "absolute_difference": null,
+            "relative_change": null,
+            "z": null,
+            "consecutive_deviations": null,
+            "status": "INSUFFICIENT_REFERENCE"
+          }
+        },
+        "static_topology_only": []
+      }
+    ],
+    "coverage": "RETAINED_BOUNDED_TRACE_SAMPLES",
+    "truncated": false,
+    "limitations": [
+      "TRACE_SAMPLE_NOT_POPULATION",
+      "COMPLETED_SPANS_IN_WINDOW_NOT_INDEPENDENT_ORDERS",
+      "MISSING_NOT_ZERO",
+      "NO_CAUSAL_OR_HEALTH_PROOF"
+    ],
+    "access": {
+      "queries": 2,
+      "records_scanned": 6708,
+      "returned_bytes": 1341
+    }
+  },
+  {
+    "analysis_id": "an-94347a98f63e2a266de4",
+    "request": {
+      "tool": "compare_baseline",
+      "target": "payment",
+      "window": "current",
+      "source": "traces",
+      "reference_id": null,
+      "group_by": "operation",
+      "detail_level": "summary",
+      "signal": "error_fraction",
+      "operation": null,
+      "direction": null,
+      "neighbors": [],
+      "offset": 0
+    },
+    "method": "compare_baseline",
+    "table": [
+      {
+        "row_key": "comparison",
+        "absolute_difference": null,
+        "relative_change": null,
+        "z": null,
+        "consecutive_deviations": null,
+        "status": "INSUFFICIENT_REFERENCE"
+      }
+    ],
+    "coverage": "RETAINED_BOUNDED_TRACE_SAMPLES",
+    "truncated": false,
+    "limitations": [
+      "TRACE_SAMPLE_NOT_POPULATION",
+      "COMPLETED_SPANS_IN_WINDOW_NOT_INDEPENDENT_ORDERS",
+      "MISSING_NOT_ZERO",
+      "NO_CAUSAL_OR_HEALTH_PROOF"
+    ],
+    "access": {
+      "queries": 2,
+      "records_scanned": 1032,
+      "returned_bytes": 160
+    }
+  }
+]

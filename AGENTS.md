@@ -15,7 +15,9 @@ invalidates one, stop and propose a new Decision Record.
 
 ## Current state
 
-当前唯一活动目标：[离线诊断语义对照](docs/goals/EcomSRE_v0.5_Diagnostic_Semantics_Goal.md)。仅保留数据 A/B/C 实验；下列 live 授权均为历史已消费记录，不恢复旧正式验收。
+当前唯一活动目标：[语义视图选择与对比式故障调查](docs/goals/EcomSRE_Semantic_Investigation_Algorithm_Codex_Goal.md)。用户于2026-09-29明确给予本 Goal 所需授权：本地开发与提交、独立 Provider 实验最多 USD20/1600请求、官方公开数据最多2GiB；不推送或修改PR，不操作Docker/live/旧正式验收。下列授权与结果均为历史记录。
+
+本轮研究交付：implementation=ready / experiment=partial / effect=undetermined；1个已见事件的2窗、12条固定配置轨迹及2条开发失败，50请求/USD0.932078；独立测试0/24，不宣称定位收益。结果见[研究汇总](docs/results/semantic-investigation-v1/README.md)，不自动启动新实验或live。
 
 本轮结果：live-03 已结束并 CLEAN：1次新owned部署、3完整轮、372 HTTP读取、71 Docker白名单只读、12 Docker资源操作命令、30正常物理请求、2工程事件、0修复；总占用1715.816813秒。基线及两诊断窗口的真实v4配置均VERIFIED、每组21/21原始样本支持；同部署DEMO_ONLY基线5/5窗口固定，四服务Typed Runtime齐全。两正常API/Worker诊断均SUCCEEDED且memory重验一致，诊断为INSUFFICIENT_EVIDENCE/ABSTAIN：required_coverage=true、failed_sources=[]，多个服务强残余异常导致OPEN_WORLD_ROOT_AMBIGUOUS；健康谓词STRONG_ANOMALY_PRESENT拒绝。owned剩余0、非项目未变，Provider/故障/恢复写/正式holdout/晋升0。采样支持不等于健康验收；此授权已消费，不自动重启，旧live-02失败和停止账本不变。
 
