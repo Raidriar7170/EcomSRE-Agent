@@ -15,7 +15,12 @@ class AnalysisRequest(StrictModel):
     reference_id: str | None = None
     group_by: Literal["operation", "span_kind", "purpose"] = "operation"
     detail_level: Literal["summary", "representative_records"] = "summary"
-    signal: Literal["error_fraction", "duration_ms"] = "error_fraction"
+    signal: Literal[
+        "error_fraction",
+        "error_marker_fraction",
+        "explicit_status_error_fraction",
+        "duration_ms",
+    ] = "error_fraction"
     operation: str | None = None
     direction: (
         Literal["server", "client", "consumer", "producer", "internal"] | None

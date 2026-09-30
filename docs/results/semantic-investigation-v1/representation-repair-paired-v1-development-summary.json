@@ -1,0 +1,186 @@
+{
+  "independent_events": 4,
+  "planned": 16,
+  "started": 0,
+  "not_started": 16,
+  "methods": {
+    "C-service": {
+      "planned": 8,
+      "started": 0,
+      "not_started": 8,
+      "completed": 0,
+      "correct": 0,
+      "acc1": null,
+      "mrr": null,
+      "abstained": 0,
+      "non_abstain": 0,
+      "statuses": {
+        "NOT_STARTED": 8
+      },
+      "repeats": {
+        "0": {
+          "started": 0,
+          "correct": 0
+        },
+        "1": {
+          "started": 0,
+          "correct": 0
+        }
+      },
+      "actual_requests": 0,
+      "accounted_microusd": 0,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "reasoning_tokens": 0,
+      "unknown_usage_calls": 0,
+      "analysis_actions": 0,
+      "queries": 0,
+      "records_scanned": 0,
+      "preprocessing_records": 0,
+      "reference_preprocessing_record_visits": 0,
+      "returned_bytes": 0,
+      "compute_ms": 0
+    },
+    "C-operation": {
+      "planned": 8,
+      "started": 0,
+      "not_started": 8,
+      "completed": 0,
+      "correct": 0,
+      "acc1": null,
+      "mrr": null,
+      "abstained": 0,
+      "non_abstain": 0,
+      "statuses": {
+        "NOT_STARTED": 8
+      },
+      "repeats": {
+        "0": {
+          "started": 0,
+          "correct": 0
+        },
+        "1": {
+          "started": 0,
+          "correct": 0
+        }
+      },
+      "actual_requests": 0,
+      "accounted_microusd": 0,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "reasoning_tokens": 0,
+      "unknown_usage_calls": 0,
+      "analysis_actions": 0,
+      "queries": 0,
+      "records_scanned": 0,
+      "preprocessing_records": 0,
+      "reference_preprocessing_record_visits": 0,
+      "returned_bytes": 0,
+      "compute_ms": 0
+    }
+  },
+  "paired": [
+    {
+      "case_id": "rcase-001",
+      "repeat": 0,
+      "operation_minus_service": null
+    },
+    {
+      "case_id": "rcase-001",
+      "repeat": 1,
+      "operation_minus_service": null
+    },
+    {
+      "case_id": "rcase-002",
+      "repeat": 0,
+      "operation_minus_service": null
+    },
+    {
+      "case_id": "rcase-002",
+      "repeat": 1,
+      "operation_minus_service": null
+    },
+    {
+      "case_id": "rcase-003",
+      "repeat": 0,
+      "operation_minus_service": null
+    },
+    {
+      "case_id": "rcase-003",
+      "repeat": 1,
+      "operation_minus_service": null
+    },
+    {
+      "case_id": "rcase-004",
+      "repeat": 0,
+      "operation_minus_service": null
+    },
+    {
+      "case_id": "rcase-004",
+      "repeat": 1,
+      "operation_minus_service": null
+    }
+  ],
+  "alert_only": {
+    "planned": 4,
+    "completed": 4,
+    "correct": 0,
+    "acc1": 0.0,
+    "mrr": 0.0,
+    "non_abstain": 2,
+    "model_calls": 0,
+    "events": [
+      {
+        "case_id": "rcase-001",
+        "ranked_components": [
+          "checkout"
+        ],
+        "correct": 0,
+        "mrr": 0,
+        "covered": true,
+        "model_calls": 0
+      },
+      {
+        "case_id": "rcase-002",
+        "ranked_components": [],
+        "correct": 0,
+        "mrr": 0,
+        "covered": false,
+        "model_calls": 0
+      },
+      {
+        "case_id": "rcase-003",
+        "ranked_components": [
+          "checkout"
+        ],
+        "correct": 0,
+        "mrr": 0,
+        "covered": true,
+        "model_calls": 0
+      },
+      {
+        "case_id": "rcase-004",
+        "ranked_components": [],
+        "correct": 0,
+        "mrr": 0,
+        "covered": false,
+        "model_calls": 0
+      }
+    ]
+  },
+  "experiment": "not_run",
+  "effect": "undetermined",
+  "stage_cost_including_smoke": {
+    "requests": 0,
+    "accounted_microusd": 0
+  },
+  "cumulative_cost": {
+    "requests": 529,
+    "accounted_microusd": 6185609
+  },
+  "limitations": [
+    "Four exposed development events; repetitions are not independent events.",
+    "Logical scan and preprocessing visits are not measured physical I/O.",
+    "No D evaluation, no business health, no causal or generalization proof."
+  ]
+}

@@ -174,6 +174,9 @@ class StructuredProvider:
         if lite:
             prompt_version = "semantic-lite-v1"
         parameters = strict_schema(schema) if strict_output else schema.model_json_schema()
+        if lite and view.get("representation_version") == "trace-representation-repair-v1":
+            from .semantic_lite import bound_schema
+            parameters = bound_schema(parameters, view)
         if scoped:
             if not key.startswith(("knowledge-draft-v050.2:proposal:", "knowledge-draft-v050.final:proposal:")):
                 raise ValueError("SCOPED_TASK_KEY_NAMESPACE_MISMATCH")
@@ -188,6 +191,8 @@ class StructuredProvider:
         if scoped and (output_cap != 8192 or reasoning != "medium"):
             raise ValueError("SCOPED_DEVELOPMENT_CONFIGURATION_DIFFERS")
         instructions = (SYSTEM.replace("New hypotheses use null IDs.", "Use stable H1-H4 IDs.") if task in {"investigate_semantic_v1", "investigate_semantic_lite_v1"} else SYSTEM) + TASK_CONTRACTS.get(SCOPED_TASK if task == SOURCE_TASK else task, "")
+        if lite and view.get("representation_version") == "trace-representation-repair-v1":
+            instructions += " The representation protocol replaces LiteDecision with the supplied schema: normally return decision containing either an analyze branch or a report branch. Reports contain only action, rationale, report; no hypothesis_updates or expectations. If report_required, return the report branch directly without the decision wrapper. Continuous observations need no binary prediction; expectations may be empty. UNSET is a valid default status, not proof of business success. Use error_marker_fraction for the valid-status sample denominator. Legacy error_fraction is explicit-status-only. Never interpret low-support change as a reliable ranking. "
         if task == SOURCE_TASK:
             instructions += " Select predicates.first and predicates.second from distinct actual source categories; predicates.third is an optional additional conjunct or null. All selected conditions are AND, never alternatives. This task is Level A: expression is null. Preserve failed conditions and UNKNOWN in your reasoning; abstain when insufficient. No rule is supplied or selected by Runtime."
         user_content = json.dumps({"task": task, "view": view}, separators=(",", ":")) if scoped or lite else json.dumps({"task": task, "view": view})

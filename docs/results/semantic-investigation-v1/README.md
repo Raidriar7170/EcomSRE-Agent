@@ -1,12 +1,15 @@
 # 语义视图选择与对比式故障调查
 
-当前协议修复开发检查已结束：C完成4/4，D完成2/4，拒答均0。共用协议与D策略条件已拆分；D仍因真实目标/引用违规留下2条未完成。D执行4次对比、4次普通回退，对比仅1次可判定；不作策略优劣判断，不追加未见测试。详见第12节。原96条测试和16条开发结果不变。
+
+**当前阶段（2026-09-30）：Trace状态/参考匹配及操作历史视图离线交付。implementation=ready / experiment=not_run / effect=undetermined；同身份恢复7200 span，告警基线0/4，真实C配对0/16启动（后续已获授权，执行中），新增Provider请求0。见第13节。**
+
+历史第12节协议修复开发检查已结束：C完成4/4，D完成2/4，拒答均0。共用协议与D策略条件已拆分；D仍因真实目标/引用违规留下2条未完成。D执行4次对比、4次普通回退，对比仅1次可判定；不作策略优劣判断，不追加未见测试。详见第12节。原96条测试和16条开发结果不变。
 
 675698a检查点（历史）：24事件 / 96条测试轨迹已终止；A/B/C/D正确数2/4/4/2（各24例），累计439请求/USD5.456302。未展示D策略收益。整体仍 **implementation=ready / experiment=partial / effect=undetermined**；详见第10节，前面历史结果不覆盖。
 
-> 续轮：已核清检查点 `217a8a8`。下面第1–9节保留该检查点的历史结果；该轮结果见第10节，上一轮开发续接见第11节，本轮协议修复见第12节。既有50次请求与全部成功/失败记录不变。
+> 续轮：已核清检查点 `217a8a8`。下面第1–9节保留该检查点的历史结果；该轮结果见第10节，上一轮开发续接见第11节，历史协议修复见第12节；当前表示修复见第13节。既有50次请求与全部成功/失败记录不变。
 
-本轮为独立研究，不恢复 v0.5 正式验收。活动契约见 [Goal](../../goals/EcomSRE_Semantic_Investigation_Algorithm_Codex_Goal.md)。**三个工具与研究循环已实现；真实实验为 partial，效果 undetermined。** 完成1个已见事件的2窗四组开发比较及C/D重复，没有独立根因测试，不能宣称定位或策略增益。
+本轮为独立研究，不恢复 v0.5 正式验收。当时契约见 [Goal](../../goals/EcomSRE_Semantic_Investigation_Algorithm_Codex_Goal.md)。**三个工具与研究循环已实现；真实实验为 partial，效果 undetermined。** 完成1个已见事件的2窗四组开发比较及C/D重复，没有独立根因测试，不能宣称定位或策略增益。
 
 ## 1. 范围与代码
 
@@ -365,3 +368,126 @@ D：通过共同校验的13次分析提议中，对比分支4次（全部实际�
 **问题1：共同协议／策略混用已修复，C可正常执行；尚不能说C/D均稳定完成。** 这版共同约束没有再把单假设或缺少相反预测当成非法动作；但D仅2/4合法完整，另外2条因真实应用引用/目标问题未完成。保持拒绝，按本轮上限结束，不再追加修复或模型请求。
 
 **问题2：D确实执行了局部对比并在一条轨迹中利用真实结果更新和换问题，但不足以认定已形成稳定、有意义的对比选择。** 对比实际4次中仅1次可判定；9/13分析提议走回退，4/8实际执行为普通回退。解释与预测的语义联系仍弱，不能把分支计数当成策略收益。本轮不判D优于或劣于C，不启动新的未见事件测试。
+
+## 13. Trace 状态保真与操作级历史变化（2026-09-30，离线检查点及授权续接）
+
+### 13.1 起点、范围与授权
+
+活动 Goal 为 [Trace Representation Repair](../../goals/EcomSRE_Trace_Representation_Repair_Codex_Goal.md)。起始与当前提交均为 `50c8fd1f4f0922a3a3b031e79623ecbfd9be8105`；本轮源码/报告为未提交工作区增量，未回退或覆盖后续提交。P0 核对本地干净，PR #104 为 Draft/open，同一 HEAD。本轮只继续原 Product v0.5 worktree；旧 D/D-lite、正式验收和历史失败保持停止。
+
+以下离线检查点保留当时状态。检查点后用户明确批准新增≤USD3/160次Provider调用及本地提交；真实执行结果追加本节。
+
+Goal §0.1 把付费/数据外发与本地提交列为待用户发送的启动授权。本次 `/goal` 已激活离线工作，单独授权问题尚未回复，因此按文档的无付费授权分支完成离线实现和计算：**项目 Provider 0 次、USD0；本地提交0，推送/远程PR修改0**。不是数据不存在，也不是把未启动的16条记成答错或拒答。
+
+读取范围：Goal、适用指令、DEC-064/065、安全边界、本报告11–12节、三个语义工具/契约/lite/Provider及评测适配直接依赖；原始数据仅已有 `rcase-001..004` 对应的四份 Parquet/task 和其四个旧开发快照。写入范围：`semantic_analysis/semantic_contracts/semantic_lite/provider`、新增纯计算 `semantic_representation`、已有准备/评测/汇总CLI、聚焦测试、新配置、唯一活动指针和本报告。冻结范围：四份原始输入、旧四快照/清单、旧结果；新派生快照/配置和本轮证据在私有 `representation-repair` 目录。最终仓库范围为当前整个 worktree 的实际 delta；不含其他工作树或旧任务变更。未修改产品规则、知识库或永久决策。
+
+### 13.2 正确性修复与接口改进
+
+- `compare_baseline` 与 `compare_dependencies` 共用 `select_reference`。先匹配服务/操作/方向、signal、单位、统计方法、所有实际 source_windows 的等长/事前约束；优先最近 fixed_at / 支持窗口末端，同级多项报告歧义。旧无 signal 参考只接受已知 RCA 适配器的精确 ID 定义，不由 fraction/ms 单独猜语义。
+- 真实旧开发记录中 **2次依赖调用、6个服务参考误配**：003/C的checkout/cart/currency/email，004/D的inventory/cart。旧逻辑按名称先取 duration_ms，尽管请求为 error_fraction；新函数能选择 error_fraction。仅重算参考选择，没有重跑 D 或改写旧轨迹。详见 [离线计算记录](representation-repair-offline.json)。
+- 状态保留 `raw_status_code / normalized_status / status_normalization_basis`，显式0/1/2分别为UNSET/OK/ERROR；缺失/非法独立计数。新默认目录使用 `error_marker_fraction`；旧 `error_fraction` 保持布尔显式状态分母并标明 legacy，不静默换义。UNSET默认状态不等于业务成功，依据 [OTel Set Status](https://opentelemetry.io/docs/specs/otel/trace/api/#set-status)。
+- 新研究由 `representation_version` 显式启用。两种 C 使用相同服务、状态表示、当前操作画像、操作/参考可用性元数据、输入身份、模型和共同接口；只有可执行历史参考粒度不同。C-service不使用旧错误状态/错误参考作弱基线。
+- 动态服务、Q和E/O枚举；已执行规范化动作移出可执行目录，历史结果保留；分析/报告使用嵌套联合结构，强制报告为仅含报告的结构，正常主动报告也不能带假设更新；空目录切报告，不发空enum。拒绝反馈明确没有接受增量及真实H ID。原假引用/非法目标仍由运行时拒绝。依据 [Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs) 的受支持子集实现，没有根级anyOf或if/then。
+
+这些是正确性与接口修复，**不是新的RCA策略贡献，也没有验证D**。
+
+### 13.3 状态、采样和操作计算的实际结果
+
+四份源文件与旧清单SHA-256一致。每事件恢复1800个相同span身份（当前＋三个历史窗各450），共7200；未改采样，上限仍450/窗。四事件当前窗均没有真实缺失/非法状态，覆盖率为1；人工缺失/非法算例另行验证，不能把此实测推广到其他数据。
+
+| 事件 | 当前UNSET / OK / ERROR / 缺失 | ERROR标记占比 | 显式状态条件比例 | 当前唯一Trace数 | 四窗恢复的UNSET |
+|---|---:|---:|---:|---:|---:|
+| 001 | 362 / 43 / 45 / 0 | 45/450 = 10% | 45/88 = 51.14% | 49 | 1484 |
+| 002 | 415 / 35 / 0 / 0 | 0/450 = 0 | 0/35 = 0 | 46 | 1520 |
+| 003 | 347 / 76 / 27 / 0 | 27/450 = 6% | 27/103 = 26.21% | 35 | 1410 |
+| 004 | 403 / 47 / 0 / 0 | 0/450 = 0 | 0/47 = 0 | 47 | 1522 |
+
+共恢复5936个被旧None混同的显式UNSET。分母变化是表示信息恢复，不能声称“业务错误率下降”。100 UNSET → marker=0/explicit=null，100真正缺失 → marker=null/coverage=0 的人工算例均保留；零标记不排除根因。
+
+| 事件 | 当前源/样本操作数 | 四窗操作scope数 | 可比较中位数 / 低支持scope | 当前样本缺父span |
+|---|---:|---:|---:|---:|
+| 001 | 64 / 56 | 56 | 40 / 16 | 13 |
+| 002 | 73 / 59 | 67 | 14 / 53 | 16 |
+| 003 | 65 / 60 | 62 | 36 / 26 | 2 |
+| 004 | 73 / 66 | 66 | 36 / 30 | 11 |
+
+scope为真实 `(service,operation,direction)`，包括仅出现在历史的操作，故不等于当前操作数。未删除控制流或健康检查；未匹配用途仍UNCLASSIFIED。源窗口与样本的操作、四类状态、时延、缺父统计完整保存在本地每事件 `*-features.json`；原始流式扫描分别510000、358256、410000、470000行，共1748256行。准备耗时包括哈希/流式处理/派生计算，约8.68秒，非模型I/O成本。尾部支持修正在已恢复快照上重算，没有再次扫描原始窗口。
+
+**采样损失的具体例子：002源当前窗有846个inventory `/api/v1/inventory/{productId}` server span、847个 `SELECT inventory.inventory` client span，而保留样本均为0；样本只剩 `/actuator/health` 与 `HikariDataSource.getConnection` 各1个。** 新操作表示不能补造业务span。这是采样损失，不是源数据没有业务操作；本轮遵循默认同身份采样，不以已知答案修订采样。其他scope已有真实操作参考，因此不是全UNKNOWN接口壳。
+
+真实信息增量举例（先计算全部scope，后分析/评分；不按标签或变化量挑样本）：
+
+- 001 payment服务级中位数 `0.233077` vs参考`0.2763935` ms，变化`-0.0433165` ms；Charge/server为`0.372673` vs`0.298469`，变化`+0.074204` ms，当前5个span、历史各7个；ERROR标记为`4/5`，服务聚合为`4/10`。操作方向与服务聚合时延变化方向不同，能恢复局部观测差异，不证明根因。
+- 003 payment服务级变化`-0.0132025` ms，Charge/server变化`+0.0307415` ms；当前8个、历史8/7/8个span。另有许多服务也变化，不能把“发生变化”当唯一定位依据。
+- 004 inventory服务级变化`+0.007401` ms；API/server当前中位数`2.190323`，两个满足支持条件的参考窗口中心`2.058624`，变化`+0.131699` ms；当前9个span，历史5/5/3，第三窗因不足5个不参与中心。SQL/client变化`-0.003728` ms。这些亚毫秒变化不再被固定50ms二元门槛吞掉，也不能自动解释成故障。
+- 001 accounting `orders receive` 当前5个span中位数`37.081` vs参考中心`7.4454` ms，绝对变化`+29.6356` ms，比上述payment变化更大。003/004存在较大负变化。**没有建立“最大变化就是根因”的确定性结论。**
+
+支持配置在模型付费前固定：当前及参与参考窗各≥5有效时延span，≥2历史窗；z需≥3窗且MAD>0，MAD=0则z=null；p95 nearest-rank需参与窗各≥40，不足返回null。中心是等权窗口中位数的中位数；不合并历史span，不平均操作p95。阈值只是开发支持限制，不是统计充分性证明；没有持续时长或SLO贡献声明。
+
+依赖视图额外操作展开按每服务固定身份序第一项，其他组计数和参考句柄保留，可经现有baseline工具展开；没有按错误/慢请求/根因排序。所有展开访问计入查询/记录扫描代理，额外参考构建也单列逻辑记录访问；它们不是实测物理I/O。初始不裁剪的开发wire探针超过原96KB限制，已离线压缩重复元数据并有界展开，原失败探针保留。
+
+### 13.4 固定开发定义与实际模型结果
+
+新配置：[representation-repair.json](../../../config/semantic-investigation-v1/representation-repair.json)。固定计划为四已见事件×C-service/C-operation×两次，16条；每事件内配对，第二次反转方法先后；另允许最多2条smoke，失败及修复均计入。模型仍 `gpt-5.4-mini-2026-03-17`、low/strict/4096，8请求/6动作/1格式修复，24等价查询与100000逻辑扫描上限；未换模型/Provider。
+
+原共用账本为唯一预算依据。P0为529请求/USD6.185609，余1071/USD13.814391；子预算在同一ledger实例中把累计上限收紧为689请求/USD9.185609，同时原1600/USD20继续有效，不建立第二付费账本。最多144次计划调用；按原96KB输入边界的逐次可靠预留，144次总最坏上界高于USD3，因此不保证全部启动；必须在每调用前留足上界、按既定顺序到限停。固定批次后不改参/补跑。
+
+[完整计划与未启动记录](representation-repair-paired-v1-development-summary.json) / [逐轨迹CSV](representation-repair-paired-v1-development-runs.csv)。
+
+| 方法 | 独立事件 | 启动/计划 | 完成 | 正确/已启动 | Acc@1 / MRR | 非拒答覆盖 | 新Provider费用 |
+|---|---:|---:|---:|---:|---|---:|---:|
+| alert_only | 4 | 4/4 | 4 | 0/4 | 0 / 0 | 2/4 | 0 |
+| C-service | 4 | 0/8 | 0 | 不适用 | null / null | 不适用 | 0 |
+| C-operation | 4 | 0/8 | 0 | 不适用 | null / null | 不适用 | 0 |
+
+alert_only只从原始告警title按实体边界、最长匹配、首次位置和固定字典序提取候选。001/003匹配checkout，002/004为空；标签仅在独立汇总评分时读取，没有人工补齐。覆盖2/4，正确0/4。C的两次重复均0/4启动；16条未启动，不是0/16正确。真实smoke同样0启动。无合法拒答、应用协议/Provider/工具失败计入真实运行，因为本轮没有真实运行。全部新模型tokens/费用为0，累计账本保持529/USD6.185609。不能据fake Provider报告判断模型完成率。
+
+**唯一外部执行缺口是付费/必要观测外发与本地提交尚未获得单独确认。** 未进行模型信息使用归因；没有真实轨迹可证明操作观测改变候选排序，也不能推断两种C是否超过alert_only。数据限制另按上述具体scope/窗口保留，不用“还需更多验证”掩盖采样损失。
+
+### 13.5 聚焦核验与已执行命令
+
+57项相关聚焦检查通过（含本轮15个参数化算例），Ruff和scoped diff检查通过；保留既有Starlette弃用警告。覆盖分母、缺失、冲突重复、signal顺序、同单位不同语义、错scope/单位/source_windows、MAD与低样本、动态句柄/报告结构、动作去重和fake循环。旧baseline测试fixture新增显式signal以符合新兼容性要求，不用单位猜旧语义。
+
+两种C的单例fixture CLI均完成，项目Provider请求0。四事件×两视图的真实输入/假运输wire探针验证动态schema和大小，最终8条探针均完成，最大实际序列化请求86717 bytes（低于96000）；这是指定探针路径的边界检查，不保证所有未来模型路径都不超限。原始过大探针也保留。没有通过真实服务调用确认strict wire。
+
+已执行命令（私有源路径/复用PyArrow路径以环境变量代替，未下载或安装依赖）：
+
+```bash
+# 实际使用当前项目Python，追加已有PyArrow环境的site-packages；首次直接用外部Python
+# 因缺fastapi退出，0数据扫描/0模型调用。随后复用已有依赖完成：
+PYTHONPATH=src:. .venv/bin/python -c \
+ 'import sys,runpy;sys.path.append("<RETAINED_ARROW_SITE>");runpy.run_module("scripts.product_v050.prepare_semantic_rca100",run_name="__main__")' \
+ --source "$RCA100_SOURCE" \
+ --repair-retained .local/semantic-investigation-v1/rca100 \
+ --output .local/semantic-investigation-v1/representation-repair \
+ --base-config config/semantic-investigation-v1/representation-repair.json
+PYTHONPATH=src:. .venv/bin/python \
+ .local/semantic-investigation-v1/representation-repair/finalize_offline.py
+PYTHONPATH=src:. .venv/bin/python -m scripts.product_v050.evaluate_semantic_investigation \
+ --config .local/semantic-investigation-v1/representation-repair/experiment.json \
+ --mode single --provider fixture --methods C --views service operation --case rcase-001 \
+ --batch representation-repair-smoke-v1 \
+ --input-root .local/semantic-investigation-v1/representation-repair \
+ --output .local/semantic-investigation-v1/representation-repair/fixture
+PYTHONPATH=src:. .venv/bin/python \
+ .local/semantic-investigation-v1/representation-repair/check_wire.py
+PYTHONPATH=src:. .venv/bin/python -m scripts.product_v050.summarize_semantic_subset \
+ --config .local/semantic-investigation-v1/representation-repair/experiment.json \
+ --root .local/semantic-investigation-v1/representation-repair \
+ --ledger "$COMMON_GIT_DIR/semantic-investigation-v1/provider/ledger.jsonl" \
+ --batch representation-repair-paired-v1 --split development \
+ --output docs/results/semantic-investigation-v1
+PYTHONPATH=src:. .venv/bin/python -m pytest \
+ tests/product_v050/test_trace_representation.py \
+ tests/product_v050/test_semantic_investigation.py \
+ tests/product_v050/test_semantic_lite.py \
+ tests/product_v050/test_provider_diagnostics.py -q
+```
+
+没有执行configured Provider命令，以上不把设计中的付费命令冒充已运行。旧四快照、原始文件、旧账本/轨迹没有重写；新私有输入清单、完整特征、原始wire探针和结果均在 `.local/semantic-investigation-v1/representation-repair/`。
+
+### 13.6 结果边界与下一步
+
+**implementation=ready（离线实现与真实计算）；experiment=not_run；effect=undetermined。** 当前成果支持“修复状态分母与参考选择，恢复了真实操作局部变化和具体采样缺口”。不支持模型定位增益、跨事件泛化、健康认证或D策略收益；旧阶段effect/准确率不变。
+
+唯一下一步取舍：**保留当前C作为基线**，在明确付费授权后才执行已经有界的两种C开发对照；本次不自动开展后续实验、采样修订或未见事件评估。

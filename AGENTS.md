@@ -15,7 +15,7 @@ invalidates one, stop and propose a new Decision Record.
 
 ## Current state
 
-当前唯一活动目标：[语义视图选择与对比式故障调查](docs/goals/EcomSRE_Semantic_Investigation_Algorithm_Codex_Goal.md)。用户于2026-09-29明确给予本 Goal 所需授权：本地开发与提交、独立 Provider 实验最多 USD20/1600请求、官方公开数据最多2GiB；不推送或修改PR，不操作Docker/live/旧正式验收。下列授权与结果均为历史记录。
+当前唯一活动目标：[Trace 状态保真与操作级判别特征](docs/goals/EcomSRE_Trace_Representation_Repair_Codex_Goal.md)，2026-09-30 通过 /goal 激活。沿用当前工作树，暂停 D/D-lite；先执行离线修复与四个已见开发事件计算。用户已明确批准新增≤USD3/160次Provider调用及本地提交，仍受原累计≤USD20/1600次限制；不推送、更新远程 PR、Docker/live、新下载或未见测试。下列为保留的历史结果与授权，不据此恢复旧任务。
 
 本轮研究交付：原trace-only服务级24事件×A/B/C/D共96条测试已结束，未观察到D收益，全能力覆盖仍不完整。上一轮16条开发（C/D完成3/8与1/8）因共用相反预测校验误约束C，不支持策略比较。本轮协议拆分后的8条开发检查已结束：C完成4/4，D完成2/4，拒答均0；D两条因真实目标/引用违规未完成。D实际执行4次对比（仅1次可判定）及4次普通ReAct回退；不判策略优劣，不启动未见测试或追加修订。累计529请求/USD6.185609，全部历史与失败记录保留。见[同一阶段报告第12节](docs/results/semantic-investigation-v1/README.md)。
 

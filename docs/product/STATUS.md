@@ -1,6 +1,10 @@
-# 当前任务 · 语义视图选择与对比式故障调查
+# 当前任务 · Trace 状态保真与操作级判别特征
 
-唯一活动目标：[Semantic Investigation Algorithm Goal](../goals/EcomSRE_Semantic_Investigation_Algorithm_Codex_Goal.md)。原trace-only服务级24事件×A/B/C/D共96条测试已结束，未观察到D收益，全能力覆盖仍不完整。上一轮16条开发（C/D完成3/8与1/8）因共用相反预测校验误约束C，不支持策略比较。本轮协议拆分后的8条开发检查已结束：C完成4/4，D完成2/4，拒答均0；D两条因真实目标/引用违规未完成。D实际执行4次对比（仅1次可判定）及4次普通ReAct回退；不判策略优劣，不启动未见测试或追加修订。累计529请求/USD6.185609，全部历史与失败记录保留。详见[同一阶段报告第12节](../results/semantic-investigation-v1/README.md)。不自行续跑、扩额或恢复旧正式验收。
+唯一活动目标：[Trace Representation Repair Goal](../goals/EcomSRE_Trace_Representation_Repair_Codex_Goal.md)。离线实现与四事件真实计算完成：implementation=ready / experiment=not_run / effect=undetermined。状态恢复7200个相同span身份；alert_only正确0/4，真实C配对0/16启动。用户已明确批准新增≤USD3/160次Provider调用及本地提交，正在执行有界开发对照；不推送或修改远程PR。D/D-lite暂停；见[同一报告第13节](../results/semantic-investigation-v1/README.md)。旧结果保留。
+
+# 历史任务 · 语义视图选择与对比式故障调查
+
+历史目标：[Semantic Investigation Algorithm Goal](../goals/EcomSRE_Semantic_Investigation_Algorithm_Codex_Goal.md)。原trace-only服务级24事件×A/B/C/D共96条测试已结束，未观察到D收益，全能力覆盖仍不完整。上一轮16条开发（C/D完成3/8与1/8）因共用相反预测校验误约束C，不支持策略比较。本轮协议拆分后的8条开发检查已结束：C完成4/4，D完成2/4，拒答均0；D两条因真实目标/引用违规未完成。D实际执行4次对比（仅1次可判定）及4次普通ReAct回退；不判策略优劣，不启动未见测试或追加修订。累计529请求/USD6.185609，全部历史与失败记录保留。详见[同一阶段报告第12节](../results/semantic-investigation-v1/README.md)。不自行续跑、扩额或恢复旧正式验收。
 
 # 历史离线诊断语义 A/B/C 对照
 

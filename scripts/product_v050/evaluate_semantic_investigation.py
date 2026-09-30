@@ -357,7 +357,40 @@ def load_retained(root, number, config):
 
 
 class FixtureProvider:
-    def complete(self, *, view, **_):
+    def complete(self, *, view, schema=None, **_):
+        if view.get("representation_version"):
+            from ecomsre.product.investigation.semantic_lite import (
+                TurnDecision,
+                ReportDecision,
+            )
+
+            if view["evidence"] or view["report_required"]:
+                decision = dict(
+                    action="report",
+                    rationale="fixture",
+                    report=dict(
+                        ranked_components=[],
+                        explanation="Fixture only, no model inference.",
+                        references=[],
+                        residuals=[],
+                        limitations=["FIXTURE_ONLY"],
+                        conclusion="ABSTAIN",
+                    ),
+                )
+                return (
+                    ReportDecision(**decision)
+                    if schema is ReportDecision
+                    else TurnDecision(decision=decision)
+                )
+            return TurnDecision(
+                decision=dict(
+                    action="analyze",
+                    question_id=view["questions"][0]["question_id"],
+                    hypothesis_updates=[],
+                    expectations=[],
+                    rationale="fixture",
+                )
+            )
         results = view["analysis_results"] or view["observations"]
         target = view["metadata"]["services"][0]
         if results:
@@ -504,6 +537,7 @@ def main():
     )
     p.add_argument("--provider", choices=["fixture", "configured"], default="fixture")
     p.add_argument("--methods", nargs="+", choices=list("ABCD"), default=list("ABCD"))
+    p.add_argument("--views", nargs="+", choices=["service", "operation"])
     p.add_argument("--split", choices=["development", "test"], default="development")
     p.add_argument("--case", default=None)
     p.add_argument("--repeat", type=int, default=0)
@@ -590,7 +624,37 @@ def main():
             text=True,
         ).strip()
     )
-    ledger = ResearchLedger(common / "semantic-investigation-v1/provider")
+    stage = config.get("stage_budget") if config.get("representation_version") else None
+    ledger = ResearchLedger(
+        common / "semantic-investigation-v1/provider",
+        limit=min(20_000_000, stage["start_microusd"] + stage["max_new_microusd"])
+        if stage
+        else 20_000_000,
+        calls=min(1600, stage["start_calls"] + stage["max_new_calls"])
+        if stage
+        else 1600,
+    )
+    if stage:
+        if args.split != "development" or args.methods != ["C"] or not args.views:
+            raise ValueError("REPAIR_REQUIRES_DEVELOPMENT_C_AND_EXPLICIT_VIEWS")
+        if args.batch not in (
+            "representation-repair-smoke-v1",
+            "representation-repair-paired-v1",
+        ):
+            raise ValueError("REPAIR_FIXED_BATCH_REQUIRED")
+        if args.repeat not in (0, 1):
+            raise ValueError("REPAIR_AT_MOST_TWO_REPEATS")
+        if any(
+            c["case_id"] not in [f"rcase-{i:03d}" for i in range(1, 5)]
+            for c, _, _ in snapshots
+        ):
+            raise ValueError("REPAIR_FOUR_EXPOSED_EVENTS_ONLY")
+        for c, s, _ in snapshots:
+            if (
+                s["metadata"].get("representation_version")
+                != config["representation_version"]
+            ):
+                raise ValueError("REPAIR_REQUIRES_RESTORED_INPUTS")
     provider = (
         provider_for(config, ledger)
         if args.provider == "configured"
@@ -599,10 +663,25 @@ def main():
     if args.mode in ("single", "smoke"):
         snapshots = snapshots[:1]
     for i, (case, snapshot, manifest) in enumerate(snapshots):
-        methods = list(args.methods)
+        methods = ["C-" + view for view in args.views] if stage else list(args.methods)
         # Frozen rotating paired order, with every method on a case before next case.
-        methods = methods[i % len(methods) :] + methods[: i % len(methods)]
+        rotation = (
+            (int(case["case_id"].split("-")[-1]) - 1 + args.repeat) % len(methods)
+            if stage
+            else i % len(methods)
+        )
+        methods = methods[rotation:] + methods[:rotation]
         for method in methods:
+            if stage and args.provider == "configured":
+                prior_intents = [
+                    json.loads(p.read_text())
+                    for p in (args.output / "runs").glob("*.intent.json")
+                ]
+                count = sum(
+                    ":" + args.batch + ":" in x["run_id"] for x in prior_intents
+                )
+                if count >= (2 if "smoke" in args.batch else 16):
+                    raise ValueError("REPAIR_TRAJECTORY_LIMIT")
             key = f"semantic-investigation-v1:{args.batch}:{case['case_id']}:{method}:{args.repeat}:{args.provider}"
             filename = hashlib.sha256(key.encode()).hexdigest()[:24]
             result_path = args.output / "runs" / f"{filename}.json"
@@ -643,9 +722,19 @@ def main():
                 )
 
                 runner = investigate_semantic_lite
-            state = runner(
-                SemanticAnalysis(snapshot, config), provider, method, key, config
+            run_config = (
+                dict(config, reference_view=method.removeprefix("C-"))
+                if stage
+                else config
             )
+            state = runner(
+                SemanticAnalysis(snapshot, run_config),
+                provider,
+                "C" if stage else method,
+                key,
+                run_config,
+            )
+            state["method"] = method
             state.update(
                 config_sha256=digest(config),
                 snapshot_sha256=digest(snapshot),

@@ -8,6 +8,13 @@ from statistics import median
 from time import monotonic
 
 from .semantic_numeric import grouped_point
+from .semantic_representation import (
+    VERSION,
+    status_stats,
+    window_stats,
+    changes,
+    select_reference,
+)
 
 
 def digest(value):
@@ -43,7 +50,7 @@ def row_key(row, group_by):
     )
 
 
-def summarize(rows, group_by, detail):
+def summarize(rows, group_by, detail, representation=False):
     groups = defaultdict(list)
     for row in rows:
         groups[row_key(row, group_by)].append(row)
@@ -74,6 +81,17 @@ def summarize(rows, group_by, detail):
             if detail == "representative_records"
             else [],
         )
+        if representation:
+            item.update(status_stats(values))
+            if len(durations) < 40:
+                item["p95_duration_ms"] = None
+            item["tail_support_minimum"] = 40
+            item.update(
+                service=values[0]["service"],
+                operation=values[0].get("operation"),
+                direction=values[0].get("direction"),
+                error_fraction_semantics="legacy_explicit_boolean_status_only",
+            )
         table.append(item)
     return table
 
@@ -120,6 +138,7 @@ class SemanticAnalysis:
 
     def __init__(self, snapshot, config):
         self.snapshot, self.config = snapshot, config
+        self.representation = config.get("representation_version") == VERSION
         self.snapshot_id = digest(snapshot)
         self.services = snapshot["services"]
         self.rows = []
@@ -203,13 +222,25 @@ class SemanticAnalysis:
                 )
                 for service in [request.target, *request.neighbors]
             )
+        operation_access = 0
+        if (
+            self.representation
+            and request.tool == "compare_dependencies"
+            and self.config.get("reference_view") == "operation"
+        ):
+            operation_access = 2 * (1 + len(request.neighbors))
+            queries += operation_access
         count = (
             self.snapshot["metadata"]
             .get("counter_points_by_service", {})
             .get(request.target, 0)
             if request.source == "counters"
             else self.snapshot["metadata"]["record_count"]
-            * (13 if request.tool == "compare_dependencies" else queries)
+            * (
+                13 + operation_access
+                if request.tool == "compare_dependencies"
+                else queries
+            )
         )
         q = 1.0 if self.snapshot["metadata"].get("trace_fields") else 0.25
         if request.tool == "compare_baseline" and request.reference_id is None:
@@ -228,7 +259,20 @@ class SemanticAnalysis:
             topology_scope="Derived from supplied multi-window samples; not a current-window or causal claim.",
             windows=self.snapshot["windows"],
             references={
-                k: {f: v[f] for f in ("fixed_at", "window", "unit", "method", "scope")}
+                k: {
+                    f: v[f]
+                    for f in (
+                        "fixed_at",
+                        "window",
+                        "unit",
+                        "method",
+                        "scope",
+                        "signal",
+                        "statistic",
+                        "source_windows",
+                    )
+                    if f in v
+                }
                 for k, v in self.snapshot.get("references", {}).items()
             },
             source_metadata=self.snapshot["metadata"],
@@ -344,7 +388,21 @@ class SemanticAnalysis:
                 else None,
             )
         elif request.tool == "profile_operations":
-            table = summarize(rows, request.group_by, request.detail_level)
+            table = summarize(
+                rows, request.group_by, request.detail_level, self.representation
+            )
+            if self.representation:
+                for item in table:
+                    item["available_reference_handles"] = sorted(
+                        k
+                        for k, v in self.snapshot.get("references", {}).items()
+                        if v["scope"]
+                        == [
+                            request.target,
+                            item.get("operation"),
+                            item.get("direction"),
+                        ]
+                    )
             extra = dict(total_records=len(rows), other_groups=0, other_count=0)
         elif request.tool == "compare_baseline":
             table = [self.baseline(request, rows)]
@@ -374,10 +432,7 @@ class SemanticAnalysis:
         )
 
     def baseline(self, request, rows):
-        ref = self.snapshot.get("references", {}).get(request.reference_id)
-        unit = "fraction" if request.signal == "error_fraction" else "ms"
-        window = self.snapshot["windows"][request.window]
-        scope = [request.target, request.operation, request.direction]
+        reference_id, ref, reason = select_reference(self.snapshot, request)
         result = dict(
             row_key="comparison",
             absolute_difference=None,
@@ -385,17 +440,43 @@ class SemanticAnalysis:
             z=None,
             consecutive_deviations=None,
         )
-        if ref is None:
-            return dict(result, status="INSUFFICIENT_REFERENCE")
-        if ref["fixed_at"] >= window[0] or ref["window"][1] > window[0]:
-            return dict(result, status="REFERENCE_NOT_PRIOR")
-        if (
-            ref["unit"] != unit
-            or ref["scope"] != scope
-            or ref["method"] != "trace_sample"
-            or ref["window"][1] - ref["window"][0] != window[1] - window[0]
-        ):
-            return dict(result, status="REFERENCE_SCOPE_MISMATCH")
+        if reason:
+            return dict(result, status=reason)
+        if self.representation:
+            current = window_stats(rows)
+            historical = ref.get("window_statistics", [])
+            if not historical:
+                return dict(result, status="REFERENCE_STATISTICS_MISSING")
+            calculated = changes(current, historical, self.config)
+            if request.signal != "duration_ms":
+                values = [r.get(request.signal) for r in historical]
+                valid = [v for v in values if finite(v)]
+                value = current.get(request.signal)
+                sufficient = len(valid) >= self.config["representation_support"][
+                    "reference_windows"
+                ] and finite(value)
+                center = median(valid) if sufficient else None
+                calculated.update(
+                    current_value=value,
+                    reference_center=center,
+                    absolute_difference=value - center if sufficient else None,
+                    relative_change=(value - center) / abs(center)
+                    if sufficient and center
+                    else None,
+                    z=None,
+                    status="COMPARABLE_HISTORICAL_REFERENCE"
+                    if sufficient
+                    else "INSUFFICIENT_STATUS_SUPPORT",
+                )
+            return dict(
+                result | calculated,
+                reference_id=reference_id,
+                signal=request.signal,
+                scope=ref["scope"],
+                window=self.snapshot["windows"][request.window],
+                source_windows=ref["source_windows"],
+                source_refs=ref["source_refs"],
+            )
         if request.signal == "error_fraction":
             known = [r["error"] for r in rows if type(r.get("error")) is bool]
             values = [sum(known) / len(known)] if known else []
@@ -498,22 +579,75 @@ class SemanticAnalysis:
                 )
         changes = {}
         for service in sorted(involved):
-            matches = sorted(
-                k
-                for k, v in self.snapshot.get("references", {}).items()
-                if v["scope"] == [service, request.operation, request.direction]
-            )
             comparison_request = request.model_copy(
                 update={
                     "tool": "compare_baseline",
                     "target": service,
-                    "reference_id": matches[0] if matches else None,
+                    "reference_id": None,
                 }
             )
             changes[service] = self.baseline(
                 comparison_request, self.rows_for(comparison_request)
             )
             refs += changes[service].pop("source_refs", [])
+        if self.representation:
+            for service in sorted(involved):
+                stats = status_stats(self.rows_for(request, service))
+                counts[service].update(stats)
+                counts[service]["unknown_status"] = stats["n_missing_or_invalid"]
+            if self.config.get("reference_view") == "operation":
+                for service in sorted(involved):
+                    scopes = sorted(
+                        {
+                            (r.get("operation"), r.get("direction"))
+                            for r in self.rows_for(request, service)
+                        },
+                        key=str,
+                    )
+                    local = []
+                    for operation, direction in scopes[:1]:
+                        req = request.model_copy(
+                            update={
+                                "tool": "compare_baseline",
+                                "target": service,
+                                "operation": operation,
+                                "direction": direction,
+                                "reference_id": None,
+                            }
+                        )
+                        value = self.baseline(req, self.rows_for(req))
+                        refs += value.pop("source_refs", [])
+                        local.append(
+                            dict(
+                                operation=operation,
+                                direction=direction,
+                                comparison=value,
+                            )
+                        )
+                    changes[service]["operation_changes"] = local
+                    service_rows = self.rows_for(request, service)
+                    changes[service]["other_operations"] = [
+                        dict(
+                            operation=op,
+                            direction=direction,
+                            count=sum(
+                                r.get("operation") == op
+                                and r.get("direction") == direction
+                                for r in service_rows
+                            ),
+                            reference_handles=sorted(
+                                k
+                                for k, v in self.snapshot.get("references", {}).items()
+                                if v["scope"] == [service, op, direction]
+                                and v.get("signal") == request.signal
+                            ),
+                            limitation="NOT_EXPANDED_FIXED_IDENTITY_ORDER_USE_MATCHED_BASELINE",
+                        )
+                        for op, direction in scopes[1:]
+                    ]
+                    changes[service]["expansion_rule"] = (
+                        "FIRST_OPERATION_BY_IDENTITY_PER_SERVICE_NOT_BY_VALUES"
+                    )
         resolution = self.snapshot["metadata"].get("time_resolution_seconds")
         synced = self.snapshot["metadata"].get("synchronized_clocks", False)
         onset = {}

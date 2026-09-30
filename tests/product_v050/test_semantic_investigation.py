@@ -139,6 +139,7 @@ def test_reference_math_and_local_missing():
 def test_baseline_scope_time_and_values(snapshot, config):
     ref = dict(
         fixed_at=9,
+        signal="error_fraction",
         window=[0, 10],
         unit="fraction",
         scope=["a", None, None],

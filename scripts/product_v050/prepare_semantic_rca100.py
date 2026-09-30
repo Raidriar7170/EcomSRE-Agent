@@ -320,11 +320,280 @@ def prepare(source, answers, output, base_config):
     )
 
 
+def repair_representation(source, retained, output, base_config):
+    """Four exposed events only; restore raw status on identical span identities."""
+    from copy import deepcopy
+    from time import monotonic
+    from ecomsre.product.investigation.semantic_representation import (
+        VERSION,
+        normalize_status,
+        window_stats,
+        alert_ranking,
+    )
+    from ecomsre.product.investigation.semantic_analysis import SemanticAnalysis, digest
+    from ecomsre.product.investigation.semantic_contracts import AnalysisRequest
+
+    config = json.loads(base_config.read_text())
+    old_config = json.loads((retained / "experiment.json").read_text())
+    manifests = json.loads((retained / "manifest.json").read_text())[:4]
+    config["cases"] = old_config["cases"][:4]
+    expected = [f"rcase-{i:03d}" for i in range(1, 5)]
+    assert [c["case_id"] for c in config["cases"]] == expected
+    assert [m["case_id"] for m in manifests] == expected
+    evidence = []
+    for entry, case in zip(manifests, config["cases"], strict=True):
+        started = monotonic()
+        snapshot = json.loads((retained / case["snapshot_file"]).read_text())
+        old = deepcopy(snapshot)
+        directory = source / "cases" / entry["source_task"]
+        for path, expected_hash in entry["files"].items():
+            if sha(source / path) != expected_hash:
+                raise ValueError("RAW_SOURCE_CHANGED")
+        identities = {(r["trace_id"], r["span_id"]): r for r in snapshot["records"]}
+        recovered = {}
+        pools = {w: {} for w in snapshot["windows"]}
+        raw_counts = defaultdict(int)
+        scanned = 0
+        parquet = pq.ParquetFile(directory / "traces.parquet")
+        fields = [
+            "traceId",
+            "spanId",
+            "parentSpanId",
+            "kind",
+            "spanName",
+            "endTime",
+            "duration",
+            "serviceName",
+            "statusCode",
+        ]
+        for batch in parquet.iter_batches(
+            batch_size=16384,
+            columns=[f for f in fields if f in parquet.schema_arrow.names],
+        ):
+            for r in batch.to_pylist():
+                scanned += 1
+                try:
+                    end = int(r["endTime"]) / 1e9
+                    duration = int(r["duration"]) / 1e6
+                except (ValueError, TypeError):
+                    continue
+                window = next(
+                    (w for w, (a, b) in snapshot["windows"].items() if a <= end < b),
+                    None,
+                )
+                if window is None:
+                    continue
+                raw_counts[window] += 1
+                identity = (opaque(r["traceId"]), opaque(r["spanId"]))
+                row = dict(
+                    service=r["serviceName"],
+                    operation=r["spanName"],
+                    direction={
+                        "1": "internal",
+                        "2": "server",
+                        "3": "client",
+                        "4": "producer",
+                        "5": "consumer",
+                    }.get(str(r["kind"])),
+                    duration_ms=duration,
+                    trace_id=identity[0],
+                    span_id=identity[1],
+                    parent_span_id=opaque(r["parentSpanId"])
+                    if r["parentSpanId"]
+                    else None,
+                    **normalize_status(r.get("statusCode")),
+                )
+                previous = pools[window].get(identity)
+                if previous is not None and previous != row:
+                    raise ValueError("CONFLICTING_RAW_DUPLICATE")
+                pools[window][identity] = row
+                if identity in identities:
+                    sampled = identities[identity]
+                    if (
+                        sampled["service"],
+                        sampled["operation"],
+                        sampled["direction"],
+                        sampled["duration_ms"],
+                    ) != (
+                        row["service"],
+                        row["operation"][:180],
+                        row["direction"],
+                        row["duration_ms"],
+                    ):
+                        raise ValueError("RETAINED_IDENTITY_FIELDS_MISMATCH")
+                    recovered[identity] = row
+        if set(recovered) != set(identities):
+            raise ValueError("RAW_STATUS_NOT_RECOVERABLE_FOR_ALL_RETAINED_SPANS")
+        for identity, row in identities.items():
+            raw = recovered[identity]
+            row.update(
+                {
+                    k: raw[k]
+                    for k in (
+                        "raw_status_code",
+                        "normalized_status",
+                        "status_normalization_basis",
+                        "operation",
+                    )
+                }
+            )
+        snapshot["metadata"].update(
+            representation_version=VERSION,
+            status_semantics="explicit OTel 0=UNSET,1=OK,2=ERROR; missing/invalid separate; no business success inference",
+            sampling_revision=0,
+            sampling_identity_preserved=True,
+        )
+        references = {}
+        scopes = {(s, None, None) for s in snapshot["services"]}
+        scopes |= {
+            (r["service"], r["operation"], r["direction"])
+            for r in snapshot["records"]
+            if r["operation"] and r["direction"]
+        }
+        windows = [snapshot["windows"][f"reference-{i}"] for i in range(3)]
+        for scope in sorted(scopes, key=str):
+            stats, refs = [], []
+            for a, b in windows:
+                rows = [
+                    r
+                    for r in snapshot["records"]
+                    if a <= r["end"] < b
+                    and r["service"] == scope[0]
+                    and (scope[1] is None or r["operation"] == scope[1])
+                    and (scope[2] is None or r["direction"] == scope[2])
+                ]
+                stats.append(window_stats(rows))
+                refs.extend(r["record_ref"] for r in rows)
+            for signal in (
+                "duration_ms",
+                "error_marker_fraction",
+                "explicit_status_error_fraction",
+            ):
+                key = "R" + digest([scope, signal])[:16]
+                references[key] = dict(
+                    scope=list(scope),
+                    signal=signal,
+                    unit="ms" if signal == "duration_ms" else "fraction",
+                    method="trace_sample",
+                    statistic="window_median"
+                    if signal == "duration_ms"
+                    else "window_fraction",
+                    fixed_at=max(w[1] for w in windows),
+                    window=windows[-1],
+                    source_windows=windows,
+                    values=[
+                        v["median_duration_ms" if signal == "duration_ms" else signal]
+                        for v in stats
+                    ],
+                    window_statistics=stats,
+                    source_refs=sorted(set(refs)),
+                )
+        snapshot["references"] = references
+        availability = {}
+        for window, (a, b) in snapshot["windows"].items():
+            sampled = [r for r in snapshot["records"] if a <= r["end"] < b]
+            full = list(pools[window].values())
+
+            def coverage(rows):
+                by_scope = defaultdict(list)
+                ids = {(r["trace_id"], r["span_id"]) for r in rows}
+                for r in rows:
+                    by_scope[(r["service"], r["operation"], r["direction"])].append(r)
+                return dict(
+                    **window_stats(rows),
+                    missing_parents=sum(
+                        bool(r.get("parent_span_id"))
+                        and (r["trace_id"], r["parent_span_id"]) not in ids
+                        for r in rows
+                    ),
+                    operations=[
+                        dict(scope=list(scope), **window_stats(rs))
+                        for scope, rs in sorted(
+                            by_scope.items(), key=lambda x: str(x[0])
+                        )
+                    ],
+                )
+
+            full_scopes = {(r["service"], r["operation"], r["direction"]) for r in full}
+            sample_scopes = {
+                (r["service"], r["operation"], r["direction"]) for r in sampled
+            }
+            availability[window] = dict(
+                source=coverage(full),
+                sample=coverage(sampled),
+                sampling_lost_scopes=[
+                    list(s) for s in sorted(full_scopes - sample_scopes, key=str)
+                ],
+                raw_rows=raw_counts[window],
+            )
+        task = json.loads((directory / "task.json").read_text())
+        alert = task["alert_title"]
+        # Both C arms receive the same original visible alert, never labels.
+        snapshot["residuals"] = [
+            dict(
+                observation_id="obs-alert",
+                kind="source_alert",
+                summary=alert,
+                records=[
+                    dict(service=s) for s in alert_ranking(alert, snapshot["services"])
+                ],
+            )
+        ]
+        analysis = SemanticAnalysis(snapshot, config)
+        features = []
+        for scope in sorted(scopes, key=str):
+            req = AnalysisRequest(
+                tool="compare_baseline",
+                target=scope[0],
+                operation=scope[1],
+                direction=scope[2],
+                signal="duration_ms",
+            )
+            features.append(dict(scope=list(scope), result=analysis.execute(req)))
+        write(output / case["snapshot_file"], snapshot)
+        result = dict(
+            case_id=case["case_id"],
+            source_hashes=entry["files"],
+            old_snapshot_sha256=sha(retained / case["snapshot_file"]),
+            snapshot_sha256=sha(output / case["snapshot_file"]),
+            same_span_identities=True,
+            sampling_revision=0,
+            source_records_scanned=scanned,
+            retained_records=len(snapshot["records"]),
+            availability=availability,
+            features=features,
+            alert_only=dict(
+                ranked_components=alert_ranking(alert, snapshot["services"]),
+                model_calls=0,
+            ),
+            legacy_unknown_restored=sum(
+                type(r.get("error")) is not bool
+                and identities[(r["trace_id"], r["span_id"])]["normalized_status"]
+                == "UNSET"
+                for r in old["records"]
+            ),
+            elapsed_seconds=monotonic() - started,
+        )
+        write(output / f"{case['case_id']}-features.json", result)
+        evidence.append(
+            {k: v for k, v in result.items() if k not in ("availability", "features")}
+        )
+        print(case["case_id"], len(recovered), "restored identities", flush=True)
+    write(output / "manifest.json", evidence)
+    write(output / "experiment.json", config)
+
+
 if __name__ == "__main__":
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--source", type=Path, required=True)
-    p.add_argument("--answers", type=Path, required=True)
+    p.add_argument("--answers", type=Path)
+    p.add_argument("--repair-retained", type=Path)
     p.add_argument("--output", type=Path, required=True)
     p.add_argument("--base-config", type=Path, required=True)
     a = p.parse_args()
-    prepare(a.source, a.answers, a.output, a.base_config)
+    if a.repair_retained:
+        repair_representation(a.source, a.repair_retained, a.output, a.base_config)
+    else:
+        if a.answers is None:
+            p.error("--answers required for legacy preparation")
+        prepare(a.source, a.answers, a.output, a.base_config)
