@@ -45,7 +45,7 @@ TASK_CONTRACTS = {
         "Hypothesis updates may be []; use stable H1-H4, actual service IDs, and only "
         "supplied E*/O* reference handles in support/conflicts. References are not prose. "
         "Keep short observable rationales, not chain of thought. C may reason freely; "
-        "D compares at most two explanations. Expected YES/NO is about the single "
+        "C needs no opposite pair. D prefers a valid two-explanation contrast, but may fall back to ordinary ReAct when none exists. Expected YES/NO is about the single "
         "catalog question, not causal truth. No custom fields or formulas. "
         "Never precommit a prediction marked already exposed. Do not repeat analyses. "
         "If report_required, return a report now. A ranked answer is a tentative "

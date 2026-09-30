@@ -281,6 +281,92 @@ def compact_result(result, alias):
     )
 
 
+def validate_common_decision(
+    decision, services, catalog, registry, aliases, force_report
+):
+    """Validate identities, references and action shape; never enforce a strategy."""
+    updated = deepcopy(registry)
+    ids = [h.hypothesis_id for h in decision.hypothesis_updates]
+    if len(set(ids)) != len(ids):
+        raise ValueError("DUPLICATE_HYPOTHESIS_ID")
+    for h in decision.hypothesis_updates:
+        if h.target not in services or any(
+            ref not in aliases for ref in h.support + h.conflicts
+        ):
+            raise ValueError("HYPOTHESIS_SCOPE_OR_REFERENCE")
+        previous = updated.get(h.hypothesis_id)
+        changed = previous is None or any(
+            previous[k] != v for k, v in h.model_dump().items()
+        )
+        updated[h.hypothesis_id] = dict(
+            h.model_dump(),
+            version=(previous or {}).get("version", 0) + int(changed),
+        )
+    if decision.action == "report":
+        if (
+            decision.question_id is not None
+            or decision.expectations
+            or decision.report is None
+        ):
+            raise ValueError("REPORT_FIELD_COMBINATION")
+        report = decision.report
+        if any(s not in services for s in report.ranked_components) or len(
+            set(report.ranked_components)
+        ) != len(report.ranked_components):
+            raise ValueError("REPORT_COMPONENT_SCOPE")
+        if any(ref not in aliases for ref in report.references):
+            raise ValueError("REPORT_REFERENCE")
+        if bool(report.ranked_components) == (report.conclusion == "ABSTAIN"):
+            raise ValueError("ABSTENTION_RANKING_MISMATCH")
+        if report.ranked_components and not report.references:
+            raise ValueError("REPORT_REQUIRES_ACTUAL_REFERENCE")
+        return updated
+    if force_report or decision.report is not None:
+        raise ValueError("REPORT_REQUIRED_OR_ACTION_FIELD_COMBINATION")
+    if decision.question_id not in catalog:
+        raise ValueError("QUESTION_UNAVAILABLE")
+    if any(e.hypothesis_id not in updated for e in decision.expectations):
+        raise ValueError("EXPECTATION_UNKNOWN_HYPOTHESIS")
+    return updated
+
+
+def select_strategy(method, decision, question, results, estimate):
+    """Score the single proposed question before observation, without answer peeking.
+
+    This is contrast admission, not a search/ranking over unproposed questions.
+    A non-discriminating or exposed proposal remains a legal ReAct action.
+    """
+    expected = decision.expectations
+    exposed = already_exposed(question, results)
+    pair = (
+        len(expected) == 2
+        and len({e.hypothesis_id for e in expected}) == 2
+        and {e.outcome for e in expected} == {"YES", "NO"}
+    )
+    contrast = method == "D" and pair and not exposed
+    return dict(
+        branch="CONTRAST"
+        if contrast
+        else "REACT"
+        if method == "C"
+        else "REACT_FALLBACK",
+        reason="UNEXPOSED_OPPOSITE_PAIR"
+        if contrast
+        else "ORDINARY_REACT"
+        if method == "C"
+        else "OBSERVATION_ALREADY_EXPOSED"
+        if exposed
+        else "NO_VALID_OPPOSITE_PAIR",
+        disagreement=int(pair),
+        selection_score=(1 / (1 + estimate["cost"])) if contrast else 0.0,
+        score_scope="SINGLE_PROPOSED_QUESTION_ADMISSION",
+        estimated_cost=estimate["cost"],
+        prediction_admitted=bool(expected)
+        and not exposed
+        and (method == "C" or contrast),
+    )
+
+
 def investigate_semantic_lite(analysis, provider, method, run_id, config):
     if method not in ("C", "D"):
         raise ValueError("LITE_METHOD_NOT_ALLOWED")
@@ -327,9 +413,9 @@ def investigate_semantic_lite(analysis, provider, method, run_id, config):
             for q in catalog.values()
         ]
         view = dict(
-            strategy="Ordinary ReAct: freely choose the useful question or report. Hypotheses and expectations are optional; you may reason about alternatives normally."
+            strategy="Ordinary ReAct: freely choose the useful question or report. Hypotheses and expectations are optional; single-hypothesis and same-direction predictions are legal; you may reason about alternatives normally."
             if method == "C"
-            else "D-lite: compare at most two current competing explanations using ONE shared question and opposite YES/NO expectations committed before observation. Use [] expectations for genuine exploration when no defensible opposite pair exists; do not invent opposition. Use returned checks to update explanations/next action, not claim whole-cause falsification.",
+            else "D-lite: prefer comparing at most two current competing explanations using ONE shared question with opposite YES/NO expectations before observation. When no valid contrast exists, use the same ordinary ReAct exploration or report as C. Missing opposition or exposed predictions trigger fallback, not protocol failure; do not invent opposition. Use returned checks to update explanations/next action, not claim whole-cause falsification.",
             services=sorted(analysis.services),
             questions=visible_catalog,
             capability_gaps=gaps,
@@ -361,43 +447,11 @@ def investigate_semantic_lite(analysis, provider, method, run_id, config):
             )
             entry = dict(turn=turn, decision=decision.model_dump())
             state["trajectory"].append(entry)
-            updated = deepcopy(registry)
-            ids = [h.hypothesis_id for h in decision.hypothesis_updates]
-            if len(set(ids)) != len(ids):
-                raise ValueError("DUPLICATE_HYPOTHESIS_ID")
-            for h in decision.hypothesis_updates:
-                if h.target not in analysis.services or any(
-                    ref not in aliases for ref in h.support + h.conflicts
-                ):
-                    raise ValueError("HYPOTHESIS_SCOPE_OR_REFERENCE")
-                previous = updated.get(h.hypothesis_id)
-                changed = previous is None or any(
-                    previous[k] != v for k, v in h.model_dump().items()
-                )
-                updated[h.hypothesis_id] = dict(
-                    h.model_dump(),
-                    version=(previous or {}).get("version", 0) + int(changed),
-                )
+            updated = validate_common_decision(
+                decision, analysis.services, catalog, registry, aliases, force_report
+            )
             if decision.action == "report":
-                if (
-                    decision.question_id is not None
-                    or decision.expectations
-                    or decision.report is None
-                ):
-                    raise ValueError("REPORT_FIELD_COMBINATION")
                 report = decision.report
-                if any(
-                    s not in analysis.services for s in report.ranked_components
-                ) or len(set(report.ranked_components)) != len(
-                    report.ranked_components
-                ):
-                    raise ValueError("REPORT_COMPONENT_SCOPE")
-                if any(ref not in aliases for ref in report.references):
-                    raise ValueError("REPORT_REFERENCE")
-                if bool(report.ranked_components) == (report.conclusion == "ABSTAIN"):
-                    raise ValueError("ABSTENTION_RANKING_MISMATCH")
-                if report.ranked_components and not report.references:
-                    raise ValueError("REPORT_REQUIRES_ACTUAL_REFERENCE")
                 state.update(
                     report=dict(
                         report.model_dump(),
@@ -409,23 +463,18 @@ def investigate_semantic_lite(analysis, provider, method, run_id, config):
                 )
                 registry = updated
                 break
-            if force_report or decision.report is not None:
-                raise ValueError("REPORT_REQUIRED_OR_ACTION_FIELD_COMBINATION")
-            if decision.question_id not in catalog:
-                raise ValueError("QUESTION_UNAVAILABLE")
             question = catalog[decision.question_id]
             expected = decision.expectations
-            if expected and (
-                len(expected) != 2
-                or len({e.hypothesis_id for e in expected}) != 2
-                or {e.outcome for e in expected} != {"YES", "NO"}
-            ):
-                raise ValueError("INVALID_EXPECTATION_PAIR")
-            if any(e.hypothesis_id not in updated for e in expected):
-                raise ValueError("EXPECTATION_UNKNOWN_HYPOTHESIS")
-            if expected and already_exposed(question, state["analysis_results"]):
-                raise ValueError("PREDICTION_NOT_PRECOMMITTED")
             req = AnalysisRequest(**question["request"])
+            estimate = analysis.estimate(req)
+            selection = select_strategy(
+                method, decision, question, state["analysis_results"], estimate
+            )
+            entry["selection"] = dict(selection, executed=False)
+            # Valid increments remain useful even when a read is deduplicated.
+            registry = updated
+            error = None
+            state["hypotheses"] = list(registry.values())
             action = digest(canonical_request(req))
             if action in seen_actions:
                 stale += 1
@@ -435,7 +484,6 @@ def investigate_semantic_lite(analysis, provider, method, run_id, config):
                     reason="DUPLICATE_ANALYSIS_NOT_EXECUTED",
                 )
                 continue
-            estimate = analysis.estimate(req)
             if (
                 state["queries"] + estimate["queries"] > config["max_queries"]
                 or state["records_scanned"] + estimate["records_scanned"]
@@ -449,13 +497,14 @@ def investigate_semantic_lite(analysis, provider, method, run_id, config):
                 )
                 continue
             result = analysis.execute(req)
+            entry["selection"]["executed"] = True
             check = answer_question(question, result)
             alias = "E" + str(len(state["analysis_results"]) + 1)
             aliases[alias] = result["analysis_id"]
             check.update(
                 reference=alias,
                 question_id=question["question_id"],
-                precommitted=bool(expected),
+                precommitted=selection["prediction_admitted"],
                 predictions=[
                     dict(
                         hypothesis_id=e.hypothesis_id,
@@ -469,6 +518,7 @@ def investigate_semantic_lite(analysis, provider, method, run_id, config):
                         else "PREDICTION_CONTRADICTED",
                     )
                     for e in expected
+                    if selection["prediction_admitted"]
                 ],
             )
             checks.append(check)

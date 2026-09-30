@@ -171,6 +171,10 @@ def test_delta_state_and_observation_update_are_retained(snapshot, config):
         == "PREDICTION_CONTRADICTED"
     )
     assert all(h["explanation"] for h in r["hypotheses"])
+    selection = r["trajectory"][0]["selection"]
+    assert selection["branch"] == "CONTRAST" and selection["executed"]
+    assert selection["selection_score"] == 1 / (1 + selection["estimated_cost"])
+
     q = question_catalog(SemanticAnalysis(snapshot, config))[0]["Q1"]
     baseline = dict(
         request=AnalysisRequest(tool="compare_baseline", target="a").model_dump(),
@@ -196,11 +200,12 @@ def test_delta_state_and_observation_update_are_retained(snapshot, config):
         report(["E1"], ["fake-service"]),
     ],
 )
-def test_invalid_handles_and_scope_not_repaired_silently(snapshot, config, bad):
+@pytest.mark.parametrize("method", ["C", "D"])
+def test_invalid_handles_and_scope_not_repaired_silently(snapshot, config, bad, method):
     r = investigate_semantic_lite(
         SemanticAnalysis(snapshot, config),
         SimpleNamespace(complete=lambda **kw: bad),
-        "C",
+        method,
         "fixture",
         config,
     )
@@ -286,3 +291,37 @@ def test_strict_wire_and_fail_closed_truncation_with_same_configuration(tmp_path
         saved["payload"]["incomplete_details"]["reason"] == "max_output_tokens"
         and saved["payload"]["structured_output_strict"] is True
     )
+
+
+@pytest.mark.parametrize("method", ["C", "D"])
+def test_single_hypothesis_read_and_exposed_fallback(snapshot, config, method):
+    h = dict(
+        hypothesis_id="H1",
+        target="a",
+        explanation="local errors",
+        support=[],
+        conflicts=[],
+    )
+    first = decision(
+        hypothesis_updates=[h], expectations=[dict(hypothesis_id="H1", outcome="YES")]
+    )
+    updated = dict(
+        h, explanation="Sample did not show the predicted pattern", conflicts=["E1"]
+    )
+    repeat = decision(hypothesis_updates=[updated], expectations=first.expectations)
+    sequence = [first, repeat, report(["E1"], ["a"])]
+    result = investigate_semantic_lite(
+        SemanticAnalysis(snapshot, config),
+        SimpleNamespace(complete=lambda **kw: sequence.pop(0)),
+        method,
+        "single",
+        config,
+    )
+    assert result["status"] == "COMPLETED" and result["analysis_actions"] == 1
+    assert result["hypotheses"][0]["explanation"] == updated["explanation"]
+    assert result["trajectory"][1]["check"]["category"] == "NO_PROGRESS"
+    assert result["trajectory"][0]["selection"]["branch"] == (
+        "REACT" if method == "C" else "REACT_FALLBACK"
+    )
+    assert result["prediction_checks"][0]["precommitted"] == (method == "C")
+    assert result["trajectory"][1]["selection"]["executed"] is False
