@@ -311,7 +311,7 @@ def investigate_semantic_v1(analysis, provider, method, run_id, config):
                 ):
                     raise ValueError("HYPOTHESIS_SCOPE_OR_REFERENCE")
                 old = registry.get(h.hypothesis_id)
-                if old and old["target"] != h.target:
+                if method == "D" and old and old["target"] != h.target:
                     raise ValueError("HYPOTHESIS_ID_TARGET_CHANGED")
                 registry[h.hypothesis_id] = h.model_dump()
             state["hypotheses"] = [h.model_dump() for h in decision.hypotheses]

@@ -153,9 +153,12 @@ class SemanticAnalysis:
             or request.window not in self.snapshot["windows"]
         ):
             raise ValueError("UNKNOWN_TARGET_OR_WINDOW")
-        if any(
-            n not in self.services or n == request.target for n in request.neighbors
-        ) or len(set(request.neighbors)) != len(request.neighbors):
+        if request.tool == "compare_dependencies" and (
+            any(
+                n not in self.services or n == request.target for n in request.neighbors
+            )
+            or len(set(request.neighbors)) != len(request.neighbors)
+        ):
             raise ValueError("UNKNOWN_OR_DUPLICATE_NEIGHBOR")
         if (
             request.reference_id is not None
@@ -221,6 +224,8 @@ class SemanticAnalysis:
     def metadata(self):
         return dict(
             services=self.services,
+            observed_topology=self.snapshot.get("topology", []),
+            topology_scope="Derived from supplied multi-window samples; not a current-window or causal claim.",
             windows=self.snapshot["windows"],
             references={
                 k: {f: v[f] for f in ("fixed_at", "window", "unit", "method", "scope")}

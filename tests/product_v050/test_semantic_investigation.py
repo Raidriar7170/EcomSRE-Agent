@@ -215,6 +215,19 @@ def test_contrast_preobservation_and_repeat(snapshot, config):
 
 
 def test_scope_rejects_execution_and_pagination(snapshot, config):
+    analysis = SemanticAnalysis(snapshot, config)
+    assert analysis.metadata()["observed_topology"] == [["a", "b"]]
+    # Irrelevant neighbors do not invalidate ordinary raw reads.
+    analysis.execute(
+        AnalysisRequest(tool="read_records", target="a", neighbors=["irrelevant"])
+    )
+    with pytest.raises(ValueError, match="UNKNOWN_OR_DUPLICATE_NEIGHBOR"):
+        analysis.execute(
+            AnalysisRequest(
+                tool="compare_dependencies", target="a", neighbors=["irrelevant"]
+            )
+        )
+
     with pytest.raises(ValueError):
         AnalysisRequest(tool="shell", target="a")
     a = SemanticAnalysis(snapshot, config)
