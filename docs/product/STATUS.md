@@ -1,6 +1,6 @@
 # 当前任务 · 语义视图选择与对比式故障调查
 
-唯一活动目标：[Semantic Investigation Algorithm Goal](../goals/EcomSRE_Semantic_Investigation_Algorithm_Codex_Goal.md)。原24个服务定位事件的96条配对测试已结束，未观察到D收益；全能力覆盖仍不完整。本次D-lite开发16条（4已见事件×C/D×2重复）已结束：完成3/8与1/8、正确2/8与1/8，未达开发目标；共用相反预测对校验误约束C，不能用于策略优劣比较。保留原v1普通ReAct，不推广新协议/D-lite、不启动未见事件测试。累计491请求/USD5.870990，全部旧记录保留。详见[同一阶段报告第11节](../results/semantic-investigation-v1/README.md)。不自行续跑、扩额或恢复旧正式验收。
+唯一活动目标：[Semantic Investigation Algorithm Goal](../goals/EcomSRE_Semantic_Investigation_Algorithm_Codex_Goal.md)。原trace-only服务级24事件×A/B/C/D共96条测试已结束，未观察到D收益，全能力覆盖仍不完整。上一轮16条开发（C/D完成3/8与1/8）因共用相反预测校验误约束C，不支持策略比较。本轮协议拆分后的8条开发检查已结束：C完成4/4，D完成2/4，拒答均0；D两条因真实目标/引用违规未完成。D实际执行4次对比（仅1次可判定）及4次普通ReAct回退；不判策略优劣，不启动未见测试或追加修订。累计529请求/USD6.185609，全部历史与失败记录保留。详见[同一阶段报告第12节](../results/semantic-investigation-v1/README.md)。不自行续跑、扩额或恢复旧正式验收。
 
 # 历史离线诊断语义 A/B/C 对照
 

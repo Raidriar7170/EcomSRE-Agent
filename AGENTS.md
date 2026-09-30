@@ -17,7 +17,7 @@ invalidates one, stop and propose a new Decision Record.
 
 当前唯一活动目标：[语义视图选择与对比式故障调查](docs/goals/EcomSRE_Semantic_Investigation_Algorithm_Codex_Goal.md)。用户于2026-09-29明确给予本 Goal 所需授权：本地开发与提交、独立 Provider 实验最多 USD20/1600请求、官方公开数据最多2GiB；不推送或修改PR，不操作Docker/live/旧正式验收。下列授权与结果均为历史记录。
 
-本轮研究交付：原trace-only、服务级24事件×A/B/C/D共96条测试已结束，D未展示收益（正确数2/4/4/2，各24例），全能力覆盖仍不完整。本次675698a后的D-lite开发16条也已结束：4个已见事件各C/D两次，完成3/8与1/8、正确2/8与1/8。共用校验对C施加D专用相反预期对限制，策略比较无效，开发目标未达。新协议为未通过验证的原型；保留原v1普通ReAct，不推广新协议、不进入未见事件测试、不自行修订或补跑。累计491请求/USD5.870990，全部旧记录保留。见[同一阶段报告](docs/results/semantic-investigation-v1/README.md)。
+本轮研究交付：原trace-only服务级24事件×A/B/C/D共96条测试已结束，未观察到D收益，全能力覆盖仍不完整。上一轮16条开发（C/D完成3/8与1/8）因共用相反预测校验误约束C，不支持策略比较。本轮协议拆分后的8条开发检查已结束：C完成4/4，D完成2/4，拒答均0；D两条因真实目标/引用违规未完成。D实际执行4次对比（仅1次可判定）及4次普通ReAct回退；不判策略优劣，不启动未见测试或追加修订。累计529请求/USD6.185609，全部历史与失败记录保留。见[同一阶段报告第12节](docs/results/semantic-investigation-v1/README.md)。
 
 本轮结果：live-03 已结束并 CLEAN：1次新owned部署、3完整轮、372 HTTP读取、71 Docker白名单只读、12 Docker资源操作命令、30正常物理请求、2工程事件、0修复；总占用1715.816813秒。基线及两诊断窗口的真实v4配置均VERIFIED、每组21/21原始样本支持；同部署DEMO_ONLY基线5/5窗口固定，四服务Typed Runtime齐全。两正常API/Worker诊断均SUCCEEDED且memory重验一致，诊断为INSUFFICIENT_EVIDENCE/ABSTAIN：required_coverage=true、failed_sources=[]，多个服务强残余异常导致OPEN_WORLD_ROOT_AMBIGUOUS；健康谓词STRONG_ANOMALY_PRESENT拒绝。owned剩余0、非项目未变，Provider/故障/恢复写/正式holdout/晋升0。采样支持不等于健康验收；此授权已消费，不自动重启，旧live-02失败和停止账本不变。
 

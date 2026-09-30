@@ -1,0 +1,9 @@
+case_id,event_group,method,repeat,status,started,completed,correct,mrr,abstention,nonabstention,insufficient_report,contrast_proposals,contrast_executed,fallback_proposals,fallback_executed,no_progress,actual_requests,accounted_microusd,input_tokens,output_tokens,reasoning_tokens,queries,records_scanned,returned_bytes,preprocessing_records,analysis_actions,schema_error_occurrences,unavailable_question_errors,terminal_application_failures,provider_failures,terminal_tool_failures,terminal_data_failures,invalid_hypothesis_reference_errors,reference_or_scope_errors,legal_unknown_checks,observed_checks,precommitted_checks,exploratory_checks,predictions_supported,predictions_contradicted,not_started_reason
+rcase-001,group-001,C,0,COMPLETED,True,True,0,0,False,True,False,0,0,0,0,2,5,40246,40465,2199,849,1,1800,3203,1800,1,0,0,0,0,0,0,0,1,0,1,1,0,1,1,
+rcase-001,group-001,D,0,FORMAT_FAILED,True,False,0,0,False,False,False,0,0,0,0,0,2,14097,14331,744,475,0,0,0,1800,0,0,0,1,0,0,0,1,1,0,0,0,0,0,0,
+rcase-002,group-002,C,0,COMPLETED,True,True,1,1.0,False,True,False,0,0,0,0,1,3,23503,24334,1167,673,2,3600,313,1800,1,0,0,0,0,0,0,0,0,0,1,1,0,0,1,
+rcase-002,group-002,D,0,COMPLETED,True,True,1,1.0,False,True,True,1,1,2,0,2,4,32445,33161,1683,708,1,1800,618,1800,1,0,0,0,0,0,0,0,0,1,0,1,0,0,0,
+rcase-003,group-003,C,0,COMPLETED,True,True,0,0,False,True,False,0,0,0,0,2,8,69308,71125,3547,1687,14,34200,7055,1800,5,0,0,0,0,0,0,0,0,2,3,5,0,2,3,
+rcase-003,group-003,D,0,COMPLETED,True,True,0,0,False,True,False,0,0,3,1,2,4,31644,32063,1688,675,1,1800,3178,1800,1,0,0,0,0,0,0,0,0,0,1,0,1,0,0,
+rcase-004,group-004,C,0,COMPLETED,True,True,1,1.0,False,True,True,0,0,0,0,2,4,31035,32011,1561,829,1,1800,944,1800,1,0,0,0,0,0,0,0,0,1,0,1,0,0,0,
+rcase-004,group-004,D,0,MODEL_BUDGET,True,False,0,0,False,False,False,3,3,4,3,1,8,72341,72031,4070,2066,13,39600,3944,1800,6,0,0,1,0,0,0,0,1,4,2,3,3,1,1,
