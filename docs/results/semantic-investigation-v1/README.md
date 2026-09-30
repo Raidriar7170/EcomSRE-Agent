@@ -191,3 +191,40 @@ PYTHONPATH=src:. uv run python -m scripts.product_v050.summarize_semantic_subset
 ```
 
 上述复现依赖保留的私有快照和账本；公开派生结果不是原始数据分发包。后续若用这些测试案例修复或调参，必须标作看过的分析材料，不再把同一份结果称为新的独立测试。
+
+## 11. 675698a 后的失败归因与 D-lite 开发续接
+
+### 11.1 已结束的测试范围与保留结论
+
+**trace-only、服务级定位的24事件×A/B/C/D共96条运行已经结束；在该范围未观察到D的收益（D-A=0，D-C=-8.3个百分点）。** 原规划全能力覆盖仍不完整；整体partial不淡化这一负结果。本次不重跑测试、不修改其分母或结果，不把看过的事件重新称为独立测试；只使用现有4个开发事件。原675698a与全部439次请求/失败记录保留。
+
+### 11.2 从保留轨迹归因（新增模型请求0）
+
+[逐错误与问题归因](failure-attribution-675698a.json)。下表是错误发生轮数，类别可重叠；正常完成/无进展列是轨迹数，每方法原始分母仍24，不能把错误轮数加成新事件。
+
+| 方法 | JSON/schema结构 | 枚举/字段数量约束 | 引用/组件/应用语义 | 工具/句柄不可用 | Provider截断 | 正常完成 | 无进展终止 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| A | 0 | 5 | 13 | 3 | 0 | 11 | 6 |
+| B | 1 | 1 | 17 | 0 | 0 | 18 | 0 |
+| C | 0 | 4 | 16 | 2 | 0 | 16 | 0 |
+| D | 0 | 16 | 10 | 0 | 8 | 6 | 2 |
+
+- **JSON/schema结构**：保留的诊断没有json_invalid；B一轮缺顶层rationale。枚举和max-length另列；不把所有PROVIDER_PROTOCOL_INVALID称为坏JSON。失败参数只保留位置/类型和摘要，没有完整原始参数，因此不猜非法枚举具体值。
+- **D的8条FORMAT_FAILED**：按最后触发错误分为2条group_by枚举错误（016/020）、3条HYPOTHESIS_SCOPE_OR_REFERENCE（017/024/028）、3条REPORT_COMPONENT_SCOPE（015/026/036）。017把真实rec-*记录引用写进只接受analysis_id/observation_id的假设引用槽；024把“frontend and checkout paths…”写进单服务target；015/026把service|operation|direction分组键写进服务级ranked_components。这些是协议/应用语义问题，并非strict缺失就能一并解决。
+- **D的8条截断**：013/014/018/019/022/023/027/034均response_status=incomplete，incomplete_details.reason=max_output_tokens，实际output_tokens=4096、上限4096。六条reasoning_tokens=4096；013为3530、027为4072。输出token包含reasoning，不能声称4096个token都是可见JSON。对应input_tokens分别5592/5629/5537/5613/5190/5468/5594/6427；不截取残缺JSON或重试它们。
+- **D的31/34次UNKNOWN**按优先归因互斥拆分：字段不适用6、参考scope不兼容7、错误row_key 4、错误operation过滤2、合法表达但数值缺失5、合法当前scope无记录1、没有预测的探索3、重复分析未执行3。另3次为YES/NO。多因重叠保留在JSON，不能把这些全算成观测不足，也不能把探索当失败的预测。A/C大量UNKNOWN来自原循环对question=null的探索标记，不能与D的预测有效率直接比较；B固定动作也没有预提交预测。
+- **代表问题**：015对profile询问relative_change（工具不提供该字段）；031用service-wide历史参考配server过滤，且row_key也错；029的baseline已返回relative_change=0.1693却问操作分组键而非comparison；026的operation漏前导斜杠、033把完整分组键当operation，均选成空表。030的两次操作error_fraction确实null（状态均未知），020的已存在inventory/server操作在当前窗无记录，属于真实观测不足，不能补零。030重复同一不兼容baseline两次后NO_SEMANTIC_PROGRESS；D/021正常完成仍保留证据不足，不能由完成推出正确。
+
+[旧结构化配置](old-wire-configuration.json)：对675698a精确Provider源码用捕获传输离线重放确认，Responses函数工具strict=false、parallel_tool_calls=false、max_output_tokens=4096、medium。历史账本没有保留完整请求体，结论依据绑定源码和离线捕获，不声称重新抓到了历史网络报文。
+
+### 11.3 本次唯一有界修订与开发配置
+
+C/D共同使用semantic-lite-v1：程序保管历史与独立残差，模型每轮只提交当前动作、必要假设增量和简短依据；最终报告只有服务候选、解释、实际E/O引用、残差与限制。E/O由程序映射至真实analysis_id/observation_id，不补造引用；合法空排名ABSTAIN正常结束并单列。旧v1路径及数据不修改。
+
+问题目录从身份、字段存在、已观测父关系和参考scope/时间构建；不读取错误率、时延、参考数值、根因标签或未执行分析结果来挑问题，完整服务候选保留。每服务最多4类固定问题：操作组已知状态错误比例、两个信号的匹配历史增量、采样shared-trace错误共现；三个原工具没有增加种类。缺字段、父关系或匹配参考列成能力缺口，目录存在也不保证有足够观测得出YES/NO。阈值来自现有开发配置，操作组已知状态错误比例阈值固定50%，不依据标签调节。
+
+C可自由按普通ReAct选目录问题，假设和预测均可选；D-lite每轮至多比较两个解释，对一个共同问题给出相反YES/NO预期。没有可辩护的相反预期时可探索，另计而不冒充对比。程序执行和计算，预测检查绑定当时假设版本；已曝光的答案不能重新登记为预提交。独立只读检查发现的跨视图曝光缺口（聚合错误比例已能推出存在高错误操作组）在正式开发运行前修复并回归。反驳局部预测不删除整个解释，支持局部模式不确认根因。
+
+C/D同模型、目录、schema、数据、预算；显式strict=true，reasoning统一由medium改low，仍4096输出、8请求/6动作/1修复。严格解析与引用/组件/字段组合校验保留，不修剪JSON、不拼造字段；不增加重试。该组合修订的影响不能拆成“strict单独收益”或“D-lite策略收益”。
+
+[冻结开发协议](dlite-development-protocol.json)：现有rcase-001..004，各C/D两次，共16条，独立事件仍4。按事件配对、重复轮次轮换C/D先后；最多两个事件并行。每方法>=7/8合法完整结果为开发目标，拒答与非拒答覆盖分别报告，未达标同样结束。累计USD20/1600不变；开始前已用439次/USD5.456302，剩余1161次/USD14.543698。按旧成本估计本次USD0.80–1.60，128调用全部按最大输入输出预留上界USD11.968512；每次调用仍由原共享账本约束。无新下载、模型/Provider切换、Docker或live。

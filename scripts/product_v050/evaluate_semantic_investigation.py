@@ -636,7 +636,14 @@ def main():
                     manifest=manifest,
                 ),
             )
-            state = investigate_semantic_v1(
+            runner = investigate_semantic_v1
+            if config.get("research_protocol") == "semantic-lite-v1":
+                from ecomsre.product.investigation.semantic_lite import (
+                    investigate_semantic_lite,
+                )
+
+                runner = investigate_semantic_lite
+            state = runner(
                 SemanticAnalysis(snapshot, config), provider, method, key, config
             )
             state.update(
