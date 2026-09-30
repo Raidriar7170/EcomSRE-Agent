@@ -267,3 +267,33 @@ def test_dependencies_keep_requested_signal(snapshot, config):
         )
     )
     assert result["table"][0]["relative_changes"]["a"]["absolute_difference"] == 98
+
+
+def test_representation_summary_uses_provider_reasoning_token_field(tmp_path):
+    from scripts.product_v050.summarize_semantic_subset import summarize_representation
+
+    (tmp_path / "runs").mkdir()
+    (tmp_path / "rcase-001-features.json").write_text(
+        json.dumps({"alert_only": {"ranked_components": []}})
+    )
+    prefix = "semantic-investigation-v1:batch:rcase-001:C-service:0:configured:0"
+    ledger = {
+        prefix: {
+            "accounted": 7,
+            "payload": {
+                "usage": {"input_tokens": 11, "output_tokens": 9},
+                "reasoning_tokens": 4,
+                "usage_status": "reported",
+            },
+        }
+    }
+    _, rows, _ = summarize_representation(
+        {"cases": [{"case_id": "rcase-001", "root": "inventory"}]},
+        tmp_path,
+        "batch",
+        ledger,
+    )
+    assert rows[0]["reasoning_tokens"] == 4
+    assert rows[0]["output_tokens"] == 9  # reasoning is a subset, not added again
+    assert rows[0]["status"] == "STARTED_WITHOUT_TERMINAL"
+    assert rows[0]["correct"] == 0

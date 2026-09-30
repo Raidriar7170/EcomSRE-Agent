@@ -1,6 +1,6 @@
 # 当前任务 · Trace 状态保真与操作级判别特征
 
-唯一活动目标：[Trace Representation Repair Goal](../goals/EcomSRE_Trace_Representation_Repair_Codex_Goal.md)。离线实现与四事件真实计算完成：implementation=ready / experiment=not_run / effect=undetermined。状态恢复7200个相同span身份；alert_only正确0/4，真实C配对0/16启动。用户已明确批准新增≤USD3/160次Provider调用及本地提交，正在执行有界开发对照；不推送或修改远程PR。D/D-lite暂停；见[同一报告第13节](../results/semantic-investigation-v1/README.md)。旧结果保留。
+唯一活动目标：[Trace Representation Repair Goal](../goals/EcomSRE_Trace_Representation_Repair_Codex_Goal.md)，本阶段已结束。implementation=ready / experiment=complete_development / effect=undetermined。四已见事件16条全部完成，C-service/C-operation均正确4/8，首位配对差值全0；MRR增加没有操作信息归因。含2条smoke新增57请求/USD0.499342，累计586/USD6.684951。本地提交，不推送或修改远程PR；D/D-lite暂停，保留C-service基线。见[同一报告第13节](../results/semantic-investigation-v1/README.md)，包含采样、告警匹配、辅助元数据及模型解释限制。旧结果保留。
 
 # 历史任务 · 语义视图选择与对比式故障调查
 

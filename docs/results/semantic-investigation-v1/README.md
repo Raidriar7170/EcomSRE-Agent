@@ -1,7 +1,7 @@
 # 语义视图选择与对比式故障调查
 
 
-**当前阶段（2026-09-30）：Trace状态/参考匹配及操作历史视图离线交付。implementation=ready / experiment=not_run / effect=undetermined；同身份恢复7200 span，告警基线0/4，真实C配对0/16启动（后续已获授权，执行中），新增Provider请求0。见第13节。**
+**当前阶段（2026-09-30）：Trace状态/参考匹配修复与固定开发对照已结束。implementation=ready / experiment=complete_development / effect=undetermined。四个已见事件、16条配对全部完成；C-service/C-operation均正确4/8，所有首位配对差值为0，MRR为0.6042/0.7292。含2条smoke新增57次请求/USD0.499342；累计586次/USD6.684951。只作本地提交，不推送。见第13节。**
 
 历史第12节协议修复开发检查已结束：C完成4/4，D完成2/4，拒答均0。共用协议与D策略条件已拆分；D仍因真实目标/引用违规留下2条未完成。D执行4次对比、4次普通回退，对比仅1次可判定；不作策略优劣判断，不追加未见测试。详见第12节。原96条测试和16条开发结果不变。
 
@@ -373,11 +373,11 @@ D：通过共同校验的13次分析提议中，对比分支4次（全部实际�
 
 ### 13.1 起点、范围与授权
 
-活动 Goal 为 [Trace Representation Repair](../../goals/EcomSRE_Trace_Representation_Repair_Codex_Goal.md)。起始与当前提交均为 `50c8fd1f4f0922a3a3b031e79623ecbfd9be8105`；本轮源码/报告为未提交工作区增量，未回退或覆盖后续提交。P0 核对本地干净，PR #104 为 Draft/open，同一 HEAD。本轮只继续原 Product v0.5 worktree；旧 D/D-lite、正式验收和历史失败保持停止。
+活动 Goal 为 [Trace Representation Repair](../../goals/EcomSRE_Trace_Representation_Repair_Codex_Goal.md)。起始提交为 `50c8fd1f4f0922a3a3b031e79623ecbfd9be8105`；真实执行代码固定在本地提交 `b29d4f718b9e7653974d5b1ae2a6ce4b571f05d4`，未回退或覆盖后续提交。P0 核对本地干净，PR #104 为 Draft/open，同一 HEAD。本轮只继续原 Product v0.5 worktree；旧 D/D-lite、正式验收和历史失败保持停止。
 
 以下离线检查点保留当时状态。检查点后用户明确批准新增≤USD3/160次Provider调用及本地提交；真实执行结果追加本节。
 
-Goal §0.1 把付费/数据外发与本地提交列为待用户发送的启动授权。本次 `/goal` 已激活离线工作，单独授权问题尚未回复，因此按文档的无付费授权分支完成离线实现和计算：**项目 Provider 0 次、USD0；本地提交0，推送/远程PR修改0**。不是数据不存在，也不是把未启动的16条记成答错或拒答。
+最初按 Goal §0.1 的无付费授权分支完成离线检查点（当时新增0请求/0费用、未提交）。随后用户明确批准“新增≤USD3／160次Provider请求的有界开发实验及本地提交”。本次授权已执行：2条smoke、16条固定配对，之后只做汇总口径修正与本地收口；推送/远程PR修改仍为0。
 
 读取范围：Goal、适用指令、DEC-064/065、安全边界、本报告11–12节、三个语义工具/契约/lite/Provider及评测适配直接依赖；原始数据仅已有 `rcase-001..004` 对应的四份 Parquet/task 和其四个旧开发快照。写入范围：`semantic_analysis/semantic_contracts/semantic_lite/provider`、新增纯计算 `semantic_representation`、已有准备/评测/汇总CLI、聚焦测试、新配置、唯一活动指针和本报告。冻结范围：四份原始输入、旧四快照/清单、旧结果；新派生快照/配置和本轮证据在私有 `representation-repair` 目录。最终仓库范围为当前整个 worktree 的实际 delta；不含其他工作树或旧任务变更。未修改产品规则、知识库或永久决策。
 
@@ -432,23 +432,49 @@ scope为真实 `(service,operation,direction)`，包括仅出现在历史的操�
 
 原共用账本为唯一预算依据。P0为529请求/USD6.185609，余1071/USD13.814391；子预算在同一ledger实例中把累计上限收紧为689请求/USD9.185609，同时原1600/USD20继续有效，不建立第二付费账本。最多144次计划调用；按原96KB输入边界的逐次可靠预留，144次总最坏上界高于USD3，因此不保证全部启动；必须在每调用前留足上界、按既定顺序到限停。固定批次后不改参/补跑。
 
-[完整计划与未启动记录](representation-repair-paired-v1-development-summary.json) / [逐轨迹CSV](representation-repair-paired-v1-development-runs.csv)。
+[完整计划与实际记录](representation-repair-paired-v1-development-summary.json) / [逐轨迹CSV](representation-repair-paired-v1-development-runs.csv) / [完整决策与报告](representation-repair-paired-v1-development-trajectory.jsonl)。
 
-| 方法 | 独立事件 | 启动/计划 | 完成 | 正确/已启动 | Acc@1 / MRR | 非拒答覆盖 | 新Provider费用 |
+| 方法 | 独立事件 | 启动/计划 | 完成/未启动 | 正确/已启动 | Acc@1 / MRR | 非拒答覆盖 | Provider费用 |
 |---|---:|---:|---:|---:|---|---:|---:|
-| alert_only | 4 | 4/4 | 4 | 0/4 | 0 / 0 | 2/4 | 0 |
-| C-service | 4 | 0/8 | 0 | 不适用 | null / null | 不适用 | 0 |
-| C-operation | 4 | 0/8 | 0 | 不适用 | null / null | 不适用 | 0 |
+| alert_only | 4 | 4/4 | 4/0 | 0/4 | 0 / 0 | 2/4 | 0 |
+| C-service | 4 | 8/8 | 8/0 | 4/8 | 0.5 / 0.604167 | 8/8 | USD0.181011 |
+| C-operation | 4 | 8/8 | 8/0 | 4/8 | 0.5 / 0.729167 | 8/8 | USD0.278244 |
 
-alert_only只从原始告警title按实体边界、最长匹配、首次位置和固定字典序提取候选。001/003匹配checkout，002/004为空；标签仅在独立汇总评分时读取，没有人工补齐。覆盖2/4，正确0/4。C的两次重复均0/4启动；16条未启动，不是0/16正确。真实smoke同样0启动。无合法拒答、应用协议/Provider/工具失败计入真实运行，因为本轮没有真实运行。全部新模型tokens/费用为0，累计账本保持529/USD6.185609。不能据fake Provider报告判断模型完成率。
+重复0和重复1均为每方法正确2/4；四事件不是16个独立事件。合法拒答均0，终止型应用协议/Provider/工具失败均0。004 C-service重复0有一次 `DUPLICATE_HYPOTHESIS_ID` 应用拒绝，未接受其增量，使用唯一格式修复额度后完成（6请求/4动作）；不是零协议错误。两条smoke均完成、首位checkout均错误，5请求/USD0.040087，不计入配对准确率。没有smoke后修订或固定批次后补跑。
 
-**唯一外部执行缺口是付费/必要观测外发与本地提交尚未获得单独确认。** 未进行模型信息使用归因；没有真实轨迹可证明操作观测改变候选排序，也不能推断两种C是否超过alert_only。数据限制另按上述具体scope/窗口保留，不用“还需更多验证”掩盖采样损失。
+| 事件 | C-service首位（重复0 / 1） | C-operation首位（重复0 / 1） | operation−service正确性（0 / 1） | 对固定alert_only |
+|---|---|---|---|---|
+| 001 | checkout / checkout | checkout / checkout | 0 / 0 | 均维持错误告警候选 |
+| 002 | inventory / inventory | inventory / inventory | 0 / 0 | 均从空候选到正确首位 |
+| 003 | checkout / checkout | checkout / checkout | 0 / 0 | 均维持错误告警候选 |
+| 004 | inventory / inventory | inventory / inventory | 0 / 0 | 均从空候选到正确首位 |
+
+每方法相对固定alert_only形式上纠正4条、双方错误4条、维持正确0条、错误偏移0条。**告警基线的边界匹配在 `inventory接口响应超时告警` 中漏掉inventory，因此其002/004空候选低估了告警文字已给的信息。** 不在看过结果后修订基线重算；模型解释明确提到inventory告警。这4次“纠正”不能证明Trace贡献，两组也都未纠正001/003的checkout误定位。
+
+| 成本口径（配对，含失败请求） | C-service | C-operation |
+|---|---:|---:|
+| Provider请求 | 27 | 25 |
+| input / output tokens | 195614 / 7620 | 323561 / 7903 |
+| 其中reasoning tokens | 2836 | 3439 |
+| 分析动作 / 查询等价数 | 18 / 49 | 17 / 27 |
+| 工具records_scanned代理 | 147600 | 48600 |
+| 输入预处理记录 | 14400 | 14400 |
+| 参考预处理逻辑记录访问 | 637200 | 3348000 |
+| 工具返回字节 / 本地compute ms | 102885 / 20.158 | 57129 / 12.659 |
+
+smoke另含42887 input /1760 output（其中739 reasoning）；全阶段562062 input /17283 output（其中7014 reasoning）。reasoning是output子集，不重复加总；从账本 `payload.reasoning_tokens` 读取。发现原汇总误从normalized usage的不存在嵌套字段读取后，仅修汇总器并加回归检查，运行代码、配置和输入冻结哈希均不变。unknown usage/pending均0；费用沿用逐请求向上取整保守口径，不冒充Provider账单。操作视图虽然工具扫描代理较少，但input tokens和参考预处理明显更多，费用增加USD0.097233；不声称总体效率胜出。预处理/扫描不是物理I/O，compute只计本地工具处理，不含远端时延。
+
+含smoke新增57次/USD0.499342，剩余本轮额度103次/USD2.500658；累计586次/USD6.684951，原总额度剩余1014次/USD13.315049。剩余额度不授权追加实验。所有单轨迹请求≤8、动作≤6、查询≤24、扫描≤100000；原529请求账本逐字节前缀保留。
+
+实际信息使用：8条C-operation中只有2条执行新增操作参考（共3个操作分析，其中2个在最终报告引用）。002重复1引用 `/actuator/health` 的 `INSUFFICIENT_STATUS_SUPPORT`；另读业务API时延但当前样本缺失，未在最终引用，仍首位inventory。003重复1引用PlaceOrder/server，当前ERROR标记3/8=0.375，三个历史窗口均0；最终仍首位checkout，payment排第二。001/004两次与003重复0均仅1动作即报告；没有读取前述payment Charge或004 inventory业务API的新增历史差异。**没有找到新增操作信息纠正首位或有依据消除根因歧义的案例。** MRR增加0.125来自非首位候选排序，不能单独归因于新操作信息。
+
+模型语义仍有残余：001 C-service重复1称“error markers are explicit-status only”，002 C-operation重复1把低支持、方向不支持其文字的时延比较描述为elevated；动态合法值没有保证解释正确。另有非时延比较附带的 `reference_mad` / `reference_center_method` 等字段沿用时延计算元数据，未全部重新按状态signal命名，不能当状态分布MAD使用；状态的current/reference fraction及difference须依命名signal和分窗计数核对，z保持null。这一辅助元数据限制保留在真实输出，不回写轨迹、不在固定批次后改参重跑；implementation=ready表示本轮有界研究路径已交付，不代表全部输出语义无缺陷或可晋升产品。
 
 ### 13.5 聚焦核验与已执行命令
 
-57项相关聚焦检查通过（含本轮15个参数化算例），Ruff和scoped diff检查通过；保留既有Starlette弃用警告。覆盖分母、缺失、冲突重复、signal顺序、同单位不同语义、错scope/单位/source_windows、MAD与低样本、动态句柄/报告结构、动作去重和fake循环。旧baseline测试fixture新增显式signal以符合新兼容性要求，不用单位猜旧语义。
+58项相关聚焦检查通过（原57项加账本reasoning token字段与已启动未终止计分回归），Ruff和scoped diff检查通过；保留既有Starlette弃用警告。覆盖分母、缺失、冲突重复、signal顺序、同单位不同语义、错scope/单位/source_windows、MAD与低样本、动态句柄/报告结构、动作去重和fake循环。旧baseline测试fixture新增显式signal以符合新兼容性要求，不用单位猜旧语义。
 
-两种C的单例fixture CLI均完成，项目Provider请求0。四事件×两视图的真实输入/假运输wire探针验证动态schema和大小，最终8条探针均完成，最大实际序列化请求86717 bytes（低于96000）；这是指定探针路径的边界检查，不保证所有未来模型路径都不超限。原始过大探针也保留。没有通过真实服务调用确认strict wire。
+两种C的单例fixture CLI均完成，项目Provider请求0。四事件×两视图的真实输入/假运输wire探针验证动态schema和大小，最终8条探针均完成，最大实际序列化请求86717 bytes（低于96000）；这是指定探针路径的边界检查，不保证所有未来模型路径都不超限。原始过大探针也保留。后续18条真实轨迹均产生完成报告，提供这组实际路径的strict wire证据，不推广到全部模型路径。
 
 已执行命令（私有源路径/复用PyArrow路径以环境变量代替，未下载或安装依赖）：
 
@@ -484,10 +510,23 @@ PYTHONPATH=src:. .venv/bin/python -m pytest \
  tests/product_v050/test_provider_diagnostics.py -q
 ```
 
-没有执行configured Provider命令，以上不把设计中的付费命令冒充已运行。旧四快照、原始文件、旧账本/轨迹没有重写；新私有输入清单、完整特征、原始wire探针和结果均在 `.local/semantic-investigation-v1/representation-repair/`。
+后续实际付费命令如下；第二条私有顺序runner固定四事件×两重复，每次调用同一CLI的 `--mode single --provider configured --methods C --views service operation`，按预先交替顺序完成16条，无重试runner：
+
+```bash
+PYTHONPATH=src:. .venv/bin/python -m scripts.product_v050.evaluate_semantic_investigation \
+ --config .local/semantic-investigation-v1/representation-repair/experiment.json \
+ --mode smoke --provider configured --methods C --views service operation --case rcase-001 \
+ --batch representation-repair-smoke-v1 \
+ --input-root .local/semantic-investigation-v1/representation-repair \
+ --output .local/semantic-investigation-v1/representation-repair
+PYTHONPATH=src:. .venv/bin/python \
+ .local/semantic-investigation-v1/representation-repair/run_paired.py
+```
+
+原始四份Parquet/task、旧四快照及运行时冻结代码/配置/新快照均重新核对SHA-256未变，旧付费账本字节前缀保留。新私有输入清单、完整特征、wire探针、原始Provider账本/对象、smoke/配对日志及 `paired-freeze.json` / `paid-closeout.json` 保留。原始结果未回写；公开汇总可从同账本和轨迹重算。
 
 ### 13.6 结果边界与下一步
 
-**implementation=ready（离线实现与真实计算）；experiment=not_run；effect=undetermined。** 当前成果支持“修复状态分母与参考选择，恢复了真实操作局部变化和具体采样缺口”。不支持模型定位增益、跨事件泛化、健康认证或D策略收益；旧阶段effect/准确率不变。
+**implementation=ready；experiment=complete_development；effect=undetermined。** 正确性修复恢复了状态分母、参考选择与真实操作局部变化；固定配对首位定位无增益。MRR方向较好但没有相应的新信息利用归因，四个已见事件与弱告警提取器也不支持表示收益、跨事件泛化、健康认证或D策略收益。旧阶段effect/准确率不变。
 
-唯一下一步取舍：**保留当前C作为基线**，在明确付费授权后才执行已经有界的两种C开发对照；本次不自动开展后续实验、采样修订或未见事件评估。
+唯一下一步取舍：**保留当前C-service作为基线，D/D-lite继续暂停**。本阶段结束，不追加运行、不修改本批次采样或告警基线；具体采样缺口、辅助元数据和模型解释问题如上保留。源码及结果本地提交，远程Draft PR #104未更新，不触发CI、merge或release。

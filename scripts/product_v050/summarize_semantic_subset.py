@@ -260,11 +260,7 @@ def summarize_representation(config, root, batch, ledger):
                         for v in calls
                     ),
                     reasoning_tokens=sum(
-                        v.get("payload", {})
-                        .get("usage", {})
-                        .get("output_tokens_details", {})
-                        .get("reasoning_tokens", 0)
-                        for v in calls
+                        v.get("payload", {}).get("reasoning_tokens", 0) for v in calls
                     ),
                     unknown_usage_calls=sum(
                         v.get("payload", {}).get("usage_status") != "reported"
@@ -407,6 +403,7 @@ def summarize_representation(config, root, batch, ledger):
         if count
         else "not_run",
         effect="undetermined",
+        effect_note="Descriptive metrics only; interpretation and attribution are in README section 13.",
         stage_cost_including_smoke=dict(
             requests=len(stage_calls),
             accounted_microusd=sum(v["accounted"] for v in stage_calls),
@@ -451,7 +448,7 @@ def main():
             "".join(json.dumps(x, ensure_ascii=False) + "\n" for x in values)
         )
     with (a.output / f"{prefix}-runs.csv").open("w") as f:
-        writer = csv.DictWriter(f, fieldnames=list(rows[0]))
+        writer = csv.DictWriter(f, fieldnames=list(rows[0]), lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
     print(json.dumps(summary, indent=2))

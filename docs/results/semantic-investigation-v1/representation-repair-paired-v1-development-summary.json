@@ -1,124 +1,124 @@
 {
   "independent_events": 4,
   "planned": 16,
-  "started": 0,
-  "not_started": 16,
+  "started": 16,
+  "not_started": 0,
   "methods": {
     "C-service": {
       "planned": 8,
-      "started": 0,
-      "not_started": 8,
-      "completed": 0,
-      "correct": 0,
-      "acc1": null,
-      "mrr": null,
+      "started": 8,
+      "not_started": 0,
+      "completed": 8,
+      "correct": 4,
+      "acc1": 0.5,
+      "mrr": 0.6041666666666666,
       "abstained": 0,
-      "non_abstain": 0,
+      "non_abstain": 8,
       "statuses": {
-        "NOT_STARTED": 8
+        "COMPLETED": 8
       },
       "repeats": {
         "0": {
-          "started": 0,
-          "correct": 0
+          "started": 4,
+          "correct": 2
         },
         "1": {
-          "started": 0,
-          "correct": 0
+          "started": 4,
+          "correct": 2
         }
       },
-      "actual_requests": 0,
-      "accounted_microusd": 0,
-      "input_tokens": 0,
-      "output_tokens": 0,
-      "reasoning_tokens": 0,
+      "actual_requests": 27,
+      "accounted_microusd": 181011,
+      "input_tokens": 195614,
+      "output_tokens": 7620,
+      "reasoning_tokens": 2836,
       "unknown_usage_calls": 0,
-      "analysis_actions": 0,
-      "queries": 0,
-      "records_scanned": 0,
-      "preprocessing_records": 0,
-      "reference_preprocessing_record_visits": 0,
-      "returned_bytes": 0,
-      "compute_ms": 0
+      "analysis_actions": 18,
+      "queries": 49,
+      "records_scanned": 147600,
+      "preprocessing_records": 14400,
+      "reference_preprocessing_record_visits": 637200,
+      "returned_bytes": 102885,
+      "compute_ms": 20.15804057009518
     },
     "C-operation": {
       "planned": 8,
-      "started": 0,
-      "not_started": 8,
-      "completed": 0,
-      "correct": 0,
-      "acc1": null,
-      "mrr": null,
+      "started": 8,
+      "not_started": 0,
+      "completed": 8,
+      "correct": 4,
+      "acc1": 0.5,
+      "mrr": 0.7291666666666666,
       "abstained": 0,
-      "non_abstain": 0,
+      "non_abstain": 8,
       "statuses": {
-        "NOT_STARTED": 8
+        "COMPLETED": 8
       },
       "repeats": {
         "0": {
-          "started": 0,
-          "correct": 0
+          "started": 4,
+          "correct": 2
         },
         "1": {
-          "started": 0,
-          "correct": 0
+          "started": 4,
+          "correct": 2
         }
       },
-      "actual_requests": 0,
-      "accounted_microusd": 0,
-      "input_tokens": 0,
-      "output_tokens": 0,
-      "reasoning_tokens": 0,
+      "actual_requests": 25,
+      "accounted_microusd": 278244,
+      "input_tokens": 323561,
+      "output_tokens": 7903,
+      "reasoning_tokens": 3439,
       "unknown_usage_calls": 0,
-      "analysis_actions": 0,
-      "queries": 0,
-      "records_scanned": 0,
-      "preprocessing_records": 0,
-      "reference_preprocessing_record_visits": 0,
-      "returned_bytes": 0,
-      "compute_ms": 0
+      "analysis_actions": 17,
+      "queries": 27,
+      "records_scanned": 48600,
+      "preprocessing_records": 14400,
+      "reference_preprocessing_record_visits": 3348000,
+      "returned_bytes": 57129,
+      "compute_ms": 12.658750405535102
     }
   },
   "paired": [
     {
       "case_id": "rcase-001",
       "repeat": 0,
-      "operation_minus_service": null
+      "operation_minus_service": 0
     },
     {
       "case_id": "rcase-001",
       "repeat": 1,
-      "operation_minus_service": null
+      "operation_minus_service": 0
     },
     {
       "case_id": "rcase-002",
       "repeat": 0,
-      "operation_minus_service": null
+      "operation_minus_service": 0
     },
     {
       "case_id": "rcase-002",
       "repeat": 1,
-      "operation_minus_service": null
+      "operation_minus_service": 0
     },
     {
       "case_id": "rcase-003",
       "repeat": 0,
-      "operation_minus_service": null
+      "operation_minus_service": 0
     },
     {
       "case_id": "rcase-003",
       "repeat": 1,
-      "operation_minus_service": null
+      "operation_minus_service": 0
     },
     {
       "case_id": "rcase-004",
       "repeat": 0,
-      "operation_minus_service": null
+      "operation_minus_service": 0
     },
     {
       "case_id": "rcase-004",
       "repeat": 1,
-      "operation_minus_service": null
+      "operation_minus_service": 0
     }
   ],
   "alert_only": {
@@ -168,15 +168,16 @@
       }
     ]
   },
-  "experiment": "not_run",
+  "experiment": "complete_development",
   "effect": "undetermined",
+  "effect_note": "Descriptive metrics only; interpretation and attribution are in README section 13.",
   "stage_cost_including_smoke": {
-    "requests": 0,
-    "accounted_microusd": 0
+    "requests": 57,
+    "accounted_microusd": 499342
   },
   "cumulative_cost": {
-    "requests": 529,
-    "accounted_microusd": 6185609
+    "requests": 586,
+    "accounted_microusd": 6684951
   },
   "limitations": [
     "Four exposed development events; repetitions are not independent events.",
