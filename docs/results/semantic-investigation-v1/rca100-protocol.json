@@ -1,0 +1,349 @@
+{
+  "version": "semantic-investigation-v1",
+  "primary_target": "quality",
+  "model": "gpt-5.4-mini-2026-03-17",
+  "prices": {
+    "provider_profile": "openai-direct-standard-text",
+    "model": "gpt-5.4-mini-2026-03-17",
+    "accepted_response_models": [],
+    "as_of": "2026-09-29",
+    "source": "https://developers.openai.com/api/docs/models/gpt-5.4-mini ; direct non-regional standard text; all input charged at uncached upper rate; no hosted tools",
+    "input_usd_per_million": 0.75,
+    "output_usd_per_million": 4.5
+  },
+  "reasoning": "medium",
+  "max_model_calls": 8,
+  "max_actions": 6,
+  "max_repairs": 1,
+  "max_queries": 24,
+  "max_records_scanned": 100000,
+  "page_size": 30,
+  "cost_record_scale": 1000,
+  "mapping": [
+    {
+      "service": "fraud-detection",
+      "operation": "flagd.evaluation.v2.Service/EventStream",
+      "span_kind": "SPAN_KIND_CLIENT",
+      "group": "CONTROL_STREAM",
+      "reason": "Exact flagd v2 streaming evaluation RPC; status independent; retained RPC tags verify service/method/system."
+    },
+    {
+      "service": "payment",
+      "operation": "grpc.flagd.evaluation.v2.Service/EventStream",
+      "span_kind": "SPAN_KIND_CLIENT",
+      "group": "CONTROL_STREAM",
+      "reason": "Exact flagd v2 streaming evaluation RPC; status independent; retained RPC tags verify service/method/system."
+    },
+    {
+      "service": "checkout",
+      "operation": "oteldemo.CheckoutService/PlaceOrder",
+      "span_kind": "SPAN_KIND_SERVER",
+      "group": "BUSINESS_REQUEST",
+      "reason": "Frozen checkout main.go PlaceOrder handler."
+    },
+    {
+      "service": "payment",
+      "operation": "grpc.oteldemo.PaymentService/Charge",
+      "span_kind": "SPAN_KIND_SERVER",
+      "group": "BUSINESS_REQUEST",
+      "reason": "Frozen payment index.js chargeServiceHandler."
+    },
+    {
+      "service": "fraud-detection",
+      "operation": "orders process",
+      "span_kind": "SPAN_KIND_CONSUMER",
+      "group": "BUSINESS_ASYNC",
+      "reason": "Frozen fraud-detection main.kt Kafka orders consumer; receive and process are separate span populations, not independent orders."
+    },
+    {
+      "service": "fraud-detection",
+      "operation": "orders receive",
+      "span_kind": "SPAN_KIND_CONSUMER",
+      "group": "BUSINESS_ASYNC",
+      "reason": "Frozen fraud-detection main.kt Kafka orders consumer; receive and process are separate span populations, not independent orders."
+    },
+    {
+      "service": "checkout",
+      "operation": "oteldemo.CartService/EmptyCart",
+      "span_kind": "SPAN_KIND_CLIENT",
+      "group": "BUSINESS_REQUEST",
+      "reason": "Frozen checkout main.go synchronous dependency call; CLIENT population kept separate from SERVER."
+    },
+    {
+      "service": "checkout",
+      "operation": "oteldemo.CartService/GetCart",
+      "span_kind": "SPAN_KIND_CLIENT",
+      "group": "BUSINESS_REQUEST",
+      "reason": "Frozen checkout main.go synchronous dependency call; CLIENT population kept separate from SERVER."
+    },
+    {
+      "service": "checkout",
+      "operation": "oteldemo.CurrencyService/Convert",
+      "span_kind": "SPAN_KIND_CLIENT",
+      "group": "BUSINESS_REQUEST",
+      "reason": "Frozen checkout main.go synchronous dependency call; CLIENT population kept separate from SERVER."
+    },
+    {
+      "service": "checkout",
+      "operation": "oteldemo.PaymentService/Charge",
+      "span_kind": "SPAN_KIND_CLIENT",
+      "group": "BUSINESS_REQUEST",
+      "reason": "Frozen checkout main.go synchronous dependency call; CLIENT population kept separate from SERVER."
+    },
+    {
+      "service": "checkout",
+      "operation": "oteldemo.ProductCatalogService/GetProduct",
+      "span_kind": "SPAN_KIND_CLIENT",
+      "group": "BUSINESS_REQUEST",
+      "reason": "Frozen checkout main.go synchronous dependency call; CLIENT population kept separate from SERVER."
+    },
+    {
+      "service": "checkout",
+      "operation": "orders publish",
+      "span_kind": "SPAN_KIND_PRODUCER",
+      "group": "BUSINESS_ASYNC",
+      "reason": "Frozen checkout kafka/producer.go orders publisher; not added to consumer counts as distinct orders."
+    }
+  ],
+  "baseline": {
+    "error_fraction": {
+      "epsilon": 0.01,
+      "minimum": 3,
+      "threshold": 0.05
+    },
+    "duration_ms": {
+      "epsilon": 1,
+      "minimum": 3,
+      "threshold": 50
+    }
+  },
+  "cases": [
+    {
+      "case_id": "rcase-001",
+      "event_group": "group-001",
+      "split": "development"
+    },
+    {
+      "case_id": "rcase-002",
+      "event_group": "group-002",
+      "split": "development"
+    },
+    {
+      "case_id": "rcase-003",
+      "event_group": "group-003",
+      "split": "development"
+    },
+    {
+      "case_id": "rcase-004",
+      "event_group": "group-004",
+      "split": "development"
+    },
+    {
+      "case_id": "rcase-005",
+      "event_group": "group-005",
+      "split": "development"
+    },
+    {
+      "case_id": "rcase-006",
+      "event_group": "group-006",
+      "split": "development"
+    },
+    {
+      "case_id": "rcase-007",
+      "event_group": "group-007",
+      "split": "development"
+    },
+    {
+      "case_id": "rcase-008",
+      "event_group": "group-008",
+      "split": "development"
+    },
+    {
+      "case_id": "rcase-009",
+      "event_group": "group-009",
+      "split": "development"
+    },
+    {
+      "case_id": "rcase-010",
+      "event_group": "group-010",
+      "split": "development"
+    },
+    {
+      "case_id": "rcase-011",
+      "event_group": "group-011",
+      "split": "development"
+    },
+    {
+      "case_id": "rcase-012",
+      "event_group": "group-012",
+      "split": "development"
+    },
+    {
+      "case_id": "rcase-013",
+      "event_group": "group-013",
+      "split": "test"
+    },
+    {
+      "case_id": "rcase-014",
+      "event_group": "group-014",
+      "split": "test"
+    },
+    {
+      "case_id": "rcase-015",
+      "event_group": "group-015",
+      "split": "test"
+    },
+    {
+      "case_id": "rcase-016",
+      "event_group": "group-016",
+      "split": "test"
+    },
+    {
+      "case_id": "rcase-017",
+      "event_group": "group-017",
+      "split": "test"
+    },
+    {
+      "case_id": "rcase-018",
+      "event_group": "group-018",
+      "split": "test"
+    },
+    {
+      "case_id": "rcase-019",
+      "event_group": "group-019",
+      "split": "test"
+    },
+    {
+      "case_id": "rcase-020",
+      "event_group": "group-020",
+      "split": "test"
+    },
+    {
+      "case_id": "rcase-021",
+      "event_group": "group-021",
+      "split": "test"
+    },
+    {
+      "case_id": "rcase-022",
+      "event_group": "group-022",
+      "split": "test"
+    },
+    {
+      "case_id": "rcase-023",
+      "event_group": "group-023",
+      "split": "test"
+    },
+    {
+      "case_id": "rcase-024",
+      "event_group": "group-024",
+      "split": "test"
+    },
+    {
+      "case_id": "rcase-025",
+      "event_group": "group-025",
+      "split": "test"
+    },
+    {
+      "case_id": "rcase-026",
+      "event_group": "group-026",
+      "split": "test"
+    },
+    {
+      "case_id": "rcase-027",
+      "event_group": "group-027",
+      "split": "test"
+    },
+    {
+      "case_id": "rcase-028",
+      "event_group": "group-028",
+      "split": "test"
+    },
+    {
+      "case_id": "rcase-029",
+      "event_group": "group-029",
+      "split": "test"
+    },
+    {
+      "case_id": "rcase-030",
+      "event_group": "group-030",
+      "split": "test"
+    },
+    {
+      "case_id": "rcase-031",
+      "event_group": "group-031",
+      "split": "test"
+    },
+    {
+      "case_id": "rcase-032",
+      "event_group": "group-032",
+      "split": "test"
+    },
+    {
+      "case_id": "rcase-033",
+      "event_group": "group-033",
+      "split": "test"
+    },
+    {
+      "case_id": "rcase-034",
+      "event_group": "group-034",
+      "split": "test"
+    },
+    {
+      "case_id": "rcase-035",
+      "event_group": "group-035",
+      "split": "test"
+    },
+    {
+      "case_id": "rcase-036",
+      "event_group": "group-036",
+      "split": "test"
+    }
+  ],
+  "planned_development_events": 12,
+  "planned_test_events": 24,
+  "download_limit_bytes": 2147483648,
+  "price_checked_utc": "2026-09-29",
+  "semantic_rubric": [
+    "Do not confirm a root from correlation only.",
+    "Do not exclude business fault from bounded zero-error samples.",
+    "Do not assert whole-system health.",
+    "Blinded prose review is required in addition to structured assertion flags."
+  ],
+  "token_caps": {
+    "input_serialized_bytes": 96000,
+    "output_tokens": 4096
+  },
+  "counter_policy": "Reuse retained grouped_point proxy; sample traces never population rates.",
+  "development_semantic_revision": 2,
+  "fixed_B": "Three tools per first two sorted initial-observation services, then one model interpretation call; no model-guided target selection.",
+  "dataset": "retained-rca100-trace-subset-v1",
+  "subset_protocol": {
+    "development_events": 12,
+    "test_events": 24,
+    "scoring": "exact_service_Acc1_and_MRR",
+    "sample": "service-stratified lowest SHA256 whole traces, then hash fill; <=450 spans per window",
+    "windows": "last 300s ending at alert end; three prior 300s windows with a 300s gap",
+    "group": "transitive overlapping full current+reference support across all 103 tasks",
+    "mapping": "existing frozen purpose mapping; unmatched operations remain UNCLASSIFIED",
+    "missing": "no counters/logs/metrics; no online timing/healthy baseline/causal proof",
+    "semantic_revisions": 2,
+    "prompt_policy": "unchanged; no additional semantic revision"
+  },
+  "implementation_scope": {
+    "checkpoint": "cb1875f",
+    "prompt_and_D_policy_semantic_revisions": 2,
+    "ordinary_react_fix": "A/C may update hypothesis targets; D stable IDs retained",
+    "fixed_reference_fix": "target scope and fraction unit must match",
+    "public_fields_equal": "all methods receive same metadata including observed topology",
+    "budget_namespace": "semantic-investigation-v1; cumulative across old and new runs",
+    "concurrency": 2
+  },
+  "inherited_unused_metadata": {
+    "test_cases": [],
+    "data_status": "ONE_SEEN_EVENT_NO_ROOT_LABEL_NO_INDEPENDENT_TEST",
+    "frozen_for_limited_paired_development": true,
+    "frozen_order": "rotate requested method order by case index; complete paired case before next"
+  },
+  "metadata_note": "Private frozen config retains these legacy descriptive fields; runner selects only cases[].split. This public projection separates them to avoid confusing historical emptiness with current 24-case coverage.",
+  "execution_order": "Rotate A/B/C/D by fixed test case index; complete each pair of concurrently running cases before starting next two."
+}

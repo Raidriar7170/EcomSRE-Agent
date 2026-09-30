@@ -1,0 +1,154 @@
+{
+  "batch": "rca100-dev-fixed-v1",
+  "split": "development",
+  "methods": {
+    "A": {
+      "planned": 12,
+      "started": 3,
+      "not_started": 9,
+      "correct": 0,
+      "acc1": 0.0,
+      "mrr": 0.16666666666666666,
+      "completed": 1,
+      "empty_ranking_abstention": 0,
+      "insufficient_evidence_report": 0,
+      "format_failure": 0,
+      "provider_failure": 0,
+      "other_failure": 2,
+      "actual_requests": 11,
+      "accounted_microusd": 112444,
+      "input_tokens": 84461,
+      "output_tokens": 10910,
+      "queries": 5,
+      "records_scanned": 9000,
+      "preprocessing_records": 5400,
+      "returned_bytes": 24982,
+      "analysis_actions": 5,
+      "statuses": {
+        "NOT_STARTED": 9,
+        "NO_SEMANTIC_PROGRESS": 2,
+        "COMPLETED": 1
+      }
+    },
+    "B": {
+      "planned": 12,
+      "started": 3,
+      "not_started": 9,
+      "correct": 0,
+      "acc1": 0.0,
+      "mrr": 0.16666666666666666,
+      "completed": 1,
+      "empty_ranking_abstention": 0,
+      "insufficient_evidence_report": 0,
+      "format_failure": 1,
+      "provider_failure": 0,
+      "other_failure": 1,
+      "actual_requests": 5,
+      "accounted_microusd": 65079,
+      "input_tokens": 38776,
+      "output_tokens": 7999,
+      "queries": 25,
+      "records_scanned": 86400,
+      "preprocessing_records": 5400,
+      "returned_bytes": 11132,
+      "analysis_actions": 9,
+      "statuses": {
+        "NOT_STARTED": 9,
+        "RUNTIME_FAILED": 1,
+        "COMPLETED": 1,
+        "FORMAT_FAILED": 1
+      }
+    },
+    "C": {
+      "planned": 12,
+      "started": 3,
+      "not_started": 9,
+      "correct": 2,
+      "acc1": 0.6666666666666666,
+      "mrr": 0.8333333333333334,
+      "completed": 3,
+      "empty_ranking_abstention": 0,
+      "insufficient_evidence_report": 2,
+      "format_failure": 0,
+      "provider_failure": 0,
+      "other_failure": 0,
+      "actual_requests": 10,
+      "accounted_microusd": 88725,
+      "input_tokens": 63237,
+      "output_tokens": 9176,
+      "queries": 13,
+      "records_scanned": 36000,
+      "preprocessing_records": 5400,
+      "returned_bytes": 5229,
+      "analysis_actions": 6,
+      "statuses": {
+        "NOT_STARTED": 9,
+        "COMPLETED": 3
+      }
+    },
+    "D": {
+      "planned": 12,
+      "started": 3,
+      "not_started": 9,
+      "correct": 0,
+      "acc1": 0.0,
+      "mrr": 0.0,
+      "completed": 0,
+      "empty_ranking_abstention": 0,
+      "insufficient_evidence_report": 0,
+      "format_failure": 3,
+      "provider_failure": 0,
+      "other_failure": 0,
+      "actual_requests": 10,
+      "accounted_microusd": 127821,
+      "input_tokens": 59074,
+      "output_tokens": 18558,
+      "queries": 6,
+      "records_scanned": 10800,
+      "preprocessing_records": 5400,
+      "returned_bytes": 1516,
+      "analysis_actions": 4,
+      "statuses": {
+        "NOT_STARTED": 9,
+        "FORMAT_FAILED": 3
+      }
+    }
+  },
+  "contrasts": {
+    "D-A": {
+      "paired_events": 3,
+      "correct_difference": 0,
+      "acc1_difference": 0.0,
+      "paired_bootstrap_95": [
+        0.0,
+        0.0
+      ]
+    },
+    "D-B": {
+      "paired_events": 3,
+      "correct_difference": 0,
+      "acc1_difference": 0.0,
+      "paired_bootstrap_95": [
+        0.0,
+        0.0
+      ]
+    },
+    "D-C": {
+      "paired_events": 3,
+      "correct_difference": -2,
+      "acc1_difference": -0.6666666666666666,
+      "paired_bootstrap_95": [
+        -1.0,
+        0.0
+      ]
+    }
+  },
+  "distinct_planned_events": 12,
+  "effect": "undetermined",
+  "limits": [
+    "Failed started calls stay in Acc1/MRR denominator; not-started does not.",
+    "Service-only stratified trace subset; not official RCA100 score.",
+    "Access counters are processing proxies, not physical I/O.",
+    "Independent event grouping does not prove IID or no model pretraining exposure."
+  ]
+}

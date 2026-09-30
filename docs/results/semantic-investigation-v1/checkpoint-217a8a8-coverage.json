@@ -1,0 +1,56 @@
+{
+  "checkpoint": "217a8a83428bcdf6786898eed1889555777fb56b",
+  "methods": {
+    "A": {
+      "development_trajectory_started": 2,
+      "development_report_completed": 0,
+      "development_failed": 2,
+      "independent_root_test_available": 0,
+      "root_test_started": 0,
+      "root_test_completed": 0,
+      "root_test_correct": null,
+      "root_test_failed": 0,
+      "root_test_not_executed_events": 24,
+      "not_executed_reason": "No eligible independent root-labeled test events in original split; not 24 incorrect cases."
+    },
+    "B": {
+      "development_trajectory_started": 2,
+      "development_report_completed": 1,
+      "development_failed": 1,
+      "independent_root_test_available": 0,
+      "root_test_started": 0,
+      "root_test_completed": 0,
+      "root_test_correct": null,
+      "root_test_failed": 0,
+      "root_test_not_executed_events": 24,
+      "not_executed_reason": "No eligible independent root-labeled test events in original split; not 24 incorrect cases."
+    },
+    "C": {
+      "development_trajectory_started": 6,
+      "development_report_completed": 3,
+      "development_failed": 3,
+      "independent_root_test_available": 0,
+      "root_test_started": 0,
+      "root_test_completed": 0,
+      "root_test_correct": null,
+      "root_test_failed": 0,
+      "root_test_not_executed_events": 24,
+      "not_executed_reason": "No eligible independent root-labeled test events in original split; not 24 incorrect cases."
+    },
+    "D": {
+      "development_trajectory_started": 4,
+      "development_report_completed": 2,
+      "development_failed": 2,
+      "independent_root_test_available": 0,
+      "root_test_started": 0,
+      "root_test_completed": 0,
+      "root_test_correct": null,
+      "root_test_failed": 0,
+      "root_test_not_executed_events": 24,
+      "not_executed_reason": "No eligible independent root-labeled test events in original split; not 24 incorrect cases."
+    }
+  },
+  "available_local_event_groups": 1,
+  "already_seen_development_windows": 2,
+  "labels": 0
+}

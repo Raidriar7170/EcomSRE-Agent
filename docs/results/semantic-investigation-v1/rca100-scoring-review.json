@@ -1,0 +1,21 @@
+{
+  "scope": "Read-only independent scoring and ledger review",
+  "unique_event_groups": 24,
+  "unique_terminal_trajectories": 96,
+  "score_rows_matched": 96,
+  "correct_by_method": {
+    "A": 2,
+    "B": 4,
+    "C": 4,
+    "D": 2
+  },
+  "all_failed_started_in_denominator": true,
+  "paired_intervals_matched": 3,
+  "ledger_requests": 439,
+  "ledger_accounted_microusd": 5456302,
+  "pending": 0,
+  "unknown_usage": 0,
+  "major_findings": [],
+  "conclusion": "No demonstrated contrastive policy benefit; overall experiment remains partial and effect undetermined.",
+  "provider_calls_by_reviewer": 0
+}

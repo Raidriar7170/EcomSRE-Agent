@@ -1,0 +1,106 @@
+{
+  "error_occurrences": [
+    {
+      "method": "D",
+      "error": "PROVIDER_PROTOCOL_INVALID",
+      "count": 16
+    },
+    {
+      "method": "A",
+      "error": "HYPOTHESIS_SCOPE_OR_REFERENCE",
+      "count": 13
+    },
+    {
+      "method": "C",
+      "error": "HYPOTHESIS_SCOPE_OR_REFERENCE",
+      "count": 11
+    },
+    {
+      "method": "B",
+      "error": "HYPOTHESIS_SCOPE_OR_REFERENCE",
+      "count": 10
+    },
+    {
+      "method": "D",
+      "error": "PROVIDER_TRUNCATED",
+      "count": 8
+    },
+    {
+      "method": "D",
+      "error": "HYPOTHESIS_SCOPE_OR_REFERENCE",
+      "count": 6
+    },
+    {
+      "method": "A",
+      "error": "PROVIDER_PROTOCOL_INVALID",
+      "count": 5
+    },
+    {
+      "method": "B",
+      "error": "FIXED_WORKFLOW_REQUIRES_REPORT",
+      "count": 5
+    },
+    {
+      "method": "C",
+      "error": "PROVIDER_PROTOCOL_INVALID",
+      "count": 4
+    },
+    {
+      "method": "C",
+      "error": "REPORT_COMPONENT_SCOPE",
+      "count": 4
+    },
+    {
+      "method": "A",
+      "error": "TOOL_NOT_ALLOWED",
+      "count": 3
+    },
+    {
+      "method": "D",
+      "error": "REPORT_COMPONENT_SCOPE",
+      "count": 3
+    },
+    {
+      "method": "B",
+      "error": "REPORT_COMPONENT_SCOPE",
+      "count": 2
+    },
+    {
+      "method": "B",
+      "error": "PROVIDER_PROTOCOL_INVALID",
+      "count": 2
+    },
+    {
+      "method": "D",
+      "error": "QUESTION_UNKNOWN_HYPOTHESIS",
+      "count": 1
+    },
+    {
+      "method": "C",
+      "error": "UNKNOWN_TARGET_OR_WINDOW",
+      "count": 1
+    },
+    {
+      "method": "C",
+      "error": "UNKNOWN_REFERENCE",
+      "count": 1
+    },
+    {
+      "method": "C",
+      "error": "QUESTION_UNKNOWN_HYPOTHESIS",
+      "count": 1
+    }
+  ],
+  "D_selected_tools": {
+    "compare_baseline": 14,
+    "profile_operations": 13,
+    "compare_dependencies": 7
+  },
+  "D_multiple_candidate_actions": 13,
+  "D_observable_outcomes": {
+    "UNKNOWN": 31,
+    "NO": 2,
+    "YES": 1
+  },
+  "limits": "Errors are occurrences, not additional independent trajectories; UNKNOWN is not a negative answer."
+}

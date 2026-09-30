@@ -1,0 +1,9 @@
+{
+  "test_intents_verified": 96,
+  "snapshot_files_verified": 36,
+  "original_calls_unchanged": 50,
+  "original_result_files_unchanged": 8,
+  "ledger_append_only_prefix": true,
+  "test_code_head": "cb1875f9d939709b7652d59fd8f61546564e703f",
+  "config_sha256": "90a08a0d8b3e479c77dba3d2c5b4e3f7eba57945dda13b02e921496b002b674f"
+}

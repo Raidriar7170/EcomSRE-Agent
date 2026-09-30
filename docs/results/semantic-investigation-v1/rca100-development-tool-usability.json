@@ -1,0 +1,93 @@
+{
+  "scope": "Four executed development events, deterministic calculations on available trace data; no complete all-modal tool validation. Zero observed edges or insufficient reference are preserved.",
+  "checks": [
+    {
+      "case_id": "rcase-001",
+      "tool": "profile_operations",
+      "rows": 10,
+      "observed_edges": 0
+    },
+    {
+      "case_id": "rcase-001",
+      "tool": "compare_baseline",
+      "rows": 1,
+      "observed_edges": 0,
+      "comparable": true,
+      "status": [
+        "ZERO_REFERENCE_SCALE"
+      ]
+    },
+    {
+      "case_id": "rcase-001",
+      "tool": "compare_dependencies",
+      "rows": 1,
+      "observed_edges": 17
+    },
+    {
+      "case_id": "rcase-002",
+      "tool": "profile_operations",
+      "rows": 2,
+      "observed_edges": 0
+    },
+    {
+      "case_id": "rcase-002",
+      "tool": "compare_baseline",
+      "rows": 1,
+      "observed_edges": 0,
+      "comparable": false,
+      "status": [
+        "INSUFFICIENT_REFERENCE"
+      ]
+    },
+    {
+      "case_id": "rcase-002",
+      "tool": "compare_dependencies",
+      "rows": 1,
+      "observed_edges": 0
+    },
+    {
+      "case_id": "rcase-003",
+      "tool": "profile_operations",
+      "rows": 10,
+      "observed_edges": 0
+    },
+    {
+      "case_id": "rcase-003",
+      "tool": "compare_baseline",
+      "rows": 1,
+      "observed_edges": 0,
+      "comparable": true,
+      "status": [
+        "ZERO_REFERENCE_SCALE"
+      ]
+    },
+    {
+      "case_id": "rcase-003",
+      "tool": "compare_dependencies",
+      "rows": 1,
+      "observed_edges": 32
+    },
+    {
+      "case_id": "rcase-004",
+      "tool": "profile_operations",
+      "rows": 3,
+      "observed_edges": 0
+    },
+    {
+      "case_id": "rcase-004",
+      "tool": "compare_baseline",
+      "rows": 1,
+      "observed_edges": 0,
+      "comparable": false,
+      "status": [
+        "INSUFFICIENT_REFERENCE"
+      ]
+    },
+    {
+      "case_id": "rcase-004",
+      "tool": "compare_dependencies",
+      "rows": 1,
+      "observed_edges": 9
+    }
+  ]
+}

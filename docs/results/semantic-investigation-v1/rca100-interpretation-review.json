@@ -1,0 +1,31 @@
+{
+  "scope": "First completed test report per A/B/C/D by case ID, chosen when available; blinded to GT and scores. Four selected examples, not an all-report error rate.",
+  "findings": [
+    {
+      "method": "A",
+      "case_id": "rcase-015",
+      "supported": "Quoted checkout/cart/currency durations agree with raw reads; local sample and noncausal limits retained.",
+      "issue": "Currency duration described as elevated without reading a matched baseline; inferential contribution language is not a measured historical increase."
+    },
+    {
+      "method": "B",
+      "case_id": "rcase-013",
+      "supported": "Three checkout-facing frontend groups each had 2/2 known-state errors and 2 unknown statuses; no causal assertion from parent edges.",
+      "issue": "Only groups with known errors is false: dependency output also had checkout 4 errors /31 known statuses, plus frontend POST group errors. Direct INSUFFICIENT_REFERENCE and dependency REFERENCE_SCOPE_MISMATCH were conflated."
+    },
+    {
+      "method": "C",
+      "case_id": "rcase-016",
+      "supported": "Frontend current/reference medians 2.182678/5.919324 ms; checkout 2.9656885/2.903218 ms. Prior references and unknown timing retained.",
+      "issue": "GET /api/cart was described as having a known error, but its 3 statuses were all unknown; the known error belonged to POST /api/cart. Aggregate median decline cannot exclude operation or tail regression."
+    },
+    {
+      "method": "D",
+      "case_id": "rcase-021",
+      "supported": "Frontend medians 3.795159/6.267305 ms and checkout 2.545933/2.898596 ms, relative changes approximately -39.4%/-12.2%, match supplied data; prior scope and sampled topology supported.",
+      "issue": "Calls medians service average and implies healthy aggregate duration despite healthy_baseline=false. Lower median does not prove health. Explicit sampling, missing operation/dependency reads, insufficient-evidence and noncausal limits remain; not an explicit whole-system-health assertion."
+    }
+  ],
+  "conclusion": "All four reports explicit assertion flags false does not prove factually correct interpretation.",
+  "post_test_tuning": false
+}

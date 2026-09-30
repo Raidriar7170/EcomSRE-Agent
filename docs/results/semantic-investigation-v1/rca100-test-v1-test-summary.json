@@ -1,0 +1,154 @@
+{
+  "batch": "rca100-test-v1",
+  "split": "test",
+  "methods": {
+    "A": {
+      "planned": 24,
+      "started": 24,
+      "not_started": 0,
+      "correct": 2,
+      "acc1": 0.08333333333333333,
+      "mrr": 0.18055555555555555,
+      "completed": 11,
+      "empty_ranking_abstention": 0,
+      "insufficient_evidence_report": 6,
+      "format_failure": 7,
+      "provider_failure": 0,
+      "other_failure": 6,
+      "actual_requests": 121,
+      "accounted_microusd": 1571602,
+      "input_tokens": 1394236,
+      "output_tokens": 116862,
+      "queries": 76,
+      "records_scanned": 131400,
+      "preprocessing_records": 40500,
+      "returned_bytes": 454295,
+      "analysis_actions": 76,
+      "statuses": {
+        "NO_SEMANTIC_PROGRESS": 6,
+        "FORMAT_FAILED": 7,
+        "COMPLETED": 11
+      }
+    },
+    "B": {
+      "planned": 24,
+      "started": 24,
+      "not_started": 0,
+      "correct": 4,
+      "acc1": 0.16666666666666666,
+      "mrr": 0.2847222222222222,
+      "completed": 18,
+      "empty_ranking_abstention": 0,
+      "insufficient_evidence_report": 10,
+      "format_failure": 6,
+      "provider_failure": 0,
+      "other_failure": 0,
+      "actual_requests": 37,
+      "accounted_microusd": 454906,
+      "input_tokens": 317816,
+      "output_tokens": 48118,
+      "queries": 232,
+      "records_scanned": 648000,
+      "preprocessing_records": 40500,
+      "returned_bytes": 136097,
+      "analysis_actions": 72,
+      "statuses": {
+        "COMPLETED": 18,
+        "FORMAT_FAILED": 6
+      }
+    },
+    "C": {
+      "planned": 24,
+      "started": 24,
+      "not_started": 0,
+      "correct": 4,
+      "acc1": 0.16666666666666666,
+      "mrr": 0.2743055555555555,
+      "completed": 16,
+      "empty_ranking_abstention": 0,
+      "insufficient_evidence_report": 12,
+      "format_failure": 8,
+      "provider_failure": 0,
+      "other_failure": 0,
+      "actual_requests": 111,
+      "accounted_microusd": 1079338,
+      "input_tokens": 833829,
+      "output_tokens": 100872,
+      "queries": 158,
+      "records_scanned": 488700,
+      "preprocessing_records": 40500,
+      "returned_bytes": 103675,
+      "analysis_actions": 69,
+      "statuses": {
+        "FORMAT_FAILED": 8,
+        "COMPLETED": 16
+      }
+    },
+    "D": {
+      "planned": 24,
+      "started": 24,
+      "not_started": 0,
+      "correct": 2,
+      "acc1": 0.08333333333333333,
+      "mrr": 0.1111111111111111,
+      "completed": 6,
+      "empty_ranking_abstention": 0,
+      "insufficient_evidence_report": 6,
+      "format_failure": 8,
+      "provider_failure": 8,
+      "other_failure": 2,
+      "actual_requests": 74,
+      "accounted_microusd": 914462,
+      "input_tokens": 478204,
+      "output_tokens": 123508,
+      "queries": 56,
+      "records_scanned": 198450,
+      "preprocessing_records": 40500,
+      "returned_bytes": 34376,
+      "analysis_actions": 31,
+      "statuses": {
+        "PROVIDER_TRUNCATED": 8,
+        "FORMAT_FAILED": 8,
+        "COMPLETED": 6,
+        "NO_SEMANTIC_PROGRESS": 2
+      }
+    }
+  },
+  "contrasts": {
+    "D-A": {
+      "paired_events": 24,
+      "correct_difference": 0,
+      "acc1_difference": 0.0,
+      "paired_bootstrap_95": [
+        -0.125,
+        0.125
+      ]
+    },
+    "D-B": {
+      "paired_events": 24,
+      "correct_difference": -2,
+      "acc1_difference": -0.08333333333333333,
+      "paired_bootstrap_95": [
+        -0.25,
+        0.08333333333333333
+      ]
+    },
+    "D-C": {
+      "paired_events": 24,
+      "correct_difference": -2,
+      "acc1_difference": -0.08333333333333333,
+      "paired_bootstrap_95": [
+        -0.20833333333333334,
+        0.0
+      ]
+    }
+  },
+  "distinct_planned_events": 24,
+  "effect": "undetermined",
+  "limits": [
+    "Failed started calls stay in Acc1/MRR denominator; not-started does not.",
+    "Service-only stratified trace subset; not official RCA100 score.",
+    "Access counters are processing proxies, not physical I/O.",
+    "Independent event grouping does not prove IID or no model pretraining exposure."
+  ]
+}
