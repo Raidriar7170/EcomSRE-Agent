@@ -1,0 +1,15 @@
+{
+  "scope": "Frozen development execution and old-result preservation; not algorithm effectiveness",
+  "test_original_runs_preserved": 96,
+  "prior_ledger_calls_unchanged": 439,
+  "old_public_result_files_unchanged": 31,
+  "development_intents_verified": 16,
+  "analysis_recalculations": 18,
+  "question_check_recalculations": 18,
+  "all_matched": true,
+  "actual_new_calls": 52,
+  "all_new_strict_low_4096": true,
+  "frozen_code": "cff00e861cae35a83610603f78ce55aeb31918e7",
+  "config_sha256": "0bc506567e6e54ea13b2b17d0df34fa9b237c01c606817023c886441f8e92f33",
+  "ledger_sha256": "b86e09665ab2a42e1c70f754d7a14a2d4d777ccb0ce4e5ffe03986f4b5229155"
+}

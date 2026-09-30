@@ -1,0 +1,19 @@
+{
+  "source": "Read-only independent rescore from private labels/reports and shared ledger",
+  "unique_events": 4,
+  "unique_terminal_trajectories": 16,
+  "correct_by_method": {
+    "C": 2,
+    "D": 1
+  },
+  "complete_by_method": {
+    "C": 3,
+    "D": 1
+  },
+  "new_requests": 52,
+  "new_microusd": 414688,
+  "all_scores_and_costs_matched": true,
+  "fairness_gap": "Common validator rejects normal ReAct C single/same-direction expectations using D-only opposite-pair rule; 10 single YES and 1 same-direction YES pair rejections.",
+  "conclusion": "KEEP_ORIGINAL_V1_REACT; do not promote the new shared protocol or D-lite; no new unseen-event experiment now",
+  "model_calls_by_reviewer": 0
+}
