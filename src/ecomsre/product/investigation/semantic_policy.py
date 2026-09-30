@@ -172,7 +172,11 @@ def fixed_requests(analysis):
         }
     )
     for target in (preferred or sorted(analysis.services))[:2]:
-        refs = sorted(analysis.snapshot.get("references", {}))
+        refs = sorted(
+            k
+            for k, v in analysis.snapshot.get("references", {}).items()
+            if v["scope"] == [target, None, None] and v["unit"] == "fraction"
+        )
         neighbors = sorted(
             {
                 n

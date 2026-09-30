@@ -550,7 +550,17 @@ def main():
         return
     snapshots = []
     for c in selected:
-        snapshot, manifest = load_retained(args.input_root, c["round"], config)
+        if "snapshot_file" in c:
+            path = args.input_root / c["snapshot_file"]
+            snapshot = json.loads(path.read_text())
+            manifest = dict(
+                files={
+                    c["snapshot_file"]: hashlib.sha256(path.read_bytes()).hexdigest()
+                },
+                source="retained-rca100-trace-subset-v1",
+            )
+        else:
+            snapshot, manifest = load_retained(args.input_root, c["round"], config)
         snapshots.append((c, snapshot, manifest))
     if args.mode == "inspect":
         print(
@@ -618,6 +628,8 @@ def main():
                                 ),
                                 ROOT / "src/ecomsre/product/investigation/provider.py",
                                 Path(__file__).resolve(),
+                                ROOT
+                                / "scripts/product_v050/prepare_semantic_rca100.py",
                             ]
                         )
                     },

@@ -223,7 +223,7 @@ class SemanticAnalysis:
             services=self.services,
             windows=self.snapshot["windows"],
             references={
-                k: {f: v[f] for f in ("fixed_at", "window", "unit", "method")}
+                k: {f: v[f] for f in ("fixed_at", "window", "unit", "method", "scope")}
                 for k, v in self.snapshot.get("references", {}).items()
             },
             source_metadata=self.snapshot["metadata"],

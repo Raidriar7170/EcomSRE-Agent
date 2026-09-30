@@ -16,6 +16,7 @@ from ecomsre.product.investigation.semantic_contracts import (
 )
 from ecomsre.product.investigation.semantic_policy import (
     Progress,
+    fixed_requests,
     contrast,
     investigate_semantic_v1,
 )
@@ -149,6 +150,14 @@ def test_baseline_scope_time_and_values(snapshot, config):
     a = SemanticAnalysis(snapshot, config)
     req = AnalysisRequest(tool="compare_baseline", target="a", reference_id="prior")
     assert a.execute(req)["table"][0]["absolute_difference"] == -0.2
+    snapshot["references"]["prior-b"] = dict(ref, scope=["b", None, None])
+    assert a.metadata()["references"]["prior-b"]["scope"] == ["b", None, None]
+    chosen = [r for r in fixed_requests(a) if r.tool == "compare_baseline"]
+    assert [(r.target, r.reference_id) for r in chosen] == [
+        ("a", "prior"),
+        ("b", "prior-b"),
+    ]
+
     ref["scope"] = ["a", "another", "server"]
     assert a.execute(req)["table"][0]["status"] == "REFERENCE_SCOPE_MISMATCH"
     ref["fixed_at"] = 11
