@@ -333,6 +333,8 @@ def investigate_semantic_v1(analysis, provider, method, run_id, config):
                 state["status"] = "ACTION_BUDGET"
                 break
             if method == "B":
+                if state["analysis_actions"] >= len(fixed):
+                    raise ValueError("FIXED_WORKFLOW_REQUIRES_REPORT")
                 candidates = [Candidate(request=fixed[state["analysis_actions"]])]
             else:
                 candidates = decision.candidates
