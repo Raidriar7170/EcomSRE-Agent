@@ -1,0 +1,12 @@
+{
+  "analyses": 277,
+  "matched": 277,
+  "by_tool": {
+    "read_records": 81,
+    "profile_operations": 77,
+    "compare_baseline": 68,
+    "compare_dependencies": 51
+  },
+  "mismatches": [],
+  "scope": "Saved program-generated tables and access proxies only; model interpretation not certified."
+}

@@ -1,0 +1,959 @@
+{
+  "acceptance_pass": false,
+  "accepted_candidates": 0,
+  "accepted_model_selected_reads": 17,
+  "accounting": {
+    "committed_upper_microusd": 695520,
+    "known_cost_microusd": 600071,
+    "request_count": 51,
+    "unknown_usage_requests": 4
+  },
+  "actual_invoice_usd": null,
+  "at": {
+    "monotonic_ns": 367997122444583,
+    "utc": "2026-09-18T06:55:30.505507+00:00"
+  },
+  "attempts": [
+    {
+      "cause": "UNDETERMINED_STDERR_AND_FAILURE_STATE_NOT_RETAINED",
+      "cleanup": {
+        "clean": true,
+        "network_extra_read_error": null,
+        "network_extra_unchanged": true,
+        "non_owned_unchanged": true,
+        "receipts": [
+          {
+            "identity_sha256": "91f41341ed3df91b9063f5ba8e1e714d8a46f52bd1dedd7519a0efe1d215c110",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "9b0c3ac28995ac2a15b4c66018672210ec1e113628a71516db92cf80d7a8ecc5",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "5d84c2d8815f7cb4992a125960297727d82c2e3367322ba83a65f6a46c1e12d1",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "20af918ff2d5c0361ba32eb1eb0f303be344ecf19ac9e4f7ea9fc861e42076ee",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "a450989d5b409da9e92a5f0338650a881dcb74b0dd145cf3d8fe88a8dd54d8fe",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "ceadaeb94f1bf0001096ac2a24f0ba22703ac78ff54379e2ece09de6b4102d83",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "585289027ac3f1c100e96718dcd2ed1e026258068c2181b835118d2191365bd9",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "f0e37ab5d322d0705b693ed262430ff5a3b0b052da5e409e0f2b85637dd3fe86",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "b7cd93f65a8377879ea231501d0e0efc78354e05f918effda9816f47a5d7e18a",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "ed585c0b3a18d83c19549d9b4fa968f21c5e8e7fac743d01e036e8e392d90cdb",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "2bc4169e7a9d9c752cb99c7b27efc7055c13d5a2cc98b824c387c68b29c8019b",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "400730adbe41bbe6e06d62619c224cf9deff88308833d5ef8d9e6ed583e88d90",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "aa7042f6519c400d14566fe28b81b638ba0b52f624d738239c35ce2ee5cfb0c7",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "af7cceae69b274e76b25671a89954801e43eab57ecf1523616e59035b4d590db",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "b7bd599cb867f6ddd9999c0d1436596a536f34e5cc90ed4d39174d7c51f7d276",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "55f60f2a77878c2028bc3d32e0d1e8f42761b5d15184a0fa25d51a009a5d68eb",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "e38a669e446b8e593beeb4c9ad238c2feba90941f329ba24c65ea1cbc07f8d99",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "e8bfc4d578a27e6c6db5d24d4e79a8380344ff4a59eb4bafa18c0a50d80eda53",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "1f2b8d0e72b29f7174c3d15384eef98631a7052b910898776f99c03880d9161a",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "5b3ba36b17ba394e4db0ad923517b14b05cdae46791111055cf2976cf33a3315",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "aab935c3e348557bf7f67ed981597554d81cbb969aea3f9d56b43fa7a816c2c4",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "6e37365dbf8fffcb3199056aa6d0c2b6e13374985e4acde6fdaf89e73cb34507",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "848b65b6cd1e22eca78500f2c5981883da5bd3c3309de88aaadf96d30aafdea1",
+            "kind": "network",
+            "removed": true
+          },
+          {
+            "identity_sha256": "3ac1d19bf83e0fd2c6d3c76aa8e42c2390021097ac82fe05d4368b1922cd8e4d",
+            "kind": "volume",
+            "removed": true
+          },
+          {
+            "identity_sha256": "210304a8c671256a73e563b834b0e87033f35e87a1d1e3748347558b933a3194",
+            "kind": "volume",
+            "removed": true
+          },
+          {
+            "identity_sha256": "baf68c5ee35af223cb7fa78854f8316a60411b7c095adce4c53da2512e1e2d22",
+            "kind": "volume",
+            "removed": true
+          },
+          {
+            "identity_sha256": "9f50bcab50fdfda6229a5ad96e0d264bca251c7e97788c384419ceefc8c09a32",
+            "kind": "volume",
+            "removed": true
+          },
+          {
+            "identity_sha256": "d6db97787a86fdc27bd6eeac1f53de15b0fceb77988538ff8a48caa04b0fa98f",
+            "kind": "volume",
+            "removed": true
+          }
+        ],
+        "remaining": {
+          "container": 0,
+          "network": 0,
+          "volume": 0
+        }
+      },
+      "name": "initial",
+      "status": "START_FAILED"
+    },
+    {
+      "cause": "ASTRONOMY_DB_EXIT_1",
+      "cleanup": {
+        "clean": true,
+        "network_extra_read_error": null,
+        "network_extra_unchanged": true,
+        "non_owned_unchanged": true,
+        "receipts": [
+          {
+            "identity_sha256": "0730d88eabc6713cf9005c9584d6655c47759315301f22bf6eae79ab1816b384",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "6572d05687dc482eac0ffe4a3e3e5fd20bf7bf7c6414461a03c894eee91848fd",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "496a4e302ca89557b30beeec2858ae55e0066aecdc6b60a92c3a8265e5c63657",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "fa5f62756335f3ed492535f6246255b307cfe106c488094e06228a7d7b54c9d3",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "611c2b065493f234f4dce6ee27324c4731c9566f8e36da07e8b83a7706900958",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "08c43af451cd4dc530d3666e03f6511a5fbcc0e918fcd984fce5b2d82da0899b",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "aa152f277db82bf15e7bf0e2de81f5319f157b3b741ec1509f3b8b9c23469422",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "3c223d2b4301c998864791f608d7361be3512288d052bfc730d4d26444f00a63",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "f3effa84deb38521f466dd9cbec297929c79b8d7b545a44bf53376a9320247e5",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "828657eb05fb064a083130b2dadfa4f2f8b650c34ed45162359975fd84b70db2",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "0c16f285f0ad3d8555a7661369d73232b3d4556c122df1b36785b12219f5f508",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "0137dac66c7acf58260db9f79e540518af0a85d8f5b75e5113534b49b36f76a4",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "44a773a6df3419a29e27e082e11e6a7272ad43d416870a271235e8b421f9cc45",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "70c3fcc23f45c244e591ab1dc71cb2f97a2295a0ee2bbbfa8c842b253a8990a8",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "2ac3b1e3439272256865d9ada5325dbad5599528bf5fc47e312e85aec7a8d611",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "0260212220283a42c8cee42f730eb1bf2b4fc30b13a41cd383f1b25cfc1bda31",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "e074ef95b17dc3a64d212be98321f8bf99793f6ff46f673175e2683119a23670",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "eb82739139c4c82d7c8cfa88ed5fa545c116d02b2377047244ebe234201b899f",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "321e357111adb1b3da42a40576582261dc691e1a86b798433170bf4ac5e27c28",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "7e0710ddec549a5dcd56f0b282fa31e172a2ca809fa454b844b170da09524dcf",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "8eae338bb58957d727c6614b65161dea3bc362748c2c3aa9af96c690a8e1af05",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "fadfc05f7e53fdae6e8d7b86afc33070add62d350ed6b7cc39e3145fa858abe0",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "44a160f3451124b94aa54f7dbc66456ce0cf1ca0205235c1e81d3191528a4cdd",
+            "kind": "network",
+            "removed": true
+          },
+          {
+            "identity_sha256": "3ac1d19bf83e0fd2c6d3c76aa8e42c2390021097ac82fe05d4368b1922cd8e4d",
+            "kind": "volume",
+            "removed": true
+          },
+          {
+            "identity_sha256": "210304a8c671256a73e563b834b0e87033f35e87a1d1e3748347558b933a3194",
+            "kind": "volume",
+            "removed": true
+          },
+          {
+            "identity_sha256": "baf68c5ee35af223cb7fa78854f8316a60411b7c095adce4c53da2512e1e2d22",
+            "kind": "volume",
+            "removed": true
+          },
+          {
+            "identity_sha256": "9f50bcab50fdfda6229a5ad96e0d264bca251c7e97788c384419ceefc8c09a32",
+            "kind": "volume",
+            "removed": true
+          },
+          {
+            "identity_sha256": "d6db97787a86fdc27bd6eeac1f53de15b0fceb77988538ff8a48caa04b0fa98f",
+            "kind": "volume",
+            "removed": true
+          }
+        ],
+        "remaining": {
+          "container": 0,
+          "network": 0,
+          "volume": 0
+        }
+      },
+      "name": "diagnostic-01",
+      "status": "START_FAILED"
+    },
+    {
+      "cause": null,
+      "cleanup": {
+        "clean": true,
+        "network_extra_read_error": null,
+        "network_extra_unchanged": true,
+        "non_owned_unchanged": true,
+        "receipts": [
+          {
+            "identity_sha256": "11c7f60ea5a6c7b6b08f732ba9f8a7a6e59dc69b122450ef3f4b1bf7fc73e22f",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "3609874dc75c8ce2e2557bde60e17d5849823f2b2f17f3d6bf8e5cf529025b31",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "9870ece943d1ad18339a6abcab933cc4f82bd8be7e8b6aaae62aa7c5886445ea",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "de5046d60592789d2d49dce8f01d8163e856efdea95af02021df32b6712d528e",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "34614d4d14fe39019a4916fa6c3e78d41cae80c81ba88af5cf0f10f07bed8069",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "30ba27a78fcedce0d760752b08182181b646c8795dfca2784d1c915dd2470a68",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "646c3ab03510306cd34556690086fb2c0a7370fa6269e222f2e6e3c9e665fa02",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "dcd9af53354847ed63582d9964d06555fb2ec57e261de38f6903ec705a2d504f",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "f37174f20eaf7720330568830c5e3a0e9c1c7405c5a185c1f51f77d6ea154e3f",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "e98927435df9b6ac6e09204e7e414b6be57bfa498281cdf4333784865212cbb6",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "539557aea2987a9858e4f17fca912a6d078e9d98e62d8984acabdb642805ad8f",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "80dad22cb3160e3ba6373baa2c5094674193dc9ebee5b8416e8232525b067565",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "c066c71c2d7ce3304b69eeb388ba5067ca53a713b0dc190b8e663cd6fb5c48fa",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "85aeb8c87759633dd21414ee355c2ee698ef0e5bb1a7c37b75b042ace2679969",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "212156d7a2503f7b3e88df6fb1ac0199d572d4eec645eb7ac021f33fda6e9160",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "56c93d9e08644c0ad2b2d668bb5fac520545ae776028266e0218abde35f79479",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "ffebdb966afb9c731e015c7dad3d78e3a06eafa280d0f7bde004a390a9004a78",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "9a5a45ad7a59555a089f781e6ccea382924c2e552c977ac63325d7b902f732bb",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "92b74c86087b9306ea96b0016d8e0584ca1fca286d572435939af11f029c7feb",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "b862c48d992c895e57f031f4e8fc2effd6a0d404a380815ac013653d9b130446",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "29972c7e10e4ac87ac0795da34c8f215b6bc00c8607829d846d20b6001922678",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "3828251ce6aa7fb179b418b1419179157e0d663c648a4281e743f01f1a00fd1f",
+            "kind": "container",
+            "removed": true
+          },
+          {
+            "identity_sha256": "dda1e5ce84ca5a8b11cea7adf85bb0f09f07c329629eb57d6cd7356894cf7859",
+            "kind": "network",
+            "removed": true
+          },
+          {
+            "identity_sha256": "3ac1d19bf83e0fd2c6d3c76aa8e42c2390021097ac82fe05d4368b1922cd8e4d",
+            "kind": "volume",
+            "removed": true
+          },
+          {
+            "identity_sha256": "210304a8c671256a73e563b834b0e87033f35e87a1d1e3748347558b933a3194",
+            "kind": "volume",
+            "removed": true
+          },
+          {
+            "identity_sha256": "baf68c5ee35af223cb7fa78854f8316a60411b7c095adce4c53da2512e1e2d22",
+            "kind": "volume",
+            "removed": true
+          },
+          {
+            "identity_sha256": "9f50bcab50fdfda6229a5ad96e0d264bca251c7e97788c384419ceefc8c09a32",
+            "kind": "volume",
+            "removed": true
+          },
+          {
+            "identity_sha256": "d6db97787a86fdc27bd6eeac1f53de15b0fceb77988538ff8a48caa04b0fa98f",
+            "kind": "volume",
+            "removed": true
+          }
+        ],
+        "remaining": {
+          "container": 0,
+          "network": 0,
+          "volume": 0
+        }
+      },
+      "name": "postgres-user-01",
+      "status": "FIVE_EPISODES_COMPLETED_NO_VALIDATED_KNOWLEDGE"
+    }
+  ],
+  "base_head": "176d2b782ae8615561c4e7f94347be434d05ba32",
+  "baseline_attempts": [
+    {
+      "diagnosis": "startup windows and Kafka initialization projection false rejection",
+      "name": "initial",
+      "reason": "BASELINE_INSUFFICIENT_WINDOWS",
+      "status": "FAILED"
+    },
+    {
+      "diagnosis": "four log windows truncated under unchanged 200-record source limit",
+      "name": "timing-01",
+      "reason": "BASELINE_INSUFFICIENT_WINDOWS",
+      "status": "FAILED"
+    },
+    {
+      "name": "volume-01",
+      "requests_per_second": 0.16666666666666666,
+      "settlement_seconds": 180,
+      "status": "PASS",
+      "traffic_requests": 30,
+      "window_requirement": "5/5"
+    }
+  ],
+  "baseline_successful_windows": 5,
+  "campaign": "live-02",
+  "committed_upper_microusd": 695520,
+  "complete_read_followups": 13,
+  "containers_created": 22,
+  "containers_started_exact": 22,
+  "containers_started_observed_lower_bound": 22,
+  "defined_terminal_reached": true,
+  "development_episodes": 2,
+  "discovery_episodes": 3,
+  "docker_desktop_version": "4.80.0",
+  "episode_ids": [
+    "inc-f0e3b698b2d30035a1f94525",
+    "inc-b8b34c4a93927e43596a6016",
+    "inc-6f02324349fe6fe68f340709",
+    "inc-9707724832184ab0c6bcce92",
+    "inc-b7a9bc21170f5c7c4b1591bb"
+  ],
+  "governance_rejections": [
+    {
+      "created_at": "2026-09-18T06:46:03.532902+00:00",
+      "discovery_sha256": "d2b35a5b4d8a7d58219c5f81b22a95c605a32a54cb19c1bc26671e70c21ba2d4",
+      "environment_id": "env-2aad94a1daf2c21c06c734a3",
+      "reason": "proposal references unavailable target evidence",
+      "source_request_key": "knowledge:env-2aad94a1daf2c21c06c734a3:job-1798b8f2fd45ef16a0adb74c"
+    },
+    {
+      "created_at": "2026-09-18T06:54:47.863331+00:00",
+      "discovery_sha256": "858210a79a04e0e450c3f16bb1c6430b5a74a1292241e088bf0220df771117e0",
+      "environment_id": "env-2aad94a1daf2c21c06c734a3",
+      "reason": "proposal references unavailable target evidence",
+      "source_request_key": "knowledge:env-2aad94a1daf2c21c06c734a3:job-58b1e381eeca6ab0a141ae3e"
+    }
+  ],
+  "historical_interpretation": "IDLE_VM_STOP_START_OBSERVED; Resource Saver explanation supported; bridge causality not conclusively established; no user restart attribution",
+  "holdout": "NOT_ATTEMPTED_NO_ACCEPTED_CANDIDATE",
+  "knowledge_proposal_calls": 3,
+  "level_b": "MODEL_PROPOSED_MEAN_CPU_EXPRESSION_AND_BOUND_DEPENDENCY; CANDIDATE_REJECTED_CROSS_TARGET_REFS; NOT_INDEPENDENTLY_VALIDATED",
+  "lifecycle_events": [
+    {
+      "line": 775,
+      "message": "starting VM",
+      "source": "com.docker.backend.log",
+      "utc": "2026-09-18T02:40:44.263966000Z"
+    },
+    {
+      "line": 898,
+      "message": "VM started",
+      "source": "com.docker.backend.log",
+      "utc": "2026-09-18T02:40:46.483283000Z"
+    },
+    {
+      "line": 917,
+      "message": "timer started (5m0s)",
+      "source": "com.docker.backend.log",
+      "utc": "2026-09-18T02:40:46.575491000Z"
+    },
+    {
+      "line": 1188,
+      "message": "stopping VM",
+      "source": "com.docker.backend.log",
+      "utc": "2026-09-18T02:45:50.182616000Z"
+    },
+    {
+      "line": 1253,
+      "message": "VM stopped",
+      "source": "com.docker.backend.log",
+      "utc": "2026-09-18T02:45:50.561155000Z"
+    },
+    {
+      "line": 1328,
+      "message": "starting VM",
+      "source": "com.docker.backend.log",
+      "utc": "2026-09-18T02:47:01.501745000Z"
+    },
+    {
+      "line": 1449,
+      "message": "VM started",
+      "source": "com.docker.backend.log",
+      "utc": "2026-09-18T02:47:03.461396000Z"
+    },
+    {
+      "line": 1468,
+      "message": "timer started (5m0s)",
+      "source": "com.docker.backend.log",
+      "utc": "2026-09-18T02:47:03.546048000Z"
+    },
+    {
+      "line": 1789,
+      "message": "stopping VM",
+      "source": "com.docker.backend.log",
+      "utc": "2026-09-18T02:53:06.257881000Z"
+    },
+    {
+      "line": 1873,
+      "message": "VM stopped",
+      "source": "com.docker.backend.log",
+      "utc": "2026-09-18T02:53:06.650715000Z"
+    },
+    {
+      "line": 2970,
+      "message": "starting VM",
+      "source": "com.docker.backend.log",
+      "utc": "2026-09-18T02:53:40.788423000Z"
+    },
+    {
+      "line": 3090,
+      "message": "VM started",
+      "source": "com.docker.backend.log",
+      "utc": "2026-09-18T02:53:42.717634000Z"
+    },
+    {
+      "line": 3109,
+      "message": "timer started (5m0s)",
+      "source": "com.docker.backend.log",
+      "utc": "2026-09-18T02:53:42.838143000Z"
+    },
+    {
+      "line": 3363,
+      "message": "stopping VM",
+      "source": "com.docker.backend.log",
+      "utc": "2026-09-18T02:58:51.408126000Z"
+    },
+    {
+      "line": 3428,
+      "message": "VM stopped",
+      "source": "com.docker.backend.log",
+      "utc": "2026-09-18T02:58:51.788124000Z"
+    }
+  ],
+  "live_episodes": 5,
+  "live_proposal_calls": 3,
+  "new_baseline_admitted": true,
+  "new_campaign_created": true,
+  "new_event_reuse": "NOT_ATTEMPTED",
+  "new_product_recovery_writes": 0,
+  "new_provider_requests": 27,
+  "next_step": "Defined limited terminal; no accepted candidate permits holdout, promotion or reuse. Preserve all attempts; no automatic live/model continuation.",
+  "observed_at": "2026-09-18T06:55:30.505507+00:00",
+  "old_result": "BLOCKED_SAFETY; clean=false preserved",
+  "owned_cleanup": {
+    "clean": true,
+    "network_extra_read_error": null,
+    "network_extra_unchanged": true,
+    "non_owned_unchanged": true,
+    "receipts": [
+      {
+        "identity_sha256": "11c7f60ea5a6c7b6b08f732ba9f8a7a6e59dc69b122450ef3f4b1bf7fc73e22f",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "3609874dc75c8ce2e2557bde60e17d5849823f2b2f17f3d6bf8e5cf529025b31",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "9870ece943d1ad18339a6abcab933cc4f82bd8be7e8b6aaae62aa7c5886445ea",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "de5046d60592789d2d49dce8f01d8163e856efdea95af02021df32b6712d528e",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "34614d4d14fe39019a4916fa6c3e78d41cae80c81ba88af5cf0f10f07bed8069",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "30ba27a78fcedce0d760752b08182181b646c8795dfca2784d1c915dd2470a68",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "646c3ab03510306cd34556690086fb2c0a7370fa6269e222f2e6e3c9e665fa02",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "dcd9af53354847ed63582d9964d06555fb2ec57e261de38f6903ec705a2d504f",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "f37174f20eaf7720330568830c5e3a0e9c1c7405c5a185c1f51f77d6ea154e3f",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "e98927435df9b6ac6e09204e7e414b6be57bfa498281cdf4333784865212cbb6",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "539557aea2987a9858e4f17fca912a6d078e9d98e62d8984acabdb642805ad8f",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "80dad22cb3160e3ba6373baa2c5094674193dc9ebee5b8416e8232525b067565",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "c066c71c2d7ce3304b69eeb388ba5067ca53a713b0dc190b8e663cd6fb5c48fa",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "85aeb8c87759633dd21414ee355c2ee698ef0e5bb1a7c37b75b042ace2679969",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "212156d7a2503f7b3e88df6fb1ac0199d572d4eec645eb7ac021f33fda6e9160",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "56c93d9e08644c0ad2b2d668bb5fac520545ae776028266e0218abde35f79479",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "ffebdb966afb9c731e015c7dad3d78e3a06eafa280d0f7bde004a390a9004a78",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "9a5a45ad7a59555a089f781e6ccea382924c2e552c977ac63325d7b902f732bb",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "92b74c86087b9306ea96b0016d8e0584ca1fca286d572435939af11f029c7feb",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "b862c48d992c895e57f031f4e8fc2effd6a0d404a380815ac013653d9b130446",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "29972c7e10e4ac87ac0795da34c8f215b6bc00c8607829d846d20b6001922678",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "3828251ce6aa7fb179b418b1419179157e0d663c648a4281e743f01f1a00fd1f",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "dda1e5ce84ca5a8b11cea7adf85bb0f09f07c329629eb57d6cd7356894cf7859",
+        "kind": "network",
+        "removed": true
+      },
+      {
+        "identity_sha256": "3ac1d19bf83e0fd2c6d3c76aa8e42c2390021097ac82fe05d4368b1922cd8e4d",
+        "kind": "volume",
+        "removed": true
+      },
+      {
+        "identity_sha256": "210304a8c671256a73e563b834b0e87033f35e87a1d1e3748347558b933a3194",
+        "kind": "volume",
+        "removed": true
+      },
+      {
+        "identity_sha256": "baf68c5ee35af223cb7fa78854f8316a60411b7c095adce4c53da2512e1e2d22",
+        "kind": "volume",
+        "removed": true
+      },
+      {
+        "identity_sha256": "9f50bcab50fdfda6229a5ad96e0d264bca251c7e97788c384419ceefc8c09a32",
+        "kind": "volume",
+        "removed": true
+      },
+      {
+        "identity_sha256": "d6db97787a86fdc27bd6eeac1f53de15b0fceb77988538ff8a48caa04b0fa98f",
+        "kind": "volume",
+        "removed": true
+      }
+    ],
+    "remaining": {
+      "container": 0,
+      "network": 0,
+      "volume": 0
+    }
+  },
+  "post_cleanup_inventory_matches_admitted_baseline": true,
+  "promotion": "NOT_ATTEMPTED",
+  "provider_request_count": 51,
+  "raw_settings_logs_inspect_published": false,
+  "readiness": true,
+  "resource_checks": {
+    "containers_unchanged": true,
+    "context_matches": true,
+    "daemon_matches": true,
+    "endpoint_matches": true,
+    "network_config_unchanged": true,
+    "non_bridge_identity_unchanged": true,
+    "old_owned_remaining": {
+      "container": 0,
+      "network": 0,
+      "volume": 0
+    },
+    "volumes_unchanged": true
+  },
+  "resource_saver_current": "USER_CONFIRMED_DISABLED_DOCKER_READY",
+  "reused_event_llm_calls": null,
+  "review_status": "INDEPENDENT_REVIEW_MUST_FIX_0",
+  "revision_rounds": 2,
+  "schema_valid_model_proposals": 2,
+  "settings_modified_by_agent": false,
+  "stability_observation_started": true,
+  "stability_result": {
+    "agent_settings_changes": 0,
+    "baseline_digest": "645d71975ab909e3ec42bcd5791073c135db8321308a0ced4e8d00fe9a5b52f0",
+    "elapsed_seconds": 600.2109512920142,
+    "new_docker_resources": 0,
+    "samples": 21,
+    "status": "PASS"
+  },
+  "stability_sample_projection": [
+    {
+      "data_sha256": "645d71975ab909e3ec42bcd5791073c135db8321308a0ced4e8d00fe9a5b52f0",
+      "elapsed_seconds": 0.2064704170334153,
+      "utc": "2026-09-18T05:40:08.566258+00:00"
+    },
+    {
+      "data_sha256": "645d71975ab909e3ec42bcd5791073c135db8321308a0ced4e8d00fe9a5b52f0",
+      "elapsed_seconds": 30.239137375028804,
+      "utc": "2026-09-18T05:40:38.598818+00:00"
+    },
+    {
+      "data_sha256": "645d71975ab909e3ec42bcd5791073c135db8321308a0ced4e8d00fe9a5b52f0",
+      "elapsed_seconds": 60.23468562500784,
+      "utc": "2026-09-18T05:41:08.594259+00:00"
+    },
+    {
+      "data_sha256": "645d71975ab909e3ec42bcd5791073c135db8321308a0ced4e8d00fe9a5b52f0",
+      "elapsed_seconds": 90.23502179200295,
+      "utc": "2026-09-18T05:41:38.594492+00:00"
+    },
+    {
+      "data_sha256": "645d71975ab909e3ec42bcd5791073c135db8321308a0ced4e8d00fe9a5b52f0",
+      "elapsed_seconds": 120.20554141700268,
+      "utc": "2026-09-18T05:42:08.564898+00:00"
+    },
+    {
+      "data_sha256": "645d71975ab909e3ec42bcd5791073c135db8321308a0ced4e8d00fe9a5b52f0",
+      "elapsed_seconds": 150.23052566702245,
+      "utc": "2026-09-18T05:42:38.589775+00:00"
+    },
+    {
+      "data_sha256": "645d71975ab909e3ec42bcd5791073c135db8321308a0ced4e8d00fe9a5b52f0",
+      "elapsed_seconds": 180.2203337920364,
+      "utc": "2026-09-18T05:43:08.579477+00:00"
+    },
+    {
+      "data_sha256": "645d71975ab909e3ec42bcd5791073c135db8321308a0ced4e8d00fe9a5b52f0",
+      "elapsed_seconds": 210.2325483339955,
+      "utc": "2026-09-18T05:43:38.591592+00:00"
+    },
+    {
+      "data_sha256": "645d71975ab909e3ec42bcd5791073c135db8321308a0ced4e8d00fe9a5b52f0",
+      "elapsed_seconds": 240.22879075002857,
+      "utc": "2026-09-18T05:44:08.587721+00:00"
+    },
+    {
+      "data_sha256": "645d71975ab909e3ec42bcd5791073c135db8321308a0ced4e8d00fe9a5b52f0",
+      "elapsed_seconds": 270.2241718340083,
+      "utc": "2026-09-18T05:44:38.582994+00:00"
+    },
+    {
+      "data_sha256": "645d71975ab909e3ec42bcd5791073c135db8321308a0ced4e8d00fe9a5b52f0",
+      "elapsed_seconds": 300.2322334999917,
+      "utc": "2026-09-18T05:45:08.590945+00:00"
+    },
+    {
+      "data_sha256": "645d71975ab909e3ec42bcd5791073c135db8321308a0ced4e8d00fe9a5b52f0",
+      "elapsed_seconds": 330.23779520898825,
+      "utc": "2026-09-18T05:45:38.596401+00:00"
+    },
+    {
+      "data_sha256": "645d71975ab909e3ec42bcd5791073c135db8321308a0ced4e8d00fe9a5b52f0",
+      "elapsed_seconds": 360.23956670903135,
+      "utc": "2026-09-18T05:46:08.582364+00:00"
+    },
+    {
+      "data_sha256": "645d71975ab909e3ec42bcd5791073c135db8321308a0ced4e8d00fe9a5b52f0",
+      "elapsed_seconds": 390.2296385000227,
+      "utc": "2026-09-18T05:46:38.558968+00:00"
+    },
+    {
+      "data_sha256": "645d71975ab909e3ec42bcd5791073c135db8321308a0ced4e8d00fe9a5b52f0",
+      "elapsed_seconds": 420.24398450000444,
+      "utc": "2026-09-18T05:47:08.571012+00:00"
+    },
+    {
+      "data_sha256": "645d71975ab909e3ec42bcd5791073c135db8321308a0ced4e8d00fe9a5b52f0",
+      "elapsed_seconds": 450.21635100001004,
+      "utc": "2026-09-18T05:47:38.542687+00:00"
+    },
+    {
+      "data_sha256": "645d71975ab909e3ec42bcd5791073c135db8321308a0ced4e8d00fe9a5b52f0",
+      "elapsed_seconds": 480.24155270901974,
+      "utc": "2026-09-18T05:48:08.567428+00:00"
+    },
+    {
+      "data_sha256": "645d71975ab909e3ec42bcd5791073c135db8321308a0ced4e8d00fe9a5b52f0",
+      "elapsed_seconds": 510.2357075000182,
+      "utc": "2026-09-18T05:48:38.561155+00:00"
+    },
+    {
+      "data_sha256": "645d71975ab909e3ec42bcd5791073c135db8321308a0ced4e8d00fe9a5b52f0",
+      "elapsed_seconds": 540.2263812500169,
+      "utc": "2026-09-18T05:49:08.551408+00:00"
+    },
+    {
+      "data_sha256": "645d71975ab909e3ec42bcd5791073c135db8321308a0ced4e8d00fe9a5b52f0",
+      "elapsed_seconds": 570.2258970420226,
+      "utc": "2026-09-18T05:49:38.550499+00:00"
+    },
+    {
+      "data_sha256": "645d71975ab909e3ec42bcd5791073c135db8321308a0ced4e8d00fe9a5b52f0",
+      "elapsed_seconds": 600.2109512920142,
+      "utc": "2026-09-18T05:50:08.535132+00:00"
+    }
+  ],
+  "startup_failure": {
+    "cause": "UNDETERMINED_STDERR_AND_FAILURE_STATE_NOT_RETAINED",
+    "command": "docker compose start --wait --wait-timeout 240",
+    "diagnostic_repair": "future startup failures persist stderr/stdout and identity-checked State before cleanup; focused fixture verified only",
+    "exit_code": 1
+  },
+  "status": "NO_VALIDATED_LLM_KNOWLEDGE",
+  "terminal": "ECOMSRE_PRODUCT_V050_NO_VALIDATED_LLM_KNOWLEDGE",
+  "verification": "Source-bound focused checks; repository-wide checks are attached to the final PR HEAD",
+  "volume_data_content_checked": false
+}

@@ -25,7 +25,7 @@
 
 恢复还需要另一道边界：诊断正确不代表可以写入。Diagnosis 始终 `action_authority = NONE`。Product v0.4 增加默认关闭的独立通道，检查批准、目标身份、Baseline 和当前状态，再授予一次有时限的固定动作。
 
-LLM 是可选的非权威命名/解释层，不选择目标、Runbook、命令或写参数。本页所列 Product 实测 Provider / LLM calls = 0。
+v0.4.1 既有通道中，LLM 是可选的非权威命名/解释层，不选择目标、Runbook、命令或写参数。上述 v0.2.4–v0.4.1 Product 实测 Provider / LLM calls = 0。
 
 ## 四阶段演进
 
@@ -64,3 +64,13 @@ LLM 是可选的非权威命名/解释层，不选择目标、Runbook、命令�
 只有一个本地 Payment 配置故障和一个 Runbook 被真实验证；知识演化仍是小样本 deterministic baseline。没有生产自主自愈、跨环境泛化、通用 exactly-once、多租户、HA、Kubernetes 或长期 SLO 证明。完整 28 服务 Harness 的失败记录保留，不能被 Minimal 成功替代。
 
 [完整限制](docs/product/LIMITATIONS.md)列出已证明与未证明的边界。上游 OTel Demo 提供被观测微服务；本项目提供证据、诊断、知识治理及受限恢复链路。个人贡献需按实际职责说明。
+
+## v0.5 开发增量（尚未完成实测验收）
+
+默认关闭的调查与知识提议任务已接入 Product API/Worker；模型可从合法读取目录中选择证据并提出假设，Runtime 保留证据校验、预算和正式诊断权限。新增 Level B 资源聚合表达式、独立验证适配和只读局部恢复预览。现已完成 5 个独立本地事件、17 次模型选取补查；原 live 轮累计 51 次 Provider 请求，3 次真实知识提议均未形成有效候选；追加可行性与受约束提议轮后累计 57 次请求，1 个候选通过准入并进入实际开发求值，但原 Development 仅 1/2，终态为 `NO_VALIDATED_LLM_KNOWLEDGE`，未晋升或验证新事件复用。见 [设计与边界](docs/analysis/product-v050-design.md)、[执行进度](docs/analysis/product-v050-progress.md)。
+
+Product v0.5 [PR #104 continuation](docs/results/product-v050/continuation-01/README.md) repairs evidence binding and supplemental-read reuse. [Provider unblock](docs/results/product-v050/provider-unblock/README.md) now confirms minimal generation and replay tool roundtrips; no live learning success is claimed. Earlier zero-call evidence is preserved.
+
+Historical [local investigation](docs/results/product-v050/docker-stability/README.md) ended `NO_VALIDATED_LLM_KNOWLEDGE`; the admitted new campaign cleaned all owned resources with clean=true. Historical [live-01](docs/results/product-v050/live-resume/README.md) remains BLOCKED_SAFETY / clean=false.
+
+最新 [可行性与受约束提议结果](docs/results/product-v050/knowledge-feasibility/README.md)：严格 schema 与准入不等于学习成功；本轮进入真实开发求值，但未通过开发门槛。

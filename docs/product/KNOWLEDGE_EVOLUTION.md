@@ -106,3 +106,15 @@ LLM 仅建议标签与解释，不选择晋升关键谓词、不审批、不执�
 本次 live Provider / Agent write / Runbook = 0，
 action/remediation authority = `NONE`，cleanup = `CLEAN`。
 其他扩展干扰、独立环境及长期健康控制仍需验证，见[限制](LIMITATIONS.md)。
+
+## v0.5 候选来源扩展（离线实现）
+
+本节是 DEC-064 的新作用域；上文保留既有人工门控路径。Investigation 轨迹可供 LLM 提议 PATTERN_ONLY 候选，需绑定真实请求和完整 discovery 快照；fixture 不能冒充 LLM 来源。既有 miner 使用相同候选池和求值路径。Level B 支持资源 gauge 聚合/比值，未知覆盖不补零。开发检查与独立冻结评估分开，缺控制样本拒绝晋升。晋升仅由独立 harness 在新测试注册库按 Goal 条件执行，模型没有该工具。
+
+本次尚无真实模型候选、holdout、晋升或复发结果；已实现的 fixture 匹配与撤销不能称为学习成功。见 [实现边界](../analysis/product-v050-design.md)。
+
+The [v0.5 continuation](../results/product-v050/continuation-01/README.md) binds supplemental resource query requirements and uses them during deterministic new-event reads. Harness-owned episode splits precede proposer exposure; cross-candidate/revision exposure and duplicate episode denominators fail closed. The later [real local campaign](../results/product-v050/docker-stability/README.md) completed five independent episodes and three model proposals; none entered the candidate pool. A proposed Level B expression was rejected with cross-target references. Holdout, promotion and learned reuse remain unattempted, and their engineering validation remains fixture-only.
+
+The [versioned draft continuation](../results/product-v050/knowledge-contract-repair/README.md) separates target support/counterevidence from comparison-only context. Runtime compiles model-selected fields without selecting thresholds. Three new requests yielded two schema-valid drafts and zero admitted candidates; actual development evaluation was NOT_ATTEMPTED in that earlier round. This does not establish Level A or Level B learning.
+
+The separate [scoped feasibility round](../results/product-v050/knowledge-feasibility/README.md) uses a task-specific instruction and wire-schema enums, with exact request-bound short handles. Three schema-valid drafts yielded one admitted Level A candidate and one actual development evaluation: 1/2 original Development cases matched. No candidate was frozen or independently validated. Level B remains unavailable across the original Development pair because e04 lacks the matching supplemental resource observation. This is a failed development result, not validated learning.

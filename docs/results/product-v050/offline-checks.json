@@ -1,0 +1,220 @@
+{
+  "cases": [
+    {
+      "id": "tests.product_v050.test_expressions::test_derived_feature_evaluates_unseen_values_and_negative",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_expressions::test_missing_evidence_never_becomes_zero[change0-MISSING_OR_AMBIGUOUS_OBSERVATION]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_expressions::test_missing_evidence_never_becomes_zero[change1-MISSING_OR_AMBIGUOUS_OBSERVATION]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_expressions::test_missing_evidence_never_becomes_zero[change2-MISSING_OR_AMBIGUOUS_OBSERVATION]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_expressions::test_zero_denominator_and_wrong_target",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_expressions::test_invalid_dsl_fails_closed[change0]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_expressions::test_invalid_dsl_fails_closed[change1]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_expressions::test_invalid_dsl_fails_closed[change2]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_expressions::test_invalid_dsl_fails_closed[change3]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_expressions::test_invalid_dsl_fails_closed[change4]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_expressions::test_invalid_dsl_fails_closed[change5]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_expressions::test_invalid_dsl_fails_closed[change6]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_expressions::test_sample_alignment_and_insufficient_samples",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_history::test_historical_manifest_cannot_be_rewritten_with_matching_file_hash",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_reservation_survives_restart_and_counts_uncertain",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_successful_response_is_reused_and_drift_rejected",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_provider_failures_keep_reservations[response0-PROVIDER_TRUNCATED]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_provider_failures_keep_reservations[response1-PROVIDER_REFUSED]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_provider_failures_keep_reservations[response2-PROVIDER_PROTOCOL_INVALID]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_provider_failures_keep_reservations[response3-PROVIDER_MODEL_MISMATCH]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_api_worker_roundtrip_and_reentry",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_disabled_route_and_known_zero_calls",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_hypothesis_requires_actual_coverage_and_exact_window[mutation0-EVIDENCE_INCOMPLETE]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_hypothesis_requires_actual_coverage_and_exact_window[mutation1-EVIDENCE_INCOMPLETE]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_hypothesis_requires_actual_coverage_and_exact_window[mutation2-EVIDENCE_INCOMPLETE]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_hypothesis_requires_actual_coverage_and_exact_window[mutation3-EVIDENCE_TARGET_MISMATCH]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_hypothesis_requires_actual_coverage_and_exact_window[mutation4-EVIDENCE_WINDOW_MISMATCH]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_expired_job_cannot_reserve_provider_or_commit_session",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_unknown_cost_bound_failure_blocks_future_dispatch",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_invalid_request_cap_counts_every_reserved_request",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_prediction_check_is_runtime_computed_and_window_bound",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_malformed_nested_provider_response_is_typed_failure[response0]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_malformed_nested_provider_response_is_typed_failure[response1]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_malformed_nested_provider_response_is_typed_failure[response2]",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_provider_does_not_persist_gateway_hidden_reasoning",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_investigation::test_unknown_model_suffix_invalidates_campaign_cost_bound",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_knowledge::test_level_b_registry_normal_diagnosis_and_revocation",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_knowledge::test_holdout_excludes_all_discovery_inputs_and_cannot_reenter_proposer",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_knowledge::test_existing_environment_cannot_gain_test_promotion_authority",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_knowledge::test_candidate_from_persisted_discovery_is_frozen_consumed_and_rejected_without_controls",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_preview::test_local_preview_preserves_unrelated_configuration",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_preview::test_state_drift_requires_regeneration",
+      "status": "PASSED"
+    },
+    {
+      "id": "tests.product_v050.test_preview::test_extra_fields_fabricated_evidence_and_unsafe_scope",
+      "status": "PASSED"
+    }
+  ],
+  "command": "python -m pytest tests/product_v050 -q --junitxml=<temporary-file>",
+  "evidence_mode": "FIXTURE_ONLY",
+  "exit_code": 0,
+  "external_product_writes": 0,
+  "live_episode_count": 0,
+  "observed_at": "2026-09-17T19:23:30.188649+00:00",
+  "provider_request_count": 0,
+  "runtime": {
+    "pydantic": "2.13.4",
+    "pytest": "8.4.2",
+    "python": "3.12.2"
+  },
+  "schema_version": "ecomsre.product.offline-checks.v050",
+  "scope": "v050 fixture checks only; no learning or live acceptance",
+  "source_sha256": {
+    "scripts/ci/verify_product_v050.py": "c08820376e53a5510a80f18e80c6fa2ab1068380a4e4590b11e8d718e409ac6a",
+    "scripts/ci/verify_product_v050_history.py": "79c64ea5eb32157f6764a037b46dc98efa54ffc4a9d8ca0dabc7e43175a6c122",
+    "scripts/product_v050/preflight.py": "f52ce11f9fcc2c4101dec1cbbf3b9d211cb3a1965db8d0f0fff3e7d6e8c28d30",
+    "scripts/product_v050/run_offline_checks.py": "5fde0a333f3efb3de556040f10c6279dbddb3ee52ee2b52b336a8a2d11117623",
+    "src/ecomsre/product/api.py": "5931e47e2cb0f001493171f7823b0e5169e672aaa3b0b2eb72b8b860e8d22912",
+    "src/ecomsre/product/incidents/diagnosis_bridge.py": "e66671cd64717b4c5b3f2650886e9cc7c1bdb39ab761e52761848a3856f0ab10",
+    "src/ecomsre/product/incidents/extensions.py": "88af25caf0df45cb93b3f65e8af0f66fbec2594034e298929f8f2ec9417b1cf0",
+    "src/ecomsre/product/investigation/__init__.py": "10092f0724a1fa0fd1680fe5a5545da60f3ca5a1bdbe4798de4a5cf3ca6125ad",
+    "src/ecomsre/product/investigation/contracts.py": "0da4502ba38e95150b469cd8bea4e8015313adef5bc2f41946bbce539151c6ef",
+    "src/ecomsre/product/investigation/provider.py": "ecc56ebd1b72e6fc00d2956c7740c4e6d516fc877864596da2a4d2ab49d2ecc0",
+    "src/ecomsre/product/investigation/reads.py": "ccf27fef36e6d2c976fbcd4484e4bee9fdda70276a271fbccd187fd73e19c223",
+    "src/ecomsre/product/investigation/repository.py": "ef1430bd3729e4e92de3d2da9ad34adbff183639f1d7f50dfabeb002f48d185a",
+    "src/ecomsre/product/investigation/runtime.py": "ac749ea8d41d0fc9810afb3eb581b98c3491c189608b4ba332c78fafb54fa30e",
+    "src/ecomsre/product/jobs/contracts.py": "7b5506bafc27979c448cc08ec3798459f352e1bd01381691fea3444ca6800ab3",
+    "src/ecomsre/product/jobs/contracts_v050.py": "a8a01a51f495557fddd258b22d4606ebd41cc1e050615e0a38f0b70266ccfdfc",
+    "src/ecomsre/product/jobs/repository.py": "1c69ea2712b8b5b74df3d89ec9b2325d48fbc9515af28ce541317bc8d9a3e6c6",
+    "src/ecomsre/product/jobs/worker.py": "12e72972a51c3005ff4d7888f29a78a47a022cca6ab036dc18d437228fb9d633",
+    "src/ecomsre/product/knowledge/candidates_v050.py": "aa123331536f966fae23c30f292c6217211de1a016f9d193f17db04ef14112ec",
+    "src/ecomsre/product/knowledge/evolution_v050.py": "9984183eeb8fa6a31476004d3359e19ac2d34347472315fb3ade30b2965199e6",
+    "src/ecomsre/product/knowledge/expressions.py": "dca58e6307647dbf46b5681878ea31a8cb4083708dcf8dee6bfc6a6aa01d1c3c",
+    "src/ecomsre/product/knowledge/repository.py": "a6920ffc3718f9b5d72b66ddb09780c85ecf51a5ddbf9b0229db1eab42dff7e6",
+    "src/ecomsre/product/remediation/planner.py": "91007d99ec2a88f0ac3ae40a4325c5cc9611b4f371d9297f43b568582a4a1828",
+    "src/ecomsre/product/settings.py": "bef8a2f80963290a262782d835f6eac5fbaa973c730d5bcc48fe8d4e5a5c4722",
+    "tests/product_v050/test_expressions.py": "f86d7772c9d10f207170ea5047f5c99cdad4b65cb367a41aefb75d69c8702aae",
+    "tests/product_v050/test_history.py": "c2bc54d84907e3fe4b1ebc561b06d993725aee204bc064e099989a50f132037c",
+    "tests/product_v050/test_investigation.py": "4675c9dfcf458a5daf069959d34b30a8af439b4d0a225e547fc11600fbbd1571",
+    "tests/product_v050/test_knowledge.py": "8a56f29501dbbd8ad20b1c88a878d5afdd1a3ba67d1a5804e57a8173635178b0",
+    "tests/product_v050/test_preview.py": "ec56e7251f74e289bf8657d1c566cc2ec5c091ca9c29826c1595ef3342c51f86"
+  }
+}

@@ -1,0 +1,144 @@
+{
+  "version": "trace-representation-repair-v1",
+  "model": "gpt-5.4-mini-2026-03-17",
+  "prices": {
+    "provider_profile": "openai-direct-standard-text",
+    "model": "gpt-5.4-mini-2026-03-17",
+    "accepted_response_models": [],
+    "as_of": "2026-09-29",
+    "source": "https://developers.openai.com/api/docs/models/gpt-5.4-mini ; direct non-regional standard text; all input charged at uncached upper rate; no hosted tools",
+    "input_usd_per_million": 0.75,
+    "output_usd_per_million": 4.5
+  },
+  "reasoning": "low",
+  "max_model_calls": 8,
+  "max_actions": 6,
+  "max_repairs": 1,
+  "max_queries": 24,
+  "max_records_scanned": 100000,
+  "page_size": 30,
+  "cost_record_scale": 1000,
+  "mapping": [
+    {
+      "service": "fraud-detection",
+      "operation": "flagd.evaluation.v2.Service/EventStream",
+      "span_kind": "SPAN_KIND_CLIENT",
+      "group": "CONTROL_STREAM",
+      "reason": "Exact flagd v2 streaming evaluation RPC; status independent; retained RPC tags verify service/method/system."
+    },
+    {
+      "service": "payment",
+      "operation": "grpc.flagd.evaluation.v2.Service/EventStream",
+      "span_kind": "SPAN_KIND_CLIENT",
+      "group": "CONTROL_STREAM",
+      "reason": "Exact flagd v2 streaming evaluation RPC; status independent; retained RPC tags verify service/method/system."
+    },
+    {
+      "service": "checkout",
+      "operation": "oteldemo.CheckoutService/PlaceOrder",
+      "span_kind": "SPAN_KIND_SERVER",
+      "group": "BUSINESS_REQUEST",
+      "reason": "Frozen checkout main.go PlaceOrder handler."
+    },
+    {
+      "service": "payment",
+      "operation": "grpc.oteldemo.PaymentService/Charge",
+      "span_kind": "SPAN_KIND_SERVER",
+      "group": "BUSINESS_REQUEST",
+      "reason": "Frozen payment index.js chargeServiceHandler."
+    },
+    {
+      "service": "fraud-detection",
+      "operation": "orders process",
+      "span_kind": "SPAN_KIND_CONSUMER",
+      "group": "BUSINESS_ASYNC",
+      "reason": "Frozen fraud-detection main.kt Kafka orders consumer; receive and process are separate span populations, not independent orders."
+    },
+    {
+      "service": "fraud-detection",
+      "operation": "orders receive",
+      "span_kind": "SPAN_KIND_CONSUMER",
+      "group": "BUSINESS_ASYNC",
+      "reason": "Frozen fraud-detection main.kt Kafka orders consumer; receive and process are separate span populations, not independent orders."
+    },
+    {
+      "service": "checkout",
+      "operation": "oteldemo.CartService/EmptyCart",
+      "span_kind": "SPAN_KIND_CLIENT",
+      "group": "BUSINESS_REQUEST",
+      "reason": "Frozen checkout main.go synchronous dependency call; CLIENT population kept separate from SERVER."
+    },
+    {
+      "service": "checkout",
+      "operation": "oteldemo.CartService/GetCart",
+      "span_kind": "SPAN_KIND_CLIENT",
+      "group": "BUSINESS_REQUEST",
+      "reason": "Frozen checkout main.go synchronous dependency call; CLIENT population kept separate from SERVER."
+    },
+    {
+      "service": "checkout",
+      "operation": "oteldemo.CurrencyService/Convert",
+      "span_kind": "SPAN_KIND_CLIENT",
+      "group": "BUSINESS_REQUEST",
+      "reason": "Frozen checkout main.go synchronous dependency call; CLIENT population kept separate from SERVER."
+    },
+    {
+      "service": "checkout",
+      "operation": "oteldemo.PaymentService/Charge",
+      "span_kind": "SPAN_KIND_CLIENT",
+      "group": "BUSINESS_REQUEST",
+      "reason": "Frozen checkout main.go synchronous dependency call; CLIENT population kept separate from SERVER."
+    },
+    {
+      "service": "checkout",
+      "operation": "oteldemo.ProductCatalogService/GetProduct",
+      "span_kind": "SPAN_KIND_CLIENT",
+      "group": "BUSINESS_REQUEST",
+      "reason": "Frozen checkout main.go synchronous dependency call; CLIENT population kept separate from SERVER."
+    },
+    {
+      "service": "checkout",
+      "operation": "orders publish",
+      "span_kind": "SPAN_KIND_PRODUCER",
+      "group": "BUSINESS_ASYNC",
+      "reason": "Frozen checkout kafka/producer.go orders publisher; not added to consumer counts as distinct orders."
+    }
+  ],
+  "baseline": {
+    "error_fraction": {
+      "epsilon": 0.01,
+      "minimum": 3,
+      "threshold": 0.05
+    },
+    "duration_ms": {
+      "epsilon": 1,
+      "minimum": 3,
+      "threshold": 50
+    }
+  },
+  "token_caps": {
+    "input_serialized_bytes": 96000,
+    "output_tokens": 4096
+  },
+  "research_protocol": "semantic-lite-v1",
+  "representation_version": "trace-representation-repair-v1",
+  "reference_view": "service",
+  "representation_support": {
+    "median_spans": 5,
+    "reference_windows": 2,
+    "robust_windows": 3,
+    "tail_spans": 40
+  },
+  "stage_budget": {
+    "start_calls": 529,
+    "start_microusd": 6185609,
+    "max_new_calls": 160,
+    "max_new_microusd": 3000000
+  },
+  "planned_development_events": 4,
+  "planned_test_events": 0,
+  "cases": [],
+  "order": "case 001..004; service/operation order alternates by case and repeat; independent event count=4",
+  "sampling": "same retained span identities; 450 per window cap; no revision",
+  "dependency_expansion": "first identity-sorted operation per involved service; other counts and reference handles retained"
+}

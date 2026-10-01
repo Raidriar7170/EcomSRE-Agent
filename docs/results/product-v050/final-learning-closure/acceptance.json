@@ -1,0 +1,1746 @@
+{
+  "accounting": {
+    "committed_microusd_cumulative": 1067489,
+    "committed_microusd_round": 148988,
+    "committed_microusd_this_repair": 51622,
+    "invoice_known": false,
+    "live_cumulative": 13,
+    "live_round": 8,
+    "live_this_repair": 4,
+    "requests_cumulative": 60,
+    "requests_round": 3,
+    "requests_this_repair": 1,
+    "semantic_attempts_round": 3,
+    "semantic_attempts_this_repair": 1,
+    "unused_semantic_slots_stopped_at_first_pass": 3
+  },
+  "all_seen_coverage": {
+    "denominator": 5,
+    "true": 5
+  },
+  "base_head": "54fc58ca2a683f4e34a39a9f9d09f6bdd911efd0",
+  "candidate_locked_before_holdout": true,
+  "candidate_origin": "LIVE_PROVIDER",
+  "candidate_semantic_sha256": "d91d59dc8a1e403dd3a949c0cd56b0f49ba60d6e863c4da191c7766d9d2bbf3b",
+  "capability_mismatch_check": "NOT_RUN_LIVE_RECURRENCE_FAILED",
+  "delivery_head": "SEE_CONTAINING_COMMIT",
+  "derived_control_counts": {
+    "DERIVED_COUNTERFACTUAL": 1,
+    "DERIVED_SOURCE_FAILURE": 2
+  },
+  "development_results": [
+    {
+      "components": {
+        "expression": null,
+        "predicates": [
+          {
+            "predicate": "core:RUNTIME_HEALTHY",
+            "status": "TRUE"
+          },
+          {
+            "predicate": "ga:METRIC_QUEUE_LAG_OUTLIER",
+            "status": "FALSE"
+          }
+        ]
+      },
+      "event": "N3",
+      "runtime_input_sha256": "7b1c32d5fcba8ebabd4166dd68c7e1fc979e5edaf95b1259219a9176a11a8ad5",
+      "status": "FALSE"
+    },
+    {
+      "components": {
+        "expression": null,
+        "predicates": [
+          {
+            "predicate": "core:RUNTIME_HEALTHY",
+            "status": "TRUE"
+          },
+          {
+            "predicate": "ga:METRIC_QUEUE_LAG_OUTLIER",
+            "status": "TRUE"
+          }
+        ]
+      },
+      "event": "e03",
+      "runtime_input_sha256": "a9c638cd97211a7557ae6f425e73b4d24553aee85762c5e5d9ff10c8ea5a84b0",
+      "status": "TRUE"
+    },
+    {
+      "components": {
+        "expression": null,
+        "predicates": [
+          {
+            "predicate": "core:RUNTIME_HEALTHY",
+            "status": "TRUE"
+          },
+          {
+            "predicate": "ga:METRIC_QUEUE_LAG_OUTLIER",
+            "status": "TRUE"
+          }
+        ]
+      },
+      "event": "e04",
+      "runtime_input_sha256": "eb40c75125f7708f83716cbc2728710507b0e2d7040a998d1160d06d0641cd2f",
+      "status": "TRUE"
+    },
+    {
+      "components": {
+        "expression": null,
+        "predicates": [
+          {
+            "predicate": "core:RUNTIME_HEALTHY",
+            "status": "TRUE"
+          },
+          {
+            "predicate": "ga:METRIC_QUEUE_LAG_OUTLIER",
+            "status": "TRUE"
+          }
+        ]
+      },
+      "event": "e05",
+      "runtime_input_sha256": "3b0f9e212533a73fa9c360bca279c65f85edf768620417860e004b6fd7b03c12",
+      "status": "TRUE"
+    },
+    {
+      "components": {
+        "expression": null,
+        "predicates": [
+          {
+            "predicate": "core:RUNTIME_HEALTHY",
+            "status": "TRUE"
+          },
+          {
+            "predicate": "ga:METRIC_QUEUE_LAG_OUTLIER",
+            "status": "TRUE"
+          }
+        ]
+      },
+      "event": "e02",
+      "runtime_input_sha256": "305e95e8f101f4fce38aa198ee9c72abe0b23684f6a4ae635e327cbf2c49e03d",
+      "status": "TRUE"
+    },
+    {
+      "components": {
+        "expression": null,
+        "predicates": [
+          {
+            "predicate": "core:RUNTIME_HEALTHY",
+            "status": "TRUE"
+          },
+          {
+            "predicate": "ga:METRIC_QUEUE_LAG_OUTLIER",
+            "status": "FALSE"
+          }
+        ]
+      },
+      "event": "N2",
+      "runtime_input_sha256": "99ffa1e52031b96a1a5c05405a4991009d8d2a812c1ae4d81112046844959af5",
+      "status": "FALSE"
+    },
+    {
+      "components": {
+        "expression": null,
+        "predicates": [
+          {
+            "predicate": "core:RUNTIME_HEALTHY",
+            "status": "TRUE"
+          },
+          {
+            "predicate": "ga:METRIC_QUEUE_LAG_OUTLIER",
+            "status": "TRUE"
+          }
+        ]
+      },
+      "event": "e01",
+      "runtime_input_sha256": "6bbf9f7e48e1b2216ac95c6ef3b7f249377afa5bba777dcad23716154b369c3d",
+      "status": "TRUE"
+    },
+    {
+      "components": {
+        "expression": null,
+        "predicates": [
+          {
+            "predicate": "core:RUNTIME_HEALTHY",
+            "status": "TRUE"
+          },
+          {
+            "predicate": "ga:METRIC_QUEUE_LAG_OUTLIER",
+            "status": "FALSE"
+          }
+        ]
+      },
+      "event": "D_CORE_FIX_01",
+      "runtime_input_sha256": "dca571e8a83b971eb0de2f9b71162ce4318b58247459ca775160cad2151d87e4",
+      "status": "FALSE"
+    }
+  ],
+  "environment_mismatch_check": "NOT_RUN_LIVE_RECURRENCE_FAILED",
+  "event_llm_calls": 0,
+  "execution_head": "b19ecbf",
+  "formal_development_pass": true,
+  "frozen_identity": "86fdf3c166ccf4db2293ebe18fabd83cc3c380c800d021c5607328fc562f1157",
+  "full_v050_acceptance": false,
+  "goal_id": "EcomSRE_v0.5_Final_Learning_Closure_Goal",
+  "healthy_control_qualification": {
+    "actual_domain": "UNREGISTERED_OBSERVED_ANOMALY",
+    "actual_terminal": "OPEN_WORLD",
+    "boundary": "Preassigned stratum and baseline operations do not establish actual health; no relabel or repeat",
+    "frozen_stratum": "NO_INCIDENT",
+    "observed_anomalies": [
+      "fraud-detection latency",
+      "payment error"
+    ],
+    "rule_result": "FALSE",
+    "slot": "N5",
+    "status": "NOT_ESTABLISHED"
+  },
+  "historical_stop": {
+    "ordinal": 1,
+    "reason": "REPEATED_ERROR_WITHOUT_NEW_OBSERVATIONS"
+  },
+  "holdout_original_episode_count": 3,
+  "independent_acceptance_pass": false,
+  "independent_episode_results": {
+    "N4": {
+      "healthy_restored": true,
+      "product_recovery_writes": 0,
+      "status": "OBSERVED"
+    },
+    "N5": {
+      "healthy_restored": true,
+      "product_recovery_writes": 0,
+      "status": "OBSERVED"
+    },
+    "N6": {
+      "healthy_restored": true,
+      "product_recovery_writes": 0,
+      "status": "OBSERVED"
+    },
+    "N7": {
+      "healthy_restored": true,
+      "product_recovery_writes": 0,
+      "status": "OBSERVED"
+    }
+  },
+  "learning_loop_status": "INDEPENDENT_CONTROL_UNQUALIFIED_AND_RECURRENCE_FAILED",
+  "level_b": "NOT_RESUMED_NOT_ACHIEVED",
+  "limitations": [
+    "Independent healthy-control qualification is not established; mechanical Shadow PASS and zero Provider increment are not full Level A acceptance; N7 did not match learned registration.",
+    "Observed discrimination in already-seen data comes from queue lag; healthy Runtime demonstrated no additional discrimination.",
+    "Existing-predicate Level A conjunction, not a new mechanism discovery.",
+    "Level B not resumed; original e04/N1 missing resource observations remain missing.",
+    "Old N3 remains insufficient and is not a complete true negative.",
+    "Only one independent positive event; derived controls are not live episodes or independent observations.",
+    "No production validity or broader recovery-write authorization.",
+    "Prior failures, old requests, evidence identities and original ledger retained."
+  ],
+  "matched_bindings": [],
+  "merge": false,
+  "model": "gpt-5.4-mini-2026-03-17",
+  "non_owned_drift": false,
+  "normal_api_result": {
+    "action_authority": "NONE",
+    "broad_domain": "CONFIGURATION",
+    "mechanism": "CONFIGURATION_ERROR",
+    "provider_calls": 0,
+    "terminal": "CORE_KNOWN"
+  },
+  "observation_domain": "OWNED_LOCAL_TEST_ENVIRONMENT_ONLY",
+  "observed_at": "2026-09-27T04:08:27.885117+00:00",
+  "offline_enumeration": {
+    "combinations": 3682,
+    "evidence_binding_feasible": true,
+    "model_provenance": false,
+    "rule_conditions_feasible": true,
+    "supplied_to_proposer": false
+  },
+  "old_N3_complete_true_negative": false,
+  "original_shadow_diagnoses": {
+    "N4": {
+      "broad_domain": "CONCURRENCY",
+      "mechanism": "UNREGISTERED_OBSERVED_ANOMALY",
+      "terminal": "OPEN_WORLD"
+    },
+    "N5": {
+      "broad_domain": "DEPENDENCY",
+      "mechanism": "UNREGISTERED_OBSERVED_ANOMALY",
+      "terminal": "OPEN_WORLD"
+    },
+    "N6": {
+      "broad_domain": "CONFIGURATION",
+      "mechanism": "CONFIGURATION_ERROR",
+      "terminal": "CORE_KNOWN"
+    }
+  },
+  "owned_cleanup": {
+    "clean": true,
+    "network_extra_read_error": null,
+    "network_extra_unchanged": true,
+    "non_owned_unchanged": true,
+    "receipts": [
+      {
+        "identity_sha256": "b24f3ef6504161ec7d3dc80a274d19f39f8bad1d5a880aeb85465d14f64583b3",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "a253f1f73f3a01f471a180fb63402ddea8e22dc6278b04649ce2f143bd272901",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "ace593c373dd3e64e245aa7fd7d5577e20ed2799f5d0d957c2e43c71df478c5e",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "e958a03f1e7e1dfa1db95f796401f6102b9f3e7cb60547ed680c61ae8ba53d10",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "189161b9c3c960ddf029cd405e5caccaa7b70654a7ab5ede915e1be43259834f",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "a072bb1cedcf0673f2ce201992f1d1afcf854c142223a46d26f48d2cebb56080",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "9ba69a42f9ad978918f2e592af25602407fc5df35e70ef644c530e472d2b97d9",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "e44dc0e3969711ff81f8c71208315b5e380a22386297ece4c66b807b9c8d4482",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "238d6e4dde445e1712eea3cb32ba983715689ed12d125bc593abb91a7c3d984b",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "36421286692bbe6fca7da1eddc56ad65d25566b48e53d18a81ab874088850dcb",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "de2dc634af68709caa26a8cfeea8d737737fbc59d830b32ce7365f8dd5d791fe",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "fc365531821d85fd88897d05b2e0f6eb85b8a02d09a9cf39109a8628906e4443",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "39e063ed8f8584fc797039e2903c6e720cf87b776ec8fcf27bc65d171748d3b5",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "ab9cf9abfe6e969593b566f9a2ac24e069960846944a65e426522f0af4c0de2a",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "22e8c066b05be3a3d86b2a39ffe4b56f2ddb9ca4dde4368b2b8947672c9a9753",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "2f86fa3839ac5f2745c7b4754e75d0985b903b8a3efdbf9a06e3ec820f0622f8",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "0e90ac254262299cea4d83702decc98d5d5ba518a609389be3f61c0a6c690c35",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "dad4296f367b3d2316df9f184729bb1883fadf15ccf8f8feb95fd982e197548e",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "23c579b714d351a8d6f1c0b247668caf5713f5d15592675613c317644f208953",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "4ea3383dcbb17370948a96d3fdd51ca81f73dfe9a862a8c3da80d019e6a13def",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "dba9861c454d5e4f0bb7065b8bc73cef3b2381837281d1ef03ed79fd66bdacfc",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "9106deab09c95d852a46587582077c141601f9623892a7f1b736082587d58582",
+        "kind": "container",
+        "removed": true
+      },
+      {
+        "identity_sha256": "4c54cfe29c4490ec75f1f4696146ec799c6928044e3719777ba5335d021b99e1",
+        "kind": "network",
+        "removed": true
+      },
+      {
+        "identity_sha256": "c4967b5af6a3b39bb551cbfdb5b143470790c9e101cad767d0831ae5de33fa2b",
+        "kind": "volume",
+        "removed": true
+      },
+      {
+        "identity_sha256": "03fa40a563d40c177e6d97e650a142080b61c5ac95d0a7a8bb4a2d239bf81467",
+        "kind": "volume",
+        "removed": true
+      },
+      {
+        "identity_sha256": "bef00ae7093da57d7a5fe16f2276b9d629c97061c25b9c390f6eb1e0cafaa818",
+        "kind": "volume",
+        "removed": true
+      },
+      {
+        "identity_sha256": "33e2fb1daf05f40e3fb0cd768c6322b176bd1cb9b9c83bc2dbf5044f65142752",
+        "kind": "volume",
+        "removed": true
+      },
+      {
+        "identity_sha256": "526f940a248f472b061ba2dd9e326759226979db797a93ea32a5bad15d23aab7",
+        "kind": "volume",
+        "removed": true
+      }
+    ],
+    "remaining": {
+      "container": 0,
+      "network": 0,
+      "volume": 0
+    }
+  },
+  "pr": 104,
+  "predicates": {
+    "first": "core:RUNTIME_HEALTHY",
+    "second": "ga:METRIC_QUEUE_LAG_OUTLIER",
+    "third": null
+  },
+  "product_recovery_writes": 0,
+  "production_deploy": false,
+  "promotion": {
+    "acceptance_supported": false,
+    "actual_versions": [
+      {
+        "created_at": "2026-09-27T04:02:34.208230+00:00",
+        "registry_version": 1,
+        "status": "ACTIVE"
+      },
+      {
+        "created_at": "2026-09-27T04:06:11.991872+00:00",
+        "registry_version": 2,
+        "status": "REVOKED"
+      }
+    ],
+    "qualification_gap_found_after_mechanical_promotion": true
+  },
+  "protocol": "knowledge-draft-v050.3",
+  "recurrence_failure": "ValueError:NORMAL_RECURRENCE_REQUIREMENTS_FAILED",
+  "recurrence_incident_id": "inc-812ff4e6de2c7203d9ce633a",
+  "recurrence_pass": false,
+  "recurrence_provider_call_delta": 0,
+  "registration_id": "registration-ae3902fb32fd96d87608cb93",
+  "registry_final_state": "REVOKED",
+  "release": false,
+  "request_key": "knowledge-draft-v050.final:proposal:2",
+  "request_sha256": "19f041e6f39b899a721f113771eda01098a20aa50a32c45b0c1813b788c38b4c",
+  "resume_sha256": "a26f76e4fea158f364f0d1a3b6f95ba7b79b58f92af8f9d33cd07a59e6b9692e",
+  "revocation_check": {
+    "boundary": "POST_FAILURE_READ_ONLY_REPLAY_NOT_SUCCESSFUL_N7_REUSE",
+    "database_writes": 0,
+    "historical_diagnosis_unchanged": true,
+    "new_episode": 0,
+    "passed": true,
+    "provider_call_delta": 0,
+    "registration_id": "registration-ae3902fb32fd96d87608cb93",
+    "registry_state": "REVOKED",
+    "revoked_registration_matched": false
+  },
+  "runtime_condition_rewrite": false,
+  "schema_version": "ecomsre.product.final-learning-binding-repair-result.v1",
+  "scope_level": "A",
+  "selection_lock_sha256": "d5cd6f01aeda15a81c60ca6862a8b32484c7ecd67b05f65e6011079c6c020830",
+  "shadow": {
+    "action_authority": "NONE",
+    "action_authority_violations": 0,
+    "core_known_overlap_rate": 0.0,
+    "counterfactual_consistency": 1.0,
+    "evaluation_id": "shadow-c1f1bf4ff737bc94",
+    "evaluation_sha256": "d10f5af748390dd532d8fdf542d310cde2a603ca1e42fb9d4d836a2f7a3eecc6",
+    "evidence_ref_validity": 1.0,
+    "false_positive_rate": 0.0,
+    "gate_passed": true,
+    "no_incident_false_positives": 0,
+    "other_extension_destructive_overlaps": 0,
+    "outcomes": [
+      {
+        "action_authority_violations": 0,
+        "available_evidence_refs": [
+          "e:a:logs:checkout:0:015e3d3b684a",
+          "e:a:logs:checkout:10:c6686d8462e3",
+          "e:a:logs:checkout:11:6dafbe218944",
+          "e:a:logs:checkout:1:7d9e927fb09b",
+          "e:a:logs:checkout:2:4697e7354736",
+          "e:a:logs:checkout:3:9bce26942221",
+          "e:a:logs:checkout:4:47ae7147e281",
+          "e:a:logs:checkout:5:c570d1257bf3",
+          "e:a:logs:checkout:6:d30801d3191b",
+          "e:a:logs:checkout:7:29f9a62eeb13",
+          "e:a:logs:checkout:8:90fab0382348",
+          "e:a:logs:checkout:9:59103c32c741",
+          "e:a:logs:fraud-detection:0:db9b5c46ee1d",
+          "e:a:logs:fraud-detection:10:8b85d34a7b2f",
+          "e:a:logs:fraud-detection:11:3ff2518fdb44",
+          "e:a:logs:fraud-detection:1:53471ea69059",
+          "e:a:logs:fraud-detection:2:d09e18e35b98",
+          "e:a:logs:fraud-detection:3:796a9a8d253d",
+          "e:a:logs:fraud-detection:4:f8278a2e627b",
+          "e:a:logs:fraud-detection:5:df1e41bbcadc",
+          "e:a:logs:fraud-detection:6:ad6dda2f1f60",
+          "e:a:logs:fraud-detection:7:126b929ca936",
+          "e:a:logs:fraud-detection:8:509ed209e651",
+          "e:a:logs:fraud-detection:9:7a6c4e2b861e",
+          "e:a:logs:kafka:0:9c4c50d742ce",
+          "e:a:logs:kafka:10:ad15d6cd4415",
+          "e:a:logs:kafka:11:2a36f3a8d1a7",
+          "e:a:logs:kafka:1:dff24f157bb0",
+          "e:a:logs:kafka:2:1f3817aaf1bc",
+          "e:a:logs:kafka:3:6fb96d5b4e07",
+          "e:a:logs:kafka:4:4d07763b72d8",
+          "e:a:logs:kafka:5:b7686c257eb2",
+          "e:a:logs:kafka:6:a4c10ca633fd",
+          "e:a:logs:kafka:7:177e16727e6a",
+          "e:a:logs:kafka:8:13c44d3b0d14",
+          "e:a:logs:kafka:9:1788c61ea961",
+          "e:a:logs:payment:0:de8c02317e7b",
+          "e:a:logs:payment:10:6094cc15dfb5",
+          "e:a:logs:payment:11:6094cc15dfb5",
+          "e:a:logs:payment:1:01121514cb15",
+          "e:a:logs:payment:2:de8c02317e7b",
+          "e:a:logs:payment:3:01121514cb15",
+          "e:a:logs:payment:4:ee6086b0d2a0",
+          "e:a:logs:payment:5:ee6086b0d2a0",
+          "e:a:logs:payment:6:a3c355355c28",
+          "e:a:logs:payment:7:a3c355355c28",
+          "e:a:logs:payment:8:fa8f93c81ab2",
+          "e:a:logs:payment:9:fa8f93c81ab2",
+          "e:a:metrics:checkout:core:0:6bff2364c923",
+          "e:a:metrics:checkout:core:1:337e9e9bd688",
+          "e:a:metrics:checkout:core:2:c29944acb0f1",
+          "e:a:metrics:fraud-detection:core:0:d76c222b586f",
+          "e:a:metrics:fraud-detection:core:1:97f12d398792",
+          "e:a:metrics:fraud-detection:core:2:e483e1ab559e",
+          "e:a:metrics:fraud-detection:queue-lag:0:ea650e4e158e",
+          "e:a:metrics:kafka:core:0:ceb0a9675c09",
+          "e:a:metrics:kafka:core:1:e0a985aad809",
+          "e:a:metrics:kafka:core:2:638364e920f5",
+          "e:a:metrics:payment:core:0:c0c6e02c7b65",
+          "e:a:metrics:payment:core:1:69028a273227",
+          "e:a:metrics:payment:core:2:82b16f5757f0",
+          "e:a:resources:checkout:0:dd97561cc44b",
+          "e:a:resources:fraud-detection:0:e807d8370758",
+          "e:a:resources:kafka:0:d5a379ceaf36",
+          "e:a:traces:checkout:0:a1cd15c94d4d",
+          "e:a:traces:checkout:10:f1bd172601f9",
+          "e:a:traces:checkout:11:607dc7b4b334",
+          "e:a:traces:checkout:1:7d6b16ae36b0",
+          "e:a:traces:checkout:2:ad478466e090",
+          "e:a:traces:checkout:3:f761ca1d8bcc",
+          "e:a:traces:checkout:4:1b53f297409a",
+          "e:a:traces:checkout:5:07dbe58d8917",
+          "e:a:traces:checkout:6:fed477762c10",
+          "e:a:traces:checkout:7:9e0c404ca941",
+          "e:a:traces:checkout:8:4edcca64847e",
+          "e:a:traces:checkout:9:942b68efb52d",
+          "e:a:traces:fraud-detection:0:99f987768891",
+          "e:a:traces:fraud-detection:10:a8a4646a7af6",
+          "e:a:traces:fraud-detection:11:ef40f0b677d2",
+          "e:a:traces:fraud-detection:1:45d5763bf222",
+          "e:a:traces:fraud-detection:2:6fe3c1402684",
+          "e:a:traces:fraud-detection:3:d5c6d281773c",
+          "e:a:traces:fraud-detection:4:b16456ae0883",
+          "e:a:traces:fraud-detection:5:33be5b6c645b",
+          "e:a:traces:fraud-detection:6:78286d02f9c3",
+          "e:a:traces:fraud-detection:7:349433f71bc7",
+          "e:a:traces:fraud-detection:8:11216bcf7a16",
+          "e:a:traces:fraud-detection:9:9f27eb287151",
+          "e:a:traces:kafka:0:c733bcdd0520",
+          "e:a:traces:kafka:10:a102efb22f9b",
+          "e:a:traces:kafka:11:b19d2e42b24c",
+          "e:a:traces:kafka:1:41c74ddb8e67",
+          "e:a:traces:kafka:2:e54ace0a6e6a",
+          "e:a:traces:kafka:3:df0cd84ca1ab",
+          "e:a:traces:kafka:4:5264fe79acc6",
+          "e:a:traces:kafka:5:8c2d425dc390",
+          "e:a:traces:kafka:6:11f770e9b2a3",
+          "e:a:traces:kafka:7:a247180b6595",
+          "e:a:traces:kafka:8:da89e9fbec63",
+          "e:a:traces:kafka:9:7f4a97c80ac4",
+          "e:a:traces:payment:0:b45ed79b45dd",
+          "e:a:traces:payment:1:b64cadc7eb14",
+          "e:a:traces:payment:2:7ee947c0ac29",
+          "e:a:traces:payment:3:567a70c105d8",
+          "e:a:traces:payment:4:76524152730f",
+          "e:a:traces:payment:5:004f7a5c7082",
+          "investigation:be4f9e53d70ee72ae89b19899c5003cd301927b723d3c515dd0b72b2803f0083"
+        ],
+        "case_id": "derived:100ec23e61c71f1248b1a6a487f940d4b6f589b775818b9d724685d5045da78c",
+        "evaluated_target_services": [
+          "fraud-detection"
+        ],
+        "expected_match": false,
+        "incident_id": "inc-e692e3727836fa44aea66de5",
+        "matched": false,
+        "origin": "DERIVED_SOURCE_FAILURE",
+        "outcome_sha256": "ea8a40924f2d6dc1e6486135e4d6c2bbc863f810fce2ed395b0f6722578b5cfc",
+        "reason_code": null,
+        "required_sources": [
+          "METRICS",
+          "RUNTIME"
+        ],
+        "runtime_input_sha256": "100ec23e61c71f1248b1a6a487f940d4b6f589b775818b9d724685d5045da78c",
+        "schema_version": "ecomsre.product.shadow-case-outcome.v1",
+        "source_reachable": false,
+        "stratum": "SOURCE_FAILURE",
+        "supporting_evidence_refs": []
+      },
+      {
+        "action_authority_violations": 0,
+        "available_evidence_refs": [
+          "e:a:logs:checkout:0:015e3d3b684a",
+          "e:a:logs:checkout:10:c6686d8462e3",
+          "e:a:logs:checkout:11:6dafbe218944",
+          "e:a:logs:checkout:1:7d9e927fb09b",
+          "e:a:logs:checkout:2:4697e7354736",
+          "e:a:logs:checkout:3:9bce26942221",
+          "e:a:logs:checkout:4:47ae7147e281",
+          "e:a:logs:checkout:5:c570d1257bf3",
+          "e:a:logs:checkout:6:d30801d3191b",
+          "e:a:logs:checkout:7:29f9a62eeb13",
+          "e:a:logs:checkout:8:90fab0382348",
+          "e:a:logs:checkout:9:59103c32c741",
+          "e:a:logs:kafka:0:9c4c50d742ce",
+          "e:a:logs:kafka:10:ad15d6cd4415",
+          "e:a:logs:kafka:11:2a36f3a8d1a7",
+          "e:a:logs:kafka:1:dff24f157bb0",
+          "e:a:logs:kafka:2:1f3817aaf1bc",
+          "e:a:logs:kafka:3:6fb96d5b4e07",
+          "e:a:logs:kafka:4:4d07763b72d8",
+          "e:a:logs:kafka:5:b7686c257eb2",
+          "e:a:logs:kafka:6:a4c10ca633fd",
+          "e:a:logs:kafka:7:177e16727e6a",
+          "e:a:logs:kafka:8:13c44d3b0d14",
+          "e:a:logs:kafka:9:1788c61ea961",
+          "e:a:logs:payment:0:de8c02317e7b",
+          "e:a:logs:payment:10:6094cc15dfb5",
+          "e:a:logs:payment:11:6094cc15dfb5",
+          "e:a:logs:payment:1:01121514cb15",
+          "e:a:logs:payment:2:de8c02317e7b",
+          "e:a:logs:payment:3:01121514cb15",
+          "e:a:logs:payment:4:ee6086b0d2a0",
+          "e:a:logs:payment:5:ee6086b0d2a0",
+          "e:a:logs:payment:6:a3c355355c28",
+          "e:a:logs:payment:7:a3c355355c28",
+          "e:a:logs:payment:8:fa8f93c81ab2",
+          "e:a:logs:payment:9:fa8f93c81ab2",
+          "e:a:metrics:checkout:core:0:6bff2364c923",
+          "e:a:metrics:checkout:core:1:337e9e9bd688",
+          "e:a:metrics:checkout:core:2:c29944acb0f1",
+          "e:a:metrics:kafka:core:0:ceb0a9675c09",
+          "e:a:metrics:kafka:core:1:e0a985aad809",
+          "e:a:metrics:kafka:core:2:638364e920f5",
+          "e:a:metrics:payment:core:0:c0c6e02c7b65",
+          "e:a:metrics:payment:core:1:69028a273227",
+          "e:a:metrics:payment:core:2:82b16f5757f0",
+          "e:a:resources:checkout:0:dd97561cc44b",
+          "e:a:resources:kafka:0:d5a379ceaf36",
+          "e:a:traces:checkout:0:a1cd15c94d4d",
+          "e:a:traces:checkout:10:f1bd172601f9",
+          "e:a:traces:checkout:11:607dc7b4b334",
+          "e:a:traces:checkout:1:7d6b16ae36b0",
+          "e:a:traces:checkout:2:ad478466e090",
+          "e:a:traces:checkout:3:f761ca1d8bcc",
+          "e:a:traces:checkout:4:1b53f297409a",
+          "e:a:traces:checkout:5:07dbe58d8917",
+          "e:a:traces:checkout:6:fed477762c10",
+          "e:a:traces:checkout:7:9e0c404ca941",
+          "e:a:traces:checkout:8:4edcca64847e",
+          "e:a:traces:checkout:9:942b68efb52d",
+          "e:a:traces:kafka:0:c733bcdd0520",
+          "e:a:traces:kafka:10:a102efb22f9b",
+          "e:a:traces:kafka:11:b19d2e42b24c",
+          "e:a:traces:kafka:1:41c74ddb8e67",
+          "e:a:traces:kafka:2:e54ace0a6e6a",
+          "e:a:traces:kafka:3:df0cd84ca1ab",
+          "e:a:traces:kafka:4:5264fe79acc6",
+          "e:a:traces:kafka:5:8c2d425dc390",
+          "e:a:traces:kafka:6:11f770e9b2a3",
+          "e:a:traces:kafka:7:a247180b6595",
+          "e:a:traces:kafka:8:da89e9fbec63",
+          "e:a:traces:kafka:9:7f4a97c80ac4",
+          "e:a:traces:payment:0:b45ed79b45dd",
+          "e:a:traces:payment:1:b64cadc7eb14",
+          "e:a:traces:payment:2:7ee947c0ac29",
+          "e:a:traces:payment:3:567a70c105d8",
+          "e:a:traces:payment:4:76524152730f",
+          "e:a:traces:payment:5:004f7a5c7082"
+        ],
+        "case_id": "derived:624a59ea2fc5ac70d92c0113eafab1c4dfa3565d7ccba63d49bf92cf80784ced",
+        "evaluated_target_services": [
+          "fraud-detection"
+        ],
+        "expected_match": false,
+        "incident_id": "inc-e692e3727836fa44aea66de5",
+        "matched": false,
+        "origin": "DERIVED_COUNTERFACTUAL",
+        "outcome_sha256": "3d6a3d1debacce8b2421369bc933c9f0f091c27dc1da46aff9ebc2ebe1ce3db8",
+        "reason_code": null,
+        "required_sources": [
+          "METRICS",
+          "RUNTIME"
+        ],
+        "runtime_input_sha256": "624a59ea2fc5ac70d92c0113eafab1c4dfa3565d7ccba63d49bf92cf80784ced",
+        "schema_version": "ecomsre.product.shadow-case-outcome.v1",
+        "source_reachable": false,
+        "stratum": "TARGET_COUNTERFACTUAL",
+        "supporting_evidence_refs": []
+      },
+      {
+        "action_authority_violations": 0,
+        "available_evidence_refs": [
+          "e:a:logs:checkout:0:015e3d3b684a",
+          "e:a:logs:checkout:10:c6686d8462e3",
+          "e:a:logs:checkout:11:6dafbe218944",
+          "e:a:logs:checkout:1:7d9e927fb09b",
+          "e:a:logs:checkout:2:4697e7354736",
+          "e:a:logs:checkout:3:9bce26942221",
+          "e:a:logs:checkout:4:47ae7147e281",
+          "e:a:logs:checkout:5:c570d1257bf3",
+          "e:a:logs:checkout:6:d30801d3191b",
+          "e:a:logs:checkout:7:29f9a62eeb13",
+          "e:a:logs:checkout:8:90fab0382348",
+          "e:a:logs:checkout:9:59103c32c741",
+          "e:a:logs:fraud-detection:0:db9b5c46ee1d",
+          "e:a:logs:fraud-detection:10:8b85d34a7b2f",
+          "e:a:logs:fraud-detection:11:3ff2518fdb44",
+          "e:a:logs:fraud-detection:1:53471ea69059",
+          "e:a:logs:fraud-detection:2:d09e18e35b98",
+          "e:a:logs:fraud-detection:3:796a9a8d253d",
+          "e:a:logs:fraud-detection:4:f8278a2e627b",
+          "e:a:logs:fraud-detection:5:df1e41bbcadc",
+          "e:a:logs:fraud-detection:6:ad6dda2f1f60",
+          "e:a:logs:fraud-detection:7:126b929ca936",
+          "e:a:logs:fraud-detection:8:509ed209e651",
+          "e:a:logs:fraud-detection:9:7a6c4e2b861e",
+          "e:a:logs:kafka:0:9c4c50d742ce",
+          "e:a:logs:kafka:10:ad15d6cd4415",
+          "e:a:logs:kafka:11:2a36f3a8d1a7",
+          "e:a:logs:kafka:1:dff24f157bb0",
+          "e:a:logs:kafka:2:1f3817aaf1bc",
+          "e:a:logs:kafka:3:6fb96d5b4e07",
+          "e:a:logs:kafka:4:4d07763b72d8",
+          "e:a:logs:kafka:5:b7686c257eb2",
+          "e:a:logs:kafka:6:a4c10ca633fd",
+          "e:a:logs:kafka:7:177e16727e6a",
+          "e:a:logs:kafka:8:13c44d3b0d14",
+          "e:a:logs:kafka:9:1788c61ea961",
+          "e:a:logs:payment:0:de8c02317e7b",
+          "e:a:logs:payment:10:6094cc15dfb5",
+          "e:a:logs:payment:11:6094cc15dfb5",
+          "e:a:logs:payment:1:01121514cb15",
+          "e:a:logs:payment:2:de8c02317e7b",
+          "e:a:logs:payment:3:01121514cb15",
+          "e:a:logs:payment:4:ee6086b0d2a0",
+          "e:a:logs:payment:5:ee6086b0d2a0",
+          "e:a:logs:payment:6:a3c355355c28",
+          "e:a:logs:payment:7:a3c355355c28",
+          "e:a:logs:payment:8:fa8f93c81ab2",
+          "e:a:logs:payment:9:fa8f93c81ab2",
+          "e:a:resources:checkout:0:dd97561cc44b",
+          "e:a:resources:fraud-detection:0:e807d8370758",
+          "e:a:resources:kafka:0:d5a379ceaf36",
+          "e:a:runtime:all-candidates:e46103319e85:0:dff903af06ed",
+          "e:a:runtime:all-candidates:e46103319e85:1:4b2f6bc4f832",
+          "e:a:runtime:all-candidates:e46103319e85:2:39d12beb5e27",
+          "e:a:runtime:all-candidates:e46103319e85:3:f978e8a100b9",
+          "e:a:traces:checkout:0:a1cd15c94d4d",
+          "e:a:traces:checkout:10:f1bd172601f9",
+          "e:a:traces:checkout:11:607dc7b4b334",
+          "e:a:traces:checkout:1:7d6b16ae36b0",
+          "e:a:traces:checkout:2:ad478466e090",
+          "e:a:traces:checkout:3:f761ca1d8bcc",
+          "e:a:traces:checkout:4:1b53f297409a",
+          "e:a:traces:checkout:5:07dbe58d8917",
+          "e:a:traces:checkout:6:fed477762c10",
+          "e:a:traces:checkout:7:9e0c404ca941",
+          "e:a:traces:checkout:8:4edcca64847e",
+          "e:a:traces:checkout:9:942b68efb52d",
+          "e:a:traces:fraud-detection:0:99f987768891",
+          "e:a:traces:fraud-detection:10:a8a4646a7af6",
+          "e:a:traces:fraud-detection:11:ef40f0b677d2",
+          "e:a:traces:fraud-detection:1:45d5763bf222",
+          "e:a:traces:fraud-detection:2:6fe3c1402684",
+          "e:a:traces:fraud-detection:3:d5c6d281773c",
+          "e:a:traces:fraud-detection:4:b16456ae0883",
+          "e:a:traces:fraud-detection:5:33be5b6c645b",
+          "e:a:traces:fraud-detection:6:78286d02f9c3",
+          "e:a:traces:fraud-detection:7:349433f71bc7",
+          "e:a:traces:fraud-detection:8:11216bcf7a16",
+          "e:a:traces:fraud-detection:9:9f27eb287151",
+          "e:a:traces:kafka:0:c733bcdd0520",
+          "e:a:traces:kafka:10:a102efb22f9b",
+          "e:a:traces:kafka:11:b19d2e42b24c",
+          "e:a:traces:kafka:1:41c74ddb8e67",
+          "e:a:traces:kafka:2:e54ace0a6e6a",
+          "e:a:traces:kafka:3:df0cd84ca1ab",
+          "e:a:traces:kafka:4:5264fe79acc6",
+          "e:a:traces:kafka:5:8c2d425dc390",
+          "e:a:traces:kafka:6:11f770e9b2a3",
+          "e:a:traces:kafka:7:a247180b6595",
+          "e:a:traces:kafka:8:da89e9fbec63",
+          "e:a:traces:kafka:9:7f4a97c80ac4",
+          "e:a:traces:payment:0:b45ed79b45dd",
+          "e:a:traces:payment:1:b64cadc7eb14",
+          "e:a:traces:payment:2:7ee947c0ac29",
+          "e:a:traces:payment:3:567a70c105d8",
+          "e:a:traces:payment:4:76524152730f",
+          "e:a:traces:payment:5:004f7a5c7082",
+          "investigation:be4f9e53d70ee72ae89b19899c5003cd301927b723d3c515dd0b72b2803f0083"
+        ],
+        "case_id": "derived:d6e5e397a38b997acc90044e4710e190e3d18bb757e5fe8772bb067c64dca740",
+        "evaluated_target_services": [
+          "fraud-detection"
+        ],
+        "expected_match": false,
+        "incident_id": "inc-e692e3727836fa44aea66de5",
+        "matched": false,
+        "origin": "DERIVED_SOURCE_FAILURE",
+        "outcome_sha256": "b68142d655416cda69060a120011f17852c310122aa2c1b1410b51f9a32f15cd",
+        "reason_code": null,
+        "required_sources": [
+          "METRICS",
+          "RUNTIME"
+        ],
+        "runtime_input_sha256": "d6e5e397a38b997acc90044e4710e190e3d18bb757e5fe8772bb067c64dca740",
+        "schema_version": "ecomsre.product.shadow-case-outcome.v1",
+        "source_reachable": false,
+        "stratum": "SOURCE_FAILURE",
+        "supporting_evidence_refs": []
+      },
+      {
+        "action_authority_violations": 0,
+        "available_evidence_refs": [
+          "e:a:logs:checkout:0:d90283fcc8f4",
+          "e:a:logs:checkout:10:edd0661ef9ff",
+          "e:a:logs:checkout:11:4cf497efa6ca",
+          "e:a:logs:checkout:1:d62c680b7621",
+          "e:a:logs:checkout:2:6334877f0e85",
+          "e:a:logs:checkout:3:e71674d9deff",
+          "e:a:logs:checkout:4:3a3e48593fa7",
+          "e:a:logs:checkout:5:987b17d8bd6b",
+          "e:a:logs:checkout:6:c35e75910999",
+          "e:a:logs:checkout:7:d7806f4a3a48",
+          "e:a:logs:checkout:8:9514a5adaa67",
+          "e:a:logs:checkout:9:4382dbc16f39",
+          "e:a:logs:fraud-detection:0:1d74df7ac9be",
+          "e:a:logs:fraud-detection:10:023c48460d2a",
+          "e:a:logs:fraud-detection:11:d5bd0d8bd274",
+          "e:a:logs:fraud-detection:1:e7a0923c93d0",
+          "e:a:logs:fraud-detection:2:ca16e67fffd5",
+          "e:a:logs:fraud-detection:3:734321a36e5d",
+          "e:a:logs:fraud-detection:4:0b3735cc76e0",
+          "e:a:logs:fraud-detection:5:e36d57fd5adb",
+          "e:a:logs:fraud-detection:6:736add1dfa8b",
+          "e:a:logs:fraud-detection:7:13cdf110b1ab",
+          "e:a:logs:fraud-detection:8:cf4808258899",
+          "e:a:logs:fraud-detection:9:1ddaad11a5ec",
+          "e:a:logs:kafka:0:388317ed43a9",
+          "e:a:logs:kafka:10:f3680e346b8b",
+          "e:a:logs:kafka:11:5ce9917811f4",
+          "e:a:logs:kafka:1:a8387e7e6e23",
+          "e:a:logs:kafka:2:8fe76d7a0d25",
+          "e:a:logs:kafka:3:58c0e2cf8868",
+          "e:a:logs:kafka:4:5ff3848f70aa",
+          "e:a:logs:kafka:5:f2bbe0e96d9b",
+          "e:a:logs:kafka:6:b75e44a20215",
+          "e:a:logs:kafka:7:a77f42f4d77f",
+          "e:a:logs:kafka:8:6e767326d517",
+          "e:a:logs:kafka:9:167f0b568c94",
+          "e:a:logs:payment:0:8cd92b1769e6",
+          "e:a:logs:payment:10:6fddf0c996fb",
+          "e:a:logs:payment:11:6fddf0c996fb",
+          "e:a:logs:payment:1:31666a21dc18",
+          "e:a:logs:payment:2:31666a21dc18",
+          "e:a:logs:payment:3:8cd92b1769e6",
+          "e:a:logs:payment:4:f2bc8421c1a1",
+          "e:a:logs:payment:5:f8c029800ccf",
+          "e:a:logs:payment:6:f2bc8421c1a1",
+          "e:a:logs:payment:7:f8c029800ccf",
+          "e:a:logs:payment:8:b32017958e03",
+          "e:a:logs:payment:9:b32017958e03",
+          "e:a:metrics:checkout:core:0:e94284b13eae",
+          "e:a:metrics:checkout:core:1:971fdb14595c",
+          "e:a:metrics:checkout:core:2:5a3bce1a3de5",
+          "e:a:metrics:fraud-detection:core:0:743848abcf09",
+          "e:a:metrics:fraud-detection:core:1:ba0e6250681c",
+          "e:a:metrics:fraud-detection:core:2:0cf4ae7650b2",
+          "e:a:metrics:fraud-detection:queue-lag:0:ec059cf32712",
+          "e:a:metrics:kafka:core:0:905150b8ca88",
+          "e:a:metrics:kafka:core:1:3f93bc29c521",
+          "e:a:metrics:kafka:core:2:9627666152e5",
+          "e:a:metrics:payment:core:0:07deef59e0c2",
+          "e:a:metrics:payment:core:1:0f14b6db3eb2",
+          "e:a:metrics:payment:core:2:08d943e77b52",
+          "e:a:resources:checkout:0:fa8ac11549ca",
+          "e:a:resources:fraud-detection:0:75918bfce6de",
+          "e:a:resources:kafka:0:aa243c5a4078",
+          "e:a:runtime:all-candidates:e46103319e85:0:dff903af06ed",
+          "e:a:runtime:all-candidates:e46103319e85:1:4b2f6bc4f832",
+          "e:a:runtime:all-candidates:e46103319e85:2:39d12beb5e27",
+          "e:a:runtime:all-candidates:e46103319e85:3:f978e8a100b9",
+          "e:a:traces:checkout:0:5c60ad35a298",
+          "e:a:traces:checkout:10:4335b0dd434f",
+          "e:a:traces:checkout:11:42d79fec1e6a",
+          "e:a:traces:checkout:1:e10012b802f1",
+          "e:a:traces:checkout:2:e5fde04176cc",
+          "e:a:traces:checkout:3:432f76434d83",
+          "e:a:traces:checkout:4:cfeb183122f8",
+          "e:a:traces:checkout:5:91464c14cc30",
+          "e:a:traces:checkout:6:3f19c8fa5ade",
+          "e:a:traces:checkout:7:9073329684d3",
+          "e:a:traces:checkout:8:5cc8631f7316",
+          "e:a:traces:checkout:9:f1adcf2ce585",
+          "e:a:traces:fraud-detection:0:5686a69b726e",
+          "e:a:traces:fraud-detection:10:b16456ae0883",
+          "e:a:traces:fraud-detection:11:33be5b6c645b",
+          "e:a:traces:fraud-detection:1:fcf372520159",
+          "e:a:traces:fraud-detection:2:f6868fc3f4c9",
+          "e:a:traces:fraud-detection:3:28ceaee599ae",
+          "e:a:traces:fraud-detection:4:d0147cc2db9c",
+          "e:a:traces:fraud-detection:5:8ccaee00947e",
+          "e:a:traces:fraud-detection:6:99f987768891",
+          "e:a:traces:fraud-detection:7:45d5763bf222",
+          "e:a:traces:fraud-detection:8:6fe3c1402684",
+          "e:a:traces:fraud-detection:9:d5c6d281773c",
+          "e:a:traces:kafka:0:2f07a2ce19cc",
+          "e:a:traces:kafka:10:a247180b6595",
+          "e:a:traces:kafka:11:da89e9fbec63",
+          "e:a:traces:kafka:1:b7444cdc13b5",
+          "e:a:traces:kafka:2:55c55559426f",
+          "e:a:traces:kafka:3:c733bcdd0520",
+          "e:a:traces:kafka:4:41c74ddb8e67",
+          "e:a:traces:kafka:5:e54ace0a6e6a",
+          "e:a:traces:kafka:6:df0cd84ca1ab",
+          "e:a:traces:kafka:7:5264fe79acc6",
+          "e:a:traces:kafka:8:8c2d425dc390",
+          "e:a:traces:kafka:9:11f770e9b2a3",
+          "e:a:traces:payment:0:00669e295a3c",
+          "e:a:traces:payment:10:b45ed79b45dd",
+          "e:a:traces:payment:11:b64cadc7eb14",
+          "e:a:traces:payment:1:f50e9c276827",
+          "e:a:traces:payment:2:ae305e57299a",
+          "e:a:traces:payment:3:66ee8eff7ea6",
+          "e:a:traces:payment:4:129a2f92fcf1",
+          "e:a:traces:payment:5:992df0b5a8a1",
+          "e:a:traces:payment:6:7bfdb2b2861e",
+          "e:a:traces:payment:7:ef1712f91719",
+          "e:a:traces:payment:8:0506f00d66f8",
+          "e:a:traces:payment:9:c62073a40e39",
+          "investigation:3e6a1a3675230cab24fecba78186a761fd161d59b637c13bebe70946c9841aa7"
+        ],
+        "case_id": "inc-0117b1c9a46c6e25d69c43f4",
+        "evaluated_target_services": [
+          "fraud-detection"
+        ],
+        "expected_match": false,
+        "incident_id": "inc-0117b1c9a46c6e25d69c43f4",
+        "matched": false,
+        "origin": "PERSISTED_INCIDENT",
+        "outcome_sha256": "0c4dbad51be0194e9095f39bb77932b464c56a7c3bcfb7f38ef637b390fb3fe1",
+        "reason_code": null,
+        "required_sources": [
+          "METRICS",
+          "RUNTIME"
+        ],
+        "runtime_input_sha256": "07587e673bc9fcd4fc54f4c773f4aa2b224b5d1632668e8d920c7dd2f96013a1",
+        "schema_version": "ecomsre.product.shadow-case-outcome.v1",
+        "source_reachable": true,
+        "stratum": "NO_INCIDENT",
+        "supporting_evidence_refs": []
+      },
+      {
+        "action_authority_violations": 0,
+        "available_evidence_refs": [
+          "e:a:changes:payment:0:90c784cab292",
+          "e:a:logs:checkout:0:6c0d61916a34",
+          "e:a:logs:checkout:10:d7806f4a3a48",
+          "e:a:logs:checkout:11:9514a5adaa67",
+          "e:a:logs:checkout:1:4f8be7c47b8b",
+          "e:a:logs:checkout:2:d7c78c1a722f",
+          "e:a:logs:checkout:3:d90283fcc8f4",
+          "e:a:logs:checkout:4:d62c680b7621",
+          "e:a:logs:checkout:5:6334877f0e85",
+          "e:a:logs:checkout:6:e71674d9deff",
+          "e:a:logs:checkout:7:3a3e48593fa7",
+          "e:a:logs:checkout:8:987b17d8bd6b",
+          "e:a:logs:checkout:9:c35e75910999",
+          "e:a:logs:fraud-detection:0:1d74df7ac9be",
+          "e:a:logs:fraud-detection:1:e7a0923c93d0",
+          "e:a:logs:fraud-detection:2:ca16e67fffd5",
+          "e:a:logs:kafka:0:d3e2fecd0269",
+          "e:a:logs:kafka:10:8450a191aeae",
+          "e:a:logs:kafka:11:0c4bf47462d6",
+          "e:a:logs:kafka:1:734bb24517cf",
+          "e:a:logs:kafka:2:cc03947c1123",
+          "e:a:logs:kafka:3:9d38fa462888",
+          "e:a:logs:kafka:4:5f23dbb50a74",
+          "e:a:logs:kafka:5:104040d3fe9b",
+          "e:a:logs:kafka:6:44f11c352c2f",
+          "e:a:logs:kafka:7:8cc6eca33f38",
+          "e:a:logs:kafka:8:b958e510a91f",
+          "e:a:logs:kafka:9:49928760542d",
+          "e:a:logs:payment:0:1177fee020d3",
+          "e:a:logs:payment:10:f0c33cbda411",
+          "e:a:logs:payment:11:f0c33cbda411",
+          "e:a:logs:payment:1:2b84ee14ed2b",
+          "e:a:logs:payment:2:1177fee020d3",
+          "e:a:logs:payment:3:2b84ee14ed2b",
+          "e:a:logs:payment:4:3aae0c0538a8",
+          "e:a:logs:payment:5:72c678dd1166",
+          "e:a:logs:payment:6:3aae0c0538a8",
+          "e:a:logs:payment:7:72c678dd1166",
+          "e:a:logs:payment:8:ecded30ab59f",
+          "e:a:logs:payment:9:ecded30ab59f",
+          "e:a:metrics:checkout:core:0:4f834b0cde0a",
+          "e:a:metrics:checkout:core:1:c41e1337708a",
+          "e:a:metrics:checkout:core:2:21143be7c62a",
+          "e:a:metrics:fraud-detection:core:0:7a8a3414a016",
+          "e:a:metrics:fraud-detection:core:1:731924badb3b",
+          "e:a:metrics:fraud-detection:core:2:38855a221206",
+          "e:a:metrics:fraud-detection:queue-lag:0:966f447c5e90",
+          "e:a:metrics:kafka:core:0:23a8fb926551",
+          "e:a:metrics:kafka:core:1:9c0efe205d73",
+          "e:a:metrics:kafka:core:2:313a28bff56a",
+          "e:a:metrics:payment:core:0:7a2a0a92070b",
+          "e:a:metrics:payment:core:1:c175aac4694e",
+          "e:a:metrics:payment:core:2:cf6e899ea3ec",
+          "e:a:resources:checkout:0:d3cbcdb6a998",
+          "e:a:resources:fraud-detection:0:451ac0dc17f1",
+          "e:a:resources:kafka:0:bc6b53fa4394",
+          "e:a:runtime:all-candidates:e46103319e85:0:dff903af06ed",
+          "e:a:runtime:all-candidates:e46103319e85:1:4b2f6bc4f832",
+          "e:a:runtime:all-candidates:e46103319e85:2:39d12beb5e27",
+          "e:a:runtime:all-candidates:e46103319e85:3:f978e8a100b9",
+          "e:a:traces:checkout:0:6bb83e9b6200",
+          "e:a:traces:checkout:10:a27e94ab33c2",
+          "e:a:traces:checkout:11:f43662c26a7c",
+          "e:a:traces:checkout:1:b4fd94587c78",
+          "e:a:traces:checkout:2:8fe9c455cf8d",
+          "e:a:traces:checkout:3:feb5e77662e8",
+          "e:a:traces:checkout:4:84cad95b54d9",
+          "e:a:traces:checkout:5:b8ad9ed05f82",
+          "e:a:traces:checkout:6:5e73fff58161",
+          "e:a:traces:checkout:7:110335be6338",
+          "e:a:traces:checkout:8:b4a767cd0604",
+          "e:a:traces:checkout:9:617dad5a52c6",
+          "e:a:traces:fraud-detection:0:5686a69b726e",
+          "e:a:traces:fraud-detection:1:fcf372520159",
+          "e:a:traces:fraud-detection:2:f6868fc3f4c9",
+          "e:a:traces:fraud-detection:3:28ceaee599ae",
+          "e:a:traces:fraud-detection:4:d0147cc2db9c",
+          "e:a:traces:fraud-detection:5:8ccaee00947e",
+          "e:a:traces:kafka:0:2f07a2ce19cc",
+          "e:a:traces:kafka:1:b7444cdc13b5",
+          "e:a:traces:kafka:2:55c55559426f",
+          "e:a:traces:payment:0:b4a767cd0604",
+          "e:a:traces:payment:10:00669e295a3c",
+          "e:a:traces:payment:11:f50e9c276827",
+          "e:a:traces:payment:1:617dad5a52c6",
+          "e:a:traces:payment:2:df2a5c8483d1",
+          "e:a:traces:payment:3:f8eca3478193",
+          "e:a:traces:payment:4:70e71a4741b7",
+          "e:a:traces:payment:5:b44fc796d4ee",
+          "e:a:traces:payment:6:d43949d8a57f",
+          "e:a:traces:payment:7:a82c70e672bf",
+          "e:a:traces:payment:8:e9071246577c",
+          "e:a:traces:payment:9:4b6d7170888c",
+          "investigation:94ad1c860171d61d766d6a4aa5a7efd3dfe10ff4994cca148e809df50f90e74f"
+        ],
+        "case_id": "inc-944f3ebcb424e475ce47c39a",
+        "evaluated_target_services": [
+          "fraud-detection"
+        ],
+        "expected_match": false,
+        "incident_id": "inc-944f3ebcb424e475ce47c39a",
+        "matched": false,
+        "origin": "PERSISTED_INCIDENT",
+        "outcome_sha256": "8b4c81805978f59c5337f687689c362a44a02ab54b373681ce4894804045f918",
+        "reason_code": null,
+        "required_sources": [
+          "METRICS",
+          "RUNTIME"
+        ],
+        "runtime_input_sha256": "cb4ecb67f927d3889de192d87affc2a49c3ed1a355cadefd0eca274d5a6ac676",
+        "schema_version": "ecomsre.product.shadow-case-outcome.v1",
+        "source_reachable": true,
+        "stratum": "CONFUSABLE_CORE_KNOWN",
+        "supporting_evidence_refs": []
+      },
+      {
+        "action_authority_violations": 0,
+        "available_evidence_refs": [
+          "e:a:logs:checkout:0:015e3d3b684a",
+          "e:a:logs:checkout:10:c6686d8462e3",
+          "e:a:logs:checkout:11:6dafbe218944",
+          "e:a:logs:checkout:1:7d9e927fb09b",
+          "e:a:logs:checkout:2:4697e7354736",
+          "e:a:logs:checkout:3:9bce26942221",
+          "e:a:logs:checkout:4:47ae7147e281",
+          "e:a:logs:checkout:5:c570d1257bf3",
+          "e:a:logs:checkout:6:d30801d3191b",
+          "e:a:logs:checkout:7:29f9a62eeb13",
+          "e:a:logs:checkout:8:90fab0382348",
+          "e:a:logs:checkout:9:59103c32c741",
+          "e:a:logs:fraud-detection:0:db9b5c46ee1d",
+          "e:a:logs:fraud-detection:10:8b85d34a7b2f",
+          "e:a:logs:fraud-detection:11:3ff2518fdb44",
+          "e:a:logs:fraud-detection:1:53471ea69059",
+          "e:a:logs:fraud-detection:2:d09e18e35b98",
+          "e:a:logs:fraud-detection:3:796a9a8d253d",
+          "e:a:logs:fraud-detection:4:f8278a2e627b",
+          "e:a:logs:fraud-detection:5:df1e41bbcadc",
+          "e:a:logs:fraud-detection:6:ad6dda2f1f60",
+          "e:a:logs:fraud-detection:7:126b929ca936",
+          "e:a:logs:fraud-detection:8:509ed209e651",
+          "e:a:logs:fraud-detection:9:7a6c4e2b861e",
+          "e:a:logs:kafka:0:9c4c50d742ce",
+          "e:a:logs:kafka:10:ad15d6cd4415",
+          "e:a:logs:kafka:11:2a36f3a8d1a7",
+          "e:a:logs:kafka:1:dff24f157bb0",
+          "e:a:logs:kafka:2:1f3817aaf1bc",
+          "e:a:logs:kafka:3:6fb96d5b4e07",
+          "e:a:logs:kafka:4:4d07763b72d8",
+          "e:a:logs:kafka:5:b7686c257eb2",
+          "e:a:logs:kafka:6:a4c10ca633fd",
+          "e:a:logs:kafka:7:177e16727e6a",
+          "e:a:logs:kafka:8:13c44d3b0d14",
+          "e:a:logs:kafka:9:1788c61ea961",
+          "e:a:logs:payment:0:de8c02317e7b",
+          "e:a:logs:payment:10:6094cc15dfb5",
+          "e:a:logs:payment:11:6094cc15dfb5",
+          "e:a:logs:payment:1:01121514cb15",
+          "e:a:logs:payment:2:de8c02317e7b",
+          "e:a:logs:payment:3:01121514cb15",
+          "e:a:logs:payment:4:ee6086b0d2a0",
+          "e:a:logs:payment:5:ee6086b0d2a0",
+          "e:a:logs:payment:6:a3c355355c28",
+          "e:a:logs:payment:7:a3c355355c28",
+          "e:a:logs:payment:8:fa8f93c81ab2",
+          "e:a:logs:payment:9:fa8f93c81ab2",
+          "e:a:metrics:checkout:core:0:6bff2364c923",
+          "e:a:metrics:checkout:core:1:337e9e9bd688",
+          "e:a:metrics:checkout:core:2:c29944acb0f1",
+          "e:a:metrics:fraud-detection:core:0:d76c222b586f",
+          "e:a:metrics:fraud-detection:core:1:97f12d398792",
+          "e:a:metrics:fraud-detection:core:2:e483e1ab559e",
+          "e:a:metrics:fraud-detection:queue-lag:0:ea650e4e158e",
+          "e:a:metrics:kafka:core:0:ceb0a9675c09",
+          "e:a:metrics:kafka:core:1:e0a985aad809",
+          "e:a:metrics:kafka:core:2:638364e920f5",
+          "e:a:metrics:payment:core:0:c0c6e02c7b65",
+          "e:a:metrics:payment:core:1:69028a273227",
+          "e:a:metrics:payment:core:2:82b16f5757f0",
+          "e:a:resources:checkout:0:dd97561cc44b",
+          "e:a:resources:fraud-detection:0:e807d8370758",
+          "e:a:resources:kafka:0:d5a379ceaf36",
+          "e:a:runtime:all-candidates:e46103319e85:0:dff903af06ed",
+          "e:a:runtime:all-candidates:e46103319e85:1:4b2f6bc4f832",
+          "e:a:runtime:all-candidates:e46103319e85:2:39d12beb5e27",
+          "e:a:runtime:all-candidates:e46103319e85:3:f978e8a100b9",
+          "e:a:traces:checkout:0:a1cd15c94d4d",
+          "e:a:traces:checkout:10:f1bd172601f9",
+          "e:a:traces:checkout:11:607dc7b4b334",
+          "e:a:traces:checkout:1:7d6b16ae36b0",
+          "e:a:traces:checkout:2:ad478466e090",
+          "e:a:traces:checkout:3:f761ca1d8bcc",
+          "e:a:traces:checkout:4:1b53f297409a",
+          "e:a:traces:checkout:5:07dbe58d8917",
+          "e:a:traces:checkout:6:fed477762c10",
+          "e:a:traces:checkout:7:9e0c404ca941",
+          "e:a:traces:checkout:8:4edcca64847e",
+          "e:a:traces:checkout:9:942b68efb52d",
+          "e:a:traces:fraud-detection:0:99f987768891",
+          "e:a:traces:fraud-detection:10:a8a4646a7af6",
+          "e:a:traces:fraud-detection:11:ef40f0b677d2",
+          "e:a:traces:fraud-detection:1:45d5763bf222",
+          "e:a:traces:fraud-detection:2:6fe3c1402684",
+          "e:a:traces:fraud-detection:3:d5c6d281773c",
+          "e:a:traces:fraud-detection:4:b16456ae0883",
+          "e:a:traces:fraud-detection:5:33be5b6c645b",
+          "e:a:traces:fraud-detection:6:78286d02f9c3",
+          "e:a:traces:fraud-detection:7:349433f71bc7",
+          "e:a:traces:fraud-detection:8:11216bcf7a16",
+          "e:a:traces:fraud-detection:9:9f27eb287151",
+          "e:a:traces:kafka:0:c733bcdd0520",
+          "e:a:traces:kafka:10:a102efb22f9b",
+          "e:a:traces:kafka:11:b19d2e42b24c",
+          "e:a:traces:kafka:1:41c74ddb8e67",
+          "e:a:traces:kafka:2:e54ace0a6e6a",
+          "e:a:traces:kafka:3:df0cd84ca1ab",
+          "e:a:traces:kafka:4:5264fe79acc6",
+          "e:a:traces:kafka:5:8c2d425dc390",
+          "e:a:traces:kafka:6:11f770e9b2a3",
+          "e:a:traces:kafka:7:a247180b6595",
+          "e:a:traces:kafka:8:da89e9fbec63",
+          "e:a:traces:kafka:9:7f4a97c80ac4",
+          "e:a:traces:payment:0:b45ed79b45dd",
+          "e:a:traces:payment:1:b64cadc7eb14",
+          "e:a:traces:payment:2:7ee947c0ac29",
+          "e:a:traces:payment:3:567a70c105d8",
+          "e:a:traces:payment:4:76524152730f",
+          "e:a:traces:payment:5:004f7a5c7082",
+          "investigation:be4f9e53d70ee72ae89b19899c5003cd301927b723d3c515dd0b72b2803f0083"
+        ],
+        "case_id": "inc-e692e3727836fa44aea66de5",
+        "evaluated_target_services": [
+          "fraud-detection"
+        ],
+        "expected_match": true,
+        "incident_id": "inc-e692e3727836fa44aea66de5",
+        "matched": true,
+        "origin": "PERSISTED_INCIDENT",
+        "outcome_sha256": "a92ccec90558545857255a385969b3ccc3cc514a3b0dfefcfd2f2ec1f4470622",
+        "reason_code": null,
+        "required_sources": [
+          "METRICS",
+          "RUNTIME"
+        ],
+        "runtime_input_sha256": "0e5e4e66d0fb423ff69430f74ddbf2dab369d6892e6e21691bff1f31f5af5480",
+        "schema_version": "ecomsre.product.shadow-case-outcome.v1",
+        "source_reachable": true,
+        "stratum": "POSITIVE_INCIDENT",
+        "supporting_evidence_refs": [
+          "e:a:metrics:fraud-detection:queue-lag:0:ea650e4e158e",
+          "e:a:runtime:all-candidates:e46103319e85:1:4b2f6bc4f832"
+        ]
+      },
+      {
+        "action_authority_violations": 0,
+        "available_evidence_refs": [],
+        "case_id": "missing:INSUFFICIENT_OR_CONFLICT",
+        "evaluated_target_services": [],
+        "expected_match": null,
+        "incident_id": null,
+        "matched": null,
+        "origin": "NOT_AVAILABLE",
+        "outcome_sha256": "580e7650092798f1b5740a84091cfe50f207b36c223aef69ec54721903561793",
+        "reason_code": "CONTROL_NOT_AVAILABLE",
+        "required_sources": [
+          "METRICS",
+          "RUNTIME"
+        ],
+        "runtime_input_sha256": null,
+        "schema_version": "ecomsre.product.shadow-case-outcome.v1",
+        "source_reachable": null,
+        "stratum": "INSUFFICIENT_OR_CONFLICT",
+        "supporting_evidence_refs": []
+      },
+      {
+        "action_authority_violations": 0,
+        "available_evidence_refs": [],
+        "case_id": "missing:OTHER_EXTENSION",
+        "evaluated_target_services": [],
+        "expected_match": null,
+        "incident_id": null,
+        "matched": null,
+        "origin": "NOT_AVAILABLE",
+        "outcome_sha256": "a4cd2e96579103edb7dbcb3d5a9d821f5a5e4eb3bc2d965d5c40645e97095996",
+        "reason_code": "CONTROL_NOT_AVAILABLE",
+        "required_sources": [
+          "METRICS",
+          "RUNTIME"
+        ],
+        "runtime_input_sha256": null,
+        "schema_version": "ecomsre.product.shadow-case-outcome.v1",
+        "source_reachable": null,
+        "stratum": "OTHER_EXTENSION",
+        "supporting_evidence_refs": []
+      }
+    ],
+    "positive_recall": 1.0,
+    "reason_codes": [],
+    "registration_id": "registration-ae3902fb32fd96d87608cb93",
+    "runtime_evaluation_sha256": "a03c47e13eb3705cf6c7993329934822b62036c38a4eb3260b3a0c5249a37e8c",
+    "schema_version": "ecomsre.product.shadow-evaluation.v1",
+    "source_failure_safe": true,
+    "source_reachability": 1.0
+  },
+  "shadow_gate": true,
+  "shadow_raw_results": [
+    {
+      "case_id": "inc-0117b1c9a46c6e25d69c43f4",
+      "parent_incident_id": null,
+      "raw_result": {
+        "evidence_refs": [],
+        "reason": "BASE_PREDICATE_ABSENT",
+        "status": "FALSE",
+        "value": null
+      },
+      "source_states": null
+    },
+    {
+      "case_id": "inc-944f3ebcb424e475ce47c39a",
+      "parent_incident_id": null,
+      "raw_result": {
+        "evidence_refs": [],
+        "reason": "BASE_PREDICATE_ABSENT",
+        "status": "FALSE",
+        "value": null
+      },
+      "source_states": null
+    },
+    {
+      "case_id": "inc-e692e3727836fa44aea66de5",
+      "parent_incident_id": null,
+      "raw_result": {
+        "evidence_refs": [
+          "e:a:metrics:fraud-detection:queue-lag:0:ea650e4e158e",
+          "e:a:runtime:all-candidates:e46103319e85:1:4b2f6bc4f832"
+        ],
+        "reason": "CANDIDATE_MATCHED",
+        "status": "TRUE",
+        "value": null
+      },
+      "source_states": null
+    },
+    {
+      "case_id": "derived:624a59ea2fc5ac70d92c0113eafab1c4dfa3565d7ccba63d49bf92cf80784ced",
+      "parent_incident_id": "inc-e692e3727836fa44aea66de5",
+      "raw_result": {
+        "evidence_refs": [],
+        "reason": "SOURCE_COVERAGE_INCOMPLETE",
+        "status": "UNKNOWN",
+        "value": null
+      },
+      "source_states": [
+        {
+          "covered_services": [
+            "checkout"
+          ],
+          "record_count": 12,
+          "source": "LOGS",
+          "status": "SUCCESS_NONEMPTY"
+        },
+        {
+          "covered_services": [
+            "kafka"
+          ],
+          "record_count": 12,
+          "source": "LOGS",
+          "status": "SUCCESS_NONEMPTY"
+        },
+        {
+          "covered_services": [
+            "payment"
+          ],
+          "record_count": 12,
+          "source": "LOGS",
+          "status": "SUCCESS_NONEMPTY"
+        },
+        {
+          "covered_services": [
+            "checkout"
+          ],
+          "record_count": 3,
+          "source": "METRICS",
+          "status": "SUCCESS_NONEMPTY"
+        },
+        {
+          "covered_services": [
+            "kafka"
+          ],
+          "record_count": 3,
+          "source": "METRICS",
+          "status": "SUCCESS_NONEMPTY"
+        },
+        {
+          "covered_services": [
+            "payment"
+          ],
+          "record_count": 3,
+          "source": "METRICS",
+          "status": "SUCCESS_NONEMPTY"
+        },
+        {
+          "covered_services": [
+            "checkout"
+          ],
+          "record_count": 1,
+          "source": "RESOURCES",
+          "status": "SUCCESS_NONEMPTY"
+        },
+        {
+          "covered_services": [
+            "kafka"
+          ],
+          "record_count": 1,
+          "source": "RESOURCES",
+          "status": "SUCCESS_NONEMPTY"
+        },
+        {
+          "covered_services": [
+            "checkout"
+          ],
+          "record_count": 12,
+          "source": "TRACES",
+          "status": "SUCCESS_NONEMPTY"
+        },
+        {
+          "covered_services": [
+            "kafka"
+          ],
+          "record_count": 12,
+          "source": "TRACES",
+          "status": "SUCCESS_NONEMPTY"
+        },
+        {
+          "covered_services": [
+            "payment"
+          ],
+          "record_count": 6,
+          "source": "TRACES",
+          "status": "SUCCESS_NONEMPTY"
+        }
+      ]
+    },
+    {
+      "case_id": "derived:d6e5e397a38b997acc90044e4710e190e3d18bb757e5fe8772bb067c64dca740",
+      "parent_incident_id": "inc-e692e3727836fa44aea66de5",
+      "raw_result": {
+        "evidence_refs": [],
+        "reason": "SOURCE_COVERAGE_INCOMPLETE",
+        "status": "UNKNOWN",
+        "value": null
+      },
+      "source_states": [
+        {
+          "covered_services": [
+            "checkout"
+          ],
+          "record_count": 12,
+          "source": "LOGS",
+          "status": "SUCCESS_NONEMPTY"
+        },
+        {
+          "covered_services": [
+            "fraud-detection"
+          ],
+          "record_count": 12,
+          "source": "LOGS",
+          "status": "SUCCESS_NONEMPTY"
+        },
+        {
+          "covered_services": [
+            "kafka"
+          ],
+          "record_count": 12,
+          "source": "LOGS",
+          "status": "SUCCESS_NONEMPTY"
+        },
+        {
+          "covered_services": [
+            "payment"
+          ],
+          "record_count": 12,
+          "source": "LOGS",
+          "status": "SUCCESS_NONEMPTY"
+        },
+        {
+          "covered_services": [],
+          "record_count": 0,
+          "source": "METRICS",
+          "status": "FAILURE_UNAVAILABLE"
+        },
+        {
+          "covered_services": [],
+          "record_count": 0,
+          "source": "METRICS",
+          "status": "FAILURE_UNAVAILABLE"
+        },
+        {
+          "covered_services": [],
+          "record_count": 0,
+          "source": "METRICS",
+          "status": "FAILURE_UNAVAILABLE"
+        },
+        {
+          "covered_services": [],
+          "record_count": 0,
+          "source": "METRICS",
+          "status": "FAILURE_UNAVAILABLE"
+        },
+        {
+          "covered_services": [],
+          "record_count": 0,
+          "source": "METRICS",
+          "status": "FAILURE_UNAVAILABLE"
+        },
+        {
+          "covered_services": [
+            "checkout"
+          ],
+          "record_count": 1,
+          "source": "RESOURCES",
+          "status": "SUCCESS_NONEMPTY"
+        },
+        {
+          "covered_services": [
+            "fraud-detection"
+          ],
+          "record_count": 1,
+          "source": "RESOURCES",
+          "status": "SUCCESS_NONEMPTY"
+        },
+        {
+          "covered_services": [
+            "kafka"
+          ],
+          "record_count": 1,
+          "source": "RESOURCES",
+          "status": "SUCCESS_NONEMPTY"
+        },
+        {
+          "covered_services": [
+            "checkout",
+            "fraud-detection",
+            "kafka",
+            "payment"
+          ],
+          "record_count": 4,
+          "source": "RUNTIME",
+          "status": "SUCCESS_NONEMPTY"
+        },
+        {
+          "covered_services": [
+            "checkout"
+          ],
+          "record_count": 12,
+          "source": "TRACES",
+          "status": "SUCCESS_NONEMPTY"
+        },
+        {
+          "covered_services": [
+            "fraud-detection"
+          ],
+          "record_count": 12,
+          "source": "TRACES",
+          "status": "SUCCESS_NONEMPTY"
+        },
+        {
+          "covered_services": [
+            "kafka"
+          ],
+          "record_count": 12,
+          "source": "TRACES",
+          "status": "SUCCESS_NONEMPTY"
+        },
+        {
+          "covered_services": [
+            "payment"
+          ],
+          "record_count": 6,
+          "source": "TRACES",
+          "status": "SUCCESS_NONEMPTY"
+        },
+        {
+          "covered_services": [
+            "fraud-detection"
+          ],
+          "record_count": 1,
+          "source": "RESOURCES",
+          "status": "SUCCESS_NONEMPTY"
+        }
+      ]
+    },
+    {
+      "case_id": "derived:100ec23e61c71f1248b1a6a487f940d4b6f589b775818b9d724685d5045da78c",
+      "parent_incident_id": "inc-e692e3727836fa44aea66de5",
+      "raw_result": {
+        "evidence_refs": [],
+        "reason": "SOURCE_COVERAGE_INCOMPLETE",
+        "status": "UNKNOWN",
+        "value": null
+      },
+      "source_states": [
+        {
+          "covered_services": [
+            "checkout"
+          ],
+          "record_count": 12,
+          "source": "LOGS",
+          "status": "SUCCESS_NONEMPTY"
+        },
+        {
+          "covered_services": [
+            "fraud-detection"
+          ],
+          "record_count": 12,
+          "source": "LOGS",
+          "status": "SUCCESS_NONEMPTY"
+        },
+        {
+          "covered_services": [
+            "kafka"
+          ],
+          "record_count": 12,
+          "source": "LOGS",
+          "status": "SUCCESS_NONEMPTY"
+        },
+        {
+          "covered_services": [
+            "payment"
+          ],
+          "record_count": 12,
+          "source": "LOGS",
+          "status": "SUCCESS_NONEMPTY"
+        },
+        {
+          "covered_services": [
+            "checkout"
+          ],
+          "record_count": 3,
+          "source": "METRICS",
+          "status": "SUCCESS_NONEMPTY"
+        },
+        {
+          "covered_services": [
+            "fraud-detection"
+          ],
+          "record_count": 3,
+          "source": "METRICS",
+          "status": "SUCCESS_NONEMPTY"
+        },
+        {
+          "covered_services": [
+            "fraud-detection"
+          ],
+          "record_count": 1,
+          "source": "METRICS",
+          "status": "SUCCESS_NONEMPTY"
+        },
+        {
+          "covered_services": [
+            "kafka"
+          ],
+          "record_count": 3,
+          "source": "METRICS",
+          "status": "SUCCESS_NONEMPTY"
+        },
+        {
+          "covered_services": [
+            "payment"
+          ],
+          "record_count": 3,
+          "source": "METRICS",
+          "status": "SUCCESS_NONEMPTY"
+        },
+        {
+          "covered_services": [
+            "checkout"
+          ],
+          "record_count": 1,
+          "source": "RESOURCES",
+          "status": "SUCCESS_NONEMPTY"
+        },
+        {
+          "covered_services": [
+            "fraud-detection"
+          ],
+          "record_count": 1,
+          "source": "RESOURCES",
+          "status": "SUCCESS_NONEMPTY"
+        },
+        {
+          "covered_services": [
+            "kafka"
+          ],
+          "record_count": 1,
+          "source": "RESOURCES",
+          "status": "SUCCESS_NONEMPTY"
+        },
+        {
+          "covered_services": [],
+          "record_count": 0,
+          "source": "RUNTIME",
+          "status": "FAILURE_UNAVAILABLE"
+        },
+        {
+          "covered_services": [
+            "checkout"
+          ],
+          "record_count": 12,
+          "source": "TRACES",
+          "status": "SUCCESS_NONEMPTY"
+        },
+        {
+          "covered_services": [
+            "fraud-detection"
+          ],
+          "record_count": 12,
+          "source": "TRACES",
+          "status": "SUCCESS_NONEMPTY"
+        },
+        {
+          "covered_services": [
+            "kafka"
+          ],
+          "record_count": 12,
+          "source": "TRACES",
+          "status": "SUCCESS_NONEMPTY"
+        },
+        {
+          "covered_services": [
+            "payment"
+          ],
+          "record_count": 6,
+          "source": "TRACES",
+          "status": "SUCCESS_NONEMPTY"
+        },
+        {
+          "covered_services": [
+            "fraud-detection"
+          ],
+          "record_count": 1,
+          "source": "RESOURCES",
+          "status": "SUCCESS_NONEMPTY"
+        }
+      ]
+    }
+  ],
+  "successor_sha256": "10c11c8d0f7fbea49e1e09f5168b5442a4b3cae30d57ec7d044b8f1677758725",
+  "terminal": "ECOMSRE_PRODUCT_V050_NO_VALIDATED_LLM_KNOWLEDGE",
+  "verification": {
+    "focused_tests_passed": 30,
+    "full_tests_passed": 6797,
+    "full_tests_seconds": 792.72,
+    "full_tests_skipped": 21,
+    "independent_review": "CLAIM_MUST_FIX_RESOLVED_BY_REPORTING_NOT_ACCEPTED; N5 QUALIFICATION STILL UNESTABLISHED",
+    "mypy_product_source_files": 171,
+    "ruff": "PASS"
+  }
+}

@@ -1,0 +1,532 @@
+# 语义视图选择与对比式故障调查
+
+
+**当前阶段（2026-09-30）：Trace状态/参考匹配修复与固定开发对照已结束。implementation=ready / experiment=complete_development / effect=undetermined。四个已见事件、16条配对全部完成；C-service/C-operation均正确4/8，所有首位配对差值为0，MRR为0.6042/0.7292。含2条smoke新增57次请求/USD0.499342；累计586次/USD6.684951。只作本地提交，不推送。见第13节。**
+
+历史第12节协议修复开发检查已结束：C完成4/4，D完成2/4，拒答均0。共用协议与D策略条件已拆分；D仍因真实目标/引用违规留下2条未完成。D执行4次对比、4次普通回退，对比仅1次可判定；不作策略优劣判断，不追加未见测试。详见第12节。原96条测试和16条开发结果不变。
+
+675698a检查点（历史）：24事件 / 96条测试轨迹已终止；A/B/C/D正确数2/4/4/2（各24例），累计439请求/USD5.456302。未展示D策略收益。整体仍 **implementation=ready / experiment=partial / effect=undetermined**；详见第10节，前面历史结果不覆盖。
+
+> 续轮：已核清检查点 `217a8a8`。下面第1–9节保留该检查点的历史结果；该轮结果见第10节，上一轮开发续接见第11节，历史协议修复见第12节；当前表示修复见第13节。既有50次请求与全部成功/失败记录不变。
+
+本轮为独立研究，不恢复 v0.5 正式验收。当时契约见 [Goal](../../goals/EcomSRE_Semantic_Investigation_Algorithm_Codex_Goal.md)。**三个工具与研究循环已实现；真实实验为 partial，效果 undetermined。** 完成1个已见事件的2窗四组开发比较及C/D重复，没有独立根因测试，不能宣称定位或策略增益。
+
+## 1. 范围与代码
+
+起始版本 `c7dce3720b2d877a10db30a940dd238c275b06e1`。三个只读工具、研究策略、独立 CLI 和账本已实现；旧调查入口及 Product 库不参与研究。旧计数器纯函数抽取共用，不改变历史计算含义。最终算法输入、配置与源码由逐运行私有intent中的SHA-256绑定，公共摘要见 [summary.json](summary.json)；交付源码版本 `cc8a44ba6279afd9206cc5df516ba464a8e1b2ef`（后续仅补充本报告的版本引用）。93项相关检查通过。
+
+read scope：本轮直接依赖的 investigation、连接器、旧回放与保留 live-03 输入；write scope：新增 semantic 模块、Provider 的新任务提示窄适配、研究 CLI/config/tests/report/Goal、旧回放纯函数导入和活动指针。frozen asset scope：live-03 清单列出的输入、旧 Product 库、旧语义结果目录与正式 `config/product-v050`；其他历史记录由全tracked-delta检查确认未修改；final repository scope：此工作树相对起始版本的完整 tracked delta。私有新产物只写 `.local/semantic-investigation-v1`；全工作树共用付费账本保存在 Git common-dir 的同名命名空间。无 Docker/live/故障/知识晋升/远程发布。
+
+## 2. 数据与划分
+
+| 材料 | 独立组 | split | 支持 | 限制 |
+|---|---:|---|---|---|
+| live-03 第2、第3窗口 | 1 | development | 原始 Trace、操作/方向/状态、父关系、计数器与部分桶、原始数值残差 | 已见、相邻窗口；没有唯一根因标签；事后快照 |
+| 独立根因测试集 | 0 | test | 尚无合格输入 | 规划24事件未执行 |
+
+两个中性句柄 `case-001` / `case-002` 都属于 `event-001`；重复或衍生窗口不增加分母。模型只接收字段白名单与不透明记录/Trace 句柄，不接收文件路径、标签文件、故障开关或评分答案。局部错误断言 rubric 在配置中预先固定；它不能建立根因真值。
+
+[OpenRCA 官方入口](https://github.com/microsoft/OpenRCA)及其[官方数据目录](https://drive.google.com/drive/folders/1wGiEnu4OkWrjPxfx5ZTROnU37-5UDoPM)于2026-09-29只读检查：目录列出的 Bank.zip、Market.zip、Telecom.zip 分别为 2,829,139,841、2,865,427,796、3,071,992,930 bytes，均超过本轮2GiB总上限。未确认可单独取得且许可明确的合适子集，不下载档案。此结果不声称所有公共数据都不可用；本轮采用契约的数据不足降级，不扩展数据平台。
+
+## 3. 实际算法
+
+`profile_operations`：Trace 按真实服务/操作/方向或用途分层；已知状态作为错误比例分母，同时报告未知状态数。Trace 样本与计数器总体严格分开。计数器复用观察首尾增量和兼容 `+Inf`/15000ms 超限桶，不重建 rate/p95，不把 CLIENT/SERVER 或异步阶段合成订单。
+
+`compare_baseline`：只接受事前固定、范围/单位/方法/窗口长度匹配的历史参考。计算差值、相对变化、MAD 标准化和连续偏离；零尺度不制造 z，缺字段局部降级。当前真实输入缺匹配操作参考，返回 `INSUFFICIENT_REFERENCE`。
+
+`compare_dependencies`：仅实际 Trace 父子关系/已给定一跳拓扑，最多3邻居；返回边、缺父节点、同Trace错误分布。无时钟/采样支持不推断先后；无匹配参考不编造相对变化。相关性不等于因果。
+
+D：同一可观察问题上相反预期的假设对比例 D，结合仅元数据计算的 Q 和固定查询/处理量代理 C，使用 `Q*D/(1+C)`，并列按候选顺序。最多4稳定假设、6动作、8模型请求、1次格式修复。已曝光数值不能再成为事前预测；相同请求、改措辞、换无关参数或重复 UNKNOWN 不构成进展，连续2次无进展停止。
+
+## 4. 四组与成本
+
+A 为同字段、同映射可见的原始过滤/分页 ReAct；B 为无标签的固定服务与工具顺序；C 为同工具自由 ReAct；D 为对比式候选排序。所有组相同初始数值残差、候选服务、快照、模型和预算。公共分组先验不按结果修改。
+
+模型 `gpt-5.4-mini-2026-03-17`，medium，Responses，standard/default tier。上限：输入序列化96,000 bytes（计费预留加协议余量）、输出4096 tokens，输出包含计费 reasoning。价格按[官方模型页](https://developers.openai.com/api/docs/models/gpt-5.4-mini)核对，输入0.75/输出4.50 USD每百万token，缓存按非缓存上界计。账本记录全部成功、失败与未知用量预留；累计上限USD20/1600请求。模型会话自身不算项目实验。
+
+## 5. 定位、语义判别与成本
+当时**可用独立根因测试事件0个、启动0条、计划24个事件**，因此 Acc@1、MRR、D-A/D-B/D-C准确率差和bootstrap区间均不计算。默认质量目标保持原样，未切换效率目标。以下分母是开发窗口轨迹，**不是独立事故数**。
+| 重复 | 方法 | 报告完成/已启动 | 分析动作 | 真实请求 | 输入token | 输出token | USD上界单价计费 | 错误肯定标志/报告 |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| 0 | A | 0/2 | 2 | 6 | 101,430 | 7,223 | 0.108580 | 0/0 |
+| 0 | B | 1/2 | 12 | 3 | 57,601 | 5,144 | 0.066350 | 0/1 |
+| 0 | C | 2/2 | 7 | 9 | 147,946 | 10,591 | 0.158623 | 0/2 |
+| 0 | D | 1/2 | 5 | 10 | 163,349 | 18,875 | 0.207453 | 0/1 |
+| 1 | C | 1/2 | 9 | 12 | 203,840 | 15,199 | 0.221279 | 0/1 |
+| 1 | D | 1/2 | 0 | 3 | 45,335 | 4,800 | 0.055602 | 0/1 |
+
+费用包括失败和格式修复。两条前期开发轨迹另计7请求、USD0.114191，均FORMAT_FAILED；其中第二条已完成3次分析。**全轮50真实请求、输入827,796 token、输出69,158 token（其中reasoning 30,800）、USD0.932078，未知用量0、未结算0**。不是供应商账单，缓存按非缓存价格上界计；USD20/1600请求均未耗尽，按有限研究计划停止。没有下载数据档案。
+完整计数：[逐运行JSONL](runs.jsonl)、[CSV](runs.csv)、[分组摘要](summary.json)、[可核对的选择/预测轨迹摘要](trajectory-summary.jsonl)。完整模型提议、实际计算表、失败诊断和输入位置只留在本地 `.local/semantic-investigation-v1/runs` 与共用账本。公共投影没有原始私有遥测、密钥、绝对路径或隐藏推理文本。
+“错误肯定标志”检查 root_confirmed/business_fault_excluded/system_healthy；6份最终报告都为false，同时公布覆盖率，A的0/0不代表安全性证据。固定rubric的文字复核另发现：C在第2窗称含未知状态的payment样本“error-free”，D在第1窗把queue-lag概括为consumer trace线索，存在证据范围/来源混淆。它们未明确确认根因或全系统健康，但不能把布尔false解释成模型没有错误陈述。详见[范围复核](interpretation-review.json)。
+程序重新计算冻结配置下35次实际分析，35/35与保存结果一致（排除运行耗时）；数值正确性只认证计算结果，不自动认证模型解释。计数器、分母和参考边界另由聚焦测试覆盖。底层查询与records_scanned是统一的有界等价访问/处理代理，不是实测物理I/O；实际处理耗时/返回字节也保留在逐运行表。
+## 6. 差异归因与失败
+首轮D比C多花USD0.048830，报告完成率1/2对2/2，没有证明质量提升。第二次D显得更便宜，是因为两窗均0次分析：一窗直接从初始信息作局部排序、一窗格式失败；不构成效率收益。不得跨重复挑最佳值。
+D首轮有非零判别价值评分，但5次可观察结果均UNKNOWN，缺失状态/不支持的一跳关系及重复已曝光问题限制了判别。真实候选集合经常只有1项，排序退化为单候选执行；实现了启发式不代表证明选择优势。C的一条重复因连续无进展停止，没有最终报告；另一条通过读取flagd把排序首位改为flagd。该变更没有独立根因标签，不能计为定位正确。
+A失败于引用/无关邻居参数，B第二窗失败于引用与稳定假设ID，D第二窗两次重复都因协议/不支持的counter分析组合失败。这些说明模型—工具协议仍不稳定；所有失败保留。两轮开发语义修订后冻结，没有测试后调参、换模型或扩大样本。
+## 7. 同一真实事件的三个分析切面
+并没有三个独立事故案例。以下均来自event-001，第三项展示缺证据，不凑成新的分母。独立纯计算结果见[实际数值](calculation-examples.json)。
+1. **操作分层**：第1窗payment最终300秒观察增量共13个span、1个ERROR；该错误及1个>15s桶增量均来自EventStream。C读取操作profile后区分了短Charge与约600s控制流；不能把计数器样本增量当精确rate，也不能据此排除业务故障。
+2. **依赖对比**：同窗checkout→cart实际返回8条父子span边、4个共享Trace。工具确实能返回有数据的一跳关系，两个RPC方向没有合成独立订单。模型选择fraud/flagd等局部组合时也遇到支持不足；这些结果没有证明根因范围在真实调查中被正确缩小。
+3. **缺少参考**：payment匹配历史参考缺失，compare_baseline返回INSUFFICIENT_REFERENCE；D的一份报告保留不足，但重复中也出现未读工具便结束。合理保留未知与实际调查不足分别报告，未重启Docker补基线。
+
+## 8. 入口与检查
+
+```bash
+PYTHONPATH=src:. uv run python -m scripts.product_v050.evaluate_semantic_investigation --mode inspect
+PYTHONPATH=src:. uv run python -m scripts.product_v050.evaluate_semantic_investigation --mode smoke --provider fixture --batch fixture-example
+PYTHONPATH=src:. uv run python -m scripts.product_v050.evaluate_semantic_investigation --mode single --provider configured --methods C --case case-001 --batch dev-example
+PYTHONPATH=src:. uv run python -m scripts.product_v050.evaluate_semantic_investigation --mode evaluate --provider configured --methods A B C D --split test --batch test-example
+PYTHONPATH=src:. uv run python -m scripts.product_v050.evaluate_semantic_investigation --mode summarize --provider configured --batch dev-example --repeat 0
+```
+
+付费命令仍要求实际配置与剩余额度；相同run/call key不复用历史输出或自动重试。没有测试输入时明确输出 `NO_CASES_IN_SPLIT`。CLI默认为 fixture；旧数据库不打开、不迁移。
+
+## 9. 终态与允许表述
+
+```text
+implementation: ready
+experiment: partial
+effect: undetermined
+```
+
+ready指本轮可运行研究原型，不是模型可靠性、生产就绪或完整验收。缺口为独立根因标签与测试事件（当时合格0个、启动0条，计划24个）、匹配历史操作参考、足够有判别力的D预测和稳定模型协议。当前材料允许实现/运行/负面现象报告，无法检验预设准确率收益目标。本轮按数据不足分支交付，不自动开启补采或继续消耗预算。
+
+可用项目表述：实现三类只读语义分析与预算受限对比式视图选择，在1个已见真实事件的2窗上完成12条固定配置开发轨迹（含C/D重复），另外保留2条早期失败；全轮50请求/USD0.932078，未获得独立测试或定位收益证据。
+
+聚焦验证：11项新测试连同旧回放/调查/Provider回归共93通过，改动文件Ruff通过、5个新增/研究文件标准mypy通过（未注解函数体不受默认检查，不能称完整类型证明）。一次只读集成审查及窄复核覆盖账本累计、引用/参数、数据范围与公平性；不以审查替代真实实验。
+
+冻结数据与最终完整tracked delta的SHA-256证据保存在本地 `.local/semantic-investigation-v1/verification`。没有推送、PR修改、Docker/live、故障、恢复写或知识晋升。旧v0.5 NO_VALIDATED_LLM_KNOWLEDGE和失败账本保持原状。
+
+## 10. 检查点后的有界配对实验
+
+### 10.1 原“独立测试”含义与工作树关系
+
+检查点 `217a8a8` 的 config 中只有2个 development case、同属1个事件组、root均为null，test split为空。因而当时**可用独立根因测试事件0个，每个方法启动0、完成0、失败0、正确数N/A；计划24个事件全部未执行**。未执行原因是没有符合条件的带标签独立输入，不是24个事件答错。旧14条开发轨迹（含2条早期失败）全部保留；A/B/C/D历史启动分别2/2/6/4，完成0/1/3/2，失败2/1/3/2。[机器计数](checkpoint-217a8a8-coverage.json)。
+
+实际研究工作树为 `product-v050-llm-investigation-knowledge`，分支 `codex/product-v050-llm-investigation-knowledge`。217a8a8在该分支上，依次继承cc8a44b与c7dce37；本轮本地适配/公平性/异常终态提交为aa92cc6、2df5034、cb1875f。另一个工作树 `New project` 仍在 `phase3/restricted-remediation-replay` / d93d267，原有dirty内容未改。两者共用Git对象与同一Provider预算账本。截图前缀不能证明切换了PR；实查远端PR #104仍Draft/open，head分支同研究分支、远端OID仍c7dce37。本轮未push、改PR、merge或release。
+
+### 10.2 数据补齐与适用范围
+
+OpenRCA官方Market包支持HTTP Range，可以只读成员，完整ZIP大小并非真正阻塞。已探查归档目录、2个record.csv与小段trace：有operation_name、parent_span、真实根因记录。但未确认遥测许可；仓库MIT不能自动当作外部遥测许可，[官方仓库许可问题](https://github.com/microsoft/OpenRCA/issues/24)检查时无回复。原Goal要求许可不明不下载/再发布，故停止后续下载和外发。**流程偏差如实保留：本轮在确认遥测许可前已读取272,770字节归档范围数据；这些材料不进入被评估的项目Provider或结果评分，也不提交原数据。**网页/API元数据另留8MiB保守额度占用上界，未重置2GiB上限。
+
+转用本地早已保存、许可明确的RCA-100（Wen等，2026；CC BY-NC-SA 4.0，固定源commit fd92cae17e6e14fa3ed0f3963c31838151fbdaa7）。仅本地非商业研究，原始遥测、answer key、原案例映射和模型完整输出不公开。它曾用于另一个项目研究，不能称为从未见过的数据集；本轮算法的开发/测试按新冻结事件组分开，测试后不调参。未读取旧研究的案例级模型答案用于本算法。
+
+103个源任务中87个是单一apm.service根因。按所有任务实际使用的25分钟支持区间做传递重叠合并，得到67组，其中57组包含这类可评分标签。按不依赖模型表现的固定哈希选择12开发、24测试组；已在字段探查中看过的t001所在整组强制归开发。测试覆盖17个数据集机制标签，但只评价**服务粒度定位**，不套用RCA-100官方复合分数，不验证节点/Pod定位、故障类型、传播链或全模态RCA。
+
+每例当前窗为告警结束前300s；三个同长参考窗与当前窗隔300s，全部strictly prior。初版因短告警造成的参考重叠在Provider启动前已纠正，初版无模型调用准备材料保留在本地。参考只是历史样本，不宣称健康或真实在线预固定。所有组使用相同450 span/窗上限：先覆盖真实观测服务的完整trace，再以固定trace哈希补齐；不按错误状态、标签或模型表现挑记录。实际无记录、未知状态和缺参考保留，不移除对应测试事件。
+
+模型仅见服务、操作名、OTel方向/状态、纳秒正确换算的持续时间、脱敏trace/span/parent标识、窗口与实际采样父关系拓扑。status UNSET保留未知；父节点缺失不补造；不提供同步时钟证明。无metrics/logs/events/resources/attributes；旧用途映射对所有组相同，未匹配操作保留UNCLASSIFIED。本实验可检查三个工具在这种trace子集上的行为，不能宣称覆盖计数器、完整遥测或所有业务语义。
+
+[输入与范围](rca100-inputs.json)记录各快照hash、源行数和样本数；[公开协议](rca100-protocol.json)省略标签和源映射。私有experiment、manifest和原始输出仍在同一`.local/semantic-investigation-v1`下，原结果文件未覆盖。适配准备使用已有本地环境的Python 3.12.2 / PyArrow 23.0.1；研究仓库默认环境未新增PyArrow依赖。重新从Parquet准备时需提供这个依赖，已冻结JSON快照的运行不需要PyArrow。
+
+### 10.3 开发检查、窄修复与固定测试
+
+只修直接影响实验的事项：B按目标/单位匹配reference；共同metadata公开reference scope与同一份采样拓扑；普通ReAct A/C可以更新假设目标，D仍保持稳定ID；无关neighbors不再使raw读取失败，依赖查询仍严格校验；B固定流程耗尽却没收到report时按原1次修复上限终止，避免IndexError。没有新增D提示词/策略语义修订，原2次上限已用完，max4假设/6动作/8请求/1修复、模型与价格均不变。
+
+先运行rcase-001的修复前配对，4条全部失败，单列为历史开发材料，不算公平对照收益。其后rcase-002/003/004完成3个配对事件：A/B/C/D的正确数为0/0/2/0，Acc@1为0/0/66.7%/0，MRR为0.167/0.167/0.833/0。其中B一条已启动后发生运行时异常：保留2次真实请求、原intent及账本提议，离线重建确定性工具结果并标注缺失原耗时，不重试、不改成成功。其余未运行开发事件不冒充完成12例开发实验。
+
+开发纯计算中profile均有分组记录；匹配baseline的部分案例返回真实差值（零MAD保留z=null），另一些缺参考；dependency在四例中分别出现17、0、32、9条真实父子边，零边例保留缺失。[开发工具可用性](rca100-development-tool-usability.json)。C按普通ReAct自由选工具，未要求竞争矩阵。D实际提出多个相反预测的候选，运行时按Q*D/(1+C)选择profile或baseline；它并非每例硬编码相同工具。但D的预测字段/row_key错误和协议失败突出，开发可观察结果多为UNKNOWN，不能声称策略已经有效。固定测试评价这种现状，所有失败纳入主指标；不为获得PASS继续优化D。
+
+测试开始前固定24个事件、4组共96条计划轨迹；每事件方法顺序轮转，最多2个事件并行，全部共享原账本。原50次平均成本USD0.01864156/请求，按既有轨迹长度估计24例约USD6.4；这只是估计，不是费用保证，逐请求硬上限仍USD20/1600次。测试开始后不修改实验实现、输入、模型、候选或评分主指标。
+
+### 10.4 固定测试结果
+
+已选24个测试事件，A/B/C/D均启动24条；96条轨迹均终止，未启动0条。失败保留在Acc@1/MRR分母。最终报告完成数另列，不能用报告完成替代定位正确。
+
+| 方法 | 启动/计划 | 完成报告 | 正确/测试 | Acc@1 | MRR | 空排序拒答 | INSUFFICIENT报告 | 格式失败 | Provider失败 | 其他失败 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| A | 24/24 | 11 | 2/24 | 8.3% | 0.181 | 0 | 6 | 7 | 0 | 6 |
+| B | 24/24 | 18 | 4/24 | 16.7% | 0.285 | 0 | 10 | 6 | 0 | 0 |
+| C | 24/24 | 16 | 4/24 | 16.7% | 0.274 | 0 | 12 | 8 | 0 | 0 |
+| D | 24/24 | 6 | 2/24 | 8.3% | 0.111 | 0 | 6 | 8 | 8 | 2 |
+
+INSUFFICIENT_EVIDENCE报告可能仍给出候选排序；排序按Acc@1/MRR评分，同时单列其证据不足声明。真正空排序的完成报告另列“空排序拒答”。未完成报告的失败一律空预测/0分，不当作正常拒答。格式失败包括schema/引用/假设协议；Provider失败包括截断等；其他失败如无进展、动作或访问预算耗尽。
+
+| 方法 | 模型请求 | 输入token | 输出token | USD计费上界 | 等价查询 | 扫描记录代理 | 返回字节 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| A | 121 | 1394236 | 116862 | 1.571602 | 76 | 131400 | 454295 |
+| B | 37 | 317816 | 48118 | 0.454906 | 232 | 648000 | 136097 |
+| C | 111 | 833829 | 100872 | 1.079338 | 158 | 488700 | 103675 |
+| D | 74 | 478204 | 123508 | 0.914462 | 56 | 198450 | 34376 |
+
+预处理和扫描记录是统一代理，不是物理I/O。原始Parquet仅由共同适配阶段读取，模型均使用相同冻结快照；各方法的preprocessing_records另保存在逐运行数据中。token价格采用既定非缓存输入上界，不是账单发票。
+
+| 配对差异 | 配对事件 | 正确数差 | Acc@1差 | 事件配对bootstrap 95%区间 |
+|---|---:|---:|---:|---|
+| D-A | 24 | +0 | +0.0个百分点 | [-12.5, +12.5]个百分点 |
+| D-B | 24 | -2 | -8.3个百分点 | [-25.0, +8.3]个百分点 |
+| D-C | 24 | -2 | -8.3个百分点 | [-20.8, +0.0]个百分点 |
+
+累计（含原50请求、修复前开发、失败与本次测试）：**439请求，输入4,159,855 / 输出519,166 token，USD 5.456302**。pending=0、未知usage=0；剩余USD 14.543698 / 1161请求。未重置预算，也不为用完额度追加实验。
+
+[逐运行JSONL](rca100-test-v1-test-runs.jsonl) / [CSV](rca100-test-v1-test-runs.csv) / [方法与配对汇总](rca100-test-v1-test-summary.json) / [选择及预测轨迹](rca100-test-v1-test-trajectory.jsonl) / [累计账本摘要](rca100-budget.json)。
+
+### 10.5 失败、收益边界与收口
+
+D测试实际选择工具分布为`{'compare_baseline': 14, 'profile_operations': 13, 'compare_dependencies': 7}`，多候选动作13次；可观察预测结果为`{'UNKNOWN': 31, 'NO': 2, 'YES': 1}`。有评分选择不等于有效消除竞争解释。主要错误发生次数见[失败分析](rca100-failure-analysis.json)，不是新的事件分母。
+
+代表性开发失败：rcase-002/D对profile询问relative_change，字段与工具不匹配；rcase-003/D对baseline使用操作分组row_key而不是comparison，结果UNKNOWN。这些属于方法提出/理解分析的问题，缺失或非法问题不能当NO。另有引用错误、稳定ID目标变化与输出截断。测试后未修复它们。
+
+代表性测试文字盲核查：A/rcase-015把没有参考支持的长时延称为elevated；B/rcase-013称只有frontend分组有已知错误，但依赖结果还包含checkout错误；C/rcase-016把POST错误写成GET，且整服务中位数不能排除操作或尾部退化。D/rcase-021把中位数称为average并暗示局部健康，尽管工具返回healthy_baseline=false。详见[四条盲核查](rca100-interpretation-review.json)。这是选择性案例分析，不推成全体文字错误率，结构化安全标志也不替代事实核对。
+
+**表示收益**：C−A描述性差为+8.3个百分点；D−A为+0.0个百分点。单个小样本的排名差不证明通用表示收益；格式失败也会影响这个差。**策略收益**：D−C为-8.3个百分点。本固定测试未展示对比式策略收益。
+
+本轮已执行目标24个独立事件组的配对测试，但适用范围是抽样trace、单服务根因；12个开发目标仅实际运行4个，其中3个用于修复后配对。保持 **implementation=ready / experiment=partial / effect=undetermined**，同时明确`test_execution=24 events / 96 terminal trajectories`。这既不是“没有测试”，也不是完整原Goal全部场景验收。未启动测试为0；未运行开发事件8个，不冒充已完成。对当前算法的负面/不确定结果正常收口，不换测试集、不换主指标、不追加部署或调参求PASS。
+
+Docker、实时遥测、业务流量、故障注入、恢复写入、正式事件与知识晋升均为0。没有新Goal、外部Pro审查、PR修改、推送、merge或release。所有旧成功/失败记录及账本保留；原v0.5正式验收仍停止。
+
+### 10.6 核验与复现边界
+
+- 96条测试intent均绑定cb1875f、同一配置及各自冻结快照；36份开发/测试快照未变。原50条已结算请求完全不变，账本保持原字节前缀，8份原结果文件与217a8a8逐字节相同。[完整性核对](rca100-integrity.json)。
+- 对本轮277次程序分析（raw 81、profile 77、baseline 68、dependency 51）从冻结快照重新计算，JSON序列化规范化后277/277相同，仅排除非确定的compute_ms。[复算](rca100-numerical-recalculation.json)。首次直接比较Python元组与保存的JSON数组产生39项类型差异，原核对记录保留；未因此修改运行结果、数值或实现。
+- 独立只读复核用私有标签、原始报告和账本重算全部96行：评分、启动数、请求数、费用、三个配对bootstrap区间均一致，未发现重大评分或结论缺口；未调用模型或改代码。
+- 原有五组局部回归93项通过，Ruff及diff whitespace检查通过。复算证明程序结果可重现，不能证明模型解释或预测正确。
+- 主要执行失败：A有7格式/6无进展，B有6格式，C有8格式；D有8格式/8输出截断/2无进展。D完成6份报告均标记INSUFFICIENT_EVIDENCE，其中2份没有分析动作；正确的2例分别执行2次与1次分析。D的31/34预测检查为UNKNOWN，不能据工具调用多样性宣称竞争预测机制有效。
+- 最终核验以217a8a8为显式基线，完整追踪差异范围为本仓库；写入范围仅适配/实验脚本、semantic_analysis/policy、局部回归与本阶段报告/状态。冻结范围为实际运行配置和36个快照；证据为原账本最终副本、运行结果及本阶段记录。私有核验文件保存在`.local/semantic-investigation-v1/verification-continuation/`，不提交原始数据或完整模型文本。
+
+仅重新汇总已保存结果（不发Provider请求）的命令：
+
+```sh
+PYTHONPATH=src:. uv run python -m scripts.product_v050.summarize_semantic_subset \
+  --config .local/semantic-investigation-v1/rca100/experiment.json \
+  --root .local/semantic-investigation-v1 \
+  --ledger '/Users/raidriar/Documents/New project/.git/semantic-investigation-v1/provider/ledger.jsonl' \
+  --batch rca100-test-v1 --split test \
+  --output docs/results/semantic-investigation-v1
+```
+
+上述复现依赖保留的私有快照和账本；公开派生结果不是原始数据分发包。后续若用这些测试案例修复或调参，必须标作看过的分析材料，不再把同一份结果称为新的独立测试。
+
+## 11. 675698a 后的失败归因与 D-lite 开发续接
+
+### 11.1 已结束的测试范围与保留结论
+
+**trace-only、服务级定位的24事件×A/B/C/D共96条运行已经结束；在该范围未观察到D的收益（D-A=0，D-C=-8.3个百分点）。** 原规划全能力覆盖仍不完整；整体partial不淡化这一负结果。本次不重跑测试、不修改其分母或结果，不把看过的事件重新称为独立测试；只使用现有4个开发事件。原675698a与全部439次请求/失败记录保留。
+
+### 11.2 从保留轨迹归因（新增模型请求0）
+
+[逐错误与问题归因](failure-attribution-675698a.json)。下表是错误发生轮数，类别可重叠；正常完成/无进展列是轨迹数，每方法原始分母仍24，不能把错误轮数加成新事件。
+
+| 方法 | JSON/schema结构 | 枚举/字段数量约束 | 引用/组件/应用语义 | 工具/句柄不可用 | Provider截断 | 正常完成 | 无进展终止 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| A | 0 | 5 | 13 | 3 | 0 | 11 | 6 |
+| B | 1 | 1 | 17 | 0 | 0 | 18 | 0 |
+| C | 0 | 4 | 16 | 2 | 0 | 16 | 0 |
+| D | 0 | 16 | 10 | 0 | 8 | 6 | 2 |
+
+- **JSON/schema结构**：保留的诊断没有json_invalid；B一轮缺顶层rationale。枚举和max-length另列；不把所有PROVIDER_PROTOCOL_INVALID称为坏JSON。失败参数只保留位置/类型和摘要，没有完整原始参数，因此不猜非法枚举具体值。
+- **D的8条FORMAT_FAILED**：按最后触发错误分为2条group_by枚举错误（016/020）、3条HYPOTHESIS_SCOPE_OR_REFERENCE（017/024/028）、3条REPORT_COMPONENT_SCOPE（015/026/036）。017把真实rec-*记录引用写进只接受analysis_id/observation_id的假设引用槽；024把“frontend and checkout paths…”写进单服务target；015/026把service|operation|direction分组键写进服务级ranked_components。这些是协议/应用语义问题，并非strict缺失就能一并解决。
+- **D的8条截断**：013/014/018/019/022/023/027/034均response_status=incomplete，incomplete_details.reason=max_output_tokens，实际output_tokens=4096、上限4096。六条reasoning_tokens=4096；013为3530、027为4072。输出token包含reasoning，不能声称4096个token都是可见JSON。对应input_tokens分别5592/5629/5537/5613/5190/5468/5594/6427；不截取残缺JSON或重试它们。
+- **D的31/34次UNKNOWN**按优先归因互斥拆分：字段不适用6、参考scope不兼容7、错误row_key 4、错误operation过滤2、合法表达但数值缺失5、合法当前scope无记录1、没有预测的探索3、重复分析未执行3。另3次为YES/NO。多因重叠保留在JSON，不能把这些全算成观测不足，也不能把探索当失败的预测。A/C大量UNKNOWN来自原循环对question=null的探索标记，不能与D的预测有效率直接比较；B固定动作也没有预提交预测。
+- **代表问题**：015对profile询问relative_change（工具不提供该字段）；031用service-wide历史参考配server过滤，且row_key也错；029的baseline已返回relative_change=0.1693却问操作分组键而非comparison；026的operation漏前导斜杠、033把完整分组键当operation，均选成空表。030的两次操作error_fraction确实null（状态均未知），020的已存在inventory/server操作在当前窗无记录，属于真实观测不足，不能补零。030重复同一不兼容baseline两次后NO_SEMANTIC_PROGRESS；D/021正常完成仍保留证据不足，不能由完成推出正确。
+
+[旧结构化配置](old-wire-configuration.json)：对675698a精确Provider源码用捕获传输离线重放确认，Responses函数工具strict=false、parallel_tool_calls=false、max_output_tokens=4096、medium。历史账本没有保留完整请求体，结论依据绑定源码和离线捕获，不声称重新抓到了历史网络报文。
+
+### 11.3 本次唯一有界修订与开发配置
+
+C/D共同使用semantic-lite-v1：程序保管历史与独立残差，模型每轮只提交当前动作、必要假设增量和简短依据；最终报告只有服务候选、解释、实际E/O引用、残差与限制。E/O由程序映射至真实analysis_id/observation_id，不补造引用；合法空排名ABSTAIN正常结束并单列。旧v1路径及数据不修改。
+
+问题目录从身份、字段存在、已观测父关系和参考scope/时间构建；不读取错误率、时延、参考数值、根因标签或未执行分析结果来挑问题，完整服务候选保留。每服务最多4类固定问题：操作组已知状态错误比例、两个信号的匹配历史增量、采样shared-trace错误共现；三个原工具没有增加种类。缺字段、父关系或匹配参考列成能力缺口，目录存在也不保证有足够观测得出YES/NO。阈值来自现有开发配置，操作组已知状态错误比例阈值固定50%，不依据标签调节。
+
+C可自由按普通ReAct选目录问题，假设和预测均可选；D-lite每轮至多比较两个解释，对一个共同问题给出相反YES/NO预期。没有可辩护的相反预期时可探索，另计而不冒充对比。程序执行和计算，预测检查绑定当时假设版本；已曝光的答案不能重新登记为预提交。独立只读检查发现的跨视图曝光缺口（聚合错误比例已能推出存在高错误操作组）在正式开发运行前修复并回归。反驳局部预测不删除整个解释，支持局部模式不确认根因。
+
+C/D同模型、目录、schema、数据、预算；显式strict=true，reasoning统一由medium改low，仍4096输出、8请求/6动作/1修复。严格解析与引用/组件/字段组合校验保留，不修剪JSON、不拼造字段；不增加重试。该组合修订的影响不能拆成“strict单独收益”或“D-lite策略收益”。
+
+[冻结开发协议](dlite-development-protocol.json)：现有rcase-001..004，各C/D两次，共16条，独立事件仍4。按事件配对、重复轮次轮换C/D先后；最多两个事件并行。每方法>=7/8合法完整结果为开发目标，拒答与非拒答覆盖分别报告，未达标同样结束。累计USD20/1600不变；开始前已用439次/USD5.456302，剩余1161次/USD14.543698。按旧成本估计本次USD0.80–1.60，128调用全部按最大输入输出预留上界USD11.968512；每次调用仍由原共享账本约束。无新下载、模型/Provider切换、Docker或live。
+
+### 11.4 固定16条开发运行结果：目标未达到
+
+16条均启动并终止，未启动0；独立事件**4个**，每方法8次运行包含2次重复，不增加独立样本。所有失败保留，未做第二轮修订、补跑或测试集重跑。冻结实现cff00e8；此次新增52请求/USD0.414688，累计491请求/USD5.870990，pending=0、未知usage=0，剩余1109请求/USD14.129010。
+
+| 方法 | 合法完成/计划 | 正确/运行 | Acc@1 | MRR | 合法拒答 | 非拒答覆盖 | INSUFFICIENT报告 | 格式失败 | 截断 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| C-lite协议 | 3/8 | 2/8 | 25.0% | 0.250 | 0/8 | 3/8（37.5%） | 2 | 5 | 0 |
+| D-lite | 1/8 | 1/8 | 12.5% | 0.125 | 0/8 | 1/8（12.5%） | 1 | 7 | 0 |
+
+两组均未达到>=7/8合法完整结果。不存在“全拒答提高完成率”；失败不等于合法拒答。schema/JSON解析错误、枚举错误、输出截断均为0，**整体格式/应用协议失败没有明显减少**，不能只报结构化输出改善。没有Provider/运输失败。
+
+| 方法 | 请求 | 输入token | 输出token（含reasoning） | reasoning子集 | USD上界 | 等价查询 | 分析扫描记录代理 | 返回字节 | 共同预处理记录 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| C | 20 | 151465 | 8158 | 4296 | 0.150315 | 6 | 10800 | 5682 | 14400 |
+| D-lite | 32 | 260185 | 15383 | 8764 | 0.264373 | 34 | 118800 | 15183 | 14400 |
+
+总输入411650、输出23541 token，reasoning13060已包含在输出中，不重复计费。USD按同一既定价格上界计算，不是发票。共同目录构造还有元数据身份扫描，按冻结实现静态计算每方法总循环记录访问次数为226800；这些不是物理I/O，未伪装成模型分析调用，详见[诊断与访问说明](dlite-development-diagnostics.json)。
+
+[逐运行JSONL](dlite-development-runs.jsonl) / [CSV](dlite-development-runs.csv) / [汇总](dlite-development-summary.json) / [完整简短决策与检查轨迹](dlite-development-trajectory.jsonl)。同一事件两次均未挑选最佳：001的C/D正确0/0，002为1/1，003为0/0，004为1/0（各事件每方法2次）。
+
+### 11.5 剩余失败、实际更新及公平性缺口
+
+本次必须分开解释能力不可用、非法表达与真实未知：
+
+| 方法 | 不存在的问题句柄 | 非法预测组合 | 已曝光后再预测 | 假设引用/范围 | 重复假设ID | 合法执行但UNKNOWN | 可计算YES/NO |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| C | 0 | 11 | 0 | 1 | 0 | 3 | 2 |
+| D-lite | 0 | 6 | 5 | 3 | 1 | 7 | 6 |
+
+前五列为错误轮次；最后两列为实际执行问题数。C执行5次分析（2次预提交比较、3次探索），D执行13次（7次预提交比较、6次探索）。D四次有效数值比较产生4个局部预测支持、4个局部预测冲突；其余3次预提交比较观测未知。这里的支持/冲突只针对固定问题，不是整个因果解释的确认/证伪。目录可用不等于参考数值足够或Trace状态已知。
+
+**公平性未达标，责任在本次共用协议设计。** `INVALID_EXPECTATION_PAIR`校验对C/D无条件要求非空expectations包含两个不同假设且YES/NO相反。C的11次拒绝中10次只有一个YES、1次为两个YES；这些本来可以是普通ReAct的正常局部预测。虽然C可填[]且提示未强制矩阵，允许省略并不能消除这一实际限制。rcase-001/C/repeat1/turn0是明确例子。独立复核确认这一缺口，因此这16条标记`development_gate=NOT_MET`、`strategy_comparison=INVALID_FOR_STRATEGY_ATTRIBUTION`；不能把2/8对1/8解释为策略收益或退化，也不能称C是通过验证的强基线。没有事后忽略校验或改写结果来恢复“公平”。
+
+其他代表性错误：001/D/repeat0在Q15得到UNKNOWN后两次重选同一问题、翻转预期，均以非预提交拒绝；001/D/repeat1把H2、Q31等假设/问题ID放入只接受已观测E/O的冲突引用；003/D/repeat0在同一增量里重复H1。错误信息被保留，但本轮不再优化提示或放宽这些规则。
+
+D-lite并非完全没有使用返回值：
+
+- **004/D/repeat1**：Q36的inventory操作分组状态全部未知，随后合法转向Q37的历史时延对比，并在依据中明确提到上一工具状态未知。返回current=0.349737ms、reference=0.342336ms、差0.007401ms，未达到预设50ms阈值，局部预期被反驳。之后模型提出降低inventory解释权重，但同时重复Q37且填NO/NO，整条决策被拒绝；**该降级仅是被拒绝的提议，不算已接受的状态更新**，最终失败。
+- **003/D/repeat1**：profile得到NO（如PlaceOrder错误3/8=37.5%，低于50%问题阈值），模型保留实际错误作为局部现象，合法选择新的duration baseline分析，而非把NO写成“没有错误”。该步被程序接受，假设版本更新；baseline差-0.081938ms，再次为NO。后续又产生同向预测对并失败。可见一次读取后改变工具的行为，但没有完整有效结论，不能由此推导策略收益。
+- 唯一完成的 **002/D/repeat0** 没有合法预提交对比：在一次无效预测对后改为探索，shared-trace结果UNKNOWN，重复两次无进展后按报告要求结束。其正确排序主要延续告警指向，不是竞争预测机制成功的证据。
+
+这两条变化轨迹只证明存在结果感知的局部行为，不证明动作改变由策略独立带来改善，也不把改写解释本身计为定位成绩。所有独立残差保留，未推导全系统健康。
+
+### 11.6 本轮建议与收口
+
+**目前保留原v1普通ReAct C；D-lite不值得直接进入新的未见事件测试，本次共用轻量协议也不晋升为默认。** 两组完成率均未达开发门槛，实际C基线还受到D专用预测约束污染。已实现目录、增量协议与真实运行，但新协议只能标作未通过开发验证的原型，不宣称implementation ready或泛化收益。原trace-only 96条测试已经完成且无D收益；全能力覆盖未完成，两者分别保留。
+
+本次只有用户新授权的一次有界开发修订，不重置之前的修订或Provider额度。保留全部失败并结束，不自行修正后补跑、不开始未见事件测试或下一轮大实验。默认CLI未配置semantic-lite-v1时仍走原v1路径；新配置只用于本次私有开发批次。
+
+原有93项检查未删改，本次直接回归后共101项通过，Ruff/差异检查通过。16份intent和4个快照绑定冻结代码及配置；18次程序分析与18次问题结果复算一致；原439请求和31个旧公开结果文件保持不变。[本轮核对](dlite-verification.json)与[独立评分/公平性复核](dlite-scoring-review.json)只支持这些局部事实，不覆盖算法有效性。
+
+Docker、下载、实时遥测、业务流量、故障、恢复、正式事件与知识晋升均为0；未推送、更新PR、merge或release。只做本地提交。最终完整性证据沿用现有验证工具，基线675698a，冻结4个既有开发快照、开发配置及已结算账本副本；全部本轮原始输出保留在`.local/semantic-investigation-v1/dlite`和原runs目录。
+
+## 12. 616604e 后的共同协议／策略约束修复
+
+### 12.1 无 Provider 调用的定位与原返回重校验
+
+原 `semantic_lite.py` 在共用 analyze 分支中无条件要求非空 expectations 必须是两个不同 H ID 且 YES/NO 相反，否则 `INVALID_EXPECTATION_PAIR`；紧接着将已暴露观测的预测记为 `PREDICTION_NOT_PRECOMMITTED` 协议错误。前者错误限制 C，后者把 D 的无有效对比／重复读取混为整个协议失败。C 的11次 pair 拒绝发生于001/r1/t0,t2；002/r0/t0；002/r1/t0,t2；003/r0/t0,t1；003/r1/t0,t1；004/r1/t0,t1（turn从0起）。共6条受影响，002/r0修复后完成，另外5条最终失败。001/r0的虚假H2引用是另一原因。
+
+D原7条失败分别如下；不能全部归因于C的单假设限制：
+
+| 事件/重复 | 实际错误链 | 修复后的边界 |
+|---|---|---|
+| 001/r0 | 同一Q15观测后重复预测，t1/t2两次not-precommitted | 回退；重复读取不执行 |
+| 001/r1 | t0用H1/H2、t1用Q31/Q15作证据引用 | 仍拒绝，两次真实无效引用 |
+| 002/r1 | t4重新预测已读Q39，t6 Q8填NO/NO | 回退，不假造后续动作 |
+| 003/r0 | t1重复Q12预测；t2重复H1更新且夹带Q12引用 | 前者回退；后者仍拒绝重复ID（另有坏引用） |
+| 003/r1 | t0服务名充当引用；t3 Q12填NO/NO | 坏引用仍拒绝；后者回退／去重 |
+| 004/r0 | t1重新预测Q39；t3 Q11填NO/NO | 回退；已有一次普通重复读取NO_PROGRESS保留 |
+| 004/r1 | t0单H1预测；t3已读Q37填NO/NO | 回退；重复读取不执行 |
+
+[离线逐返回重校验](protocol-repair-revalidation.json)只使用每轮**历史真实已接受状态**，没有执行工具、调用Provider或模拟后续对话。52次返回中：C原11次pair错误现为合法，1次引用错误仍在；D原6次pair、5次not-precommitted现为合法，3次引用错误和1次重复ID仍在。所谓合法只表示可以进入执行/回退/去重分支；不代表得到新的观测或完整结果。原96条测试与16条开发轨迹、原始分母和准确率全部保留，未重记成绩。
+
+### 12.2 唯一有界修复与固定8条检查
+
+共同校验抽取为`validate_common_decision`：保留schema、真实服务、合法问题句柄、实际E/O证据引用、字段组合、预算和只读边界。C允许无假设、单假设与同向预测。D的相反预测是独立策略分支：对同一未暴露问题的两个不同假设YES/NO预期进入CONTRAST，否则进入REACT_FALLBACK；未知假设引用仍拒绝。重复读取不执行，但其合法假设增量保留；不将局部预测反驳写成整因果解释证伪。目录、工具数值、标签映射、评分均未改。
+
+程序在读数据前按元数据计算访问成本与选择分数：有效对比为`1/(1+estimated_cost)`，其余为0。**这只是单个模型提议问题的对比分支准入分数，不是程序对多个问题排序的优化器**；后续是否有意义须看真实结果和动作更新。回退不享有预承诺对比成绩。C普通单预测仍可独立核对，不要求相反对。
+
+[固定开发检查配置](protocol-repair-development-protocol.json)：原4个已见开发事件，C/D各一次共8条，事件顺序001→004，方法先后C/D、D/C交替；只执行这一轮。模型、strict/low/4096、每轨迹8调用/6分析/1修复和底层预算与上一轮一致。开始前491请求/USD5.870990，剩余1109请求/USD14.129010；按旧实际成本估计USD0.255–0.511，64请求最大预留USD5.984256，每事件开始前检查完整一对的额度。原4个快照与旧固定清单逐一匹配。无下载、Docker/live、未见测试、独立审查流程或产品接入。
+
+针对性检查覆盖C合法单假设执行、D有效对比分支、D正常回退、合法更新后重复读取去重、两方法的假引用和非法句柄拒绝；现有相关检查未删除。运行相关语义/回放检查61项及Provider诊断18项通过，ruff与diff检查通过。一次初始命令误写不存在的adapter测试文件而未执行，随后使用实际测试路径完成检查；保留既有Starlette弃用警告，无新增依赖。
+
+### 12.3 固定8条开发检查结果（已结束，不追加）
+
+冻结运行代码 `b56d65c57a7f342df92471266ea7801963ca3468`。8条全部启动并保留终态；原96条测试及上一轮16条开发未改写。[汇总](protocol-repair-development-summary.json)、[逐运行](protocol-repair-development-runs.csv)、[完整决策轨迹](protocol-repair-development-trajectory.jsonl)。首次启动因缺少`PYTHONPATH=src`在导入阶段退出，模型请求0、轨迹0；保留该日志，补正执行环境后完成唯一计划批次，没有重跑任何已启动轨迹。
+
+| 方法 | 启动/计划 | 合法完整（其中给出定位/拒答） | 失败 | 正确/启动 | Acc@1 | MRR | INSUFFICIENT报告 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| C | 4/4 | 4（4/0） | 0 | 2/4 | .50 | .50 | 1 |
+| D | 4/4 | 2（2/0） | 2 | 1/4 | .25 | .25 | 1 |
+
+拒答均0；非拒答覆盖C 100%、D 50%；失败仍在评分分母。004/D的最后返回包含inventory，但报告未被接受，不能按其中答案补记正确。仅4个已见开发事件，**本轮不作C/D定位优劣或泛化判断**。
+
+| 失败/不足类别 | C | D | 说明 |
+|---|---:|---:|---|
+| JSON/schema/枚举导致终止 | 0 | 0 | 38次返回均结构合法 |
+| 应用协议导致未完成 | 0 | 2 | D001无效目标后引用未登记H1；D004最后报告假引用 |
+| Provider/截断/运输失败 | 0 | 0 | 38次response_status=completed；strict=true/low/4096，同一模型 |
+| 工具执行失败或不可用句柄 | 0 | 0 | 未忽略未知工具/参数/引用校验 |
+| 数据不足导致整轨迹失败 | 0 | 0 | 局部不足按UNKNOWN保留，不冒充失败或否定证据 |
+| 合法但观测不确定的分析 | 3/8 | 5/8 | 分母是实际分析动作；不是格式错误 |
+| 重复读取未执行 | 7 | 5 | NO_PROGRESS，不追加底层访问 |
+| 未启动 | 0 | 0 | 全部计划轨迹已有终态 |
+
+具体错误：001/D/t0的H2目标为不存在的`checkout->dependency`，整批假设增量原子拒绝；t1没有重新登记假设却引用H1，触发`EXPECTATION_UNKNOWN_HYPOTHESIS`，第二次错误终止为FORMAT_FAILED。004/D/t7把Q36/Q37/Q39放进conflicts证据槽，触发`HYPOTHESIS_SCOPE_OR_REFERENCE`；此时8次调用已耗尽，终态MODEL_BUDGET。**后者是应用引用错误发生于最后调用，并非Provider额度或输出截断**。C001/t3也有一次H2充当证据引用，被拒绝后在既定1次修复额度内形成合法报告。这些是真实边界违规，不再修改协议放行。
+
+完成不等于高质量调查：C001/C004与D002/D003均有重复读取后由既有无进展规则要求报告。没有新增提前结束规则，没有一律拒答；C003确实执行了5种具体问题、D004执行了6次分析。不能仅凭完成率宣称推理或覆盖充分。
+
+### 12.4 对比分支、回退与真实结果反馈
+
+D：通过共同校验的13次分析提议中，对比分支4次（全部实际执行），回退9次（4次执行、5次重复去重）；有效对比已执行占实际8次分析的一半，**回退占提议的9/13，但不能写成9次工具执行**。D001在共同硬约束阶段拒绝，既不记为对比也不记为回退。C的15次分析提议全部为普通ReAct，8次执行、7次去重。
+
+4次对比分支是002/Q38操作画像，以及004/Q36操作画像、Q37时延参考、Q38错误率参考。程序均事前计算分数：画像cost=2.8、score=.263158；参考比较cost=5.6、score=.151515。三次结果UNKNOWN，只有004/Q37为可判定NO，产生1条局部预测支持、1条局部预测反驳。计为对比的必要依据是同一未暴露问题、两种相反预期；**程序不证明这些预期确实由竞争因果解释推出**，因此形式准入次数不能直接当作有意义策略次数。
+
+存在真实的结果更新与后续动作变化，而不只是措辞重写：004/D/t0画像全未知后t1改选Q37；实际服务中位时延0.349737ms对历史0.342336ms，差0.007401ms，小于预定50ms阈值，程序返回NO。之后t2读取错误率参考（UNKNOWN），t3将H1更新为没有广泛回归证据且同向预测，重复读取被去重但合法增量保留；t4实际改选库存—购物车依赖问题，走普通ReAct回退，随后探索payment。**这证明这条失败轨迹仍有真实反馈和动作变化，但不能把NO当成inventory根因被证伪，也不能把H2预测支持当成checkout被确认。** t1的H1描述仍主要谈错误而非时延，竞争解释与数值问题的联系较弱；不能将唯一可判定局部对比夸大成充分因果区分。
+
+002/D的对比只返回UNKNOWN，之后两次重复读取；003/D全部普通回退，后两次在观测已暴露后提交相反预测，不计预承诺，最终报告。整体不是从不执行对比，但**选择尝试主要依赖普通ReAct回退，可判定且紧密对应竞争解释的对比证据很有限**。本轮实现只对一个提议问题作分支准入与计分，没有多问题程序排序；不声称实现了最优信息增益选择。
+
+恢复C正常行为的实际例子：003/C/t0单H1预测获准执行Q12；t1两条NO同向预测获准执行时延Q13；t2继续Q14，观察到错误率参考差异YES后更新假设，后续再读Q1和依赖Q15。单假设、同向预测、基于结果更新不再受D专用对比条件拦截。两组仍保留同样的引用、参数、预算和只读边界。
+
+### 12.5 成本与本轮结论
+
+| 方法 | 模型请求 | input/output tokens（合计） | reasoning tokens（已含output） | 费用上界USD | 工具动作 | 底层查询 | 扫描记录 | 返回bytes |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| C | 20 | 167935 / 8474（176409） | 4038 | .164092 | 8 | 18 | 41400 | 11515 |
+| D | 18 | 151586 / 8185（159771） | 3924 | .150527 | 8 | 15 | 43200 | 7740 |
+| 总计 | 38 | 319521 / 16659（336180） | 7962 | .314619 | 16 | 33 | 84600 | 19255 |
+
+每方法另有7200条预处理记录与113400次目录身份记录访问（由原元数据循环推导，非物理I/O）；与工具扫描分开列出。费用沿用未缓存input单价上界及每请求向上取整，无重置。累计529请求/USD6.185609，剩余1071请求/USD13.814391，pending和unknown-usage均0。
+
+**问题1：共同协议／策略混用已修复，C可正常执行；尚不能说C/D均稳定完成。** 这版共同约束没有再把单假设或缺少相反预测当成非法动作；但D仅2/4合法完整，另外2条因真实应用引用/目标问题未完成。保持拒绝，按本轮上限结束，不再追加修复或模型请求。
+
+**问题2：D确实执行了局部对比并在一条轨迹中利用真实结果更新和换问题，但不足以认定已形成稳定、有意义的对比选择。** 对比实际4次中仅1次可判定；9/13分析提议走回退，4/8实际执行为普通回退。解释与预测的语义联系仍弱，不能把分支计数当成策略收益。本轮不判D优于或劣于C，不启动新的未见事件测试。
+
+## 13. Trace 状态保真与操作级历史变化（2026-09-30，离线检查点及授权续接）
+
+### 13.1 起点、范围与授权
+
+活动 Goal 为 [Trace Representation Repair](../../goals/EcomSRE_Trace_Representation_Repair_Codex_Goal.md)。起始提交为 `50c8fd1f4f0922a3a3b031e79623ecbfd9be8105`；真实执行代码固定在本地提交 `b29d4f718b9e7653974d5b1ae2a6ce4b571f05d4`，未回退或覆盖后续提交。P0 核对本地干净，PR #104 为 Draft/open，同一 HEAD。本轮只继续原 Product v0.5 worktree；旧 D/D-lite、正式验收和历史失败保持停止。
+
+以下离线检查点保留当时状态。检查点后用户明确批准新增≤USD3/160次Provider调用及本地提交；真实执行结果追加本节。
+
+最初按 Goal §0.1 的无付费授权分支完成离线检查点（当时新增0请求/0费用、未提交）。随后用户明确批准“新增≤USD3／160次Provider请求的有界开发实验及本地提交”。本次授权已执行：2条smoke、16条固定配对，之后只做汇总口径修正与本地收口；推送/远程PR修改仍为0。
+
+读取范围：Goal、适用指令、DEC-064/065、安全边界、本报告11–12节、三个语义工具/契约/lite/Provider及评测适配直接依赖；原始数据仅已有 `rcase-001..004` 对应的四份 Parquet/task 和其四个旧开发快照。写入范围：`semantic_analysis/semantic_contracts/semantic_lite/provider`、新增纯计算 `semantic_representation`、已有准备/评测/汇总CLI、聚焦测试、新配置、唯一活动指针和本报告。冻结范围：四份原始输入、旧四快照/清单、旧结果；新派生快照/配置和本轮证据在私有 `representation-repair` 目录。最终仓库范围为当前整个 worktree 的实际 delta；不含其他工作树或旧任务变更。未修改产品规则、知识库或永久决策。
+
+### 13.2 正确性修复与接口改进
+
+- `compare_baseline` 与 `compare_dependencies` 共用 `select_reference`。先匹配服务/操作/方向、signal、单位、统计方法、所有实际 source_windows 的等长/事前约束；优先最近 fixed_at / 支持窗口末端，同级多项报告歧义。旧无 signal 参考只接受已知 RCA 适配器的精确 ID 定义，不由 fraction/ms 单独猜语义。
+- 真实旧开发记录中 **2次依赖调用、6个服务参考误配**：003/C的checkout/cart/currency/email，004/D的inventory/cart。旧逻辑按名称先取 duration_ms，尽管请求为 error_fraction；新函数能选择 error_fraction。仅重算参考选择，没有重跑 D 或改写旧轨迹。详见 [离线计算记录](representation-repair-offline.json)。
+- 状态保留 `raw_status_code / normalized_status / status_normalization_basis`，显式0/1/2分别为UNSET/OK/ERROR；缺失/非法独立计数。新默认目录使用 `error_marker_fraction`；旧 `error_fraction` 保持布尔显式状态分母并标明 legacy，不静默换义。UNSET默认状态不等于业务成功，依据 [OTel Set Status](https://opentelemetry.io/docs/specs/otel/trace/api/#set-status)。
+- 新研究由 `representation_version` 显式启用。两种 C 使用相同服务、状态表示、当前操作画像、操作/参考可用性元数据、输入身份、模型和共同接口；只有可执行历史参考粒度不同。C-service不使用旧错误状态/错误参考作弱基线。
+- 动态服务、Q和E/O枚举；已执行规范化动作移出可执行目录，历史结果保留；分析/报告使用嵌套联合结构，强制报告为仅含报告的结构，正常主动报告也不能带假设更新；空目录切报告，不发空enum。拒绝反馈明确没有接受增量及真实H ID。原假引用/非法目标仍由运行时拒绝。依据 [Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs) 的受支持子集实现，没有根级anyOf或if/then。
+
+这些是正确性与接口修复，**不是新的RCA策略贡献，也没有验证D**。
+
+### 13.3 状态、采样和操作计算的实际结果
+
+四份源文件与旧清单SHA-256一致。每事件恢复1800个相同span身份（当前＋三个历史窗各450），共7200；未改采样，上限仍450/窗。四事件当前窗均没有真实缺失/非法状态，覆盖率为1；人工缺失/非法算例另行验证，不能把此实测推广到其他数据。
+
+| 事件 | 当前UNSET / OK / ERROR / 缺失 | ERROR标记占比 | 显式状态条件比例 | 当前唯一Trace数 | 四窗恢复的UNSET |
+|---|---:|---:|---:|---:|---:|
+| 001 | 362 / 43 / 45 / 0 | 45/450 = 10% | 45/88 = 51.14% | 49 | 1484 |
+| 002 | 415 / 35 / 0 / 0 | 0/450 = 0 | 0/35 = 0 | 46 | 1520 |
+| 003 | 347 / 76 / 27 / 0 | 27/450 = 6% | 27/103 = 26.21% | 35 | 1410 |
+| 004 | 403 / 47 / 0 / 0 | 0/450 = 0 | 0/47 = 0 | 47 | 1522 |
+
+共恢复5936个被旧None混同的显式UNSET。分母变化是表示信息恢复，不能声称“业务错误率下降”。100 UNSET → marker=0/explicit=null，100真正缺失 → marker=null/coverage=0 的人工算例均保留；零标记不排除根因。
+
+| 事件 | 当前源/样本操作数 | 四窗操作scope数 | 可比较中位数 / 低支持scope | 当前样本缺父span |
+|---|---:|---:|---:|---:|
+| 001 | 64 / 56 | 56 | 40 / 16 | 13 |
+| 002 | 73 / 59 | 67 | 14 / 53 | 16 |
+| 003 | 65 / 60 | 62 | 36 / 26 | 2 |
+| 004 | 73 / 66 | 66 | 36 / 30 | 11 |
+
+scope为真实 `(service,operation,direction)`，包括仅出现在历史的操作，故不等于当前操作数。未删除控制流或健康检查；未匹配用途仍UNCLASSIFIED。源窗口与样本的操作、四类状态、时延、缺父统计完整保存在本地每事件 `*-features.json`；原始流式扫描分别510000、358256、410000、470000行，共1748256行。准备耗时包括哈希/流式处理/派生计算，约8.68秒，非模型I/O成本。尾部支持修正在已恢复快照上重算，没有再次扫描原始窗口。
+
+**采样损失的具体例子：002源当前窗有846个inventory `/api/v1/inventory/{productId}` server span、847个 `SELECT inventory.inventory` client span，而保留样本均为0；样本只剩 `/actuator/health` 与 `HikariDataSource.getConnection` 各1个。** 新操作表示不能补造业务span。这是采样损失，不是源数据没有业务操作；本轮遵循默认同身份采样，不以已知答案修订采样。其他scope已有真实操作参考，因此不是全UNKNOWN接口壳。
+
+真实信息增量举例（先计算全部scope，后分析/评分；不按标签或变化量挑样本）：
+
+- 001 payment服务级中位数 `0.233077` vs参考`0.2763935` ms，变化`-0.0433165` ms；Charge/server为`0.372673` vs`0.298469`，变化`+0.074204` ms，当前5个span、历史各7个；ERROR标记为`4/5`，服务聚合为`4/10`。操作方向与服务聚合时延变化方向不同，能恢复局部观测差异，不证明根因。
+- 003 payment服务级变化`-0.0132025` ms，Charge/server变化`+0.0307415` ms；当前8个、历史8/7/8个span。另有许多服务也变化，不能把“发生变化”当唯一定位依据。
+- 004 inventory服务级变化`+0.007401` ms；API/server当前中位数`2.190323`，两个满足支持条件的参考窗口中心`2.058624`，变化`+0.131699` ms；当前9个span，历史5/5/3，第三窗因不足5个不参与中心。SQL/client变化`-0.003728` ms。这些亚毫秒变化不再被固定50ms二元门槛吞掉，也不能自动解释成故障。
+- 001 accounting `orders receive` 当前5个span中位数`37.081` vs参考中心`7.4454` ms，绝对变化`+29.6356` ms，比上述payment变化更大。003/004存在较大负变化。**没有建立“最大变化就是根因”的确定性结论。**
+
+支持配置在模型付费前固定：当前及参与参考窗各≥5有效时延span，≥2历史窗；z需≥3窗且MAD>0，MAD=0则z=null；p95 nearest-rank需参与窗各≥40，不足返回null。中心是等权窗口中位数的中位数；不合并历史span，不平均操作p95。阈值只是开发支持限制，不是统计充分性证明；没有持续时长或SLO贡献声明。
+
+依赖视图额外操作展开按每服务固定身份序第一项，其他组计数和参考句柄保留，可经现有baseline工具展开；没有按错误/慢请求/根因排序。所有展开访问计入查询/记录扫描代理，额外参考构建也单列逻辑记录访问；它们不是实测物理I/O。初始不裁剪的开发wire探针超过原96KB限制，已离线压缩重复元数据并有界展开，原失败探针保留。
+
+### 13.4 固定开发定义与实际模型结果
+
+新配置：[representation-repair.json](../../../config/semantic-investigation-v1/representation-repair.json)。固定计划为四已见事件×C-service/C-operation×两次，16条；每事件内配对，第二次反转方法先后；另允许最多2条smoke，失败及修复均计入。模型仍 `gpt-5.4-mini-2026-03-17`、low/strict/4096，8请求/6动作/1格式修复，24等价查询与100000逻辑扫描上限；未换模型/Provider。
+
+原共用账本为唯一预算依据。P0为529请求/USD6.185609，余1071/USD13.814391；子预算在同一ledger实例中把累计上限收紧为689请求/USD9.185609，同时原1600/USD20继续有效，不建立第二付费账本。最多144次计划调用；按原96KB输入边界的逐次可靠预留，144次总最坏上界高于USD3，因此不保证全部启动；必须在每调用前留足上界、按既定顺序到限停。固定批次后不改参/补跑。
+
+[完整计划与实际记录](representation-repair-paired-v1-development-summary.json) / [逐轨迹CSV](representation-repair-paired-v1-development-runs.csv) / [完整决策与报告](representation-repair-paired-v1-development-trajectory.jsonl)。
+
+| 方法 | 独立事件 | 启动/计划 | 完成/未启动 | 正确/已启动 | Acc@1 / MRR | 非拒答覆盖 | Provider费用 |
+|---|---:|---:|---:|---:|---|---:|---:|
+| alert_only | 4 | 4/4 | 4/0 | 0/4 | 0 / 0 | 2/4 | 0 |
+| C-service | 4 | 8/8 | 8/0 | 4/8 | 0.5 / 0.604167 | 8/8 | USD0.181011 |
+| C-operation | 4 | 8/8 | 8/0 | 4/8 | 0.5 / 0.729167 | 8/8 | USD0.278244 |
+
+重复0和重复1均为每方法正确2/4；四事件不是16个独立事件。合法拒答均0，终止型应用协议/Provider/工具失败均0。004 C-service重复0有一次 `DUPLICATE_HYPOTHESIS_ID` 应用拒绝，未接受其增量，使用唯一格式修复额度后完成（6请求/4动作）；不是零协议错误。两条smoke均完成、首位checkout均错误，5请求/USD0.040087，不计入配对准确率。没有smoke后修订或固定批次后补跑。
+
+| 事件 | C-service首位（重复0 / 1） | C-operation首位（重复0 / 1） | operation−service正确性（0 / 1） | 对固定alert_only |
+|---|---|---|---|---|
+| 001 | checkout / checkout | checkout / checkout | 0 / 0 | 均维持错误告警候选 |
+| 002 | inventory / inventory | inventory / inventory | 0 / 0 | 均从空候选到正确首位 |
+| 003 | checkout / checkout | checkout / checkout | 0 / 0 | 均维持错误告警候选 |
+| 004 | inventory / inventory | inventory / inventory | 0 / 0 | 均从空候选到正确首位 |
+
+每方法相对固定alert_only形式上纠正4条、双方错误4条、维持正确0条、错误偏移0条。**告警基线的边界匹配在 `inventory接口响应超时告警` 中漏掉inventory，因此其002/004空候选低估了告警文字已给的信息。** 不在看过结果后修订基线重算；模型解释明确提到inventory告警。这4次“纠正”不能证明Trace贡献，两组也都未纠正001/003的checkout误定位。
+
+| 成本口径（配对，含失败请求） | C-service | C-operation |
+|---|---:|---:|
+| Provider请求 | 27 | 25 |
+| input / output tokens | 195614 / 7620 | 323561 / 7903 |
+| 其中reasoning tokens | 2836 | 3439 |
+| 分析动作 / 查询等价数 | 18 / 49 | 17 / 27 |
+| 工具records_scanned代理 | 147600 | 48600 |
+| 输入预处理记录 | 14400 | 14400 |
+| 参考预处理逻辑记录访问 | 637200 | 3348000 |
+| 工具返回字节 / 本地compute ms | 102885 / 20.158 | 57129 / 12.659 |
+
+smoke另含42887 input /1760 output（其中739 reasoning）；全阶段562062 input /17283 output（其中7014 reasoning）。reasoning是output子集，不重复加总；从账本 `payload.reasoning_tokens` 读取。发现原汇总误从normalized usage的不存在嵌套字段读取后，仅修汇总器并加回归检查，运行代码、配置和输入冻结哈希均不变。unknown usage/pending均0；费用沿用逐请求向上取整保守口径，不冒充Provider账单。操作视图虽然工具扫描代理较少，但input tokens和参考预处理明显更多，费用增加USD0.097233；不声称总体效率胜出。预处理/扫描不是物理I/O，compute只计本地工具处理，不含远端时延。
+
+含smoke新增57次/USD0.499342，剩余本轮额度103次/USD2.500658；累计586次/USD6.684951，原总额度剩余1014次/USD13.315049。剩余额度不授权追加实验。所有单轨迹请求≤8、动作≤6、查询≤24、扫描≤100000；原529请求账本逐字节前缀保留。
+
+实际信息使用：8条C-operation中只有2条执行新增操作参考（共3个操作分析，其中2个在最终报告引用）。002重复1引用 `/actuator/health` 的 `INSUFFICIENT_STATUS_SUPPORT`；另读业务API时延但当前样本缺失，未在最终引用，仍首位inventory。003重复1引用PlaceOrder/server，当前ERROR标记3/8=0.375，三个历史窗口均0；最终仍首位checkout，payment排第二。001/004两次与003重复0均仅1动作即报告；没有读取前述payment Charge或004 inventory业务API的新增历史差异。**没有找到新增操作信息纠正首位或有依据消除根因歧义的案例。** MRR增加0.125来自非首位候选排序，不能单独归因于新操作信息。
+
+模型语义仍有残余：001 C-service重复1称“error markers are explicit-status only”，002 C-operation重复1把低支持、方向不支持其文字的时延比较描述为elevated；动态合法值没有保证解释正确。另有非时延比较附带的 `reference_mad` / `reference_center_method` 等字段沿用时延计算元数据，未全部重新按状态signal命名，不能当状态分布MAD使用；状态的current/reference fraction及difference须依命名signal和分窗计数核对，z保持null。这一辅助元数据限制保留在真实输出，不回写轨迹、不在固定批次后改参重跑；implementation=ready表示本轮有界研究路径已交付，不代表全部输出语义无缺陷或可晋升产品。
+
+### 13.5 聚焦核验与已执行命令
+
+58项相关聚焦检查通过（原57项加账本reasoning token字段与已启动未终止计分回归），Ruff和scoped diff检查通过；保留既有Starlette弃用警告。覆盖分母、缺失、冲突重复、signal顺序、同单位不同语义、错scope/单位/source_windows、MAD与低样本、动态句柄/报告结构、动作去重和fake循环。旧baseline测试fixture新增显式signal以符合新兼容性要求，不用单位猜旧语义。
+
+两种C的单例fixture CLI均完成，项目Provider请求0。四事件×两视图的真实输入/假运输wire探针验证动态schema和大小，最终8条探针均完成，最大实际序列化请求86717 bytes（低于96000）；这是指定探针路径的边界检查，不保证所有未来模型路径都不超限。原始过大探针也保留。后续18条真实轨迹均产生完成报告，提供这组实际路径的strict wire证据，不推广到全部模型路径。
+
+已执行命令（私有源路径/复用PyArrow路径以环境变量代替，未下载或安装依赖）：
+
+```bash
+# 实际使用当前项目Python，追加已有PyArrow环境的site-packages；首次直接用外部Python
+# 因缺fastapi退出，0数据扫描/0模型调用。随后复用已有依赖完成：
+PYTHONPATH=src:. .venv/bin/python -c \
+ 'import sys,runpy;sys.path.append("<RETAINED_ARROW_SITE>");runpy.run_module("scripts.product_v050.prepare_semantic_rca100",run_name="__main__")' \
+ --source "$RCA100_SOURCE" \
+ --repair-retained .local/semantic-investigation-v1/rca100 \
+ --output .local/semantic-investigation-v1/representation-repair \
+ --base-config config/semantic-investigation-v1/representation-repair.json
+PYTHONPATH=src:. .venv/bin/python \
+ .local/semantic-investigation-v1/representation-repair/finalize_offline.py
+PYTHONPATH=src:. .venv/bin/python -m scripts.product_v050.evaluate_semantic_investigation \
+ --config .local/semantic-investigation-v1/representation-repair/experiment.json \
+ --mode single --provider fixture --methods C --views service operation --case rcase-001 \
+ --batch representation-repair-smoke-v1 \
+ --input-root .local/semantic-investigation-v1/representation-repair \
+ --output .local/semantic-investigation-v1/representation-repair/fixture
+PYTHONPATH=src:. .venv/bin/python \
+ .local/semantic-investigation-v1/representation-repair/check_wire.py
+PYTHONPATH=src:. .venv/bin/python -m scripts.product_v050.summarize_semantic_subset \
+ --config .local/semantic-investigation-v1/representation-repair/experiment.json \
+ --root .local/semantic-investigation-v1/representation-repair \
+ --ledger "$COMMON_GIT_DIR/semantic-investigation-v1/provider/ledger.jsonl" \
+ --batch representation-repair-paired-v1 --split development \
+ --output docs/results/semantic-investigation-v1
+PYTHONPATH=src:. .venv/bin/python -m pytest \
+ tests/product_v050/test_trace_representation.py \
+ tests/product_v050/test_semantic_investigation.py \
+ tests/product_v050/test_semantic_lite.py \
+ tests/product_v050/test_provider_diagnostics.py -q
+```
+
+后续实际付费命令如下；第二条私有顺序runner固定四事件×两重复，每次调用同一CLI的 `--mode single --provider configured --methods C --views service operation`，按预先交替顺序完成16条，无重试runner：
+
+```bash
+PYTHONPATH=src:. .venv/bin/python -m scripts.product_v050.evaluate_semantic_investigation \
+ --config .local/semantic-investigation-v1/representation-repair/experiment.json \
+ --mode smoke --provider configured --methods C --views service operation --case rcase-001 \
+ --batch representation-repair-smoke-v1 \
+ --input-root .local/semantic-investigation-v1/representation-repair \
+ --output .local/semantic-investigation-v1/representation-repair
+PYTHONPATH=src:. .venv/bin/python \
+ .local/semantic-investigation-v1/representation-repair/run_paired.py
+```
+
+原始四份Parquet/task、旧四快照及运行时冻结代码/配置/新快照均重新核对SHA-256未变，旧付费账本字节前缀保留。新私有输入清单、完整特征、wire探针、原始Provider账本/对象、smoke/配对日志及 `paired-freeze.json` / `paid-closeout.json` 保留。原始结果未回写；公开汇总可从同账本和轨迹重算。
+
+### 13.6 结果边界与下一步
+
+**implementation=ready；experiment=complete_development；effect=undetermined。** 正确性修复恢复了状态分母、参考选择与真实操作局部变化；固定配对首位定位无增益。MRR方向较好但没有相应的新信息利用归因，四个已见事件与弱告警提取器也不支持表示收益、跨事件泛化、健康认证或D策略收益。旧阶段effect/准确率不变。
+
+唯一下一步取舍：**保留当前C-service作为基线，D/D-lite继续暂停**。本阶段结束，不追加运行、不修改本批次采样或告警基线；具体采样缺口、辅助元数据和模型解释问题如上保留。源码及结果本地提交，远程Draft PR #104未更新，不触发CI、merge或release。

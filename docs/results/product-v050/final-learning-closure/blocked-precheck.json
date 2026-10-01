@@ -1,0 +1,175 @@
+{
+  "admission": "NOT_EVALUATED_BY_THIS_COMMAND",
+  "boundary": "READ_ONLY_PRECHECK_NOT_MECHANICAL_OR_LEARNING_ACCEPTANCE",
+  "committed_microusd": 918501,
+  "effective_new_caps": {
+    "committed_microusd": 8000000,
+    "live_episodes": 7,
+    "requests": 40,
+    "semantic_attempts": 6
+  },
+  "input_snapshot_sha256": "5266abd07b8d89a1cd81ac183f7702aab579070245233efe6cdc17f3214b3215",
+  "invoice_known": false,
+  "live_episodes": 5,
+  "live_start_permitted": false,
+  "new_live_episodes": 0,
+  "new_requests": 0,
+  "new_semantic_attempts": 0,
+  "observed_at": "2026-09-19T04:22:31.709888+00:00",
+  "old_candidate_recomputed": [
+    {
+      "components": {
+        "expression": null,
+        "predicates": [
+          {
+            "predicate": "ga:METRIC_QUEUE_LAG_OUTLIER",
+            "status": "TRUE"
+          },
+          {
+            "predicate": "core:METRIC_LATENCY_STRONG",
+            "status": "FALSE"
+          },
+          {
+            "predicate": "core:RESOURCE_MEMORY_GROWTH_STRONG",
+            "status": "TRUE"
+          }
+        ]
+      },
+      "episode": "e01",
+      "reason": "BASE_PREDICATE_ABSENT",
+      "role": "DISCOVERY",
+      "status": "FALSE"
+    },
+    {
+      "components": {
+        "expression": null,
+        "predicates": [
+          {
+            "predicate": "ga:METRIC_QUEUE_LAG_OUTLIER",
+            "status": "TRUE"
+          },
+          {
+            "predicate": "core:METRIC_LATENCY_STRONG",
+            "status": "FALSE"
+          },
+          {
+            "predicate": "core:RESOURCE_MEMORY_GROWTH_STRONG",
+            "status": "TRUE"
+          }
+        ]
+      },
+      "episode": "e02",
+      "reason": "BASE_PREDICATE_ABSENT",
+      "role": "DISCOVERY",
+      "status": "FALSE"
+    },
+    {
+      "components": {
+        "expression": null,
+        "predicates": [
+          {
+            "predicate": "ga:METRIC_QUEUE_LAG_OUTLIER",
+            "status": "TRUE"
+          },
+          {
+            "predicate": "core:METRIC_LATENCY_STRONG",
+            "status": "FALSE"
+          },
+          {
+            "predicate": "core:RESOURCE_MEMORY_GROWTH_STRONG",
+            "status": "FALSE"
+          }
+        ]
+      },
+      "episode": "e03",
+      "reason": "BASE_PREDICATE_ABSENT",
+      "role": "DISCOVERY",
+      "status": "FALSE"
+    },
+    {
+      "components": {
+        "expression": null,
+        "predicates": [
+          {
+            "predicate": "ga:METRIC_QUEUE_LAG_OUTLIER",
+            "status": "TRUE"
+          },
+          {
+            "predicate": "core:METRIC_LATENCY_STRONG",
+            "status": "TRUE"
+          },
+          {
+            "predicate": "core:RESOURCE_MEMORY_GROWTH_STRONG",
+            "status": "TRUE"
+          }
+        ]
+      },
+      "episode": "e04",
+      "reason": "CANDIDATE_MATCHED",
+      "role": "DEVELOPMENT",
+      "status": "TRUE"
+    },
+    {
+      "components": {
+        "expression": null,
+        "predicates": [
+          {
+            "predicate": "ga:METRIC_QUEUE_LAG_OUTLIER",
+            "status": "TRUE"
+          },
+          {
+            "predicate": "core:METRIC_LATENCY_STRONG",
+            "status": "TRUE"
+          },
+          {
+            "predicate": "core:RESOURCE_MEMORY_GROWTH_STRONG",
+            "status": "FALSE"
+          }
+        ]
+      },
+      "episode": "e05",
+      "reason": "BASE_PREDICATE_ABSENT",
+      "role": "DEVELOPMENT",
+      "status": "FALSE"
+    }
+  ],
+  "old_candidate_sha256": "3350bcb752ec87caf43573124aeb0780122975d18d93e9a911dec52f97378d27",
+  "proposer_feedback_dispatched": false,
+  "provider_requests": 57,
+  "reported_token_cost_microusd": 823052,
+  "resource_continuity_passed": false,
+  "safety": {
+    "changes": {
+      "container": {
+        "added": 1,
+        "changed": 0,
+        "removed": 0
+      },
+      "network": {
+        "added": 0,
+        "changed": 1,
+        "removed": 0
+      },
+      "volume": {
+        "added": 0,
+        "changed": 0,
+        "removed": 0
+      }
+    },
+    "context_unchanged": true,
+    "counts": {
+      "container": 1,
+      "network": 3,
+      "volume": 3
+    },
+    "daemon_unchanged": true,
+    "docker_mutations": 0,
+    "endpoint_unchanged": true,
+    "inventory_unchanged": false,
+    "network_extra_unchanged": true,
+    "new_baseline_admitted": false,
+    "old_owned_cleanup": true
+  },
+  "schema_version": "ecomsre.product.final-learning-precheck.v1",
+  "unknown_usage_requests": 4
+}

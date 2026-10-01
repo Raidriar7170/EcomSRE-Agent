@@ -1,0 +1,9 @@
+{
+  "provider_profile": "openai-direct-standard-text",
+  "model": "gpt-5.4-mini-2026-03-17",
+  "accepted_response_models": [],
+  "as_of": "2026-09-17",
+  "source": "https://developers.openai.com/api/docs/models/gpt-5.4-mini ; direct non-regional standard text; all input charged at uncached upper rate; no hosted tools",
+  "input_usd_per_million": 0.75,
+  "output_usd_per_million": 4.5
+}

@@ -1,5 +1,7 @@
 # 能力与限制 · Product v0.4.1
 
+当前 [可行性与受约束提议轮](../results/product-v050/knowledge-feasibility/README.md) 复用原 5 个已见事件：新增 3 次请求，3 个 schema-valid 草稿，1 个准入候选，1 次实际开发求值；原 Development 仅 1/2，未冻结、独立验证、晋升或复用。累计 57 次请求、USD 0.918501 承诺，终态仍为 `NO_VALIDATED_LLM_KNOWLEDGE`。本轮没有新增 live episode 或 Product 恢复写入；旧 live-02 clean=true 与 live-01 BLOCKED_SAFETY / clean=false 保留。
+
 ## 已证明什么
 
 一个有界本地 OpenTelemetry Demo 多服务环境中：
@@ -60,3 +62,7 @@ C1 的无关 Logs / Traces 缺口仍被保留。
 故障族拆合质量与部署恢复证据。
 这些是后续方向，不是已执行或自动获得授权的实验。
 [历史失败与教训](../history/PROJECT_EVOLUTION.md)继续保留。
+
+## v0.5 当前增量限制
+
+真实 Provider 与实时本地遥测已完成 5 个独立事件、17 次模型选取补查。原 live 轮累计 51 次请求，3 次知识提议均未形成有效候选；学习晋升/复用仍仅有 FIXTURE_ONLY 工程证据，真实 holdout 和复用未尝试。全部失败保留。读取为固定连接器模板与两个历史窗口；自由日志文本不进入模型。Level B 仅为 CPU/memory gauges、单个派生条件和有限谓词合取，不支持任意字段、跨源组合或可执行代码。候选只支持 PATTERN_ONLY，一次开发检查和一次冻结评估，没有自动修订活动。唯一新增恢复能力是无执行权限的预览。

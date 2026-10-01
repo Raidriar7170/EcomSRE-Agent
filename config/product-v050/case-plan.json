@@ -1,0 +1,154 @@
+{
+  "schema_version": "product-v050.case-plan.v1",
+  "status": "PLANNED_NOT_FROZEN",
+  "note": "Planning manifest only. Concrete data and case identities must be frozen before evaluation. No observed result or independent episode is implied.",
+  "max_provider_requests": 200,
+  "max_cost_usd": 20,
+  "max_live_episodes": 12,
+  "cases": [
+    {
+      "case_id": "v050-01",
+      "category": "target",
+      "split": "discovery",
+      "telemetry_mode": "NOT_COLLECTED",
+      "episode_id": null,
+      "data_sha256": null
+    },
+    {
+      "case_id": "v050-02",
+      "category": "target",
+      "split": "discovery",
+      "telemetry_mode": "NOT_COLLECTED",
+      "episode_id": null,
+      "data_sha256": null
+    },
+    {
+      "case_id": "v050-03",
+      "category": "target",
+      "split": "discovery",
+      "telemetry_mode": "NOT_COLLECTED",
+      "episode_id": null,
+      "data_sha256": null
+    },
+    {
+      "case_id": "v050-04",
+      "category": "target",
+      "split": "development",
+      "telemetry_mode": "NOT_COLLECTED",
+      "episode_id": null,
+      "data_sha256": null
+    },
+    {
+      "case_id": "v050-05",
+      "category": "target",
+      "split": "development",
+      "telemetry_mode": "NOT_COLLECTED",
+      "episode_id": null,
+      "data_sha256": null
+    },
+    {
+      "case_id": "v050-06",
+      "category": "target",
+      "split": "holdout",
+      "telemetry_mode": "NOT_COLLECTED",
+      "episode_id": null,
+      "data_sha256": null
+    },
+    {
+      "case_id": "v050-07",
+      "category": "target",
+      "split": "recurrence",
+      "telemetry_mode": "NOT_COLLECTED",
+      "episode_id": null,
+      "data_sha256": null
+    },
+    {
+      "case_id": "v050-08",
+      "category": "confusable",
+      "split": "development",
+      "telemetry_mode": "NOT_COLLECTED",
+      "episode_id": null,
+      "data_sha256": null
+    },
+    {
+      "case_id": "v050-09",
+      "category": "confusable",
+      "split": "holdout",
+      "telemetry_mode": "NOT_COLLECTED",
+      "episode_id": null,
+      "data_sha256": null
+    },
+    {
+      "case_id": "v050-10",
+      "category": "confusable",
+      "split": "holdout",
+      "telemetry_mode": "NOT_COLLECTED",
+      "episode_id": null,
+      "data_sha256": null
+    },
+    {
+      "case_id": "v050-11",
+      "category": "healthy",
+      "split": "development",
+      "telemetry_mode": "NOT_COLLECTED",
+      "episode_id": null,
+      "data_sha256": null
+    },
+    {
+      "case_id": "v050-12",
+      "category": "healthy",
+      "split": "holdout",
+      "telemetry_mode": "NOT_COLLECTED",
+      "episode_id": null,
+      "data_sha256": null
+    },
+    {
+      "case_id": "v050-13",
+      "category": "core_known",
+      "split": "development",
+      "telemetry_mode": "NOT_COLLECTED",
+      "episode_id": null,
+      "data_sha256": null
+    },
+    {
+      "case_id": "v050-14",
+      "category": "core_known",
+      "split": "holdout",
+      "telemetry_mode": "NOT_COLLECTED",
+      "episode_id": null,
+      "data_sha256": null
+    },
+    {
+      "case_id": "v050-15",
+      "category": "source_failure",
+      "split": "development",
+      "telemetry_mode": "NOT_COLLECTED",
+      "episode_id": null,
+      "data_sha256": null
+    },
+    {
+      "case_id": "v050-16",
+      "category": "source_failure",
+      "split": "holdout",
+      "telemetry_mode": "NOT_COLLECTED",
+      "episode_id": null,
+      "data_sha256": null
+    },
+    {
+      "case_id": "v050-17",
+      "category": "ambiguous",
+      "split": "development",
+      "telemetry_mode": "NOT_COLLECTED",
+      "episode_id": null,
+      "data_sha256": null
+    },
+    {
+      "case_id": "v050-18",
+      "category": "ambiguous",
+      "split": "holdout",
+      "telemetry_mode": "NOT_COLLECTED",
+      "episode_id": null,
+      "data_sha256": null
+    }
+  ]
+}

@@ -55,6 +55,11 @@ _FEATURE_CONTROL_CAUSE_V1 = re.compile(
 _OVERLOAD_SIMULATION_COUNT_V1 = re.compile(
     r"(?i)done\s+with\s+#\d+\s+messages\s+for\s+overload\s+simulation\.?"
 )
+_KAFKA_PARTITION_INITIALIZATION_V1 = re.compile(
+    r"^Created log for partition [A-Za-z0-9_.-]+ in /[A-Za-z0-9_./-]+ "
+    r'with properties \{cleanup\.policy=compact, compression\.type="producer", '
+    r"segment\.bytes=[0-9]+\}$"
+)
 _OBSERVER_TRUTH_REMAINDER_V1 = re.compile(
     r"(?i)feature\s*flag|#\d+\s+messages\s+for\s+overload\s+simulation|"
     r"['\"][a-z]+(?:[A-Z][A-Za-z0-9]*)+['\"]"
@@ -66,6 +71,12 @@ def _project_observer_message_v1(message: str, *, policy: str) -> str:
         return message[:500]
     if policy != "OBSERVER_SYMPTOM_V1":
         raise ValueError("OpenSearch message projection policy is unsupported")
+    # The pinned broker emits this ordinary initialization message. Normalize
+    # its quoted enum before the unchanged fail-closed control-truth guard.
+    if _KAFKA_PARTITION_INITIALIZATION_V1.fullmatch(message):
+        message = message.replace(
+            'compression.type="producer"', "compression.type=producer"
+        )
     projected = _FEATURE_CONTROL_CAUSE_V1.sub("", message)
     projected = _OVERLOAD_SIMULATION_COUNT_V1.sub(
         "Queue overload activity completed.",
@@ -139,8 +150,10 @@ class OpenSearchConnectorV1:
         self._last_profile_failure: ConnectorRequestError | None = None
         self._message_projection_policy: str
         if self._settings.mode is OpenSearchConnectorSettingsModeV1.PROFILE_BOUND:
-            self._profile_binding = OpenSearchConnectorProfileBindingV023.model_validate(
-                self._settings.profile_binding
+            self._profile_binding = (
+                OpenSearchConnectorProfileBindingV023.model_validate(
+                    self._settings.profile_binding
+                )
             )
             binding = self._profile_binding
             self._normalization_profile = binding.as_normalization_profile()
@@ -352,11 +365,7 @@ class OpenSearchConnectorV1:
                 json_body={
                     "size": limit,
                     "sort": [{self._timestamp_field: {"order": "desc"}}],
-                    "query": {
-                        "bool": {
-                            "filter": filters
-                        }
-                    },
+                    "query": {"bool": {"filter": filters}},
                     "_source": list(dict.fromkeys(projected_fields)),
                 },
             )
@@ -382,9 +391,7 @@ class OpenSearchConnectorV1:
                             ),
                         ),
                     )
-                normalized_records = tuple(
-                    item.record for item in batch.normalizations
-                )
+                normalized_records = tuple(item.record for item in batch.normalizations)
                 return (
                     ConnectorQueryResultV1.build(
                         source=EvidenceSourceV22.LOGS,
@@ -437,8 +444,14 @@ class OpenSearchConnectorV1:
                     else "DIAGNOSTIC"
                 )
                 observed_at = _timestamp(_field(source, self._timestamp_field))
-                if not context.window.started_at <= observed_at <= context.window.ended_at:
-                    raise ValueError("OpenSearch timestamp is outside the requested window")
+                if (
+                    not context.window.started_at
+                    <= observed_at
+                    <= context.window.ended_at
+                ):
+                    raise ValueError(
+                        "OpenSearch timestamp is outside the requested window"
+                    )
                 records.append(
                     LogRecordV22(
                         schema_version="dta-v22.log-record.v1",

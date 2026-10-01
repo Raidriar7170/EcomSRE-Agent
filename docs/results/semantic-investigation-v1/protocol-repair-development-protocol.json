@@ -1,0 +1,75 @@
+{
+  "scope": "One bounded protocol repair; development only; 4 previously used events; no independent test",
+  "checkpoint": "616604e",
+  "batch": "dlite-protocol-repair-v1",
+  "trajectories": 8,
+  "order": [
+    {
+      "case_id": "rcase-001",
+      "methods": [
+        "C",
+        "D"
+      ]
+    },
+    {
+      "case_id": "rcase-002",
+      "methods": [
+        "D",
+        "C"
+      ]
+    },
+    {
+      "case_id": "rcase-003",
+      "methods": [
+        "C",
+        "D"
+      ]
+    },
+    {
+      "case_id": "rcase-004",
+      "methods": [
+        "D",
+        "C"
+      ]
+    }
+  ],
+  "repeat": 0,
+  "config_sha256": "597d82e0d24cfc0fb8d2ac95a33cd34c4cd2a548be7747268be6db708bab9bec",
+  "snapshots": [
+    {
+      "case_id": "rcase-001",
+      "sha256": "63b778c8a9d73b491c5f5469deb10cb682229334d2294b9d60ed29fb9ddfe7fc"
+    },
+    {
+      "case_id": "rcase-002",
+      "sha256": "b3be05b59174426a3e9f30cfb560e88e6413507d5bf0a325e9586da857e31122"
+    },
+    {
+      "case_id": "rcase-003",
+      "sha256": "5f7b07199fb7bd1dd7f2a072c5d72a4a7e1428bcb7ebd8bb957b7be123e9bc96"
+    },
+    {
+      "case_id": "rcase-004",
+      "sha256": "70d24fa64a5450ae0c03e8f16c0973c81cf3bf5761363a8a560ba01cfb2dd5d0"
+    }
+  ],
+  "model": "gpt-5.4-mini-2026-03-17",
+  "reasoning": "low",
+  "strict": true,
+  "output_tokens": 4096,
+  "max_calls_per_run": 8,
+  "max_actions": 6,
+  "max_repairs": 1,
+  "requests_before": 491,
+  "microusd_before": 5870990,
+  "remaining_requests": 1109,
+  "remaining_microusd": 14129010,
+  "estimated_microusd_range": [
+    255000,
+    511000
+  ],
+  "maximum_reserved_microusd": 5984256,
+  "stop": "8 trajectories or pair admission budget failure; no retry rounds",
+  "score_scope": "single proposed observable question: admitted contrast score = 1/(1+metadata estimated cost); not ranking unproposed questions",
+  "historical_results": "immutable; offline revalidation is not rescoring"
+}

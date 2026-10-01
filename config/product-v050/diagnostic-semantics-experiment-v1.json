@@ -1,0 +1,99 @@
+{
+  "version": "diagnostic-semantics-experiment-v1",
+  "mode": "SEEN_ENGINEERING / POST_HOC_EXPLORATORY",
+  "arms": {
+    "A": "original metrics, bound baseline, original traces",
+    "B": "purpose/operation/direction stratified counter proxies, original traces",
+    "C": "identical B metrics plus retained lifecycle trace sidecar"
+  },
+  "rules": [
+    {
+      "service": "fraud-detection",
+      "operation": "flagd.evaluation.v2.Service/EventStream",
+      "span_kind": "SPAN_KIND_CLIENT",
+      "group": "CONTROL_STREAM",
+      "reason": "Exact flagd v2 streaming evaluation RPC; status independent; retained RPC tags verify service/method/system."
+    },
+    {
+      "service": "payment",
+      "operation": "grpc.flagd.evaluation.v2.Service/EventStream",
+      "span_kind": "SPAN_KIND_CLIENT",
+      "group": "CONTROL_STREAM",
+      "reason": "Exact flagd v2 streaming evaluation RPC; status independent; retained RPC tags verify service/method/system."
+    },
+    {
+      "service": "checkout",
+      "operation": "oteldemo.CheckoutService/PlaceOrder",
+      "span_kind": "SPAN_KIND_SERVER",
+      "group": "BUSINESS_REQUEST",
+      "reason": "Frozen checkout main.go PlaceOrder handler."
+    },
+    {
+      "service": "payment",
+      "operation": "grpc.oteldemo.PaymentService/Charge",
+      "span_kind": "SPAN_KIND_SERVER",
+      "group": "BUSINESS_REQUEST",
+      "reason": "Frozen payment index.js chargeServiceHandler."
+    },
+    {
+      "service": "fraud-detection",
+      "operation": "orders process",
+      "span_kind": "SPAN_KIND_CONSUMER",
+      "group": "BUSINESS_ASYNC",
+      "reason": "Frozen fraud-detection main.kt Kafka orders consumer; receive and process are separate span populations, not independent orders."
+    },
+    {
+      "service": "fraud-detection",
+      "operation": "orders receive",
+      "span_kind": "SPAN_KIND_CONSUMER",
+      "group": "BUSINESS_ASYNC",
+      "reason": "Frozen fraud-detection main.kt Kafka orders consumer; receive and process are separate span populations, not independent orders."
+    },
+    {
+      "service": "checkout",
+      "operation": "oteldemo.CartService/EmptyCart",
+      "span_kind": "SPAN_KIND_CLIENT",
+      "group": "BUSINESS_REQUEST",
+      "reason": "Frozen checkout main.go synchronous dependency call; CLIENT population kept separate from SERVER."
+    },
+    {
+      "service": "checkout",
+      "operation": "oteldemo.CartService/GetCart",
+      "span_kind": "SPAN_KIND_CLIENT",
+      "group": "BUSINESS_REQUEST",
+      "reason": "Frozen checkout main.go synchronous dependency call; CLIENT population kept separate from SERVER."
+    },
+    {
+      "service": "checkout",
+      "operation": "oteldemo.CurrencyService/Convert",
+      "span_kind": "SPAN_KIND_CLIENT",
+      "group": "BUSINESS_REQUEST",
+      "reason": "Frozen checkout main.go synchronous dependency call; CLIENT population kept separate from SERVER."
+    },
+    {
+      "service": "checkout",
+      "operation": "oteldemo.PaymentService/Charge",
+      "span_kind": "SPAN_KIND_CLIENT",
+      "group": "BUSINESS_REQUEST",
+      "reason": "Frozen checkout main.go synchronous dependency call; CLIENT population kept separate from SERVER."
+    },
+    {
+      "service": "checkout",
+      "operation": "oteldemo.ProductCatalogService/GetProduct",
+      "span_kind": "SPAN_KIND_CLIENT",
+      "group": "BUSINESS_REQUEST",
+      "reason": "Frozen checkout main.go synchronous dependency call; CLIENT population kept separate from SERVER."
+    },
+    {
+      "service": "checkout",
+      "operation": "orders publish",
+      "span_kind": "SPAN_KIND_PRODUCER",
+      "group": "BUSINESS_ASYNC",
+      "reason": "Frozen checkout kafka/producer.go orders publisher; not added to consumer counts as distinct orders."
+    }
+  ],
+  "default": "UNCLASSIFIED",
+  "numeric_policy": "Observed within-series deltas only; no rate reconstruction or p95 subtraction; no new diagnosis from proxy baselines.",
+  "frozen_upstream": "1755859a9de82c2e5e225be68abc401a5ebf2b4f",
+  "unclassified_reason": "No reviewed exact operation-purpose mapping; includes internal spans and flag evaluation/dependency operations; retained without health exemption."
+}

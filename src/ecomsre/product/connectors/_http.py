@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from contextvars import ContextVar
+from datetime import UTC, datetime
 import json
 import math
 import time
@@ -15,6 +17,11 @@ from ecomsre.product.connectors.credentials import (
     CredentialResolverV1,
 )
 
+
+# Harness-local capture; credentials/headers are deliberately excluded.
+raw_request_guard: ContextVar[Callable[[dict], None] | None] = ContextVar("product_raw_request_guard", default=None)
+raw_request_context: ContextVar[dict | None] = ContextVar("product_raw_request_context", default=None)
+raw_response_observer: ContextVar[Callable[[dict], None] | None] = ContextVar("product_raw_response_observer", default=None)
 
 def _pairs_without_duplicates(
     pairs: list[tuple[str, object]],
@@ -110,7 +117,11 @@ class BoundedHttpTransportV1:
         timeout_seconds: float | None = None,
     ) -> tuple[bytes, int, float]:
         started = time.monotonic()
+        requested_at = datetime.now(UTC).isoformat()
         try:
+            guard = raw_request_guard.get()
+            if guard is not None:
+                guard(dict(method=method, url=url, params=dict(params or {})))
             if self._before_request is not None:
                 self._before_request()
             headers = self._resolver.resolve_http_headers(
@@ -140,6 +151,13 @@ class BoundedHttpTransportV1:
                     if remaining == 0:
                         break
                 content = b"".join(chunks)
+                observer = raw_response_observer.get()
+                if observer is not None:
+                    observer(dict(method=method, url=url, params=dict(params or {}), json_body=json_body, action_context=raw_request_context.get(),
+                        requested_at=requested_at, received_at=datetime.now(UTC).isoformat(),
+                        status_code=response.status_code, content=content,
+                        truncated=len(content) > self._maximum_response_bytes,
+                        maximum_response_bytes=self._maximum_response_bytes))
                 if len(content) > self._maximum_response_bytes:
                     raise ConnectorRequestError(
                         ReadSourceStatusV22.FAILURE_SCHEMA,

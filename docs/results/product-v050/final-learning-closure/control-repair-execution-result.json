@@ -1,0 +1,183 @@
+{
+  "N4_N7": "UNCONSUMED_UNEXPOSED",
+  "accounting": {
+    "amendment_live_starts": 1,
+    "closure_committed_microusd": 97366,
+    "closure_live_starts": 4,
+    "closure_provider_requests": 2,
+    "cumulative_committed_microusd": 1015867,
+    "cumulative_live_starts": 9,
+    "cumulative_provider_requests": 59,
+    "invoice_known": false,
+    "new_semantic_attempts": 2,
+    "unknown_usage_requests": 4,
+    "unknown_usage_reservation_microusd": 95449
+  },
+  "base_head": "cf0a4a1434303b014523ecb78cbb630894d4ab47",
+  "budget_authorization": {
+    "actual_child_contract_installed": true,
+    "committed_usd_round": 8,
+    "committed_usd_total": 20,
+    "cumulative_live_limit": 13,
+    "provider_round": 40,
+    "provider_total": 200,
+    "round_live_limit": 8,
+    "semantic_attempts_round": 6
+  },
+  "candidate_admission": "FAILED_2_OF_2",
+  "current_resource_continuity": "PASSED; NOT_CURRENT_BLOCKER",
+  "data": {
+    "D_CORE_FIX_01": "CORE_KNOWN_CONFIGURATION_ERROR; HEALTHY_RESTORED",
+    "N1": "FAILED_UNBOUND_CONSUMED",
+    "N2": "NO_INCIDENT_RETAINED",
+    "N3": "INSUFFICIENT_EVIDENCE_RETAINED",
+    "complete_candidate_specific_negative_validation": "NOT_ESTABLISHED_FOR_AN_ADMITTED_CANDIDATE",
+    "control_attempts": 3,
+    "established_diagnostic_control_roles": 2,
+    "future_slot_identities_unchanged": true,
+    "insufficient_controls": 1,
+    "original_target_events": 5
+  },
+  "engineering": {
+    "all_four_deployment_identities": "ORIGINAL_04_05_06_DIRECTLY_VERIFIED",
+    "execution_resume": "APPEND_ONLY_ZERO_DISPATCH_05_TO_06",
+    "focused_tests_passed": 45,
+    "full_delivery_regression": "SEE_CONTAINING_COMMIT_CHECKS",
+    "independent_review": "MUST_FIX_0; REAL_REQUEST_BINDINGS_AND_REPEATED_ERROR_STOP_VERIFIED",
+    "lossless_feedback_projection": true,
+    "original_request_0_preserved": true,
+    "predispatch_rejection_preserved": true,
+    "repaired_wire_payload_bytes": 173060,
+    "unchanged_payload_limit_bytes": 192000,
+    "validated_collection_module": "UNCHANGED_EXCEPT_EXACT_DEPLOYMENT_PATHS"
+  },
+  "full_development_evaluation": "NOT_REACHED",
+  "historical_results": [
+    "pre-execution-resume-acceptance.json",
+    "control-repair-result.json",
+    "pre-control-repair-acceptance.json",
+    "development-control-result.json"
+  ],
+  "level_a": "FAILED_AT_ADMISSION; LEARNING_LOOP_NOT_COMPLETED",
+  "level_b": "NOT_ACHIEVED; NOT_RESUMED; N1_DATA_IRRECOVERABLE",
+  "limits": [
+    "No second D control acquisition",
+    "No hand-written winning clause or threshold",
+    "No missing source counted as complete true negative",
+    "No independent validation, registration promotion or zero-LLM reuse demonstrated",
+    "Original failures, ledger prefix and evidence retained"
+  ],
+  "model_attempts": [
+    {
+      "error": "TWO_SOURCES_REQUIRED",
+      "http_status": 200,
+      "ordinal": 0,
+      "predicate_sources": [
+        "METRICS"
+      ],
+      "provider_state": "COMPLETED",
+      "status": "REJECTED"
+    },
+    {
+      "error": "TWO_SOURCES_REQUIRED",
+      "http_status": 200,
+      "ordinal": 1,
+      "predicate_sources": [
+        "METRICS"
+      ],
+      "provider_state": "COMPLETED",
+      "status": "REJECTED"
+    }
+  ],
+  "observed_at": "2026-09-26T22:47:18.365875+00:00",
+  "promotion": "NOT_RUN",
+  "recurrence": "NOT_RUN",
+  "remaining_budget": {
+    "committed_microusd_round": 7902634,
+    "committed_microusd_total": 18984133,
+    "live_slots_reserved_N4_N7": 4,
+    "may_retry_stopped_round": false,
+    "provider_round": 38,
+    "provider_total": 141,
+    "semantic_slots_unused": 4
+  },
+  "resource_precheck": {
+    "observed_at": "2026-09-26T22:02:01.202956+00:00",
+    "resource_continuity_passed": true,
+    "safety": {
+      "changes": {
+        "container": {
+          "added": 0,
+          "changed": 0,
+          "removed": 0
+        },
+        "network": {
+          "added": 0,
+          "changed": 0,
+          "removed": 0
+        },
+        "volume": {
+          "added": 0,
+          "changed": 0,
+          "removed": 0
+        }
+      },
+      "context_unchanged": true,
+      "counts": {
+        "container": 0,
+        "network": 3,
+        "volume": 3
+      },
+      "daemon_unchanged": true,
+      "docker_mutations": 0,
+      "endpoint_unchanged": true,
+      "inventory_unchanged": true,
+      "network_extra_unchanged": true,
+      "new_baseline_admitted": false,
+      "old_owned_cleanup": true
+    },
+    "sha256": "db9d4b3a3ace4d5a14b1eadf6e66fed944f5a8acff7609336a48f4f7a975b607"
+  },
+  "revocation": "NOT_RUN",
+  "safety": {
+    "merge": false,
+    "non_owned_mutations": 0,
+    "non_owned_unchanged": true,
+    "owned_05_cleanup": "CLEAN",
+    "owned_06_cleanup": "CLEAN",
+    "owned_deployments_created": 2,
+    "product_recovery_writes": 0,
+    "production_deploy": false,
+    "release": false,
+    "remaining": {
+      "container": 0,
+      "network": 0,
+      "volume": 0
+    }
+  },
+  "schema_version": "ecomsre.product.control-repair-execution-result.v1",
+  "selection": null,
+  "shadow": "NOT_RUN",
+  "stop_authority": "Final Learning Closure Goal C3; no additional information after identical second rejection",
+  "stop_reason": "REPEATED_ERROR_WITHOUT_NEW_OBSERVATIONS",
+  "target_coverage": {
+    "claim": "KNOWN_DIAGNOSIS_QUALIFIED; required candidate coverage gate unchanged; no all-source completeness claim",
+    "complete_sources": [
+      "METRICS",
+      "RUNTIME",
+      "RESOURCES"
+    ],
+    "incomplete_sources": [
+      "LOGS",
+      "TRACES",
+      "CHANGES"
+    ],
+    "predicate_catalog_counts": {
+      "FALSE": 15,
+      "TRUE": 2,
+      "UNKNOWN": 11
+    },
+    "service": "fraud-detection"
+  },
+  "terminal": "ECOMSRE_PRODUCT_V050_NO_VALIDATED_LLM_KNOWLEDGE"
+}

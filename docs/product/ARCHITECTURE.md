@@ -97,3 +97,21 @@ live 实验的独立控制器不是 Product/Agent 的执行权限。
 
 接口 `/v1`、类型名 `V1`、SQLite schema 和包版本各有兼容性含义，
 不会随公开展示版本标签改名。尚无 Kubernetes、HA、多租户或生产规模验证。
+
+## v0.5 默认关闭的调查后续任务
+
+原 Diagnosis → 独立 Investigation job → Provider 非执行提议 → Runtime 有界读取 → CAS/SQLite 调查记录。父诊断不变。跨事件候选走共享确定性求值器、开发检查、冻结 Shadow 与独立测试注册治理；正常 Diagnosis 可加载新表达式。具体职责和限制见 [v0.5 设计](../analysis/product-v050-design.md)。恢复 planner 仅返回预览，没有到 WriteIntent/Executor 的连接。
+
+## v0.5 final learning closure checkpoint
+
+The [active closure attempt](../results/product-v050/final-learning-closure/README.md) now connects the same-environment capability successor, immutable split/selection identity, full development gates, original request/episode sub-budgets and derived controls in a bounded harness. Fixture-only admission through governance promotion and normal API/Worker dependency acquisition, matched-registration CAS provenance and revocation replay is verified. The real proposer wire receives complete seen-event feedback and validated historical drafts. Direct original-to-successor owned deployment equivalence is now verified, with unused intermediate mapping history retained. Failed N1 consumed its slot before incident creation; a preproposal C5 Level A feasibility revision preserves the original B plan. After the actual foreign launcher stopped, deployment 04 and its baseline passed. N2 returned NO_INCIDENT; N3 returned INSUFFICIENT_EVIDENCE and cannot satisfy the predeclared known-control gate. Retained evidence cannot reconstruct the missing trace causal identity; no paid proposal or holdout followed. All owned 04 resources were cleaned with non-owned state unchanged. The runner now checks candidate-independent control gates before dispatch. Live learning/Shadow/N7 remain unverified. Product recovery authority remains NONE.
+
+
+### Final control execution and bounded failure (2026-09-26)
+
+The [actual continuation](../results/product-v050/final-learning-closure/execution-resume-20260926.md) established the payment known control from a real verified configuration rollout recorded through the existing Changes API. Target-source gaps remain explicit. A lossless source-row dictionary keeps full proposer feedback within the unchanged payload bound. The zero-dispatch exception cleanup required one exact append-only execution continuation, retaining the original data contract/request and collection module; original/04/05/06 deployment identities are directly verified. Both subsequent real model drafts failed the unchanged two-source admission gate, so the repeated-error stop prevents further selection or holdout. This is real failed model development, not learned-rule acceptance. No Product recovery writes or deployment authority are added.
+
+
+### v0.5 event-bound proposal boundary (2026-09-27)
+
+The `.3` proposal projection binds incident, diagnosis, read/window and CAS identity before model projection and compilation. A fixed source-mapped schema preserves all legal at-most-three conjunctions; the model selects conditions and Runtime only compiles them. Historical `.2` requests remain reproducible. Append-only repair authorization retains the original stop and budget; the first full development pass locks before holdout. These mechanics do not establish control eligibility: the [latest result](../results/product-v050/final-learning-closure/README.md) records an unqualified N5 healthy control and failed N7 reuse despite mechanical Shadow PASS. The test registration is revoked; no recovery-write authority changes.

@@ -1,0 +1,123 @@
+{
+  "all_seen_coverage": {
+    "claim": "OLD_CANDIDATE",
+    "denominator": 5,
+    "true": 1
+  },
+  "base_head": "29c195762b7bf6f4951ca778b6a0a034f2be94fd",
+  "blocked_dependency": "REAL_OWNED_DEPLOYMENT_AND_N1_N7_PENDING; OFFLINE_ENGINEERING_COMPLETED",
+  "candidate_locked_before_holdout": null,
+  "candidate_origin": null,
+  "candidate_semantic_sha256": null,
+  "capability_mismatch_check": "NOT_RUN",
+  "committed_cost": {
+    "cumulative_microusd": 918501,
+    "new_microusd": 0,
+    "unknown_usage_reservation_microusd": 95449
+  },
+  "delivery_head": "SEE_GIT_COMMIT_CONTAINING_THIS_PACKAGE",
+  "derived_control_counts": {},
+  "event_llm_calls": null,
+  "forward_development_results": "NOT_RUN",
+  "frozen_identity": null,
+  "full_v050_acceptance": false,
+  "goal_id": "ecomsre-v050-final-learning-closure-v1",
+  "historical_missing_cases": [
+    "e04: offset30/query30/sampling10/count5 NOT_COLLECTED"
+  ],
+  "holdout_original_episode_count": 0,
+  "invoice_known": false,
+  "latest_precheck": "blocked-precheck.json",
+  "latest_precheck_observed_at": "2026-09-19T04:22:31.709888+00:00",
+  "learning_loop_status": "NOT_RUN",
+  "limitations": [
+    "Real owned deployment equivalence not verified or installed",
+    "No new real LLM proposal, forward live cohort, independent validation, promotion or N7",
+    "Last Docker drift observation is historical; no new check before Hermes pause notification"
+  ],
+  "live_new_and_cumulative": {
+    "cumulative": 5,
+    "new": 0
+  },
+  "matched_registration_id": null,
+  "mechanical_end_to_end": "PASS_FIXTURE_ONLY_NOT_REAL_MODEL",
+  "model": "gpt-5.4-mini-2026-03-17",
+  "non_owned_drift": {
+    "changes": {
+      "container": {
+        "added": 1,
+        "changed": 0,
+        "removed": 0
+      },
+      "network": {
+        "added": 0,
+        "changed": 1,
+        "removed": 0
+      },
+      "volume": {
+        "added": 0,
+        "changed": 0,
+        "removed": 0
+      }
+    },
+    "context_unchanged": true,
+    "counts": {
+      "container": 1,
+      "network": 3,
+      "volume": 3
+    },
+    "daemon_unchanged": true,
+    "docker_mutations": 0,
+    "endpoint_unchanged": true,
+    "inventory_unchanged": false,
+    "network_extra_unchanged": true,
+    "new_baseline_admitted": false,
+    "old_owned_cleanup": true
+  },
+  "normal_api_result": "NOT_RUN",
+  "observation_domain": "retained five local episodes; no new observations",
+  "offline_interfaces": {
+    "capability_successor": "FIXTURE_TESTED_REAL_DEPLOYMENT_BINDING_PENDING",
+    "derived_shadow_controls": "FIXTURE_TESTED_NOT_RUN_LIVE",
+    "fixture_tests_passed": 8,
+    "independent_review": "MUST_FIX_0_OFFLINE_SCOPE",
+    "live_episode_guard": "ORIGINAL_STARTED_RECORDS_ROOT_BOUND_FAILED_STARTS_COUNTED",
+    "provider_sub_budget": "RUNNER_CONNECTED_FIXTURE_TESTED_NOT_ACTIVATED_LIVE",
+    "selection_lock": "FULL_C4_RUNNER_CONNECTED_FIXTURE_TESTED",
+    "split_successor": "FIXTURE_TESTED_NOT_INSTALLED",
+    "target_control_claim": "TARGET_EVIDENCE_WITHHOLDING_CROSS_SERVICE_NON_BORROWING_ONLY",
+    "proposer_feedback": "REAL_PROVIDER_WIRE_WITH_FIXTURE_TRANSPORT_VERIFIED",
+    "fixture_test_scope": "NEW_CLOSURE_RUNNER_TESTS_ONLY"
+  },
+  "original_development_results": {
+    "claim": "OLD_CANDIDATE_RECOMPUTED_NOT_NEW_ROUND",
+    "denominator": 2,
+    "true": 1
+  },
+  "owned_cleanup": "NO_NEW_RESOURCES_CREATED; HISTORICAL_LIVE02_CLEAN_PRESERVED",
+  "pr": 104,
+  "precheck_sha256": "e733c9932d495ea36a77e7a417c873a2287e2cea58e5bbea1af34ae06d7e9a0d",
+  "product_recovery_writes": 0,
+  "promotion": "NOT_RUN",
+  "protocol": "NOT_FROZEN",
+  "recurrence_incident_id": null,
+  "recurrence_provider_call_delta": null,
+  "registration_id": null,
+  "registry_version": null,
+  "request_key": null,
+  "requests_new_and_cumulative": {
+    "cumulative": 57,
+    "new": 0
+  },
+  "review": "INDEPENDENT_READ_ONLY_OFFLINE_REVIEW_MUST_FIX_0; NO_LIVE_ACCEPTANCE",
+  "revocation_check": "NOT_RUN",
+  "scope_level": "OFFLINE_CLOSURE_CONNECTIONS_FIXTURE_VERIFIED_LIVE_PENDING",
+  "semantic_attempts_new": 0,
+  "shadow_gate": "NOT_RUN",
+  "source_failure_raw_states": "NOT_RUN",
+  "stop_reason": "LIVE_ONLY_WAITING_FOR_HERMES_PAUSE_NOTIFICATION_AND_FRESH_CONTINUITY",
+  "terminal": "ECOMSRE_PRODUCT_V050_BLOCKED_SAFETY",
+  "current_resource_continuity": "NOT_RECHECKED_WAITING_FOR_HERMES_PAUSE_NOTIFICATION",
+  "latest_offline_handoff": "2026-09-25",
+  "terminal_scope": "LAST_LIVE_SAFETY_TERMINAL_PRESERVED_NOT_A_FRESH_DOCKER_OBSERVATION"
+}

@@ -1,0 +1,42 @@
+{
+  "per_trajectory_catalog_identity_record_visits": {
+    "rcase-001": 27000,
+    "rcase-002": 30600,
+    "rcase-003": 27000,
+    "rcase-004": 28800
+  },
+  "each_method_two_repeat_total": 226800,
+  "scope": "Derived loop visits from frozen implementation, not instrumented physical I/O; metadata operation inventory one pass plus one identity-filter pass per service; no result-value computation.",
+  "error_turns": [
+    {
+      "method": "C",
+      "error": "HYPOTHESIS_SCOPE_OR_REFERENCE",
+      "count": 1
+    },
+    {
+      "method": "C",
+      "error": "INVALID_EXPECTATION_PAIR",
+      "count": 11
+    },
+    {
+      "method": "D",
+      "error": "PREDICTION_NOT_PRECOMMITTED",
+      "count": 5
+    },
+    {
+      "method": "D",
+      "error": "DUPLICATE_HYPOTHESIS_ID",
+      "count": 1
+    },
+    {
+      "method": "D",
+      "error": "INVALID_EXPECTATION_PAIR",
+      "count": 6
+    },
+    {
+      "method": "D",
+      "error": "HYPOTHESIS_SCOPE_OR_REFERENCE",
+      "count": 3
+    }
+  ]
+}

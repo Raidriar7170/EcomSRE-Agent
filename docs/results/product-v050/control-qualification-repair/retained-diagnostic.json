@@ -1,0 +1,2617 @@
+{
+  "N7_bridge_replay": {
+    "disposition": "NOT_EXECUTED_CORE_ADMITTED",
+    "extension_matcher_calls": 0,
+    "full_diagnosis_equal": true,
+    "semantic_diagnosis_equal": true,
+    "trace": {
+      "diagnosis_id": "diag-90bf969ddaf8dcc48398c9d4",
+      "extension_match_count": 0,
+      "failed_sources": [],
+      "incident_id": "inc-812ff4e6de2c7203d9ce633a",
+      "known_admission_status": "SINGLE_ADMISSION",
+      "no_incident_admissible": false,
+      "novelty_gate_disposition": null,
+      "novelty_gate_reason_codes": [],
+      "required_coverage_satisfied": false,
+      "residual_anomaly_ids": [],
+      "schema_version": "ecomsre.product.diagnosis-decision-trace.v0232",
+      "trace_sha256": "4035e37bf57e948a9b0e829fe0805bb38b875b4a08fe9ae271c2f76cfc736247"
+    }
+  },
+  "N7_core_admissions": [
+    {
+      "diagnosis_sha256": "99fc8f0883ea756a5cb1c27d8807f495a0d34a7f81587d319444172175dcaf39",
+      "fault_domain": "CONFIGURATION",
+      "hypothesis_id": "h:payment:configuration-error",
+      "matched_clause_id": "configuration:change-and-error-metric",
+      "mechanism": "CONFIGURATION_ERROR",
+      "memory_sha256": "c8b1ca37f2be622eb480d1441f884c3cd1ef88e3098ee5f36101b0a1c244d9cb",
+      "parent_service": null,
+      "policy_sha256": "06681ea6f3b6624b7913f9817f759fdc793a62c1760038d2f341d17704173e2b",
+      "root_entity_ref": "service:payment",
+      "root_service": "payment",
+      "schema_version": "dta-v22.admitted-diagnosis.v1",
+      "support_decision_sha256": "4d70b182d2191d5cf2015a40af7edb06347e8500aeb0b4366821ba93f21388f0",
+      "supporting_evidence_refs": [
+        "e:a:changes:payment:1:fe6e55766941",
+        "e:a:metrics:payment:core:0:1de5bc0b6c38"
+      ],
+      "target_service": "payment"
+    }
+  ],
+  "N7_core_change_exactly_N6_restoration": true,
+  "N7_core_support": [
+    {
+      "object_sha256": "b217f27fb65fa04c147fc07f165087de7d3aba62ddf775fe603f1ad3288f8f6b",
+      "predicates": [
+        {
+          "evidence_refs": [
+            "e:a:changes:payment:1:fe6e55766941"
+          ],
+          "parent_service": null,
+          "predicate_id": "p:change-recent-rollout:payment:469946b3a3a7",
+          "predicate_kind": "CHANGE_RECENT_ROLLOUT",
+          "predicate_sha256": "645e2244db7446d6abaa6622c18edf07a9b1c1b5ce777c6ac95f2b096cd829e2",
+          "schema_version": "dta-v22.evidence-predicate.v1",
+          "service": "payment",
+          "source": "CHANGES"
+        }
+      ],
+      "query_window": {
+        "ended_at": "2026-09-27T04:05:40.167996Z",
+        "started_at": "2026-09-27T03:05:40.167996Z"
+      },
+      "record": {
+        "category": "CONFIGURATION",
+        "observed_at": "2026-09-27T04:02:16.911253Z",
+        "opaque_change_id": "chg_f873cf5a9ee2f666dc47f131",
+        "revision_digest": "3650accfd58237b12b70e5d939c645371a1fd648ba095aeb819b971f45a1a676",
+        "rollout_state": "COMPLETED",
+        "schema_version": "dta-v22.recent-change-record.v1",
+        "service": "payment"
+      },
+      "ref": {
+        "action_id": "a:changes:payment",
+        "evidence_ref": "e:a:changes:payment:1:fe6e55766941",
+        "outcome_sha256": "47d1b7820508419617afbf2fe4690056e17fd7857e5e52cd8ee15ab9e1847e34",
+        "record_index": 1,
+        "record_sha256": "fe6e557669410fad28b61a5cbee074d1c58e034b85b7aa5129781d101f87db8d",
+        "schema_version": "dta-v22.evidence-ref.v1",
+        "source": "CHANGES"
+      }
+    },
+    {
+      "object_sha256": "56f8aa7968e884697f595445a8d750c2895b2b836a9f422c3de7edc547ead1a8",
+      "predicates": [
+        {
+          "evidence_refs": [
+            "e:a:metrics:payment:core:0:1de5bc0b6c38"
+          ],
+          "parent_service": null,
+          "predicate_id": "p:metric-error-rate-strong:payment:999ac7f279a3",
+          "predicate_kind": "METRIC_ERROR_RATE_STRONG",
+          "predicate_sha256": "4c8b88e39760da67f8927254ffd0b26557a2c87fc79dd0e8c58df2ed6bd38fcd",
+          "schema_version": "dta-v22.evidence-predicate.v1",
+          "service": "payment",
+          "source": "METRICS"
+        }
+      ],
+      "query_window": {
+        "ended_at": "2026-09-27T04:05:40.167996Z",
+        "started_at": "2026-09-27T04:00:40.167996Z"
+      },
+      "record": {
+        "metric_kind": "ERROR_RATE",
+        "sample_count": 31,
+        "schema_version": "dta-v22.metric-fact.v1",
+        "service": "payment",
+        "support_status": "SUPPORTED",
+        "unit": "RATIO",
+        "value": 0.49593106413511445,
+        "window_ended_at": "2026-09-27T04:05:40.167996Z",
+        "window_started_at": "2026-09-27T04:00:40.167996Z"
+      },
+      "ref": {
+        "action_id": "a:metrics:payment:core",
+        "evidence_ref": "e:a:metrics:payment:core:0:1de5bc0b6c38",
+        "outcome_sha256": "9cdb2f49b31cad5b4aba8c2b5d03cc3f5b89655a9c9eca90271f65d485c3401f",
+        "record_index": 0,
+        "record_sha256": "1de5bc0b6c3886c40778d97bb3469fae4e1d73dccfad25808ecb08f627618b67",
+        "schema_version": "dta-v22.evidence-ref.v1",
+        "source": "METRICS"
+      }
+    }
+  ],
+  "accounting": {
+    "committed_microusd": 1067489,
+    "live_episodes": 13,
+    "new_budget": 0,
+    "new_live": 0,
+    "new_provider": 0,
+    "provider_requests": 60
+  },
+  "compiled_sha256": "d91d59dc8a1e403dd3a949c0cd56b0f49ba60d6e863c4da191c7766d9d2bbf3b",
+  "database_sha256_after": "aaaf8d90a3ac707ab7a179061d609179822bf77c0614b4c46aa1793a8c566e4a",
+  "database_sha256_before": "aaaf8d90a3ac707ab7a179061d609179822bf77c0614b4c46aa1793a8c566e4a",
+  "diagnostic_only": true,
+  "episodes": {
+    "N4": {
+      "activation": {
+        "document_sha256": "ab4cc66967ec80615cb8d3b64f13f6aea078a44a7af7ec470386b2f0706b61c3",
+        "evaluations": {
+          "kafkaQueueProblems": {
+            "value": 100,
+            "variant": "on"
+          },
+          "loadGeneratorTraffic": {
+            "value": 0,
+            "variant": "off"
+          },
+          "paymentFailure": {
+            "value": 0,
+            "variant": "off"
+          }
+        },
+        "observed_at": "2026-09-27T03:54:12.774504+00:00",
+        "state": "QUEUE"
+      },
+      "components": {
+        "expression": null,
+        "predicates": [
+          {
+            "predicate": "core:RUNTIME_HEALTHY",
+            "status": "TRUE"
+          },
+          {
+            "predicate": "ga:METRIC_QUEUE_LAG_OUTLIER",
+            "status": "TRUE"
+          }
+        ]
+      },
+      "episode_end": {
+        "monotonic_ns": 1015113965201750,
+        "utc": "2026-09-27T03:56:50.483018+00:00"
+      },
+      "episode_start": {
+        "monotonic_ns": 1014953297067083,
+        "utc": "2026-09-27T03:54:09.816422+00:00"
+      },
+      "incident_id": "inc-e692e3727836fa44aea66de5",
+      "incident_started_at": "2026-09-27T03:54:09.816422Z",
+      "normal_diagnosis": {
+        "action_authority": "NONE",
+        "agent_writes": 0,
+        "broad_domain": "CONCURRENCY",
+        "capability_limitations": [
+          "SOURCE_RESOURCES_COVERAGE_GAP"
+        ],
+        "contradicting_evidence_refs": [],
+        "core_or_extension_or_open_world": "OPEN_WORLD",
+        "created_at": "2026-09-27T03:56:25.949272Z",
+        "diagnosis_id": "diag-b6c0c0a66da7e0f7c4d71a11",
+        "incident_id": "inc-e692e3727836fa44aea66de5",
+        "mechanism": "UNREGISTERED_OBSERVED_ANOMALY",
+        "memory_sha256": "357738dcd5d890a8273d9e8f31ebe33eeb04e36b2a1e9f1abfb286372ffabd56",
+        "provider_calls": 0,
+        "provisional_report": {
+          "action_authority": "NONE",
+          "affected_services": [
+            "fraud-detection"
+          ],
+          "alternative_hypotheses": [
+            "Another unregistered mechanism may explain the same observation."
+          ],
+          "broad_fault_domain": "CONCURRENCY",
+          "confidence": 0.55,
+          "contradicting_evidence_refs": [],
+          "mechanism_description": "A strong observer-visible anomaly remains outside the active core and environment extension registries.",
+          "observed_symptoms": [
+            "fraud-detection has an abnormal LATENCY_P95_MS signal",
+            "fraud-detection has an abnormal QUEUE_LAG signal"
+          ],
+          "provisional_mechanism_label": "unregistered-observed-anomaly",
+          "recommended_next_observations": [
+            "Collect another bounded read-only observation for comparison."
+          ],
+          "report_id": "report-v23-c53936736ba3ab4a",
+          "report_sha256": "c510af8f28698a39478f94c10b702f8b5f52afb18a200a25fdf888797c684bf0",
+          "schema_version": "dta-v23.provisional-incident-report.v1",
+          "supporting_evidence_refs": [
+            "e:a:metrics:fraud-detection:core:1:97f12d398792",
+            "e:a:metrics:fraud-detection:queue-lag:0:ea650e4e158e"
+          ],
+          "suspected_root_services": [
+            "fraud-detection"
+          ],
+          "terminal": "UNREGISTERED_INCIDENT_SUSPECTED",
+          "unexplained_anomaly_ids": [
+            "ga:metric-latency-outlier:fraud-detection:7340555a013a",
+            "ga:metric-queue-lag-outlier:fraud-detection:5f6614b73815"
+          ]
+        },
+        "result_sha256": "49c88b2ad01918d3a23ed79dd3b863f50cf0fa5a3329bf48ed0a8142ffc8a26e",
+        "root_service_ids": [
+          "svc-4d8a615afb10174f2c7c7155"
+        ],
+        "runbook_executions": 0,
+        "schema_version": "ecomsre.product.diagnosis-result.v1",
+        "supporting_evidence_refs": [
+          "e:a:metrics:fraud-detection:core:1:97f12d398792",
+          "e:a:metrics:fraud-detection:queue-lag:0:ea650e4e158e"
+        ],
+        "terminal": "OPEN_WORLD"
+      },
+      "observed_at": "2026-09-27T03:56:23.065987Z",
+      "pure_candidate": {
+        "evidence_refs": [
+          "e:a:metrics:fraud-detection:queue-lag:0:ea650e4e158e",
+          "e:a:runtime:all-candidates:e46103319e85:1:4b2f6bc4f832"
+        ],
+        "reason": "CANDIDATE_MATCHED",
+        "status": "TRUE",
+        "value": null
+      },
+      "queries": [
+        {
+          "action_id": "a:changes:checkout",
+          "covered_services": [
+            "checkout"
+          ],
+          "object_sha256": "2a3ed2b245faddd7d2a5db9390ab3f701b34b8f0dd45cbe24aa6c1a1cf61357a",
+          "record_count": 0,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "CHANGES",
+          "status": "SUCCESS_EMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T03:56:23.065987Z",
+            "started_at": "2026-09-27T02:56:23.065987Z"
+          }
+        },
+        {
+          "action_id": "a:changes:fraud-detection",
+          "covered_services": [
+            "fraud-detection"
+          ],
+          "object_sha256": "0c5571d323087ef1861f38f67a835bcb2be6738215748fbfb4602bcd320e021c",
+          "record_count": 0,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "CHANGES",
+          "status": "SUCCESS_EMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T03:56:23.065987Z",
+            "started_at": "2026-09-27T02:56:23.065987Z"
+          }
+        },
+        {
+          "action_id": "a:changes:kafka",
+          "covered_services": [
+            "kafka"
+          ],
+          "object_sha256": "de0d7a4f909fcb9f203ac526a6ae41687a4b6aa6d6ea8af8e6ff24bc643c902b",
+          "record_count": 0,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "CHANGES",
+          "status": "SUCCESS_EMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T03:56:23.065987Z",
+            "started_at": "2026-09-27T02:56:23.065987Z"
+          }
+        },
+        {
+          "action_id": "a:changes:payment",
+          "covered_services": [
+            "payment"
+          ],
+          "object_sha256": "fe1cfdb0d8d8d54406616472a91295b6866ebaa9b8e0f086db4e4f70aa5379c0",
+          "record_count": 0,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "CHANGES",
+          "status": "SUCCESS_EMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T03:56:23.065987Z",
+            "started_at": "2026-09-27T02:56:23.065987Z"
+          }
+        },
+        {
+          "action_id": "a:logs:checkout",
+          "covered_services": [
+            "checkout"
+          ],
+          "object_sha256": "2281bde71249dd374d977b6be55e42fca4ed70cfd69ecdcd35d3cc4ad355917a",
+          "record_count": 12,
+          "record_time_max": "2026-09-27T03:55:20.104462Z",
+          "record_time_min": "2026-09-27T03:54:16.576183Z",
+          "source": "LOGS",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": true,
+          "window": {
+            "ended_at": "2026-09-27T03:56:23.065987Z",
+            "started_at": "2026-09-27T03:51:23.065987Z"
+          }
+        },
+        {
+          "action_id": "a:logs:fraud-detection",
+          "covered_services": [
+            "fraud-detection"
+          ],
+          "object_sha256": "a3c214c871fcbbc63617700305b605b240ed0bf917ba0991ca908cb4a8087acd",
+          "record_count": 12,
+          "record_time_max": "2026-09-27T03:56:22.876172Z",
+          "record_time_min": "2026-09-27T03:56:17.865682Z",
+          "source": "LOGS",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": true,
+          "window": {
+            "ended_at": "2026-09-27T03:56:23.065987Z",
+            "started_at": "2026-09-27T03:51:23.065987Z"
+          }
+        },
+        {
+          "action_id": "a:logs:kafka",
+          "covered_services": [
+            "kafka"
+          ],
+          "object_sha256": "a32a07f1cf90151ffb98f5f47b8a84a4977f9c3f20bf7a6f468f6828c8cbafe7",
+          "record_count": 12,
+          "record_time_max": "2026-09-27T03:56:19.514512Z",
+          "record_time_min": "2026-09-27T03:56:16.687031Z",
+          "source": "LOGS",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": true,
+          "window": {
+            "ended_at": "2026-09-27T03:56:23.065987Z",
+            "started_at": "2026-09-27T03:51:23.065987Z"
+          }
+        },
+        {
+          "action_id": "a:logs:payment",
+          "covered_services": [
+            "payment"
+          ],
+          "object_sha256": "948a00cf1cee2613e2e3d925b28ca722a3e089ef65a491d3948e406b5bd8f43f",
+          "record_count": 12,
+          "record_time_max": "2026-09-27T03:54:17.595000Z",
+          "record_time_min": "2026-09-27T03:54:15.541000Z",
+          "source": "LOGS",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T03:56:23.065987Z",
+            "started_at": "2026-09-27T03:51:23.065987Z"
+          }
+        },
+        {
+          "action_id": "a:metrics:checkout:core",
+          "covered_services": [
+            "checkout"
+          ],
+          "object_sha256": "1322affc0e0e69ab922dadc5510321698fc4ac5d05c63b157cfc2218485ea7f9",
+          "record_count": 3,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "METRICS",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T03:56:23.065987Z",
+            "started_at": "2026-09-27T03:51:23.065987Z"
+          }
+        },
+        {
+          "action_id": "a:metrics:fraud-detection:core",
+          "covered_services": [
+            "fraud-detection"
+          ],
+          "object_sha256": "04b21440667adb6b27fa306a6c65152dcadb219b82730192792e4b0ee837672f",
+          "record_count": 3,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "METRICS",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T03:56:23.065987Z",
+            "started_at": "2026-09-27T03:51:23.065987Z"
+          }
+        },
+        {
+          "action_id": "a:metrics:fraud-detection:queue-lag",
+          "covered_services": [
+            "fraud-detection"
+          ],
+          "object_sha256": "1230d5ae653ebfb69d18fdd62915aeb84382e3ca5ac50db9594d5ffd91fadedf",
+          "record_count": 1,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "METRICS",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T03:56:23.065987Z",
+            "started_at": "2026-09-27T03:55:23.065987Z"
+          }
+        },
+        {
+          "action_id": "a:metrics:kafka:core",
+          "covered_services": [
+            "kafka"
+          ],
+          "object_sha256": "f3ea01a5d9eaf976925f436b9f82f905b184cca6dfabe00207b56c14410212d8",
+          "record_count": 3,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "METRICS",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T03:56:23.065987Z",
+            "started_at": "2026-09-27T03:51:23.065987Z"
+          }
+        },
+        {
+          "action_id": "a:metrics:payment:core",
+          "covered_services": [
+            "payment"
+          ],
+          "object_sha256": "07199b9cc7f81141237e912e6049a8d7e15ca0876969c32408cb7b07ecf58c14",
+          "record_count": 3,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "METRICS",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T03:56:23.065987Z",
+            "started_at": "2026-09-27T03:51:23.065987Z"
+          }
+        },
+        {
+          "action_id": "a:resources:checkout",
+          "covered_services": [
+            "checkout"
+          ],
+          "object_sha256": "2941c75ba5cbbd28568ad8e1452b1469afa19410243ed833c08719bdfbbdd900",
+          "record_count": 1,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "RESOURCES",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T03:56:23.065987Z",
+            "started_at": "2026-09-27T03:56:13.065987Z"
+          }
+        },
+        {
+          "action_id": "a:resources:fraud-detection",
+          "covered_services": [
+            "fraud-detection"
+          ],
+          "object_sha256": "af128a495a84885625c1ac0ae9fbf725c7ebe4087486ace6a1fffc4fb0034efa",
+          "record_count": 1,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "RESOURCES",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T03:56:23.065987Z",
+            "started_at": "2026-09-27T03:56:13.065987Z"
+          }
+        },
+        {
+          "action_id": "a:resources:kafka",
+          "covered_services": [
+            "kafka"
+          ],
+          "object_sha256": "81ebb42db48dbeaf8adad5cde4da782e03b2eeef666bc1837b5885107a033aab",
+          "record_count": 1,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "RESOURCES",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T03:56:23.065987Z",
+            "started_at": "2026-09-27T03:56:13.065987Z"
+          }
+        },
+        {
+          "action_id": "a:resources:payment",
+          "covered_services": [],
+          "object_sha256": "1ef3b20d83f222a11f2e60c9c96ca197b1a202378c13158b3605bcd13d58da6f",
+          "record_count": 0,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "RESOURCES",
+          "status": "SUCCESS_EMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T03:56:23.065987Z",
+            "started_at": "2026-09-27T03:56:13.065987Z"
+          }
+        },
+        {
+          "action_id": "a:runtime:all-candidates:e46103319e85",
+          "covered_services": [
+            "checkout",
+            "fraud-detection",
+            "kafka",
+            "payment"
+          ],
+          "object_sha256": "bf9335b22ba37f01e916eb3c5ffd91a9d3945b0235c3fcc794c0a84ceed898f3",
+          "record_count": 4,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "RUNTIME",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T03:56:23.065987Z",
+            "started_at": "2026-09-27T03:55:23.065987Z"
+          }
+        },
+        {
+          "action_id": "a:traces:checkout",
+          "covered_services": [
+            "checkout"
+          ],
+          "object_sha256": "5483f32db3f75a860587d07d6d8d99900f25ba892d3f6e294ba44898f7916f9e",
+          "record_count": 12,
+          "record_time_max": "2026-09-27T03:54:17.603563Z",
+          "record_time_min": "2026-09-27T03:54:17.588079Z",
+          "source": "TRACES",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": true,
+          "window": {
+            "ended_at": "2026-09-27T03:56:23.065987Z",
+            "started_at": "2026-09-27T03:51:23.065987Z"
+          }
+        },
+        {
+          "action_id": "a:traces:fraud-detection",
+          "covered_services": [
+            "fraud-detection"
+          ],
+          "object_sha256": "c6c5a6640a4e20f56a70e21214b9c1e3b82c34ba39298ba6cf0a42616114d3f2",
+          "record_count": 12,
+          "record_time_max": "2026-09-27T03:56:06.840133Z",
+          "record_time_min": "2026-09-27T03:55:56.809543Z",
+          "source": "TRACES",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": true,
+          "window": {
+            "ended_at": "2026-09-27T03:56:23.065987Z",
+            "started_at": "2026-09-27T03:51:23.065987Z"
+          }
+        },
+        {
+          "action_id": "a:traces:kafka",
+          "covered_services": [
+            "kafka"
+          ],
+          "object_sha256": "073e08eaaafe870d5b0930fdcf9c2b8827d5b772b55b8361a8fb9a35a7274cf5",
+          "record_count": 12,
+          "record_time_max": "2026-09-27T03:54:17.608920Z",
+          "record_time_min": "2026-09-27T03:54:15.551201Z",
+          "source": "TRACES",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": true,
+          "window": {
+            "ended_at": "2026-09-27T03:56:23.065987Z",
+            "started_at": "2026-09-27T03:51:23.065987Z"
+          }
+        },
+        {
+          "action_id": "a:traces:payment",
+          "covered_services": [
+            "payment"
+          ],
+          "object_sha256": "d693f00685ce71c54c6355a0bdab6e02677ecac2d591821b0e4662c71c07c60a",
+          "record_count": 6,
+          "record_time_max": "2026-09-27T03:54:17.595000Z",
+          "record_time_min": "2026-09-27T03:54:15.541000Z",
+          "source": "TRACES",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T03:56:23.065987Z",
+            "started_at": "2026-09-27T03:51:23.065987Z"
+          }
+        }
+      ],
+      "restoration": {
+        "document_sha256": "4daa3da2131ad05887d9369e571dc58f61c919b86dfba944b9030183ed761206",
+        "evaluations": {
+          "kafkaQueueProblems": {
+            "value": 0,
+            "variant": "off"
+          },
+          "loadGeneratorTraffic": {
+            "value": 0,
+            "variant": "off"
+          },
+          "paymentFailure": {
+            "value": 0,
+            "variant": "off"
+          }
+        },
+        "observed_at": "2026-09-27T03:56:33.958591+00:00",
+        "state": "BASELINE"
+      }
+    },
+    "N5": {
+      "activation": {
+        "document_sha256": "4daa3da2131ad05887d9369e571dc58f61c919b86dfba944b9030183ed761206",
+        "evaluations": {
+          "kafkaQueueProblems": {
+            "value": 0,
+            "variant": "off"
+          },
+          "loadGeneratorTraffic": {
+            "value": 0,
+            "variant": "off"
+          },
+          "paymentFailure": {
+            "value": 0,
+            "variant": "off"
+          }
+        },
+        "observed_at": "2026-09-27T03:57:04.744132+00:00",
+        "state": "BASELINE"
+      },
+      "components": {
+        "expression": null,
+        "predicates": [
+          {
+            "predicate": "core:RUNTIME_HEALTHY",
+            "status": "TRUE"
+          },
+          {
+            "predicate": "ga:METRIC_QUEUE_LAG_OUTLIER",
+            "status": "FALSE"
+          }
+        ]
+      },
+      "episode_end": {
+        "monotonic_ns": 1015284724834916,
+        "utc": "2026-09-27T03:59:41.241014+00:00"
+      },
+      "episode_start": {
+        "monotonic_ns": 1015125292116375,
+        "utc": "2026-09-27T03:57:01.809824+00:00"
+      },
+      "incident_id": "inc-0117b1c9a46c6e25d69c43f4",
+      "incident_started_at": "2026-09-27T03:57:01.809824Z",
+      "normal_diagnosis": {
+        "action_authority": "NONE",
+        "agent_writes": 0,
+        "broad_domain": "DEPENDENCY",
+        "capability_limitations": [
+          "SOURCE_RESOURCES_COVERAGE_GAP"
+        ],
+        "contradicting_evidence_refs": [],
+        "core_or_extension_or_open_world": "OPEN_WORLD",
+        "created_at": "2026-09-27T03:59:18.025780Z",
+        "diagnosis_id": "diag-a283f7b9947200e135e6ab36",
+        "incident_id": "inc-0117b1c9a46c6e25d69c43f4",
+        "mechanism": "UNREGISTERED_OBSERVED_ANOMALY",
+        "memory_sha256": "ec5b0a369b60e70d4030de4e91a9c2d27691d52b0a27a2e5d138700ad1fcbcd2",
+        "provider_calls": 0,
+        "provisional_report": {
+          "action_authority": "NONE",
+          "affected_services": [
+            "fraud-detection",
+            "payment"
+          ],
+          "alternative_hypotheses": [
+            "Another unregistered mechanism may explain the same observation."
+          ],
+          "broad_fault_domain": "DEPENDENCY",
+          "confidence": 0.55,
+          "contradicting_evidence_refs": [],
+          "mechanism_description": "A strong observer-visible anomaly remains outside the active core and environment extension registries.",
+          "observed_symptoms": [
+            "fraud-detection has an abnormal LATENCY_P95_MS signal",
+            "payment has an abnormal ERROR_RATE signal"
+          ],
+          "provisional_mechanism_label": "unregistered-observed-anomaly",
+          "recommended_next_observations": [
+            "Collect another bounded read-only observation for comparison."
+          ],
+          "report_id": "report-v23-08162897b37cc74d",
+          "report_sha256": "fe261d7f377fd49893387657cb83d72d89de70d273d35a3075a349a9a3f49166",
+          "schema_version": "dta-v23.provisional-incident-report.v1",
+          "supporting_evidence_refs": [
+            "e:a:metrics:fraud-detection:core:1:ba0e6250681c",
+            "e:a:metrics:payment:core:0:07deef59e0c2"
+          ],
+          "suspected_root_services": [
+            "fraud-detection"
+          ],
+          "terminal": "UNREGISTERED_INCIDENT_SUSPECTED",
+          "unexplained_anomaly_ids": [
+            "ga:metric-error-outlier:payment:681872dd92c1",
+            "ga:metric-latency-outlier:fraud-detection:122f2532e0e9"
+          ]
+        },
+        "result_sha256": "9e7339828324c8ef37630afcbaa0cfa312925a9bb8f2f35f6281ce1ad6b1059d",
+        "root_service_ids": [
+          "svc-4d8a615afb10174f2c7c7155"
+        ],
+        "runbook_executions": 0,
+        "schema_version": "ecomsre.product.diagnosis-result.v1",
+        "supporting_evidence_refs": [
+          "e:a:metrics:fraud-detection:core:1:ba0e6250681c",
+          "e:a:metrics:payment:core:0:07deef59e0c2"
+        ],
+        "terminal": "OPEN_WORLD"
+      },
+      "observed_at": "2026-09-27T03:59:15.206058Z",
+      "pure_candidate": {
+        "evidence_refs": [],
+        "reason": "BASE_PREDICATE_ABSENT",
+        "status": "FALSE",
+        "value": null
+      },
+      "queries": [
+        {
+          "action_id": "a:changes:checkout",
+          "covered_services": [
+            "checkout"
+          ],
+          "object_sha256": "70a2e6ec7a40121db97260b3e1fb929488a5e4c7bc1c2f9b320df829bf2748aa",
+          "record_count": 0,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "CHANGES",
+          "status": "SUCCESS_EMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T03:59:15.206058Z",
+            "started_at": "2026-09-27T02:59:15.206058Z"
+          }
+        },
+        {
+          "action_id": "a:changes:fraud-detection",
+          "covered_services": [
+            "fraud-detection"
+          ],
+          "object_sha256": "f85017fbfadbe0ce9f68fb365275d1f0d4d8de31f466a4b5d3fc8ff88d7fb074",
+          "record_count": 0,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "CHANGES",
+          "status": "SUCCESS_EMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T03:59:15.206058Z",
+            "started_at": "2026-09-27T02:59:15.206058Z"
+          }
+        },
+        {
+          "action_id": "a:changes:kafka",
+          "covered_services": [
+            "kafka"
+          ],
+          "object_sha256": "53eae37107018734dd2bc280eb1c11cbc38da62deef298925d240284bb0bf176",
+          "record_count": 0,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "CHANGES",
+          "status": "SUCCESS_EMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T03:59:15.206058Z",
+            "started_at": "2026-09-27T02:59:15.206058Z"
+          }
+        },
+        {
+          "action_id": "a:changes:payment",
+          "covered_services": [
+            "payment"
+          ],
+          "object_sha256": "2d2724ec11c36c3e4a357fbf8806410bafd4acb1deeb2db87b7a9bc9f9785a66",
+          "record_count": 0,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "CHANGES",
+          "status": "SUCCESS_EMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T03:59:15.206058Z",
+            "started_at": "2026-09-27T02:59:15.206058Z"
+          }
+        },
+        {
+          "action_id": "a:logs:checkout",
+          "covered_services": [
+            "checkout"
+          ],
+          "object_sha256": "cf4ce1682ea0c69cecd59e23cacd917395429c5b2600e7656bcfe94cb9c0eee9",
+          "record_count": 12,
+          "record_time_max": "2026-09-27T03:57:09.778642Z",
+          "record_time_min": "2026-09-27T03:57:08.729471Z",
+          "source": "LOGS",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": true,
+          "window": {
+            "ended_at": "2026-09-27T03:59:15.206058Z",
+            "started_at": "2026-09-27T03:54:15.206058Z"
+          }
+        },
+        {
+          "action_id": "a:logs:fraud-detection",
+          "covered_services": [
+            "fraud-detection"
+          ],
+          "object_sha256": "ac1cd0515e7cfffdf2437cae335e461f44e8198b8e6fd1ec75c0a7580f2a8d37",
+          "record_count": 12,
+          "record_time_max": "2026-09-27T03:57:09.780486Z",
+          "record_time_min": "2026-09-27T03:56:33.911033Z",
+          "source": "LOGS",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": true,
+          "window": {
+            "ended_at": "2026-09-27T03:59:15.206058Z",
+            "started_at": "2026-09-27T03:54:15.206058Z"
+          }
+        },
+        {
+          "action_id": "a:logs:kafka",
+          "covered_services": [
+            "kafka"
+          ],
+          "object_sha256": "68953a7568d7f737409ac056548b2d5de952a5a2226afc8228c41f562f426269",
+          "record_count": 12,
+          "record_time_max": "2026-09-27T03:59:05.034738Z",
+          "record_time_min": "2026-09-27T03:58:24.901360Z",
+          "source": "LOGS",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": true,
+          "window": {
+            "ended_at": "2026-09-27T03:59:15.206058Z",
+            "started_at": "2026-09-27T03:54:15.206058Z"
+          }
+        },
+        {
+          "action_id": "a:logs:payment",
+          "covered_services": [
+            "payment"
+          ],
+          "object_sha256": "75e2dcca60aad2ee2de9f63241aea17b1f1edbabbb13bb53ef0cf065c11653d7",
+          "record_count": 12,
+          "record_time_max": "2026-09-27T03:57:09.771000Z",
+          "record_time_min": "2026-09-27T03:57:07.705000Z",
+          "source": "LOGS",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": true,
+          "window": {
+            "ended_at": "2026-09-27T03:59:15.206058Z",
+            "started_at": "2026-09-27T03:54:15.206058Z"
+          }
+        },
+        {
+          "action_id": "a:metrics:checkout:core",
+          "covered_services": [
+            "checkout"
+          ],
+          "object_sha256": "d06cb8d3404dbdeec1b7859ae6a3ca95b75220ace8d64cf61a2d415adc81dc58",
+          "record_count": 3,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "METRICS",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T03:59:15.206058Z",
+            "started_at": "2026-09-27T03:54:15.206058Z"
+          }
+        },
+        {
+          "action_id": "a:metrics:fraud-detection:core",
+          "covered_services": [
+            "fraud-detection"
+          ],
+          "object_sha256": "d24d5c6de44317a5a98a1f7571e6373171b0043f181b2768fbd8ff34f043af3f",
+          "record_count": 3,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "METRICS",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T03:59:15.206058Z",
+            "started_at": "2026-09-27T03:54:15.206058Z"
+          }
+        },
+        {
+          "action_id": "a:metrics:fraud-detection:queue-lag",
+          "covered_services": [
+            "fraud-detection"
+          ],
+          "object_sha256": "5d4f1c3563cfff8ea610fb43631fefe029e9f020356d8290c2e9430ad0dc9e1e",
+          "record_count": 1,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "METRICS",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T03:59:15.206058Z",
+            "started_at": "2026-09-27T03:58:15.206058Z"
+          }
+        },
+        {
+          "action_id": "a:metrics:kafka:core",
+          "covered_services": [
+            "kafka"
+          ],
+          "object_sha256": "7d6c4f9584ec97f818d9befb095ced8113968eeba36cc3813320bfe03e10b00a",
+          "record_count": 3,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "METRICS",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T03:59:15.206058Z",
+            "started_at": "2026-09-27T03:54:15.206058Z"
+          }
+        },
+        {
+          "action_id": "a:metrics:payment:core",
+          "covered_services": [
+            "payment"
+          ],
+          "object_sha256": "b8d2901230d7c1ff56902100f68844cf9be781aa6c9ca93fc98efd5d4fb92dc6",
+          "record_count": 3,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "METRICS",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T03:59:15.206058Z",
+            "started_at": "2026-09-27T03:54:15.206058Z"
+          }
+        },
+        {
+          "action_id": "a:resources:checkout",
+          "covered_services": [
+            "checkout"
+          ],
+          "object_sha256": "bdad279d54449ff81682b6e569e38824817fb635cf99064214455140aa882de4",
+          "record_count": 1,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "RESOURCES",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T03:59:15.206058Z",
+            "started_at": "2026-09-27T03:59:05.206058Z"
+          }
+        },
+        {
+          "action_id": "a:resources:fraud-detection",
+          "covered_services": [
+            "fraud-detection"
+          ],
+          "object_sha256": "5237475e558ba89914b48a6663c5655b9f262dd18744876b7ce9d47bf7d6ff7e",
+          "record_count": 1,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "RESOURCES",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T03:59:15.206058Z",
+            "started_at": "2026-09-27T03:59:05.206058Z"
+          }
+        },
+        {
+          "action_id": "a:resources:kafka",
+          "covered_services": [
+            "kafka"
+          ],
+          "object_sha256": "b19c729588a6953a457cf9e28b5d5659515b41d91ca37d3ed14e289d6bcd3eb3",
+          "record_count": 1,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "RESOURCES",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T03:59:15.206058Z",
+            "started_at": "2026-09-27T03:59:05.206058Z"
+          }
+        },
+        {
+          "action_id": "a:resources:payment",
+          "covered_services": [],
+          "object_sha256": "2031996bd95110bbf6c4ea3bc336510eb440d2e4030e04a015858d6f4b58dedd",
+          "record_count": 0,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "RESOURCES",
+          "status": "SUCCESS_EMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T03:59:15.206058Z",
+            "started_at": "2026-09-27T03:59:05.206058Z"
+          }
+        },
+        {
+          "action_id": "a:runtime:all-candidates:e46103319e85",
+          "covered_services": [
+            "checkout",
+            "fraud-detection",
+            "kafka",
+            "payment"
+          ],
+          "object_sha256": "f70f9c75040a24480c385e7497773e2ff754b3505911f5ea9428ad18c0753313",
+          "record_count": 4,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "RUNTIME",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T03:59:15.206058Z",
+            "started_at": "2026-09-27T03:58:15.206058Z"
+          }
+        },
+        {
+          "action_id": "a:traces:checkout",
+          "covered_services": [
+            "checkout"
+          ],
+          "object_sha256": "f927f9a7de05f428ec0b332828c0844dd23be985ee00233c534b4959a4e86608",
+          "record_count": 12,
+          "record_time_max": "2026-09-27T03:57:08.745244Z",
+          "record_time_min": "2026-09-27T03:57:08.729446Z",
+          "source": "TRACES",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": true,
+          "window": {
+            "ended_at": "2026-09-27T03:59:15.206058Z",
+            "started_at": "2026-09-27T03:54:15.206058Z"
+          }
+        },
+        {
+          "action_id": "a:traces:fraud-detection",
+          "covered_services": [
+            "fraud-detection"
+          ],
+          "object_sha256": "911032134deaab2b2049195daec08e2046f589f514ea3ffceff362c17d949433",
+          "record_count": 12,
+          "record_time_max": "2026-09-27T03:57:09.780331Z",
+          "record_time_min": "2026-09-27T03:55:56.809543Z",
+          "source": "TRACES",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": true,
+          "window": {
+            "ended_at": "2026-09-27T03:59:15.206058Z",
+            "started_at": "2026-09-27T03:54:15.206058Z"
+          }
+        },
+        {
+          "action_id": "a:traces:kafka",
+          "covered_services": [
+            "kafka"
+          ],
+          "object_sha256": "201d915a7138cea36b282c22acd2223823a46f14d441c9d6677609882285b376",
+          "record_count": 12,
+          "record_time_max": "2026-09-27T03:57:09.778949Z",
+          "record_time_min": "2026-09-27T03:54:15.551201Z",
+          "source": "TRACES",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": true,
+          "window": {
+            "ended_at": "2026-09-27T03:59:15.206058Z",
+            "started_at": "2026-09-27T03:54:15.206058Z"
+          }
+        },
+        {
+          "action_id": "a:traces:payment",
+          "covered_services": [
+            "flagd",
+            "payment"
+          ],
+          "object_sha256": "90ba38a7e54395c14159e054f7c265868be7faf3c12c45cf4fc62f9a4ec06873",
+          "record_count": 12,
+          "record_time_max": "2026-09-27T03:57:09.771000Z",
+          "record_time_min": "2026-09-27T03:54:17.595000Z",
+          "source": "TRACES",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": true,
+          "window": {
+            "ended_at": "2026-09-27T03:59:15.206058Z",
+            "started_at": "2026-09-27T03:54:15.206058Z"
+          }
+        }
+      ],
+      "restoration": {
+        "document_sha256": "4daa3da2131ad05887d9369e571dc58f61c919b86dfba944b9030183ed761206",
+        "evaluations": {
+          "kafkaQueueProblems": {
+            "value": 0,
+            "variant": "off"
+          },
+          "loadGeneratorTraffic": {
+            "value": 0,
+            "variant": "off"
+          },
+          "paymentFailure": {
+            "value": 0,
+            "variant": "off"
+          }
+        },
+        "observed_at": "2026-09-27T03:59:24.999296+00:00",
+        "state": "BASELINE"
+      }
+    },
+    "N6": {
+      "activation": {
+        "document_sha256": "7b39379c416a510dc90f737e193b188c678e31d720a723304468ada52fe5dc4e",
+        "evaluations": {
+          "kafkaQueueProblems": {
+            "value": 0,
+            "variant": "off"
+          },
+          "loadGeneratorTraffic": {
+            "value": 0,
+            "variant": "off"
+          },
+          "paymentFailure": {
+            "value": 1,
+            "variant": "100%"
+          }
+        },
+        "observed_at": "2026-09-27T03:59:56.028489+00:00",
+        "state": "PAYMENT"
+      },
+      "components": {
+        "expression": null,
+        "predicates": [
+          {
+            "predicate": "core:RUNTIME_HEALTHY",
+            "status": "TRUE"
+          },
+          {
+            "predicate": "ga:METRIC_QUEUE_LAG_OUTLIER",
+            "status": "FALSE"
+          }
+        ]
+      },
+      "episode_end": {
+        "monotonic_ns": 1015456705339000,
+        "utc": "2026-09-27T04:02:33.219869+00:00"
+      },
+      "episode_start": {
+        "monotonic_ns": 1015296058732333,
+        "utc": "2026-09-27T03:59:52.574802+00:00"
+      },
+      "incident_id": "inc-944f3ebcb424e475ce47c39a",
+      "incident_started_at": "2026-09-27T03:59:52.574802Z",
+      "normal_diagnosis": {
+        "action_authority": "NONE",
+        "agent_writes": 0,
+        "broad_domain": "CONFIGURATION",
+        "capability_limitations": [
+          "SOURCE_RESOURCES_COVERAGE_GAP"
+        ],
+        "contradicting_evidence_refs": [],
+        "core_or_extension_or_open_world": "CORE",
+        "created_at": "2026-09-27T04:02:09.328796Z",
+        "diagnosis_id": "diag-8f8e5029fe86dfe57a04fdee",
+        "incident_id": "inc-944f3ebcb424e475ce47c39a",
+        "mechanism": "CONFIGURATION_ERROR",
+        "memory_sha256": "41f733986ff5cb03693969457b8e150fc0393b32dbb55a71e82369c557dd1a0e",
+        "provider_calls": 0,
+        "provisional_report": null,
+        "result_sha256": "096d3a6dc31e977e2a3bb2b281d69dec777f78af32418cddbdb31cb194e09447",
+        "root_service_ids": [
+          "svc-2c9d744f72d1830e20105f5c"
+        ],
+        "runbook_executions": 0,
+        "schema_version": "ecomsre.product.diagnosis-result.v1",
+        "supporting_evidence_refs": [
+          "e:a:changes:payment:0:90c784cab292",
+          "e:a:metrics:payment:core:0:7a2a0a92070b"
+        ],
+        "terminal": "CORE_KNOWN"
+      },
+      "observed_at": "2026-09-27T04:02:06.427299Z",
+      "pure_candidate": {
+        "evidence_refs": [],
+        "reason": "BASE_PREDICATE_ABSENT",
+        "status": "FALSE",
+        "value": null
+      },
+      "queries": [
+        {
+          "action_id": "a:changes:checkout",
+          "covered_services": [
+            "checkout"
+          ],
+          "object_sha256": "314b614369a6e5054aa8ca9ac429b040f590937039bad6e3f032b38e6d61cfaf",
+          "record_count": 0,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "CHANGES",
+          "status": "SUCCESS_EMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T04:02:06.427299Z",
+            "started_at": "2026-09-27T03:02:06.427299Z"
+          }
+        },
+        {
+          "action_id": "a:changes:fraud-detection",
+          "covered_services": [
+            "fraud-detection"
+          ],
+          "object_sha256": "4d2cc444c5b55dc5bb8d2f868a2d139c844f07e673fd6b3f90e200ce02c31c89",
+          "record_count": 0,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "CHANGES",
+          "status": "SUCCESS_EMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T04:02:06.427299Z",
+            "started_at": "2026-09-27T03:02:06.427299Z"
+          }
+        },
+        {
+          "action_id": "a:changes:kafka",
+          "covered_services": [
+            "kafka"
+          ],
+          "object_sha256": "20046cc715a37aad6ff19c387ee5fa9689c2f482e766c2aad817662b06058d6d",
+          "record_count": 0,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "CHANGES",
+          "status": "SUCCESS_EMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T04:02:06.427299Z",
+            "started_at": "2026-09-27T03:02:06.427299Z"
+          }
+        },
+        {
+          "action_id": "a:changes:payment",
+          "covered_services": [
+            "payment"
+          ],
+          "object_sha256": "b13aaab54c7f331e8a33c29925588ba63d5140b03ec6c06ad5e38e884adfb8d7",
+          "record_count": 1,
+          "record_time_max": "2026-09-27T03:59:56.034045Z",
+          "record_time_min": "2026-09-27T03:59:56.034045Z",
+          "source": "CHANGES",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T04:02:06.427299Z",
+            "started_at": "2026-09-27T03:02:06.427299Z"
+          }
+        },
+        {
+          "action_id": "a:logs:checkout",
+          "covered_services": [
+            "checkout"
+          ],
+          "object_sha256": "e4983fc3ad6d46b55ccf56de7a16abc6c8f479c8ec283d0c6204a0aad776e9aa",
+          "record_count": 12,
+          "record_time_max": "2026-09-27T04:00:01.033364Z",
+          "record_time_min": "2026-09-27T03:57:08.745231Z",
+          "source": "LOGS",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": true,
+          "window": {
+            "ended_at": "2026-09-27T04:02:06.427299Z",
+            "started_at": "2026-09-27T03:57:06.427299Z"
+          }
+        },
+        {
+          "action_id": "a:logs:fraud-detection",
+          "covered_services": [
+            "fraud-detection"
+          ],
+          "object_sha256": "2970167531ae97cd31d17139640c7ad45bc0f51e657ffb9470c6533d8b5eccff",
+          "record_count": 3,
+          "record_time_max": "2026-09-27T03:57:09.780486Z",
+          "record_time_min": "2026-09-27T03:57:07.718106Z",
+          "source": "LOGS",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T04:02:06.427299Z",
+            "started_at": "2026-09-27T03:57:06.427299Z"
+          }
+        },
+        {
+          "action_id": "a:logs:kafka",
+          "covered_services": [
+            "kafka"
+          ],
+          "object_sha256": "cf97e8e92a4b892b18e64f08197c28a69e9529367779d6197a088517c9fadc49",
+          "record_count": 12,
+          "record_time_max": "2026-09-27T04:02:05.687098Z",
+          "record_time_min": "2026-09-27T04:01:21.016986Z",
+          "source": "LOGS",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": true,
+          "window": {
+            "ended_at": "2026-09-27T04:02:06.427299Z",
+            "started_at": "2026-09-27T03:57:06.427299Z"
+          }
+        },
+        {
+          "action_id": "a:logs:payment",
+          "covered_services": [
+            "payment"
+          ],
+          "object_sha256": "0d95cda340c0b3090847c3438a808a875059e95437b062f8d1bc5968d32682ab",
+          "record_count": 12,
+          "record_time_max": "2026-09-27T04:00:01.044000Z",
+          "record_time_min": "2026-09-27T03:59:58.975000Z",
+          "source": "LOGS",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": true,
+          "window": {
+            "ended_at": "2026-09-27T04:02:06.427299Z",
+            "started_at": "2026-09-27T03:57:06.427299Z"
+          }
+        },
+        {
+          "action_id": "a:metrics:checkout:core",
+          "covered_services": [
+            "checkout"
+          ],
+          "object_sha256": "855fbd3c99c17851675277689cc5a4e51e0deacf805d431e1e415ab5ce249c17",
+          "record_count": 3,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "METRICS",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T04:02:06.427299Z",
+            "started_at": "2026-09-27T03:57:06.427299Z"
+          }
+        },
+        {
+          "action_id": "a:metrics:fraud-detection:core",
+          "covered_services": [
+            "fraud-detection"
+          ],
+          "object_sha256": "15fdb3787a47a78158c22d80e967936372169d221d628dfdc0ef6f781fa2ecdc",
+          "record_count": 3,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "METRICS",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T04:02:06.427299Z",
+            "started_at": "2026-09-27T03:57:06.427299Z"
+          }
+        },
+        {
+          "action_id": "a:metrics:fraud-detection:queue-lag",
+          "covered_services": [
+            "fraud-detection"
+          ],
+          "object_sha256": "6eb4384d7889833ddd56afb4a84b085325a93e46a21f012d375920fd61aa5ba1",
+          "record_count": 1,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "METRICS",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T04:02:06.427299Z",
+            "started_at": "2026-09-27T04:01:06.427299Z"
+          }
+        },
+        {
+          "action_id": "a:metrics:kafka:core",
+          "covered_services": [
+            "kafka"
+          ],
+          "object_sha256": "c97b637da21160fce9f9192ba4c2eaf67e55f49ddcecd2770cc057eb11383423",
+          "record_count": 3,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "METRICS",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T04:02:06.427299Z",
+            "started_at": "2026-09-27T03:57:06.427299Z"
+          }
+        },
+        {
+          "action_id": "a:metrics:payment:core",
+          "covered_services": [
+            "payment"
+          ],
+          "object_sha256": "08e3d8ee0c95e719df4cc962f46918b6149107370354e2583e9a41ee881e40fb",
+          "record_count": 3,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "METRICS",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T04:02:06.427299Z",
+            "started_at": "2026-09-27T03:57:06.427299Z"
+          }
+        },
+        {
+          "action_id": "a:resources:checkout",
+          "covered_services": [
+            "checkout"
+          ],
+          "object_sha256": "c10339187fd0f31722806958954c0f05e30f6023da5f303a2e15f43512559d62",
+          "record_count": 1,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "RESOURCES",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T04:02:06.427299Z",
+            "started_at": "2026-09-27T04:01:56.427299Z"
+          }
+        },
+        {
+          "action_id": "a:resources:fraud-detection",
+          "covered_services": [
+            "fraud-detection"
+          ],
+          "object_sha256": "8cff53955009bd3a27e3f387877af015eb6d2500c0e95273b92e0e2a9848eba8",
+          "record_count": 1,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "RESOURCES",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T04:02:06.427299Z",
+            "started_at": "2026-09-27T04:01:56.427299Z"
+          }
+        },
+        {
+          "action_id": "a:resources:kafka",
+          "covered_services": [
+            "kafka"
+          ],
+          "object_sha256": "225c815c362654f03eade88ed3147d1b02d0a0561fa50081ff5112f73f3113f9",
+          "record_count": 1,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "RESOURCES",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T04:02:06.427299Z",
+            "started_at": "2026-09-27T04:01:56.427299Z"
+          }
+        },
+        {
+          "action_id": "a:resources:payment",
+          "covered_services": [],
+          "object_sha256": "969df2cfeeef4cdb4354ff3ef2a8b4af4f6dff1e09e39df30f68e4b2b22843aa",
+          "record_count": 0,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "RESOURCES",
+          "status": "SUCCESS_EMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T04:02:06.427299Z",
+            "started_at": "2026-09-27T04:01:56.427299Z"
+          }
+        },
+        {
+          "action_id": "a:runtime:all-candidates:e46103319e85",
+          "covered_services": [
+            "checkout",
+            "fraud-detection",
+            "kafka",
+            "payment"
+          ],
+          "object_sha256": "fc5131ddd2f9015b9842d64f217fb160ef292b8adc0e41f24a2d5c5b82772106",
+          "record_count": 4,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "RUNTIME",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T04:02:06.427299Z",
+            "started_at": "2026-09-27T04:01:06.427299Z"
+          }
+        },
+        {
+          "action_id": "a:traces:checkout",
+          "covered_services": [
+            "checkout",
+            "payment",
+            "product-catalog"
+          ],
+          "object_sha256": "de585cedb6872478f1dc65461bcfdd34eefe7895ad44dadab60aa3cdc2b90318",
+          "record_count": 12,
+          "record_time_max": "2026-09-27T04:00:01.044000Z",
+          "record_time_min": "2026-09-27T04:00:01.032685Z",
+          "source": "TRACES",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": true,
+          "window": {
+            "ended_at": "2026-09-27T04:02:06.427299Z",
+            "started_at": "2026-09-27T03:57:06.427299Z"
+          }
+        },
+        {
+          "action_id": "a:traces:fraud-detection",
+          "covered_services": [
+            "fraud-detection"
+          ],
+          "object_sha256": "bbe8149a4f2ee83aeadc998a2d58bafcee4ab72dc54a9463e26bc6067e17522e",
+          "record_count": 6,
+          "record_time_max": "2026-09-27T03:57:09.780331Z",
+          "record_time_min": "2026-09-27T03:57:07.666565Z",
+          "source": "TRACES",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T04:02:06.427299Z",
+            "started_at": "2026-09-27T03:57:06.427299Z"
+          }
+        },
+        {
+          "action_id": "a:traces:kafka",
+          "covered_services": [
+            "kafka"
+          ],
+          "object_sha256": "6ef36d37e69c56a1386476ebc565e04e188fbfbbcde6be2b25304ab1ca545b63",
+          "record_count": 3,
+          "record_time_max": "2026-09-27T03:57:09.778949Z",
+          "record_time_min": "2026-09-27T03:57:07.715903Z",
+          "source": "TRACES",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T04:02:06.427299Z",
+            "started_at": "2026-09-27T03:57:06.427299Z"
+          }
+        },
+        {
+          "action_id": "a:traces:payment",
+          "covered_services": [
+            "flagd",
+            "payment"
+          ],
+          "object_sha256": "f3d0a6c379cd76cbbc15e93184ce90bdde64ddb9751957ecf7f2c2ae46ddbc5a",
+          "record_count": 12,
+          "record_time_max": "2026-09-27T04:00:01.044000Z",
+          "record_time_min": "2026-09-27T03:57:08.737000Z",
+          "source": "TRACES",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": true,
+          "window": {
+            "ended_at": "2026-09-27T04:02:06.427299Z",
+            "started_at": "2026-09-27T03:57:06.427299Z"
+          }
+        }
+      ],
+      "restoration": {
+        "document_sha256": "4daa3da2131ad05887d9369e571dc58f61c919b86dfba944b9030183ed761206",
+        "evaluations": {
+          "kafkaQueueProblems": {
+            "value": 0,
+            "variant": "off"
+          },
+          "loadGeneratorTraffic": {
+            "value": 0,
+            "variant": "off"
+          },
+          "paymentFailure": {
+            "value": 0,
+            "variant": "off"
+          }
+        },
+        "observed_at": "2026-09-27T04:02:16.903446+00:00",
+        "state": "BASELINE"
+      }
+    },
+    "N7": {
+      "activation": {
+        "document_sha256": "ab4cc66967ec80615cb8d3b64f13f6aea078a44a7af7ec470386b2f0706b61c3",
+        "evaluations": {
+          "kafkaQueueProblems": {
+            "value": 100,
+            "variant": "on"
+          },
+          "loadGeneratorTraffic": {
+            "value": 0,
+            "variant": "off"
+          },
+          "paymentFailure": {
+            "value": 0,
+            "variant": "off"
+          }
+        },
+        "observed_at": "2026-09-27T04:03:29.874103+00:00",
+        "state": "QUEUE"
+      },
+      "components": {
+        "expression": null,
+        "predicates": [
+          {
+            "predicate": "core:RUNTIME_HEALTHY",
+            "status": "TRUE"
+          },
+          {
+            "predicate": "ga:METRIC_QUEUE_LAG_OUTLIER",
+            "status": "TRUE"
+          }
+        ]
+      },
+      "episode_end": {
+        "monotonic_ns": 1015675374675583,
+        "utc": "2026-09-27T04:06:11.887112+00:00"
+      },
+      "episode_start": {
+        "monotonic_ns": 1015510013233416,
+        "utc": "2026-09-27T04:03:26.527250+00:00"
+      },
+      "incident_id": "inc-812ff4e6de2c7203d9ce633a",
+      "incident_started_at": "2026-09-27T04:03:26.527250Z",
+      "normal_diagnosis": {
+        "action_authority": "NONE",
+        "agent_writes": 0,
+        "broad_domain": "CONFIGURATION",
+        "capability_limitations": [
+          "SOURCE_RESOURCES_COVERAGE_GAP"
+        ],
+        "contradicting_evidence_refs": [],
+        "core_or_extension_or_open_world": "CORE",
+        "created_at": "2026-09-27T04:05:42.964182Z",
+        "diagnosis_id": "diag-90bf969ddaf8dcc48398c9d4",
+        "incident_id": "inc-812ff4e6de2c7203d9ce633a",
+        "mechanism": "CONFIGURATION_ERROR",
+        "memory_sha256": "c8b1ca37f2be622eb480d1441f884c3cd1ef88e3098ee5f36101b0a1c244d9cb",
+        "provider_calls": 0,
+        "provisional_report": null,
+        "result_sha256": "66c776b5025bb5f6fec9cd49e65478dddc76863715d4c45bbddebd192b25c9d8",
+        "root_service_ids": [
+          "svc-2c9d744f72d1830e20105f5c"
+        ],
+        "runbook_executions": 0,
+        "schema_version": "ecomsre.product.diagnosis-result.v1",
+        "supporting_evidence_refs": [
+          "e:a:changes:payment:1:fe6e55766941",
+          "e:a:metrics:payment:core:0:1de5bc0b6c38"
+        ],
+        "terminal": "CORE_KNOWN"
+      },
+      "observed_at": "2026-09-27T04:05:40.167996Z",
+      "pure_candidate": {
+        "evidence_refs": [
+          "e:a:metrics:fraud-detection:queue-lag:0:4ce0eb3d4815",
+          "e:a:runtime:all-candidates:e46103319e85:1:4b2f6bc4f832"
+        ],
+        "reason": "CANDIDATE_MATCHED",
+        "status": "TRUE",
+        "value": null
+      },
+      "queries": [
+        {
+          "action_id": "a:changes:checkout",
+          "covered_services": [
+            "checkout"
+          ],
+          "object_sha256": "c07c3bdd9a4af1bc1fc4384a7522a0e95f20fea6ef041c7624fe7a10e6692288",
+          "record_count": 0,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "CHANGES",
+          "status": "SUCCESS_EMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T04:05:40.167996Z",
+            "started_at": "2026-09-27T03:05:40.167996Z"
+          }
+        },
+        {
+          "action_id": "a:changes:fraud-detection",
+          "covered_services": [
+            "fraud-detection"
+          ],
+          "object_sha256": "df77a4535c96f04c06babec1debff380dfab415836c69c1ce4a7e5154586cfdf",
+          "record_count": 0,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "CHANGES",
+          "status": "SUCCESS_EMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T04:05:40.167996Z",
+            "started_at": "2026-09-27T03:05:40.167996Z"
+          }
+        },
+        {
+          "action_id": "a:changes:kafka",
+          "covered_services": [
+            "kafka"
+          ],
+          "object_sha256": "efaa5e0f030a92ddef91c82c90b2d93b31da3508fbcc2b99aa148da34d28844e",
+          "record_count": 0,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "CHANGES",
+          "status": "SUCCESS_EMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T04:05:40.167996Z",
+            "started_at": "2026-09-27T03:05:40.167996Z"
+          }
+        },
+        {
+          "action_id": "a:changes:payment",
+          "covered_services": [
+            "payment"
+          ],
+          "object_sha256": "b217f27fb65fa04c147fc07f165087de7d3aba62ddf775fe603f1ad3288f8f6b",
+          "record_count": 2,
+          "record_time_max": "2026-09-27T04:02:16.911253Z",
+          "record_time_min": "2026-09-27T03:59:56.034045Z",
+          "source": "CHANGES",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T04:05:40.167996Z",
+            "started_at": "2026-09-27T03:05:40.167996Z"
+          }
+        },
+        {
+          "action_id": "a:logs:checkout",
+          "covered_services": [
+            "checkout"
+          ],
+          "object_sha256": "5a50ac3ebf171d84be3d200921567c69bb4fab6acc705d9722917307717fa9f0",
+          "record_count": 12,
+          "record_time_max": "2026-09-27T04:05:20.101300Z",
+          "record_time_min": "2026-09-27T04:03:33.815274Z",
+          "source": "LOGS",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": true,
+          "window": {
+            "ended_at": "2026-09-27T04:05:40.167996Z",
+            "started_at": "2026-09-27T04:00:40.167996Z"
+          }
+        },
+        {
+          "action_id": "a:logs:fraud-detection",
+          "covered_services": [
+            "fraud-detection"
+          ],
+          "object_sha256": "171a44a4e188f15337a8eb97bb5a139df235947b94be0e51fff767eb19093fef",
+          "record_count": 12,
+          "record_time_max": "2026-09-27T04:05:39.251311Z",
+          "record_time_min": "2026-09-27T04:05:34.238982Z",
+          "source": "LOGS",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": true,
+          "window": {
+            "ended_at": "2026-09-27T04:05:40.167996Z",
+            "started_at": "2026-09-27T04:00:40.167996Z"
+          }
+        },
+        {
+          "action_id": "a:logs:kafka",
+          "covered_services": [
+            "kafka"
+          ],
+          "object_sha256": "ad982833ba8eb4586fa974025c7b593843e7d6c3dab96a3b056e74790b47160d",
+          "record_count": 12,
+          "record_time_max": "2026-09-27T04:05:36.619132Z",
+          "record_time_min": "2026-09-27T04:05:16.715009Z",
+          "source": "LOGS",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": true,
+          "window": {
+            "ended_at": "2026-09-27T04:05:40.167996Z",
+            "started_at": "2026-09-27T04:00:40.167996Z"
+          }
+        },
+        {
+          "action_id": "a:logs:payment",
+          "covered_services": [
+            "payment"
+          ],
+          "object_sha256": "d7e1dd8702c496bdc57ec1bd6b24685b2c3e9d4ee6a13bb90d1cec174b08f7e5",
+          "record_count": 12,
+          "record_time_max": "2026-09-27T04:03:34.846000Z",
+          "record_time_min": "2026-09-27T04:03:32.754000Z",
+          "source": "LOGS",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T04:05:40.167996Z",
+            "started_at": "2026-09-27T04:00:40.167996Z"
+          }
+        },
+        {
+          "action_id": "a:metrics:checkout:core",
+          "covered_services": [
+            "checkout"
+          ],
+          "object_sha256": "8700c228a1501ac95a891f8525e7a6e2a1b271673995bd9601b3728be327acb8",
+          "record_count": 3,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "METRICS",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T04:05:40.167996Z",
+            "started_at": "2026-09-27T04:00:40.167996Z"
+          }
+        },
+        {
+          "action_id": "a:metrics:fraud-detection:core",
+          "covered_services": [
+            "fraud-detection"
+          ],
+          "object_sha256": "994c4043e25829cd1025cfa12c0f33285b65eafe79a56df2369e3f8c9fd54122",
+          "record_count": 3,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "METRICS",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T04:05:40.167996Z",
+            "started_at": "2026-09-27T04:00:40.167996Z"
+          }
+        },
+        {
+          "action_id": "a:metrics:fraud-detection:queue-lag",
+          "covered_services": [
+            "fraud-detection"
+          ],
+          "object_sha256": "4fd0cde9af7ed8e6931adea22884a5f5e1ad2a8f909606bdd76ed3617791f5c8",
+          "record_count": 1,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "METRICS",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T04:05:40.167996Z",
+            "started_at": "2026-09-27T04:04:40.167996Z"
+          }
+        },
+        {
+          "action_id": "a:metrics:kafka:core",
+          "covered_services": [
+            "kafka"
+          ],
+          "object_sha256": "9e9b01c8ab60283a00a9165104623b6ae877463203b8aeb4a2abde6ee3e85a55",
+          "record_count": 3,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "METRICS",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T04:05:40.167996Z",
+            "started_at": "2026-09-27T04:00:40.167996Z"
+          }
+        },
+        {
+          "action_id": "a:metrics:payment:core",
+          "covered_services": [
+            "payment"
+          ],
+          "object_sha256": "56f8aa7968e884697f595445a8d750c2895b2b836a9f422c3de7edc547ead1a8",
+          "record_count": 3,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "METRICS",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T04:05:40.167996Z",
+            "started_at": "2026-09-27T04:00:40.167996Z"
+          }
+        },
+        {
+          "action_id": "a:resources:checkout",
+          "covered_services": [
+            "checkout"
+          ],
+          "object_sha256": "9514884176955189e52365e3d7b6ed572ffd5f473395cc4a3c343899716257a4",
+          "record_count": 1,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "RESOURCES",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T04:05:40.167996Z",
+            "started_at": "2026-09-27T04:05:30.167996Z"
+          }
+        },
+        {
+          "action_id": "a:resources:fraud-detection",
+          "covered_services": [
+            "fraud-detection"
+          ],
+          "object_sha256": "12f5bfd80469d852b007e09df6c056e79e5502ba4dbb4b57cacee89a999e87c0",
+          "record_count": 1,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "RESOURCES",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T04:05:40.167996Z",
+            "started_at": "2026-09-27T04:05:30.167996Z"
+          }
+        },
+        {
+          "action_id": "a:resources:kafka",
+          "covered_services": [
+            "kafka"
+          ],
+          "object_sha256": "fe98bea6ca4c67ef3554d6aaed297d3677623c2a161f071131a429a31f130053",
+          "record_count": 1,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "RESOURCES",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T04:05:40.167996Z",
+            "started_at": "2026-09-27T04:05:30.167996Z"
+          }
+        },
+        {
+          "action_id": "a:resources:payment",
+          "covered_services": [],
+          "object_sha256": "73a286373d6f8582d5cc6696397b86f97d5646dcae7fa65c574473337f65748b",
+          "record_count": 0,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "RESOURCES",
+          "status": "SUCCESS_EMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T04:05:40.167996Z",
+            "started_at": "2026-09-27T04:05:30.167996Z"
+          }
+        },
+        {
+          "action_id": "a:runtime:all-candidates:e46103319e85",
+          "covered_services": [
+            "checkout",
+            "fraud-detection",
+            "kafka",
+            "payment"
+          ],
+          "object_sha256": "75889e21ff2e89f98e109ecd5196dd14fe4892fc811977639b6cf95471326b0d",
+          "record_count": 4,
+          "record_time_max": null,
+          "record_time_min": null,
+          "source": "RUNTIME",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T04:05:40.167996Z",
+            "started_at": "2026-09-27T04:04:40.167996Z"
+          }
+        },
+        {
+          "action_id": "a:traces:checkout",
+          "covered_services": [
+            "checkout"
+          ],
+          "object_sha256": "fc34ad427d32e3faf57ccfc2cb532573a60c5cdeef8194bda5f516d3e9e7e3e8",
+          "record_count": 12,
+          "record_time_max": "2026-09-27T04:03:33.812640Z",
+          "record_time_min": "2026-09-27T04:03:33.791687Z",
+          "source": "TRACES",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": true,
+          "window": {
+            "ended_at": "2026-09-27T04:05:40.167996Z",
+            "started_at": "2026-09-27T04:00:40.167996Z"
+          }
+        },
+        {
+          "action_id": "a:traces:fraud-detection",
+          "covered_services": [
+            "fraud-detection"
+          ],
+          "object_sha256": "695a05e57b1eaf929582a46d00215cf2c307fab7aff8fe879ca75c10f9ffc030",
+          "record_count": 12,
+          "record_time_max": "2026-09-27T04:05:24.222303Z",
+          "record_time_min": "2026-09-27T04:05:14.179724Z",
+          "source": "TRACES",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": true,
+          "window": {
+            "ended_at": "2026-09-27T04:05:40.167996Z",
+            "started_at": "2026-09-27T04:00:40.167996Z"
+          }
+        },
+        {
+          "action_id": "a:traces:kafka",
+          "covered_services": [
+            "kafka"
+          ],
+          "object_sha256": "db2e10b88cb332ba307a49b33509a4cfae6064ab89827c20a7ad4d64cc429723",
+          "record_count": 12,
+          "record_time_max": "2026-09-27T04:03:34.859330Z",
+          "record_time_min": "2026-09-27T04:03:32.767933Z",
+          "source": "TRACES",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": true,
+          "window": {
+            "ended_at": "2026-09-27T04:05:40.167996Z",
+            "started_at": "2026-09-27T04:00:40.167996Z"
+          }
+        },
+        {
+          "action_id": "a:traces:payment",
+          "covered_services": [
+            "flagd",
+            "payment"
+          ],
+          "object_sha256": "0dcafe9ec6bc4e41cd586a3ae7c8a4d6199ddbb3db893c23071b4dd750b6f812",
+          "record_count": 10,
+          "record_time_max": "2026-09-27T04:03:34.846000Z",
+          "record_time_min": "2026-09-27T04:03:32.754000Z",
+          "source": "TRACES",
+          "status": "SUCCESS_NONEMPTY",
+          "truncated": false,
+          "window": {
+            "ended_at": "2026-09-27T04:05:40.167996Z",
+            "started_at": "2026-09-27T04:00:40.167996Z"
+          }
+        }
+      ],
+      "restoration": {
+        "document_sha256": "4daa3da2131ad05887d9369e571dc58f61c919b86dfba944b9030183ed761206",
+        "evaluations": {
+          "kafkaQueueProblems": {
+            "value": 0,
+            "variant": "off"
+          },
+          "loadGeneratorTraffic": {
+            "value": 0,
+            "variant": "off"
+          },
+          "paymentFailure": {
+            "value": 0,
+            "variant": "off"
+          }
+        },
+        "observed_at": "2026-09-27T04:05:48.002505+00:00",
+        "state": "BASELINE"
+      }
+    }
+  },
+  "frozen_pure_code_bindings_equal": {
+    "incidents/anomaly_policy.py": true,
+    "incidents/diagnosis_bridge.py": true,
+    "knowledge/candidates_v050.py": true,
+    "knowledge/expressions.py": true
+  },
+  "new_protocol_diagnostic_qualifications": {
+    "inc-0117b1c9a46c6e25d69c43f4": {
+      "bindings": {
+        "baseline_sha256": "2090155d38ca979a139ca64b1b308c622b7f8281a3851ba9ecb0e94cbd011fda",
+        "diagnosis_id": "diag-a283f7b9947200e135e6ab36",
+        "diagnosis_sha256": "9e7339828324c8ef37630afcbaa0cfa312925a9bb8f2f35f6281ce1ad6b1059d",
+        "evidence_objects": [
+          "201d915a7138cea36b282c22acd2223823a46f14d441c9d6677609882285b376",
+          "2031996bd95110bbf6c4ea3bc336510eb440d2e4030e04a015858d6f4b58dedd",
+          "2d2724ec11c36c3e4a357fbf8806410bafd4acb1deeb2db87b7a9bc9f9785a66",
+          "5237475e558ba89914b48a6663c5655b9f262dd18744876b7ce9d47bf7d6ff7e",
+          "53eae37107018734dd2bc280eb1c11cbc38da62deef298925d240284bb0bf176",
+          "5d4f1c3563cfff8ea610fb43631fefe029e9f020356d8290c2e9430ad0dc9e1e",
+          "68953a7568d7f737409ac056548b2d5de952a5a2226afc8228c41f562f426269",
+          "70a2e6ec7a40121db97260b3e1fb929488a5e4c7bc1c2f9b320df829bf2748aa",
+          "75e2dcca60aad2ee2de9f63241aea17b1f1edbabbb13bb53ef0cf065c11653d7",
+          "7d6c4f9584ec97f818d9befb095ced8113968eeba36cc3813320bfe03e10b00a",
+          "90ba38a7e54395c14159e054f7c265868be7faf3c12c45cf4fc62f9a4ec06873",
+          "911032134deaab2b2049195daec08e2046f589f514ea3ffceff362c17d949433",
+          "ac1cd0515e7cfffdf2437cae335e461f44e8198b8e6fd1ec75c0a7580f2a8d37",
+          "b19c729588a6953a457cf9e28b5d5659515b41d91ca37d3ed14e289d6bcd3eb3",
+          "b8d2901230d7c1ff56902100f68844cf9be781aa6c9ca93fc98efd5d4fb92dc6",
+          "bdad279d54449ff81682b6e569e38824817fb635cf99064214455140aa882de4",
+          "cf4ce1682ea0c69cecd59e23cacd917395429c5b2600e7656bcfe94cb9c0eee9",
+          "d06cb8d3404dbdeec1b7859ae6a3ca95b75220ace8d64cf61a2d415adc81dc58",
+          "d24d5c6de44317a5a98a1f7571e6373171b0043f181b2768fbd8ff34f043af3f",
+          "f70f9c75040a24480c385e7497773e2ff754b3505911f5ea9428ad18c0753313",
+          "f85017fbfadbe0ce9f68fb365275d1f0d4d8de31f466a4b5d3fc8ff88d7fb074",
+          "f927f9a7de05f428ec0b332828c0844dd23be985ee00233c534b4959a4e86608"
+        ],
+        "incident_id": "inc-0117b1c9a46c6e25d69c43f4",
+        "incident_sha256": "6b7f31aaa5d63950e5371624226d18663999c55c7390a128a9a7c8fbde5f7e8f",
+        "memory_sha256": "ec5b0a369b60e70d4030de4e91a9c2d27691d52b0a27a2e5d138700ad1fcbcd2",
+        "observations_sha256": "637918a4c93570b04b44b58dbda381ab3fd734dd9a4ea3c16e039aff884e3494",
+        "runtime_input_sha256": "07587e673bc9fcd4fc54f4c773f4aa2b224b5d1632668e8d920c7dd2f96013a1",
+        "source_capability_sha256": "53ccae419f84c88b16044cd5b9dabcdfad6b812ce09684a1f96c5e872f9487ea"
+      },
+      "candidate_match_used": false,
+      "health_coverage": {
+        "accepted": false,
+        "anomaly_evaluable_services": [
+          "checkout",
+          "fraud-detection",
+          "kafka",
+          "payment"
+        ],
+        "candidate_services": [
+          "checkout",
+          "fraud-detection",
+          "kafka",
+          "payment"
+        ],
+        "decision_sha256": "7774c1ab1f611a0a0f9d2e90a7f1687809daf17d5f8271f4a475f50a8a506f11",
+        "denial_reasons": [
+          "STRONG_ANOMALY_PRESENT"
+        ],
+        "metric_covered_services": [
+          "checkout",
+          "fraud-detection",
+          "kafka",
+          "payment"
+        ],
+        "runtime_covered_services": [
+          "checkout",
+          "fraud-detection",
+          "kafka",
+          "payment"
+        ],
+        "schema_version": "dta-v22.no-incident-coverage-decision.v1"
+      },
+      "normal_mechanism": "UNREGISTERED_OBSERVED_ANOMALY",
+      "normal_terminal": "OPEN_WORLD",
+      "planned_stratum": "NO_INCIDENT",
+      "protocol": "v050-observed-control-qualification-v1",
+      "qualification_sha256": "2ef62117adb09e5e11219f70ec9c3509d0a91593054d3cf1f2898e9a0a5789b5",
+      "qualified": false,
+      "reason_codes": [
+        "HEALTHY_NORMAL_DIAGNOSIS_REQUIRED",
+        "HEALTHY_STRONG_ANOMALY_PRESENT"
+      ],
+      "source_coverage": [
+        {
+          "reachable": true,
+          "source": "CHANGES",
+          "statuses": [
+            "SUCCESS_EMPTY"
+          ]
+        },
+        {
+          "reachable": true,
+          "source": "LOGS",
+          "statuses": [
+            "SUCCESS_NONEMPTY"
+          ]
+        },
+        {
+          "reachable": true,
+          "source": "METRICS",
+          "statuses": [
+            "SUCCESS_NONEMPTY"
+          ]
+        },
+        {
+          "reachable": true,
+          "source": "RESOURCES",
+          "statuses": [
+            "SUCCESS_EMPTY",
+            "SUCCESS_NONEMPTY"
+          ]
+        },
+        {
+          "reachable": true,
+          "source": "RUNTIME",
+          "statuses": [
+            "SUCCESS_NONEMPTY"
+          ]
+        },
+        {
+          "reachable": true,
+          "source": "TRACES",
+          "statuses": [
+            "SUCCESS_NONEMPTY"
+          ]
+        }
+      ],
+      "strong_anomalies": [
+        {
+          "anomaly_id": "ga:metric-error-outlier:payment:681872dd92c1",
+          "anomaly_sha256": "77d78036da07824dce31f5fbbde4c8d7af75a83ebab92b5475c1a01d10681f0c",
+          "evidence_refs": [
+            "e:a:metrics:payment:core:0:07deef59e0c2"
+          ],
+          "kind": "METRIC_ERROR_OUTLIER",
+          "observed_values": [
+            {
+              "key": "baseline_ratio",
+              "value": "None"
+            },
+            {
+              "key": "delta",
+              "value": "0.07061852643248284"
+            },
+            {
+              "key": "value",
+              "value": "0.07061852643248284"
+            }
+          ],
+          "related_services": [],
+          "schema_version": "dta-v23.generic-anomaly.v1",
+          "service": "payment",
+          "source": "METRICS",
+          "strength": "STRONG",
+          "summary": "payment has an abnormal ERROR_RATE signal"
+        },
+        {
+          "anomaly_id": "ga:metric-latency-outlier:fraud-detection:122f2532e0e9",
+          "anomaly_sha256": "a6db5b33fefc6d1bb806af3ffd3eed11c36658e2cc8e63a4b30bedbb459f0b05",
+          "evidence_refs": [
+            "e:a:metrics:fraud-detection:core:1:ba0e6250681c"
+          ],
+          "kind": "METRIC_LATENCY_OUTLIER",
+          "observed_values": [
+            {
+              "key": "baseline_ratio",
+              "value": "14.087234512684361"
+            },
+            {
+              "key": "delta",
+              "value": "1232.4072830032924"
+            },
+            {
+              "key": "value",
+              "value": "1326.5759388647598"
+            }
+          ],
+          "related_services": [],
+          "schema_version": "dta-v23.generic-anomaly.v1",
+          "service": "fraud-detection",
+          "source": "METRICS",
+          "strength": "STRONG",
+          "summary": "fraud-detection has an abnormal LATENCY_P95_MS signal"
+        }
+      ],
+      "target": "fraud-detection"
+    },
+    "inc-944f3ebcb424e475ce47c39a": {
+      "bindings": {
+        "baseline_sha256": "2090155d38ca979a139ca64b1b308c622b7f8281a3851ba9ecb0e94cbd011fda",
+        "diagnosis_id": "diag-8f8e5029fe86dfe57a04fdee",
+        "diagnosis_sha256": "096d3a6dc31e977e2a3bb2b281d69dec777f78af32418cddbdb31cb194e09447",
+        "evidence_objects": [
+          "08e3d8ee0c95e719df4cc962f46918b6149107370354e2583e9a41ee881e40fb",
+          "0d95cda340c0b3090847c3438a808a875059e95437b062f8d1bc5968d32682ab",
+          "15fdb3787a47a78158c22d80e967936372169d221d628dfdc0ef6f781fa2ecdc",
+          "20046cc715a37aad6ff19c387ee5fa9689c2f482e766c2aad817662b06058d6d",
+          "225c815c362654f03eade88ed3147d1b02d0a0561fa50081ff5112f73f3113f9",
+          "2970167531ae97cd31d17139640c7ad45bc0f51e657ffb9470c6533d8b5eccff",
+          "314b614369a6e5054aa8ca9ac429b040f590937039bad6e3f032b38e6d61cfaf",
+          "4d2cc444c5b55dc5bb8d2f868a2d139c844f07e673fd6b3f90e200ce02c31c89",
+          "6eb4384d7889833ddd56afb4a84b085325a93e46a21f012d375920fd61aa5ba1",
+          "6ef36d37e69c56a1386476ebc565e04e188fbfbbcde6be2b25304ab1ca545b63",
+          "855fbd3c99c17851675277689cc5a4e51e0deacf805d431e1e415ab5ce249c17",
+          "8cff53955009bd3a27e3f387877af015eb6d2500c0e95273b92e0e2a9848eba8",
+          "969df2cfeeef4cdb4354ff3ef2a8b4af4f6dff1e09e39df30f68e4b2b22843aa",
+          "b13aaab54c7f331e8a33c29925588ba63d5140b03ec6c06ad5e38e884adfb8d7",
+          "bbe8149a4f2ee83aeadc998a2d58bafcee4ab72dc54a9463e26bc6067e17522e",
+          "c10339187fd0f31722806958954c0f05e30f6023da5f303a2e15f43512559d62",
+          "c97b637da21160fce9f9192ba4c2eaf67e55f49ddcecd2770cc057eb11383423",
+          "cf97e8e92a4b892b18e64f08197c28a69e9529367779d6197a088517c9fadc49",
+          "de585cedb6872478f1dc65461bcfdd34eefe7895ad44dadab60aa3cdc2b90318",
+          "e4983fc3ad6d46b55ccf56de7a16abc6c8f479c8ec283d0c6204a0aad776e9aa",
+          "f3d0a6c379cd76cbbc15e93184ce90bdde64ddb9751957ecf7f2c2ae46ddbc5a",
+          "fc5131ddd2f9015b9842d64f217fb160ef292b8adc0e41f24a2d5c5b82772106"
+        ],
+        "incident_id": "inc-944f3ebcb424e475ce47c39a",
+        "incident_sha256": "fcac60bc24e8edbc8d9516f8f4932c4c97a273b098c1ee2eee7c5d6131586b25",
+        "memory_sha256": "41f733986ff5cb03693969457b8e150fc0393b32dbb55a71e82369c557dd1a0e",
+        "observations_sha256": "74af8acaa5d6e714e72abe77316e49d0d8a43bb0fab71bcff21eb4b7d3c869e0",
+        "runtime_input_sha256": "cb4ecb67f927d3889de192d87affc2a49c3ed1a355cadefd0eca274d5a6ac676",
+        "source_capability_sha256": "53ccae419f84c88b16044cd5b9dabcdfad6b812ce09684a1f96c5e872f9487ea"
+      },
+      "candidate_match_used": false,
+      "health_coverage": null,
+      "normal_mechanism": "CONFIGURATION_ERROR",
+      "normal_terminal": "CORE_KNOWN",
+      "planned_stratum": "CONFUSABLE_CORE_KNOWN",
+      "protocol": "v050-observed-control-qualification-v1",
+      "qualification_sha256": "4189df301083f3a1acfd5b3040d091ddc8fa5e06f25607a5244a35f67f12a695",
+      "qualified": true,
+      "reason_codes": [],
+      "source_coverage": [
+        {
+          "reachable": true,
+          "source": "CHANGES",
+          "statuses": [
+            "SUCCESS_EMPTY",
+            "SUCCESS_NONEMPTY"
+          ]
+        },
+        {
+          "reachable": true,
+          "source": "LOGS",
+          "statuses": [
+            "SUCCESS_NONEMPTY"
+          ]
+        },
+        {
+          "reachable": true,
+          "source": "METRICS",
+          "statuses": [
+            "SUCCESS_NONEMPTY"
+          ]
+        },
+        {
+          "reachable": true,
+          "source": "RESOURCES",
+          "statuses": [
+            "SUCCESS_EMPTY",
+            "SUCCESS_NONEMPTY"
+          ]
+        },
+        {
+          "reachable": true,
+          "source": "RUNTIME",
+          "statuses": [
+            "SUCCESS_NONEMPTY"
+          ]
+        },
+        {
+          "reachable": true,
+          "source": "TRACES",
+          "statuses": [
+            "SUCCESS_NONEMPTY"
+          ]
+        }
+      ],
+      "strong_anomalies": [
+        {
+          "anomaly_id": "ga:metric-error-outlier:payment:cbe8f993f25f",
+          "anomaly_sha256": "6e7ecd62d298e5400d0c6ac0ab992ae2f2f8358548dedff3f8899135fcf92323",
+          "evidence_refs": [
+            "e:a:metrics:payment:core:0:7a2a0a92070b"
+          ],
+          "kind": "METRIC_ERROR_OUTLIER",
+          "observed_values": [
+            {
+              "key": "baseline_ratio",
+              "value": "None"
+            },
+            {
+              "key": "delta",
+              "value": "0.22486874064744203"
+            },
+            {
+              "key": "value",
+              "value": "0.22486874064744203"
+            }
+          ],
+          "related_services": [],
+          "schema_version": "dta-v23.generic-anomaly.v1",
+          "service": "payment",
+          "source": "METRICS",
+          "strength": "STRONG",
+          "summary": "payment has an abnormal ERROR_RATE signal"
+        },
+        {
+          "anomaly_id": "ga:metric-latency-outlier:fraud-detection:3de9874e4eab",
+          "anomaly_sha256": "e4012f09c8aed5f1992738536d8dda042bd3bbc213065bce5d86568e1e9c1da2",
+          "evidence_refs": [
+            "e:a:metrics:fraud-detection:core:1:731924badb3b"
+          ],
+          "kind": "METRIC_LATENCY_OUTLIER",
+          "observed_values": [
+            {
+              "key": "baseline_ratio",
+              "value": "12.023879945328277"
+            },
+            {
+              "key": "delta",
+              "value": "1038.1039568297504"
+            },
+            {
+              "key": "value",
+              "value": "1132.2726126912178"
+            }
+          ],
+          "related_services": [],
+          "schema_version": "dta-v23.generic-anomaly.v1",
+          "service": "fraud-detection",
+          "source": "METRICS",
+          "strength": "STRONG",
+          "summary": "fraud-detection has an abnormal LATENCY_P95_MS signal"
+        }
+      ],
+      "target": "fraud-detection"
+    },
+    "inc-e692e3727836fa44aea66de5": {
+      "bindings": {
+        "baseline_sha256": "2090155d38ca979a139ca64b1b308c622b7f8281a3851ba9ecb0e94cbd011fda",
+        "diagnosis_id": "diag-b6c0c0a66da7e0f7c4d71a11",
+        "diagnosis_sha256": "49c88b2ad01918d3a23ed79dd3b863f50cf0fa5a3329bf48ed0a8142ffc8a26e",
+        "evidence_objects": [
+          "04b21440667adb6b27fa306a6c65152dcadb219b82730192792e4b0ee837672f",
+          "07199b9cc7f81141237e912e6049a8d7e15ca0876969c32408cb7b07ecf58c14",
+          "073e08eaaafe870d5b0930fdcf9c2b8827d5b772b55b8361a8fb9a35a7274cf5",
+          "0c5571d323087ef1861f38f67a835bcb2be6738215748fbfb4602bcd320e021c",
+          "1230d5ae653ebfb69d18fdd62915aeb84382e3ca5ac50db9594d5ffd91fadedf",
+          "1322affc0e0e69ab922dadc5510321698fc4ac5d05c63b157cfc2218485ea7f9",
+          "1ef3b20d83f222a11f2e60c9c96ca197b1a202378c13158b3605bcd13d58da6f",
+          "2281bde71249dd374d977b6be55e42fca4ed70cfd69ecdcd35d3cc4ad355917a",
+          "2941c75ba5cbbd28568ad8e1452b1469afa19410243ed833c08719bdfbbdd900",
+          "2a3ed2b245faddd7d2a5db9390ab3f701b34b8f0dd45cbe24aa6c1a1cf61357a",
+          "5483f32db3f75a860587d07d6d8d99900f25ba892d3f6e294ba44898f7916f9e",
+          "81ebb42db48dbeaf8adad5cde4da782e03b2eeef666bc1837b5885107a033aab",
+          "948a00cf1cee2613e2e3d925b28ca722a3e089ef65a491d3948e406b5bd8f43f",
+          "a32a07f1cf90151ffb98f5f47b8a84a4977f9c3f20bf7a6f468f6828c8cbafe7",
+          "a3c214c871fcbbc63617700305b605b240ed0bf917ba0991ca908cb4a8087acd",
+          "af128a495a84885625c1ac0ae9fbf725c7ebe4087486ace6a1fffc4fb0034efa",
+          "bf9335b22ba37f01e916eb3c5ffd91a9d3945b0235c3fcc794c0a84ceed898f3",
+          "c6c5a6640a4e20f56a70e21214b9c1e3b82c34ba39298ba6cf0a42616114d3f2",
+          "d693f00685ce71c54c6355a0bdab6e02677ecac2d591821b0e4662c71c07c60a",
+          "de0d7a4f909fcb9f203ac526a6ae41687a4b6aa6d6ea8af8e6ff24bc643c902b",
+          "f3ea01a5d9eaf976925f436b9f82f905b184cca6dfabe00207b56c14410212d8",
+          "fe1cfdb0d8d8d54406616472a91295b6866ebaa9b8e0f086db4e4f70aa5379c0"
+        ],
+        "incident_id": "inc-e692e3727836fa44aea66de5",
+        "incident_sha256": "ef81bccc0255163a5df499be5d466927b2c8e6687f45699fef9cf222e3735c01",
+        "memory_sha256": "357738dcd5d890a8273d9e8f31ebe33eeb04e36b2a1e9f1abfb286372ffabd56",
+        "observations_sha256": "504bca02b8517706d0b783a65542dfb39b4bfe3ae484ea37ab7558f2bc6c0ae1",
+        "runtime_input_sha256": "0e5e4e66d0fb423ff69430f74ddbf2dab369d6892e6e21691bff1f31f5af5480",
+        "source_capability_sha256": "53ccae419f84c88b16044cd5b9dabcdfad6b812ce09684a1f96c5e872f9487ea"
+      },
+      "candidate_match_used": false,
+      "health_coverage": null,
+      "normal_mechanism": "UNREGISTERED_OBSERVED_ANOMALY",
+      "normal_terminal": "OPEN_WORLD",
+      "planned_stratum": "POSITIVE_INCIDENT",
+      "protocol": "v050-observed-control-qualification-v1",
+      "qualification_sha256": "0de965b9d9e90d6c949682cd11081554ee7a15eed472320fba50aa8da4d8f6f1",
+      "qualified": true,
+      "reason_codes": [],
+      "source_coverage": [
+        {
+          "reachable": true,
+          "source": "CHANGES",
+          "statuses": [
+            "SUCCESS_EMPTY"
+          ]
+        },
+        {
+          "reachable": true,
+          "source": "LOGS",
+          "statuses": [
+            "SUCCESS_NONEMPTY"
+          ]
+        },
+        {
+          "reachable": true,
+          "source": "METRICS",
+          "statuses": [
+            "SUCCESS_NONEMPTY"
+          ]
+        },
+        {
+          "reachable": true,
+          "source": "RESOURCES",
+          "statuses": [
+            "SUCCESS_EMPTY",
+            "SUCCESS_NONEMPTY"
+          ]
+        },
+        {
+          "reachable": true,
+          "source": "RUNTIME",
+          "statuses": [
+            "SUCCESS_NONEMPTY"
+          ]
+        },
+        {
+          "reachable": true,
+          "source": "TRACES",
+          "statuses": [
+            "SUCCESS_NONEMPTY"
+          ]
+        }
+      ],
+      "strong_anomalies": [
+        {
+          "anomaly_id": "ga:metric-latency-outlier:fraud-detection:7340555a013a",
+          "anomaly_sha256": "cf25eaaa4be79b53f4934b0e2e6d2868a8841c50dfca44c916a8cd1e0ba6924b",
+          "evidence_refs": [
+            "e:a:metrics:fraud-detection:core:1:97f12d398792"
+          ],
+          "kind": "METRIC_LATENCY_OUTLIER",
+          "observed_values": [
+            {
+              "key": "baseline_ratio",
+              "value": "6.36560901241377"
+            },
+            {
+              "key": "delta",
+              "value": "505.27218857718015"
+            },
+            {
+              "key": "value",
+              "value": "599.4408444386476"
+            }
+          ],
+          "related_services": [],
+          "schema_version": "dta-v23.generic-anomaly.v1",
+          "service": "fraud-detection",
+          "source": "METRICS",
+          "strength": "STRONG",
+          "summary": "fraud-detection has an abnormal LATENCY_P95_MS signal"
+        },
+        {
+          "anomaly_id": "ga:metric-queue-lag-outlier:fraud-detection:5f6614b73815",
+          "anomaly_sha256": "bc4d9c579a32b2a0fc64e0bd6f70ae8758091c65c35241db114fb01b5d762131",
+          "evidence_refs": [
+            "e:a:metrics:fraud-detection:queue-lag:0:ea650e4e158e"
+          ],
+          "kind": "METRIC_QUEUE_LAG_OUTLIER",
+          "observed_values": [
+            {
+              "key": "baseline_ratio",
+              "value": "395.1648351648351"
+            },
+            {
+              "key": "delta",
+              "value": "256.20714285714286"
+            },
+            {
+              "key": "value",
+              "value": "256.85714285714283"
+            }
+          ],
+          "related_services": [],
+          "schema_version": "dta-v23.generic-anomaly.v1",
+          "service": "fraud-detection",
+          "source": "METRICS",
+          "strength": "STRONG",
+          "summary": "fraud-detection has an abnormal QUEUE_LAG signal"
+        }
+      ],
+      "target": "fraud-detection"
+    }
+  },
+  "payment_error_query": "(sum(rate(kafka_request_failed_total{service_name=\"payment\",type=\"produce\"}[5m])) / (sum(rate(kafka_request_count_total{service_name=\"payment\",type=\"produce\"}[5m])) > 0)) or ((sum(rate(traces_span_metrics_calls_total{service_name=\"payment\",service_name!=\"kafka\",status_code=\"STATUS_CODE_ERROR\"}[5m])) or (0 * sum(rate(traces_span_metrics_calls_total{service_name=\"payment\",service_name!=\"kafka\"}[5m])))) / (sum(rate(traces_span_metrics_calls_total{service_name=\"payment\",service_name!=\"kafka\"}[5m])) > 0))",
+  "registration_state": "REVOKED"
+}

@@ -1,0 +1,151 @@
+{
+  "accounting": {
+    "candidate_generation_new": 0,
+    "committed_microusd_cumulative": 1067489,
+    "committed_microusd_new": 0,
+    "live_batch": 1,
+    "live_batch_cap": 4,
+    "live_closure": 9,
+    "live_closure_cap": 12,
+    "live_cumulative": 14,
+    "live_cumulative_cap": 17,
+    "old_episode_ledger_unchanged": true,
+    "provider_ledger_unchanged": true,
+    "provider_requests_cumulative": 60,
+    "provider_requests_new": 0,
+    "semantic_revision_new": 0
+  },
+  "batch_disposition": "STOPPED_COLLECTION_PROTOCOL_INCOMPATIBILITY",
+  "batch_id": "fixed-rule-independent-validation-20260927",
+  "cleanup": {
+    "clean": true,
+    "non_owned_unchanged": true,
+    "product_recovery_writes": 0,
+    "remaining": {
+      "container": 0,
+      "network": 0,
+      "volume": 0
+    },
+    "removed": {
+      "container": 22,
+      "network": 1,
+      "volume": 5
+    }
+  },
+  "execution_checks": {
+    "before_live_review_must_fix": 0,
+    "ci_conclusion": "success",
+    "ci_run": 36305736150,
+    "full_tests_passed": 6813,
+    "full_tests_skipped": 21,
+    "mypy_source_files": 746,
+    "owned_deployment_successor": "PASS",
+    "resource_continuity": "PASS",
+    "ruff": "PASS"
+  },
+  "execution_head": "b213227278abfff0a0ed6202199e8f8fd7e3bb33",
+  "level_A": "NOT_COMPLETED",
+  "level_B": "NOT_RESUMED",
+  "limitations": [
+    "Queue lag supplied the observed separation; Runtime health showed no additional discriminative gain.",
+    "One failed collection protocol attempt is not a rule failure or accuracy estimate.",
+    "No independent qualification, Shadow, promotion or normal reuse was established in this batch."
+  ],
+  "new_learned_binding": "NOT_RUN",
+  "new_promotion": "NOT_RUN",
+  "new_registration": {
+    "compiled_sha256": "92e697f51367d4ab778a335564d1adc3e05874384853c45fa95d40d68f8038dd",
+    "id": "registration-validation-688460a30572ae84c676debb",
+    "new_model_generation": false,
+    "origin": "LLM",
+    "original_model_request_unchanged": true,
+    "proposal_unchanged": true,
+    "rule_semantic_sha256": "d521f73c37c3607a8a15937f922cbe2ebdb8d4eb302dd92cd8ccc5b7669599dc",
+    "state": "DRAFT"
+  },
+  "new_revocation": "NOT_APPLICABLE_NEVER_ACTIVE",
+  "new_shadow": "NOT_RUN",
+  "old_history": {
+    "historical_failed_ci_run": 36298670070,
+    "old_N5_health_qualification": "NOT_ESTABLISHED",
+    "old_N7_normal_reuse": "FAILED_CORE_KNOWN_NO_LEARNED_BINDING",
+    "parent_registration": "registration-ae3902fb32fd96d87608cb93",
+    "parent_retained_sha256": "c5ed44390e85c2218fe559310abb014425856bbecbcdb210c15b5e8d554995a1",
+    "retained_unchanged": true,
+    "state": "REVOKED"
+  },
+  "private_evidence_sha256": {
+    "batch-stop.json": "c337c20f2229c54605687501f2fc88bb114ee9a5dd5355fb375abe41fa5083b6",
+    "cleanup.json": "831dbca69b6805b0edcc2a5dc0f266d3f4249a04cf6ea7c2897ecb73716429ce",
+    "collector.json": "309688ee67cc1cf0ae127db4b84a2e0ea70933cd7c8c169204e6a60a0b3de48e",
+    "deployment.json": "b4e929fff09c12d68bad57e65d9dbbd3161ea8cd21249f9e734d5571d7a9078d",
+    "episodes/N4/raw-http.jsonl": "5bf45fefef9a4d33284fc0f113168fff63e5682e9a0d080d4a65ba864d520b82",
+    "episodes/N4/result.json": "346a8db50b4e450fa137b7cf0209191dd39264e97de5ffc6bdf648fb90158ba8",
+    "episodes/N4/scrape-receipt.json": "8e734354e42c4b9ddba3d5dbe2b6799daaa0935c52cca08f54822168abe9368e",
+    "resumption-precheck.json": "95620813844cc35c319ca5744c7acc3908c603a5c4ca0a3b7bff29d76aa74c42",
+    "successor.json": "6d8a4be4c020c51053a54288349b5fa1da3ccd31a817129a4edf642bcb08ec53",
+    "validation-authorization.json": "1d26117df6e00f055f5332c8da046a1d59b85dd6b15cd9ed870673510e9d697a"
+  },
+  "retention": {
+    "all_raw_cas_readback": true,
+    "collection_complete_receipt": false,
+    "failure_archive_files": 89,
+    "failure_archive_sha256": "6a3a262b20a64b643336cce8e61aa3a0136837aee72d0ab221b95c57c753040d",
+    "ingestion_latency": "NOT_DIRECTLY_EXPOSED",
+    "private_only": true,
+    "qualification_receipt": false,
+    "raw_http_responses": 67,
+    "status_counts": {
+      "200": 67
+    },
+    "support_selector_requests": 35,
+    "targets_object_sha256": "219a12dabe03d6ce2c90482b7c6c29846f86a7f7c163ae7c5f90b9460214b3b2",
+    "truncated_responses": 0
+  },
+  "roles": {
+    "core_holdout": {
+      "qualification": "NOT_RUN",
+      "slot": "N6",
+      "started": false
+    },
+    "healthy_holdout": {
+      "qualification": "NOT_RUN",
+      "slot": "N5",
+      "started": false
+    },
+    "normal_recurrence": {
+      "reuse": "NOT_RUN",
+      "slot": "N7",
+      "started": false
+    },
+    "target_holdout": {
+      "configuration_restore_is_not_health_qualification": true,
+      "configuration_restored": true,
+      "independent_qualification": "NOT_EVALUATED_COLLECTION_STOPPED",
+      "normal_diagnosis": "OPEN_WORLD",
+      "slot": "N4",
+      "started": true
+    }
+  },
+  "schema_version": "ecomsre.v050.fixed-validation-result.v1",
+  "stop": {
+    "actual_active_targets": 0,
+    "actual_metrics_ingestion": "COLLECTOR_OTLP_HTTP_PUSH",
+    "error": "FIXED_SCRAPE_RECENCY_FAILED",
+    "invalid_protocol_assumption": "REQUIRES_NONEMPTY_PROMETHEUS_SCRAPE_TARGETS",
+    "remaining_slots_may_not_be_used_after_stop": true,
+    "same_batch_retry": false,
+    "telemetry_staleness": "NOT_ESTABLISHED"
+  },
+  "terminal": "ECOMSRE_PRODUCT_V050_NO_VALIDATED_LLM_KNOWLEDGE",
+  "timeline": {
+    "activated": "2026-09-27T09:07:26.513778+00:00",
+    "diagnosed": "2026-09-27T09:09:39.272629Z",
+    "earliest_legal_observation": "2026-09-27T09:07:02.065235+00:00",
+    "event_start": "2026-09-27T09:07:23.595707+00:00",
+    "prior_change": "2026-09-27T04:02:16.903446+00:00",
+    "ready_at": "2026-09-27T08:56:02.065235+00:00",
+    "restored": "2026-09-27T09:09:46.504010+00:00",
+    "stopped": "2026-09-27T09:10:10.054924+00:00"
+  }
+}

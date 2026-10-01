@@ -1,0 +1,19 @@
+{
+  "checkpoint_available_root_test_events": 0,
+  "checkpoint_started_test_trajectories": 0,
+  "current_selected_test_events": 24,
+  "current_started_test_trajectories": 96,
+  "current_terminal_test_trajectories": 96,
+  "current_report_completed": 51,
+  "test_not_started_trajectories": 0,
+  "development_selected": 12,
+  "development_events_executed": 4,
+  "development_fair_paired_events": 3,
+  "development_not_executed_events": 8,
+  "provider_original_requests": 50,
+  "provider_new_requests": 389,
+  "implementation": "ready",
+  "experiment": "partial",
+  "effect": "undetermined",
+  "claim": "24-event trace-only service-localization test executed; overall original research scope remains partial. No algorithm effectiveness claim."
+}

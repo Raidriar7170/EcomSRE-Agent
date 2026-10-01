@@ -1,0 +1,37 @@
+{
+  "checked_utc_date": "2026-09-29",
+  "local": {
+    "source": "retained live-03",
+    "independent_event_groups": 1,
+    "development_windows": 2,
+    "root_labels": 0,
+    "held_out_events": 0,
+    "fields": [
+      "operation",
+      "span kind",
+      "explicit status",
+      "duration",
+      "trace/span/parent identity",
+      "counter series",
+      "partial histogram buckets",
+      "typed resource/runtime/metric residuals"
+    ],
+    "missing": [
+      "matched historical operation reference",
+      "independent root labels",
+      "online cutoff proof"
+    ]
+  },
+  "public_probe": {
+    "official_repository": "https://github.com/microsoft/OpenRCA",
+    "official_download_directory": "https://drive.google.com/drive/folders/1wGiEnu4OkWrjPxfx5ZTROnU37-5UDoPM",
+    "archive_bytes": {
+      "Bank.zip": 2829139841,
+      "Market.zip": 2865427796,
+      "Telecom.zip": 3071992930
+    },
+    "archive_downloaded_bytes": 0,
+    "directory_response_characters": 339214,
+    "decision": "No suitable separately downloadable subset established under 2 GiB ceiling; no archive download."
+  }
+}

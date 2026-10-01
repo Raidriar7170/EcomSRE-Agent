@@ -1,0 +1,129 @@
+{
+  "scope": "DEVELOPMENT_ONLY; 4 previously used events, 2 repeats, not 8 independent events/method",
+  "methods": {
+    "C": {
+      "started": 8,
+      "completed": 3,
+      "abstention": 0,
+      "nonabstention": 3,
+      "insufficient_report": 2,
+      "actual_requests": 20,
+      "accounted_microusd": 150315,
+      "input_tokens": 151465,
+      "output_tokens": 8158,
+      "reasoning_tokens": 4296,
+      "queries": 6,
+      "records_scanned": 10800,
+      "returned_bytes": 5682,
+      "preprocessing_records": 14400,
+      "analysis_actions": 5,
+      "schema_error_occurrences": 0,
+      "unavailable_question_errors": 0,
+      "invalid_expression_errors": 11,
+      "reference_or_scope_errors": 1,
+      "legal_unknown_checks": 3,
+      "observed_checks": 2,
+      "precommitted_checks": 2,
+      "exploratory_checks": 3,
+      "predictions_supported": 1,
+      "predictions_contradicted": 1,
+      "planned": 8,
+      "independent_events": 4,
+      "correct": 2,
+      "acc1": 0.25,
+      "mrr": 0.25,
+      "not_started": 0,
+      "statuses": {
+        "COMPLETED": 3,
+        "FORMAT_FAILED": 5
+      },
+      "completion_target_met": false,
+      "completion_rate": 0.375,
+      "abstention_rate": 0.0,
+      "nonabstention_coverage": 0.375
+    },
+    "D": {
+      "started": 8,
+      "completed": 1,
+      "abstention": 0,
+      "nonabstention": 1,
+      "insufficient_report": 1,
+      "actual_requests": 32,
+      "accounted_microusd": 264373,
+      "input_tokens": 260185,
+      "output_tokens": 15383,
+      "reasoning_tokens": 8764,
+      "queries": 34,
+      "records_scanned": 118800,
+      "returned_bytes": 15183,
+      "preprocessing_records": 14400,
+      "analysis_actions": 13,
+      "schema_error_occurrences": 0,
+      "unavailable_question_errors": 0,
+      "invalid_expression_errors": 11,
+      "reference_or_scope_errors": 3,
+      "legal_unknown_checks": 7,
+      "observed_checks": 6,
+      "precommitted_checks": 7,
+      "exploratory_checks": 6,
+      "predictions_supported": 4,
+      "predictions_contradicted": 4,
+      "planned": 8,
+      "independent_events": 4,
+      "correct": 1,
+      "acc1": 0.125,
+      "mrr": 0.125,
+      "not_started": 0,
+      "statuses": {
+        "FORMAT_FAILED": 7,
+        "COMPLETED": 1
+      },
+      "completion_target_met": false,
+      "completion_rate": 0.125,
+      "abstention_rate": 0.0,
+      "nonabstention_coverage": 0.125
+    }
+  },
+  "per_event": [
+    {
+      "case_id": "rcase-001",
+      "C_correct": 0,
+      "D_correct": 0,
+      "repeats_per_method": 2
+    },
+    {
+      "case_id": "rcase-002",
+      "C_correct": 1,
+      "D_correct": 1,
+      "repeats_per_method": 2
+    },
+    {
+      "case_id": "rcase-003",
+      "C_correct": 0,
+      "D_correct": 0,
+      "repeats_per_method": 2
+    },
+    {
+      "case_id": "rcase-004",
+      "C_correct": 1,
+      "D_correct": 0,
+      "repeats_per_method": 2
+    }
+  ],
+  "budget": {
+    "cumulative_requests": 491,
+    "cumulative_microusd": 5870990,
+    "new_requests": 52,
+    "new_microusd": 414688,
+    "pending": 0,
+    "unknown_usage": 0,
+    "remaining_requests": 1109,
+    "remaining_microusd": 14129010
+  },
+  "frozen_code": "cff00e861cae35a83610603f78ce55aeb31918e7",
+  "no_post_run_revision": true,
+  "development_gate": "NOT_MET",
+  "strategy_comparison": "INVALID_FOR_STRATEGY_ATTRIBUTION",
+  "fairness_gap": "Common validator rejects normal ReAct C single/same-direction expectations using D-only opposite-pair rule; 10 single YES and 1 same-direction YES pair rejections.",
+  "recommendation": "KEEP_ORIGINAL_V1_REACT; do not promote the new shared protocol or D-lite; no new unseen-event experiment now"
+}

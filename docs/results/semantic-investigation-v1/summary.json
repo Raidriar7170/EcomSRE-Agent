@@ -1,0 +1,508 @@
+{
+  "implementation": "ready",
+  "experiment": "partial",
+  "effect": "undetermined",
+  "independent_event_groups": 1,
+  "development_windows": 2,
+  "root_test_events": 0,
+  "planned_root_test_events": 24,
+  "development_semantic_revisions": 2,
+  "budget": {
+    "actual_requests": 50,
+    "accounted_microusd": 932078,
+    "pending": 0,
+    "unknown_usage_requests": 0,
+    "limit_microusd": 20000000,
+    "limit_requests": 1600,
+    "reasoning_tokens": 30800,
+    "input_tokens": 827796,
+    "output_tokens": 69158
+  },
+  "groups": {
+    "dev-01/repeat-0": {
+      "methods": {
+        "A": {
+          "started": 0,
+          "completed": 0,
+          "independent_root_events": 0,
+          "acc1": null,
+          "mrr": null,
+          "event_scores": {},
+          "report_coverage": null,
+          "semantic_false_assertions": 0,
+          "provider_calls": 0,
+          "analysis_actions": 0,
+          "queries": 0,
+          "records_scanned": 0,
+          "cost": {
+            "actual_requests": 0,
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "accounted_microusd": 0,
+            "unknown_usage_calls": 0
+          },
+          "observable_outcomes": {},
+          "precommitted_questions": 0
+        },
+        "B": {
+          "started": 0,
+          "completed": 0,
+          "independent_root_events": 0,
+          "acc1": null,
+          "mrr": null,
+          "event_scores": {},
+          "report_coverage": null,
+          "semantic_false_assertions": 0,
+          "provider_calls": 0,
+          "analysis_actions": 0,
+          "queries": 0,
+          "records_scanned": 0,
+          "cost": {
+            "actual_requests": 0,
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "accounted_microusd": 0,
+            "unknown_usage_calls": 0
+          },
+          "observable_outcomes": {},
+          "precommitted_questions": 0
+        },
+        "C": {
+          "started": 1,
+          "completed": 0,
+          "independent_root_events": 0,
+          "acc1": null,
+          "mrr": null,
+          "event_scores": {},
+          "report_coverage": 0.0,
+          "semantic_false_assertions": 0,
+          "provider_calls": 2,
+          "analysis_actions": 0,
+          "queries": 0,
+          "records_scanned": 0,
+          "cost": {
+            "actual_requests": 2,
+            "input_tokens": 25473,
+            "output_tokens": 2485,
+            "accounted_microusd": 30288,
+            "unknown_usage_calls": 0
+          },
+          "observable_outcomes": {},
+          "precommitted_questions": 0
+        },
+        "D": {
+          "started": 0,
+          "completed": 0,
+          "independent_root_events": 0,
+          "acc1": null,
+          "mrr": null,
+          "event_scores": {},
+          "report_coverage": null,
+          "semantic_false_assertions": 0,
+          "provider_calls": 0,
+          "analysis_actions": 0,
+          "queries": 0,
+          "records_scanned": 0,
+          "cost": {
+            "actual_requests": 0,
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "accounted_microusd": 0,
+            "unknown_usage_calls": 0
+          },
+          "observable_outcomes": {},
+          "precommitted_questions": 0
+        }
+      },
+      "contrasts": {
+        "D-A": {
+          "events": 0,
+          "difference": null,
+          "paired_bootstrap_95": null
+        },
+        "D-B": {
+          "events": 0,
+          "difference": null,
+          "paired_bootstrap_95": null
+        },
+        "D-C": {
+          "events": 0,
+          "difference": null,
+          "paired_bootstrap_95": null
+        }
+      },
+      "effect": "undetermined"
+    },
+    "dev-02/repeat-0": {
+      "methods": {
+        "A": {
+          "started": 0,
+          "completed": 0,
+          "independent_root_events": 0,
+          "acc1": null,
+          "mrr": null,
+          "event_scores": {},
+          "report_coverage": null,
+          "semantic_false_assertions": 0,
+          "provider_calls": 0,
+          "analysis_actions": 0,
+          "queries": 0,
+          "records_scanned": 0,
+          "cost": {
+            "actual_requests": 0,
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "accounted_microusd": 0,
+            "unknown_usage_calls": 0
+          },
+          "observable_outcomes": {},
+          "precommitted_questions": 0
+        },
+        "B": {
+          "started": 0,
+          "completed": 0,
+          "independent_root_events": 0,
+          "acc1": null,
+          "mrr": null,
+          "event_scores": {},
+          "report_coverage": null,
+          "semantic_false_assertions": 0,
+          "provider_calls": 0,
+          "analysis_actions": 0,
+          "queries": 0,
+          "records_scanned": 0,
+          "cost": {
+            "actual_requests": 0,
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "accounted_microusd": 0,
+            "unknown_usage_calls": 0
+          },
+          "observable_outcomes": {},
+          "precommitted_questions": 0
+        },
+        "C": {
+          "started": 1,
+          "completed": 0,
+          "independent_root_events": 0,
+          "acc1": null,
+          "mrr": null,
+          "event_scores": {},
+          "report_coverage": 0.0,
+          "semantic_false_assertions": 0,
+          "provider_calls": 5,
+          "analysis_actions": 3,
+          "queries": 4,
+          "records_scanned": 3612,
+          "cost": {
+            "actual_requests": 5,
+            "input_tokens": 82822,
+            "output_tokens": 4841,
+            "accounted_microusd": 83903,
+            "unknown_usage_calls": 0
+          },
+          "observable_outcomes": {
+            "UNKNOWN": 3
+          },
+          "precommitted_questions": 0
+        },
+        "D": {
+          "started": 0,
+          "completed": 0,
+          "independent_root_events": 0,
+          "acc1": null,
+          "mrr": null,
+          "event_scores": {},
+          "report_coverage": null,
+          "semantic_false_assertions": 0,
+          "provider_calls": 0,
+          "analysis_actions": 0,
+          "queries": 0,
+          "records_scanned": 0,
+          "cost": {
+            "actual_requests": 0,
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "accounted_microusd": 0,
+            "unknown_usage_calls": 0
+          },
+          "observable_outcomes": {},
+          "precommitted_questions": 0
+        }
+      },
+      "contrasts": {
+        "D-A": {
+          "events": 0,
+          "difference": null,
+          "paired_bootstrap_95": null
+        },
+        "D-B": {
+          "events": 0,
+          "difference": null,
+          "paired_bootstrap_95": null
+        },
+        "D-C": {
+          "events": 0,
+          "difference": null,
+          "paired_bootstrap_95": null
+        }
+      },
+      "effect": "undetermined"
+    },
+    "paired-v1/repeat-0": {
+      "methods": {
+        "A": {
+          "started": 2,
+          "completed": 0,
+          "independent_root_events": 0,
+          "acc1": null,
+          "mrr": null,
+          "event_scores": {},
+          "report_coverage": 0.0,
+          "semantic_false_assertions": 0,
+          "provider_calls": 6,
+          "analysis_actions": 2,
+          "queries": 2,
+          "records_scanned": 1032,
+          "cost": {
+            "actual_requests": 6,
+            "input_tokens": 101430,
+            "output_tokens": 7223,
+            "accounted_microusd": 108580,
+            "unknown_usage_calls": 0
+          },
+          "observable_outcomes": {
+            "UNKNOWN": 2
+          },
+          "precommitted_questions": 0
+        },
+        "B": {
+          "started": 2,
+          "completed": 1,
+          "independent_root_events": 0,
+          "acc1": null,
+          "mrr": null,
+          "event_scores": {},
+          "report_coverage": 0.5,
+          "semantic_false_assertions": 0,
+          "provider_calls": 3,
+          "analysis_actions": 12,
+          "queries": 16,
+          "records_scanned": 40576,
+          "cost": {
+            "actual_requests": 3,
+            "input_tokens": 57601,
+            "output_tokens": 5144,
+            "accounted_microusd": 66350,
+            "unknown_usage_calls": 0
+          },
+          "observable_outcomes": {
+            "UNKNOWN": 12
+          },
+          "precommitted_questions": 0
+        },
+        "C": {
+          "started": 2,
+          "completed": 2,
+          "independent_root_events": 0,
+          "acc1": null,
+          "mrr": null,
+          "event_scores": {},
+          "report_coverage": 1.0,
+          "semantic_false_assertions": 0,
+          "provider_calls": 9,
+          "analysis_actions": 7,
+          "queries": 10,
+          "records_scanned": 10792,
+          "cost": {
+            "actual_requests": 9,
+            "input_tokens": 147946,
+            "output_tokens": 10591,
+            "accounted_microusd": 158623,
+            "unknown_usage_calls": 0
+          },
+          "observable_outcomes": {
+            "UNKNOWN": 7
+          },
+          "precommitted_questions": 0
+        },
+        "D": {
+          "started": 2,
+          "completed": 1,
+          "independent_root_events": 0,
+          "acc1": null,
+          "mrr": null,
+          "event_scores": {},
+          "report_coverage": 0.5,
+          "semantic_false_assertions": 0,
+          "provider_calls": 10,
+          "analysis_actions": 5,
+          "queries": 9,
+          "records_scanned": 14964,
+          "cost": {
+            "actual_requests": 10,
+            "input_tokens": 163349,
+            "output_tokens": 18875,
+            "accounted_microusd": 207453,
+            "unknown_usage_calls": 0
+          },
+          "observable_outcomes": {
+            "UNKNOWN": 5
+          },
+          "precommitted_questions": 4
+        }
+      },
+      "contrasts": {
+        "D-A": {
+          "events": 0,
+          "difference": null,
+          "paired_bootstrap_95": null
+        },
+        "D-B": {
+          "events": 0,
+          "difference": null,
+          "paired_bootstrap_95": null
+        },
+        "D-C": {
+          "events": 0,
+          "difference": null,
+          "paired_bootstrap_95": null
+        }
+      },
+      "effect": "undetermined"
+    },
+    "paired-v1/repeat-1": {
+      "methods": {
+        "A": {
+          "started": 0,
+          "completed": 0,
+          "independent_root_events": 0,
+          "acc1": null,
+          "mrr": null,
+          "event_scores": {},
+          "report_coverage": null,
+          "semantic_false_assertions": 0,
+          "provider_calls": 0,
+          "analysis_actions": 0,
+          "queries": 0,
+          "records_scanned": 0,
+          "cost": {
+            "actual_requests": 0,
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "accounted_microusd": 0,
+            "unknown_usage_calls": 0
+          },
+          "observable_outcomes": {},
+          "precommitted_questions": 0
+        },
+        "B": {
+          "started": 0,
+          "completed": 0,
+          "independent_root_events": 0,
+          "acc1": null,
+          "mrr": null,
+          "event_scores": {},
+          "report_coverage": null,
+          "semantic_false_assertions": 0,
+          "provider_calls": 0,
+          "analysis_actions": 0,
+          "queries": 0,
+          "records_scanned": 0,
+          "cost": {
+            "actual_requests": 0,
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "accounted_microusd": 0,
+            "unknown_usage_calls": 0
+          },
+          "observable_outcomes": {},
+          "precommitted_questions": 0
+        },
+        "C": {
+          "started": 2,
+          "completed": 1,
+          "independent_root_events": 0,
+          "acc1": null,
+          "mrr": null,
+          "event_scores": {},
+          "report_coverage": 0.5,
+          "semantic_false_assertions": 0,
+          "provider_calls": 12,
+          "analysis_actions": 9,
+          "queries": 14,
+          "records_scanned": 20804,
+          "cost": {
+            "actual_requests": 12,
+            "input_tokens": 203840,
+            "output_tokens": 15199,
+            "accounted_microusd": 221279,
+            "unknown_usage_calls": 0
+          },
+          "observable_outcomes": {
+            "UNKNOWN": 9
+          },
+          "precommitted_questions": 0
+        },
+        "D": {
+          "started": 2,
+          "completed": 1,
+          "independent_root_events": 0,
+          "acc1": null,
+          "mrr": null,
+          "event_scores": {},
+          "report_coverage": 0.5,
+          "semantic_false_assertions": 0,
+          "provider_calls": 3,
+          "analysis_actions": 0,
+          "queries": 0,
+          "records_scanned": 0,
+          "cost": {
+            "actual_requests": 3,
+            "input_tokens": 45335,
+            "output_tokens": 4800,
+            "accounted_microusd": 55602,
+            "unknown_usage_calls": 0
+          },
+          "observable_outcomes": {},
+          "precommitted_questions": 0
+        }
+      },
+      "contrasts": {
+        "D-A": {
+          "events": 0,
+          "difference": null,
+          "paired_bootstrap_95": null
+        },
+        "D-B": {
+          "events": 0,
+          "difference": null,
+          "paired_bootstrap_95": null
+        },
+        "D-C": {
+          "events": 0,
+          "difference": null,
+          "paired_bootstrap_95": null
+        }
+      },
+      "effect": "undetermined"
+    }
+  },
+  "numerical_recalculation": {
+    "analyses": 35,
+    "matched": 35,
+    "all_match": true
+  },
+  "source_version": {
+    "base": "c7dce3720b2d877a10db30a940dd238c275b06e1",
+    "config_sha256": "4765d12eadc4cc09917f3c66ddeb80bdfbd1d2d32c83370613c3042137c91f21",
+    "implementation_commit": "cc8a44ba6279afd9206cc5df516ba464a8e1b2ef"
+  },
+  "limits": [
+    "One already-seen event group; no root labels or independent held-out test.",
+    "Counts of repeated windows are not independent events.",
+    "Numerical verification covers program-generated analysis tables, not blanket endorsement of model prose.",
+    "Costs are reported token counts at conservative rates, not an invoice.",
+    "Access counts are equivalent bounded processing proxies, not measured physical I/O."
+  ]
+}

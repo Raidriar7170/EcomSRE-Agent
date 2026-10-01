@@ -1,0 +1,711 @@
+{
+  "source": "Previously retained RCA-100 fd92cae17e6e14fa3ed0f3963c31838151fbdaa7",
+  "license": "CC BY-NC-SA 4.0; local noncommercial research, no raw telemetry/answer key redistribution",
+  "citation": "Wen, Xidao et al. RCA-100: A Chain-Reasoning Benchmark for Root Cause Analysis on Cloud-Native Microservices (2026)",
+  "availability": {
+    "source_tasks": 103,
+    "eligible_tasks": 87,
+    "support_groups": 67,
+    "eligible_groups": 57,
+    "selected_development": 12,
+    "selected_test": 24
+  },
+  "historical_exposure": "Used in another frozen project study; no claim of first-ever untouched dataset. This algorithm uses a separately fixed group split, no test-based tuning.",
+  "private_config_sha256": "90a08a0d8b3e479c77dba3d2c5b4e3f7eba57945dda13b02e921496b002b674f",
+  "fields_present": [
+    "service",
+    "operation",
+    "OTel status",
+    "duration ns",
+    "trace/span/parent identifiers",
+    "prior trace windows"
+  ],
+  "fields_excluded": [
+    "metrics",
+    "logs",
+    "events",
+    "attributes",
+    "resources",
+    "ground truth"
+  ],
+  "cases": [
+    {
+      "case_id": "rcase-001",
+      "event_group": "group-001",
+      "split": "development",
+      "snapshot_sha256": "63b778c8a9d73b491c5f5469deb10cb682229334d2294b9d60ed29fb9ddfe7fc",
+      "sampled_counts": {
+        "current": 450,
+        "reference-0": 450,
+        "reference-1": 450,
+        "reference-2": 450
+      },
+      "source_rows": 510000,
+      "window_rows": {
+        "reference-0": 12625,
+        "reference-1": 100460,
+        "reference-2": 100658,
+        "current": 91086
+      }
+    },
+    {
+      "case_id": "rcase-002",
+      "event_group": "group-002",
+      "split": "development",
+      "snapshot_sha256": "b3be05b59174426a3e9f30cfb560e88e6413507d5bf0a325e9586da857e31122",
+      "sampled_counts": {
+        "current": 450,
+        "reference-0": 450,
+        "reference-1": 450,
+        "reference-2": 450
+      },
+      "source_rows": 358256,
+      "window_rows": {
+        "reference-0": 19412,
+        "reference-1": 90588,
+        "reference-2": 17278,
+        "current": 87180
+      }
+    },
+    {
+      "case_id": "rcase-003",
+      "event_group": "group-003",
+      "split": "development",
+      "snapshot_sha256": "5f7b07199fb7bd1dd7f2a072c5d72a4a7e1428bcb7ebd8bb957b7be123e9bc96",
+      "sampled_counts": {
+        "current": 450,
+        "reference-0": 450,
+        "reference-1": 450,
+        "reference-2": 450
+      },
+      "source_rows": 410000,
+      "window_rows": {
+        "reference-0": 99985,
+        "reference-1": 99711,
+        "reference-2": 99181,
+        "current": 3149
+      }
+    },
+    {
+      "case_id": "rcase-004",
+      "event_group": "group-004",
+      "split": "development",
+      "snapshot_sha256": "70d24fa64a5450ae0c03e8f16c0973c81cf3bf5761363a8a560ba01cfb2dd5d0",
+      "sampled_counts": {
+        "current": 450,
+        "reference-0": 450,
+        "reference-1": 450,
+        "reference-2": 450
+      },
+      "source_rows": 470000,
+      "window_rows": {
+        "reference-0": 100000,
+        "reference-1": 100000,
+        "reference-2": 100000,
+        "current": 70000
+      }
+    },
+    {
+      "case_id": "rcase-005",
+      "event_group": "group-005",
+      "split": "development",
+      "snapshot_sha256": "846bd9bd92be6d64f9ee92d84dcb39ec035ea332bb70814d14184a84241a5fba",
+      "sampled_counts": {
+        "current": 450,
+        "reference-0": 450,
+        "reference-1": 450,
+        "reference-2": 450
+      },
+      "source_rows": 600000,
+      "window_rows": {
+        "reference-0": 100000,
+        "reference-1": 100000,
+        "reference-2": 100000,
+        "current": 100000
+      }
+    },
+    {
+      "case_id": "rcase-006",
+      "event_group": "group-006",
+      "split": "development",
+      "snapshot_sha256": "5f245f4f7044be732c003139a0cd20a5e509135a4a4360b3715dca99c057917a",
+      "sampled_counts": {
+        "current": 450,
+        "reference-0": 450,
+        "reference-1": 450,
+        "reference-2": 450
+      },
+      "source_rows": 498010,
+      "window_rows": {
+        "reference-0": 100000,
+        "reference-1": 100000,
+        "reference-2": 98000,
+        "current": 100010
+      }
+    },
+    {
+      "case_id": "rcase-007",
+      "event_group": "group-007",
+      "split": "development",
+      "snapshot_sha256": "1e346dd6b867ffd0b36355cf08f501e4f4a47028008875a64505632f409c0f0a",
+      "sampled_counts": {
+        "current": 450,
+        "reference-0": 450,
+        "reference-1": 450,
+        "reference-2": 450
+      },
+      "source_rows": 410000,
+      "window_rows": {
+        "reference-0": 100000,
+        "reference-1": 100000,
+        "reference-2": 100000,
+        "current": 10000
+      }
+    },
+    {
+      "case_id": "rcase-008",
+      "event_group": "group-008",
+      "split": "development",
+      "snapshot_sha256": "6c295bd1d0f3dc536ff0601e9f8ae3af29f76c5af0c7742a2f5772054608ec6c",
+      "sampled_counts": {
+        "current": 450,
+        "reference-0": 450,
+        "reference-1": 450,
+        "reference-2": 450
+      },
+      "source_rows": 500010,
+      "window_rows": {
+        "reference-0": 100000,
+        "reference-1": 100000,
+        "reference-2": 100000,
+        "current": 100010
+      }
+    },
+    {
+      "case_id": "rcase-009",
+      "event_group": "group-009",
+      "split": "development",
+      "snapshot_sha256": "223d38ccf9615d5518fde77a8ae05533b20daaf19856c0029a0932267c00bf3e",
+      "sampled_counts": {
+        "current": 450,
+        "reference-0": 3,
+        "reference-1": 450,
+        "reference-2": 450
+      },
+      "source_rows": 254831,
+      "window_rows": {
+        "reference-0": 3,
+        "reference-1": 44284,
+        "reference-2": 43745,
+        "current": 43570
+      }
+    },
+    {
+      "case_id": "rcase-010",
+      "event_group": "group-010",
+      "split": "development",
+      "snapshot_sha256": "71e95b08518a98a35d288fa9d29176fbf5cb8fbc4c325bb68b2891f30375c25c",
+      "sampled_counts": {
+        "current": 450,
+        "reference-0": 450,
+        "reference-1": 450,
+        "reference-2": 450
+      },
+      "source_rows": 600000,
+      "window_rows": {
+        "reference-0": 100000,
+        "reference-1": 100000,
+        "reference-2": 100000,
+        "current": 193106
+      }
+    },
+    {
+      "case_id": "rcase-011",
+      "event_group": "group-011",
+      "split": "development",
+      "snapshot_sha256": "631815fc8775f3da84423c0f10e2b2ef943087d9f79f02612e7bf546379906eb",
+      "sampled_counts": {
+        "current": 450,
+        "reference-0": 450,
+        "reference-1": 450,
+        "reference-2": 450
+      },
+      "source_rows": 392831,
+      "window_rows": {
+        "reference-0": 101348,
+        "reference-1": 99296,
+        "reference-2": 99650,
+        "current": 17397
+      }
+    },
+    {
+      "case_id": "rcase-012",
+      "event_group": "group-012",
+      "split": "development",
+      "snapshot_sha256": "ba93d16484f096275b5a5c9ea1d92ce2ae813795281019f72ab4a36417124c6d",
+      "sampled_counts": {
+        "current": 450,
+        "reference-0": 450,
+        "reference-1": 450,
+        "reference-2": 450
+      },
+      "source_rows": 699000,
+      "window_rows": {
+        "reference-0": 100000,
+        "reference-1": 100000,
+        "reference-2": 100000,
+        "current": 99500
+      }
+    },
+    {
+      "case_id": "rcase-013",
+      "event_group": "group-013",
+      "split": "test",
+      "snapshot_sha256": "c93584086b6e1de4d0fb83782171af177dd071bd8fed8921b6eb56e52a364551",
+      "sampled_counts": {
+        "current": 450,
+        "reference-0": 450,
+        "reference-1": 0,
+        "reference-2": 450
+      },
+      "source_rows": 297592,
+      "window_rows": {
+        "reference-0": 50000,
+        "reference-2": 20000,
+        "current": 100049
+      }
+    },
+    {
+      "case_id": "rcase-014",
+      "event_group": "group-014",
+      "split": "test",
+      "snapshot_sha256": "c6577361fbd8a93f34467b5cff2e0da942607853d5059a75e1ba85d7325935ba",
+      "sampled_counts": {
+        "current": 450,
+        "reference-0": 450,
+        "reference-1": 0,
+        "reference-2": 450
+      },
+      "source_rows": 340000,
+      "window_rows": {
+        "reference-0": 70000,
+        "reference-2": 100000,
+        "current": 70000
+      }
+    },
+    {
+      "case_id": "rcase-015",
+      "event_group": "group-015",
+      "split": "test",
+      "snapshot_sha256": "e507bf3211561406dde4cc9c7679d4436a9a9a3ac29afddc6408c77f6f2e7834",
+      "sampled_counts": {
+        "current": 450,
+        "reference-0": 450,
+        "reference-1": 450,
+        "reference-2": 450
+      },
+      "source_rows": 531682,
+      "window_rows": {
+        "reference-0": 25490,
+        "reference-1": 174510,
+        "reference-2": 45582,
+        "current": 68394
+      }
+    },
+    {
+      "case_id": "rcase-016",
+      "event_group": "group-016",
+      "split": "test",
+      "snapshot_sha256": "81fecd638e7aacb755afe0398b332f62351663be886599c2f5df221212689a2a",
+      "sampled_counts": {
+        "current": 450,
+        "reference-0": 450,
+        "reference-1": 450,
+        "reference-2": 450
+      },
+      "source_rows": 599010,
+      "window_rows": {
+        "reference-0": 99000,
+        "reference-1": 100000,
+        "reference-2": 100000,
+        "current": 100010
+      }
+    },
+    {
+      "case_id": "rcase-017",
+      "event_group": "group-017",
+      "split": "test",
+      "snapshot_sha256": "4ef52bb28f22287250045f2a93a1b6aed7eea22449ae93bd3b98415a9711830d",
+      "sampled_counts": {
+        "current": 450,
+        "reference-0": 450,
+        "reference-1": 450,
+        "reference-2": 450
+      },
+      "source_rows": 594500,
+      "window_rows": {
+        "reference-0": 99000,
+        "reference-1": 99500,
+        "reference-2": 100000,
+        "current": 99500
+      }
+    },
+    {
+      "case_id": "rcase-018",
+      "event_group": "group-018",
+      "split": "test",
+      "snapshot_sha256": "bfb0aa978a9e28d9c222b507ad53a4f34cb6dc5e7f8f13a7120cdfba3efe08d2",
+      "sampled_counts": {
+        "current": 450,
+        "reference-0": 450,
+        "reference-1": 450,
+        "reference-2": 450
+      },
+      "source_rows": 600010,
+      "window_rows": {
+        "reference-0": 100000,
+        "reference-1": 100000,
+        "reference-2": 100000,
+        "current": 100010
+      }
+    },
+    {
+      "case_id": "rcase-019",
+      "event_group": "group-019",
+      "split": "test",
+      "snapshot_sha256": "df19d8e1698c67315313e10169f56da851184f49af3777e5a64c0f247b79b69c",
+      "sampled_counts": {
+        "current": 450,
+        "reference-0": 450,
+        "reference-1": 450,
+        "reference-2": 450
+      },
+      "source_rows": 680049,
+      "window_rows": {
+        "reference-0": 104214,
+        "reference-1": 95636,
+        "reference-2": 104600,
+        "current": 99819
+      }
+    },
+    {
+      "case_id": "rcase-020",
+      "event_group": "group-020",
+      "split": "test",
+      "snapshot_sha256": "0dd76ad71a17304315d08dfe92da6b26441b221c4dfc979a41dd38366e8e9faa",
+      "sampled_counts": {
+        "current": 0,
+        "reference-0": 450,
+        "reference-1": 450,
+        "reference-2": 450
+      },
+      "source_rows": 380000,
+      "window_rows": {
+        "reference-0": 100000,
+        "reference-1": 100000,
+        "reference-2": 100000
+      }
+    },
+    {
+      "case_id": "rcase-021",
+      "event_group": "group-021",
+      "split": "test",
+      "snapshot_sha256": "96b77227fbf1ac62376cdc2082b4449a490214ff2ea6f4930cf93cc8909098ae",
+      "sampled_counts": {
+        "current": 450,
+        "reference-0": 450,
+        "reference-1": 450,
+        "reference-2": 450
+      },
+      "source_rows": 800000,
+      "window_rows": {
+        "reference-0": 100000,
+        "reference-1": 100000,
+        "reference-2": 100000,
+        "current": 100000
+      }
+    },
+    {
+      "case_id": "rcase-022",
+      "event_group": "group-022",
+      "split": "test",
+      "snapshot_sha256": "913b6018e935965279671549a2c42bb53c923968f27e67f675eef3e7157bbc67",
+      "sampled_counts": {
+        "current": 450,
+        "reference-0": 450,
+        "reference-1": 450,
+        "reference-2": 450
+      },
+      "source_rows": 500024,
+      "window_rows": {
+        "reference-0": 45198,
+        "reference-1": 91421,
+        "reference-2": 101314,
+        "current": 95853
+      }
+    },
+    {
+      "case_id": "rcase-023",
+      "event_group": "group-023",
+      "split": "test",
+      "snapshot_sha256": "5c7b112dd9ae13d14664a5fabebad31838a7e50f025ea9c4865bcb57071a50a9",
+      "sampled_counts": {
+        "current": 450,
+        "reference-0": 450,
+        "reference-1": 450,
+        "reference-2": 450
+      },
+      "source_rows": 500000,
+      "window_rows": {
+        "reference-0": 100000,
+        "reference-1": 100000,
+        "reference-2": 100000,
+        "current": 100000
+      }
+    },
+    {
+      "case_id": "rcase-024",
+      "event_group": "group-024",
+      "split": "test",
+      "snapshot_sha256": "f38c96e659f7f2ba408762183a544fb40963957cd98ff62d58aa7a742435a3b4",
+      "sampled_counts": {
+        "current": 450,
+        "reference-0": 450,
+        "reference-1": 450,
+        "reference-2": 0
+      },
+      "source_rows": 360000,
+      "window_rows": {
+        "reference-0": 100000,
+        "reference-1": 100000,
+        "current": 60000
+      }
+    },
+    {
+      "case_id": "rcase-025",
+      "event_group": "group-025",
+      "split": "test",
+      "snapshot_sha256": "d2da998189f62310db215db93876dcaca1748e873bc17cb57c3f71220ec38343",
+      "sampled_counts": {
+        "current": 450,
+        "reference-0": 450,
+        "reference-1": 450,
+        "reference-2": 450
+      },
+      "source_rows": 518000,
+      "window_rows": {
+        "reference-0": 100000,
+        "reference-1": 100000,
+        "reference-2": 100000,
+        "current": 100000
+      }
+    },
+    {
+      "case_id": "rcase-026",
+      "event_group": "group-026",
+      "split": "test",
+      "snapshot_sha256": "bd2a14fd175e718719630bdee5c27eb0eb27ab172bb1e935bdce281cf28b3cfe",
+      "sampled_counts": {
+        "current": 450,
+        "reference-0": 450,
+        "reference-1": 450,
+        "reference-2": 450
+      },
+      "source_rows": 500000,
+      "window_rows": {
+        "reference-0": 100000,
+        "reference-1": 100000,
+        "reference-2": 100017,
+        "current": 100000
+      }
+    },
+    {
+      "case_id": "rcase-027",
+      "event_group": "group-027",
+      "split": "test",
+      "snapshot_sha256": "2b5d66de7fd9a110798b4a5481ce7fc5ec31d867024fa53b21812605a84054f1",
+      "sampled_counts": {
+        "current": 450,
+        "reference-0": 450,
+        "reference-1": 450,
+        "reference-2": 450
+      },
+      "source_rows": 500688,
+      "window_rows": {
+        "reference-0": 100000,
+        "reference-1": 100000,
+        "reference-2": 89951,
+        "current": 111643
+      }
+    },
+    {
+      "case_id": "rcase-028",
+      "event_group": "group-028",
+      "split": "test",
+      "snapshot_sha256": "4605d309f7da4c6a0026760b05974b431eedc812a1f641729e80d6c28c146bdc",
+      "sampled_counts": {
+        "current": 450,
+        "reference-0": 450,
+        "reference-1": 450,
+        "reference-2": 450
+      },
+      "source_rows": 539451,
+      "window_rows": {
+        "reference-0": 100000,
+        "reference-1": 100000,
+        "reference-2": 100000,
+        "current": 98500
+      }
+    },
+    {
+      "case_id": "rcase-029",
+      "event_group": "group-029",
+      "split": "test",
+      "snapshot_sha256": "fad17e3aa3882b46e616fd819f54852a974d976679135dacb682e620d52d3c05",
+      "sampled_counts": {
+        "current": 450,
+        "reference-0": 450,
+        "reference-1": 450,
+        "reference-2": 450
+      },
+      "source_rows": 500000,
+      "window_rows": {
+        "reference-0": 100000,
+        "reference-1": 100000,
+        "reference-2": 100000,
+        "current": 100000
+      }
+    },
+    {
+      "case_id": "rcase-030",
+      "event_group": "group-030",
+      "split": "test",
+      "snapshot_sha256": "836f1ffb0043c020f0c6c8007569735273fe1573295bb59d3a4e4fe180f7bc3f",
+      "sampled_counts": {
+        "current": 450,
+        "reference-0": 450,
+        "reference-1": 450,
+        "reference-2": 450
+      },
+      "source_rows": 460009,
+      "window_rows": {
+        "reference-0": 100093,
+        "reference-1": 99920,
+        "reference-2": 100323,
+        "current": 56540
+      }
+    },
+    {
+      "case_id": "rcase-031",
+      "event_group": "group-031",
+      "split": "test",
+      "snapshot_sha256": "c5c09fdb40c9413d4e64c156ddd15a579464f6d6689509a9e9577b88ba094224",
+      "sampled_counts": {
+        "current": 450,
+        "reference-0": 450,
+        "reference-1": 450,
+        "reference-2": 450
+      },
+      "source_rows": 369000,
+      "window_rows": {
+        "reference-0": 100000,
+        "reference-1": 100000,
+        "reference-2": 69000,
+        "current": 100000
+      }
+    },
+    {
+      "case_id": "rcase-032",
+      "event_group": "group-032",
+      "split": "test",
+      "snapshot_sha256": "f3b37ca8a19ea950711ad800bca83d708a19528c898612f6ce151d311c198cc5",
+      "sampled_counts": {
+        "current": 450,
+        "reference-0": 0,
+        "reference-1": 450,
+        "reference-2": 450
+      },
+      "source_rows": 463446,
+      "window_rows": {
+        "reference-1": 100000,
+        "reference-2": 100000,
+        "current": 100000
+      }
+    },
+    {
+      "case_id": "rcase-033",
+      "event_group": "group-033",
+      "split": "test",
+      "snapshot_sha256": "a64acb49cff3671a2d83139774c8e15a90ba1fb8ea835e5b565c5a6d5a5ba990",
+      "sampled_counts": {
+        "current": 450,
+        "reference-0": 0,
+        "reference-1": 450,
+        "reference-2": 450
+      },
+      "source_rows": 447541,
+      "window_rows": {
+        "reference-1": 100000,
+        "reference-2": 100016,
+        "current": 99993
+      }
+    },
+    {
+      "case_id": "rcase-034",
+      "event_group": "group-034",
+      "split": "test",
+      "snapshot_sha256": "f42492e5e6ba7ab4d4851dde5d7e2e1e2ff3f03115169406774ebad060a3ce3e",
+      "sampled_counts": {
+        "current": 450,
+        "reference-0": 450,
+        "reference-1": 450,
+        "reference-2": 450
+      },
+      "source_rows": 531000,
+      "window_rows": {
+        "reference-0": 11018,
+        "reference-1": 99938,
+        "reference-2": 100032,
+        "current": 99968
+      }
+    },
+    {
+      "case_id": "rcase-035",
+      "event_group": "group-035",
+      "split": "test",
+      "snapshot_sha256": "f4c3a6192aaf1785070759dc817d3f8c23db144229840d05bf2a4d717f5feab2",
+      "sampled_counts": {
+        "current": 450,
+        "reference-0": 450,
+        "reference-1": 450,
+        "reference-2": 450
+      },
+      "source_rows": 599000,
+      "window_rows": {
+        "reference-0": 100000,
+        "reference-1": 100000,
+        "reference-2": 99000,
+        "current": 100000
+      }
+    },
+    {
+      "case_id": "rcase-036",
+      "event_group": "group-036",
+      "split": "test",
+      "snapshot_sha256": "5966d28b9d2112dfdec6f7d969cedc8263fb18f29bafc1d0e0cb522d030dab9e",
+      "sampled_counts": {
+        "current": 450,
+        "reference-0": 450,
+        "reference-1": 450,
+        "reference-2": 450
+      },
+      "source_rows": 510000,
+      "window_rows": {
+        "reference-0": 100051,
+        "reference-1": 100086,
+        "reference-2": 10148,
+        "current": 100030
+      }
+    }
+  ]
+}

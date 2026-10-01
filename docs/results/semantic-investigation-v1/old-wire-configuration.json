@@ -1,0 +1,14 @@
+{
+  "source": "Exact 675698a provider replay through capturing in-process fake transport; no network or real ledger writes. Historical run intent source hashes bind this provider. Actual historical bodies were not retained.",
+  "strict": false,
+  "max_output_tokens": 4096,
+  "reasoning": {
+    "effort": "medium"
+  },
+  "tool_choice": {
+    "type": "function",
+    "name": "submit_proposal"
+  },
+  "parallel_tool_calls": false,
+  "schema_has_optional_fields": true
+}

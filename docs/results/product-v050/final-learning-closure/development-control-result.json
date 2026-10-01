@@ -1,0 +1,28 @@
+{
+  "status": "DEVELOPMENT_DATA_BLOCKED",
+  "reason": "DEVELOPMENT_KNOWN_CONTROL_NOT_ESTABLISHED",
+  "cause_category": "CONTROL_DESIGN_AND_OBSERVATION_INSUFFICIENCY_NOT_MODEL_FAILURE",
+  "n3_incident_id": "inc-1220bf449f6f02c83d4c1659",
+  "n3_diagnosis_terminal": "INSUFFICIENT_EVIDENCE",
+  "n3_diagnosis_sha256": "4a459704e0b93ab00871cf3e42e2e4e14ca52612440fe6c7bbe2749cf0c94299",
+  "retained_audit_sha256": "54ca0e538f2f3c3326acf3d5c900487692f5a9c3e3e32157002ef29f4d97baa3",
+  "n2_incident_id": "inc-c818b6255c903278534297b0",
+  "n2_diagnosis_terminal": "NO_INCIDENT",
+  "predeclared_core_preserved_gate_unchanged": true,
+  "offline_repair_available": false,
+  "provider_requests": 57,
+  "committed_microusd": 918501,
+  "new_provider_requests": 0,
+  "new_semantic_attempts": 0,
+  "closure_live_consumed": 3,
+  "cumulative_live_consumed": 8,
+  "unconsumed_slots": [
+    "N4",
+    "N5",
+    "N6",
+    "N7"
+  ],
+  "cleanup_clean": true,
+  "non_owned_unchanged": true,
+  "product_recovery_writes": 0
+}

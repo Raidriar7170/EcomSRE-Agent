@@ -1,0 +1,3105 @@
+[
+  {
+    "baseline_restore_count": 1,
+    "call_inputs": [
+      {
+        "call_index": 0,
+        "observed_evidence_refs": [
+          "e:a:logs:checkout:0:d04d5b207501",
+          "e:a:logs:fraud-detection:0:ef73acf09c1c",
+          "e:a:logs:kafka:0:aa0bea12d3cf",
+          "e:a:metrics:checkout:core:0:52de5524ba82",
+          "e:a:metrics:fraud-detection:core:0:2c809f6563f5",
+          "e:a:metrics:fraud-detection:queue-lag:0:c71fd5e2b51c",
+          "e:a:metrics:kafka:core:0:a98a78a3a93b",
+          "e:a:resources:checkout:0:63256d2d0cac",
+          "e:a:resources:fraud-detection:0:20baaa3e16d1",
+          "e:a:resources:kafka:0:8834efd49521",
+          "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed",
+          "e:a:traces:checkout:0:b0cabc58d1da",
+          "e:a:traces:fraud-detection:0:33b59f975481",
+          "e:a:traces:kafka:0:25ad1b4315a3",
+          "o:a:changes:checkout:2fc3c41c504d",
+          "o:a:changes:fraud-detection:68804dfd6c2a",
+          "o:a:changes:kafka:4b7144c8d4b6"
+        ],
+        "snapshot_sha256": "b2cd3db0cdc18b93dcdf3b1e0170a177b9915af022a5d6d69c974db742498962"
+      },
+      {
+        "call_index": 1,
+        "observed_evidence_refs": [
+          "e:a:logs:checkout:0:d04d5b207501",
+          "e:a:logs:fraud-detection:0:ef73acf09c1c",
+          "e:a:logs:kafka:0:aa0bea12d3cf",
+          "e:a:metrics:checkout:core:0:52de5524ba82",
+          "e:a:metrics:fraud-detection:core:0:2c809f6563f5",
+          "e:a:metrics:fraud-detection:queue-lag:0:c71fd5e2b51c",
+          "e:a:metrics:kafka:core:0:a98a78a3a93b",
+          "e:a:resources:checkout:0:63256d2d0cac",
+          "e:a:resources:fraud-detection:0:20baaa3e16d1",
+          "e:a:resources:kafka:0:8834efd49521",
+          "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed",
+          "e:a:traces:checkout:0:b0cabc58d1da",
+          "e:a:traces:fraud-detection:0:33b59f975481",
+          "e:a:traces:kafka:0:25ad1b4315a3",
+          "o:a:changes:checkout:2fc3c41c504d",
+          "o:a:changes:fraud-detection:68804dfd6c2a",
+          "o:a:changes:kafka:4b7144c8d4b6",
+          "investigation:d4cfa0aa4551a952c5b31dd82bcba6acfdf75d3499fb781508d22e2a8f3abd57"
+        ],
+        "snapshot_sha256": "6ec71a6572e474ff7bc4809c7e6378f67204ac740163cefc34b6d0af25a6c094"
+      },
+      {
+        "call_index": 2,
+        "observed_evidence_refs": [
+          "e:a:logs:checkout:0:d04d5b207501",
+          "e:a:logs:fraud-detection:0:ef73acf09c1c",
+          "e:a:logs:kafka:0:aa0bea12d3cf",
+          "e:a:metrics:checkout:core:0:52de5524ba82",
+          "e:a:metrics:fraud-detection:core:0:2c809f6563f5",
+          "e:a:metrics:fraud-detection:queue-lag:0:c71fd5e2b51c",
+          "e:a:metrics:kafka:core:0:a98a78a3a93b",
+          "e:a:resources:checkout:0:63256d2d0cac",
+          "e:a:resources:fraud-detection:0:20baaa3e16d1",
+          "e:a:resources:kafka:0:8834efd49521",
+          "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed",
+          "e:a:traces:checkout:0:b0cabc58d1da",
+          "e:a:traces:fraud-detection:0:33b59f975481",
+          "e:a:traces:kafka:0:25ad1b4315a3",
+          "o:a:changes:checkout:2fc3c41c504d",
+          "o:a:changes:fraud-detection:68804dfd6c2a",
+          "o:a:changes:kafka:4b7144c8d4b6",
+          "investigation:d4cfa0aa4551a952c5b31dd82bcba6acfdf75d3499fb781508d22e2a8f3abd57",
+          "investigation:b3667c215aee1724bbabab958e0775c198fe71358dca97c5b7bd311000fd52a1"
+        ],
+        "snapshot_sha256": "5c9eb6c7d31823e2379e5e35181f93126c033b03deebbfc23a1bc5476ce1e044"
+      },
+      {
+        "call_index": 3,
+        "observed_evidence_refs": [
+          "e:a:logs:checkout:0:d04d5b207501",
+          "e:a:logs:fraud-detection:0:ef73acf09c1c",
+          "e:a:logs:kafka:0:aa0bea12d3cf",
+          "e:a:metrics:checkout:core:0:52de5524ba82",
+          "e:a:metrics:fraud-detection:core:0:2c809f6563f5",
+          "e:a:metrics:fraud-detection:queue-lag:0:c71fd5e2b51c",
+          "e:a:metrics:kafka:core:0:a98a78a3a93b",
+          "e:a:resources:checkout:0:63256d2d0cac",
+          "e:a:resources:fraud-detection:0:20baaa3e16d1",
+          "e:a:resources:kafka:0:8834efd49521",
+          "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed",
+          "e:a:traces:checkout:0:b0cabc58d1da",
+          "e:a:traces:fraud-detection:0:33b59f975481",
+          "e:a:traces:kafka:0:25ad1b4315a3",
+          "o:a:changes:checkout:2fc3c41c504d",
+          "o:a:changes:fraud-detection:68804dfd6c2a",
+          "o:a:changes:kafka:4b7144c8d4b6",
+          "investigation:d4cfa0aa4551a952c5b31dd82bcba6acfdf75d3499fb781508d22e2a8f3abd57",
+          "investigation:b3667c215aee1724bbabab958e0775c198fe71358dca97c5b7bd311000fd52a1",
+          "investigation:ac7e6657d6467f4fb54584aed7bf6884bfcab94e8f4387d39554433c6a9e9341"
+        ],
+        "snapshot_sha256": "a31f468241c1bad9e3bb49172b8e390ac5d12f74d97e3e7965c0929c0433e8c7"
+      },
+      {
+        "call_index": 4,
+        "observed_evidence_refs": [
+          "e:a:logs:checkout:0:d04d5b207501",
+          "e:a:logs:fraud-detection:0:ef73acf09c1c",
+          "e:a:logs:kafka:0:aa0bea12d3cf",
+          "e:a:metrics:checkout:core:0:52de5524ba82",
+          "e:a:metrics:fraud-detection:core:0:2c809f6563f5",
+          "e:a:metrics:fraud-detection:queue-lag:0:c71fd5e2b51c",
+          "e:a:metrics:kafka:core:0:a98a78a3a93b",
+          "e:a:resources:checkout:0:63256d2d0cac",
+          "e:a:resources:fraud-detection:0:20baaa3e16d1",
+          "e:a:resources:kafka:0:8834efd49521",
+          "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed",
+          "e:a:traces:checkout:0:b0cabc58d1da",
+          "e:a:traces:fraud-detection:0:33b59f975481",
+          "e:a:traces:kafka:0:25ad1b4315a3",
+          "o:a:changes:checkout:2fc3c41c504d",
+          "o:a:changes:fraud-detection:68804dfd6c2a",
+          "o:a:changes:kafka:4b7144c8d4b6",
+          "investigation:d4cfa0aa4551a952c5b31dd82bcba6acfdf75d3499fb781508d22e2a8f3abd57",
+          "investigation:b3667c215aee1724bbabab958e0775c198fe71358dca97c5b7bd311000fd52a1",
+          "investigation:ac7e6657d6467f4fb54584aed7bf6884bfcab94e8f4387d39554433c6a9e9341",
+          "investigation:018364e20a4e6b33b87490fce2f86c9d28b19c36f0d32a2e089b34dd29b06c48"
+        ],
+        "snapshot_sha256": "b27e9c139379f8945d9e3bf77d22aee6bd71e32fcb775289a2615c9a13cf180b"
+      },
+      {
+        "call_index": 5,
+        "observed_evidence_refs": [
+          "e:a:logs:checkout:0:d04d5b207501",
+          "e:a:logs:fraud-detection:0:ef73acf09c1c",
+          "e:a:logs:kafka:0:aa0bea12d3cf",
+          "e:a:metrics:checkout:core:0:52de5524ba82",
+          "e:a:metrics:fraud-detection:core:0:2c809f6563f5",
+          "e:a:metrics:fraud-detection:queue-lag:0:c71fd5e2b51c",
+          "e:a:metrics:kafka:core:0:a98a78a3a93b",
+          "e:a:resources:checkout:0:63256d2d0cac",
+          "e:a:resources:fraud-detection:0:20baaa3e16d1",
+          "e:a:resources:kafka:0:8834efd49521",
+          "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed",
+          "e:a:traces:checkout:0:b0cabc58d1da",
+          "e:a:traces:fraud-detection:0:33b59f975481",
+          "e:a:traces:kafka:0:25ad1b4315a3",
+          "o:a:changes:checkout:2fc3c41c504d",
+          "o:a:changes:fraud-detection:68804dfd6c2a",
+          "o:a:changes:kafka:4b7144c8d4b6",
+          "investigation:d4cfa0aa4551a952c5b31dd82bcba6acfdf75d3499fb781508d22e2a8f3abd57",
+          "investigation:b3667c215aee1724bbabab958e0775c198fe71358dca97c5b7bd311000fd52a1",
+          "investigation:ac7e6657d6467f4fb54584aed7bf6884bfcab94e8f4387d39554433c6a9e9341",
+          "investigation:018364e20a4e6b33b87490fce2f86c9d28b19c36f0d32a2e089b34dd29b06c48"
+        ],
+        "snapshot_sha256": "255fa14fe855e45b7ae7586ad31aea870f6745a0effa0eb6955ce7eed7a0e7b0"
+      }
+    ],
+    "candidate_evidence_catalog": [
+      {
+        "covered_services": [
+          "checkout"
+        ],
+        "evidence_ref": "e:a:logs:checkout:0:d04d5b207501",
+        "source": "LOGS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "checkout"
+        ],
+        "truncated": true
+      },
+      {
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "e:a:logs:fraud-detection:0:ef73acf09c1c",
+        "source": "LOGS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": true
+      },
+      {
+        "covered_services": [
+          "kafka"
+        ],
+        "evidence_ref": "e:a:logs:kafka:0:aa0bea12d3cf",
+        "source": "LOGS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "kafka"
+        ],
+        "truncated": true
+      },
+      {
+        "covered_services": [
+          "checkout"
+        ],
+        "evidence_ref": "e:a:metrics:checkout:core:0:52de5524ba82",
+        "source": "METRICS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "checkout"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "e:a:metrics:fraud-detection:core:0:2c809f6563f5",
+        "source": "METRICS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "e:a:metrics:fraud-detection:queue-lag:0:c71fd5e2b51c",
+        "source": "METRICS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "kafka"
+        ],
+        "evidence_ref": "e:a:metrics:kafka:core:0:a98a78a3a93b",
+        "source": "METRICS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "kafka"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "checkout"
+        ],
+        "evidence_ref": "e:a:resources:checkout:0:63256d2d0cac",
+        "source": "RESOURCES",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "checkout"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "e:a:resources:fraud-detection:0:20baaa3e16d1",
+        "source": "RESOURCES",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "kafka"
+        ],
+        "evidence_ref": "e:a:resources:kafka:0:8834efd49521",
+        "source": "RESOURCES",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "kafka"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "checkout",
+          "fraud-detection",
+          "kafka"
+        ],
+        "evidence_ref": "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed",
+        "source": "RUNTIME",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "checkout",
+          "fraud-detection",
+          "kafka"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "checkout"
+        ],
+        "evidence_ref": "e:a:traces:checkout:0:b0cabc58d1da",
+        "source": "TRACES",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "checkout"
+        ],
+        "truncated": true
+      },
+      {
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "e:a:traces:fraud-detection:0:33b59f975481",
+        "source": "TRACES",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": true
+      },
+      {
+        "covered_services": [
+          "kafka"
+        ],
+        "evidence_ref": "e:a:traces:kafka:0:25ad1b4315a3",
+        "source": "TRACES",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "kafka"
+        ],
+        "truncated": true
+      },
+      {
+        "covered_services": [
+          "checkout"
+        ],
+        "evidence_ref": "o:a:changes:checkout:2fc3c41c504d",
+        "source": "CHANGES",
+        "status": "SUCCESS_EMPTY",
+        "targets": [
+          "checkout"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "o:a:changes:fraud-detection:68804dfd6c2a",
+        "source": "CHANGES",
+        "status": "SUCCESS_EMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "kafka"
+        ],
+        "evidence_ref": "o:a:changes:kafka:4b7144c8d4b6",
+        "source": "CHANGES",
+        "status": "SUCCESS_EMPTY",
+        "targets": [
+          "kafka"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "investigation:d4cfa0aa4551a952c5b31dd82bcba6acfdf75d3499fb781508d22e2a8f3abd57",
+        "source": "RESOURCES",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "kafka"
+        ],
+        "evidence_ref": "investigation:b3667c215aee1724bbabab958e0775c198fe71358dca97c5b7bd311000fd52a1",
+        "source": "RESOURCES",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "kafka"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "investigation:ac7e6657d6467f4fb54584aed7bf6884bfcab94e8f4387d39554433c6a9e9341",
+        "source": "METRICS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "kafka"
+        ],
+        "evidence_ref": "investigation:018364e20a4e6b33b87490fce2f86c9d28b19c36f0d32a2e089b34dd29b06c48",
+        "source": "LOGS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "kafka"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [],
+        "evidence_ref": "investigation:05b3b7f9da4c26c460ef862b769cfbbf4948279cdca380075badfaeb5c5d6753",
+        "source": "TRACES",
+        "status": "SUCCESS_EMPTY",
+        "targets": [
+          "kafka"
+        ],
+        "truncated": false
+      }
+    ],
+    "checked_predictions": [],
+    "decisions": [
+      {
+        "action_id": "read-15dd7b06d4486bbecf0bb323",
+        "hypotheses": [],
+        "kind": "READ",
+        "provider_call_index": 0,
+        "rationale": "Inspect fraud-detection resource samples in the recent 30-second window to discriminate whether elevated latency and queue lag are accompanied by host pressure versus a non-resource cause before concluding.",
+        "result": null,
+        "unresolved_alternatives": [],
+        "validation": "ACCEPTED"
+      },
+      {
+        "action_id": "read-0e37d7bf2f9fac314b20d255",
+        "hypotheses": [],
+        "kind": "READ",
+        "provider_call_index": 1,
+        "rationale": "Read Kafka resource samples to discriminate whether Kafka resource pressure is contributing to fraud-detection backlog versus the issue remaining localized to fraud-detection.",
+        "result": null,
+        "unresolved_alternatives": [
+          "Kafka contributes to the fraud-detection queue lag through transient resource pressure",
+          "Fraud-detection is the primary bottleneck and Kafka is not causative"
+        ],
+        "validation": "ACCEPTED"
+      },
+      {
+        "action_id": "read-0fcd527aee2a404540c96f3a",
+        "hypotheses": [],
+        "kind": "READ",
+        "provider_call_index": 2,
+        "rationale": "Need the latest fraud-detection metrics window to see whether the elevated latency and queue lag persist in the most recent 30 seconds, which would help discriminate internal backlog from transient noise.",
+        "result": null,
+        "unresolved_alternatives": [],
+        "validation": "ACCEPTED"
+      },
+      {
+        "action_id": "read-99562ea103ccb24209644cf1",
+        "hypotheses": [],
+        "kind": "READ",
+        "provider_call_index": 3,
+        "rationale": "Select a Kafka log read to check for broker-side warnings or backpressure signals that could distinguish infrastructure strain from an internal fraud-detection bottleneck. Current evidence shows fraud-detection latency and queue lag with Kafka healthy on core metrics but resource signals are inconclusive.",
+        "result": null,
+        "unresolved_alternatives": [],
+        "validation": "ACCEPTED"
+      },
+      {
+        "action_id": null,
+        "hypotheses": [
+          {
+            "against": [
+              "e:a:metrics:checkout:core:0:52de5524ba82",
+              "e:a:metrics:kafka:core:0:a98a78a3a93b",
+              "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed"
+            ],
+            "claim_window": {
+              "ended_at": "2026-09-18T06:35:01.552950Z",
+              "started_at": "2026-09-18T06:30:01.552950Z"
+            },
+            "falsifiable_prediction": "If fraud-detection is the bottleneck, then over the next 30 seconds its CPU should remain relatively low while latency or queue lag stays elevated compared with checkout and kafka.",
+            "hypothesis_id": null,
+            "mechanism": "Fraud-detection is the most plausible current bottleneck: its request latency and error rate are elevated, queue lag is high, and its resource samples show growing memory while CPU remains low. Checkout and kafka do not show comparable error or latency stress in the same window, which makes fraud-detection the leading explanation for the observed degradation.",
+            "missing_observations": [
+              "No service-specific logs or traces show an explicit exception or dependency failure in fraud-detection.",
+              "No downstream dependency evidence ties the elevated fraud-detection latency to a specific caller or external system.",
+              "No longer-horizon resource trend is available to distinguish transient load from a developing saturation pattern."
+            ],
+            "prediction_test": {
+              "comparator": "lt",
+              "field": "cpu_percent",
+              "minimum_samples": 5,
+              "operator": "mean",
+              "threshold": 2.0,
+              "window_seconds": 30
+            },
+            "support": [
+              "e:a:metrics:fraud-detection:core:0:2c809f6563f5",
+              "e:a:metrics:fraud-detection:queue-lag:0:c71fd5e2b51c",
+              "e:a:logs:fraud-detection:0:ef73acf09c1c",
+              "e:a:traces:fraud-detection:0:33b59f975481"
+            ],
+            "target": "fraud-detection"
+          },
+          {
+            "against": [
+              "e:a:metrics:fraud-detection:core:0:2c809f6563f5",
+              "e:a:metrics:fraud-detection:queue-lag:0:c71fd5e2b51c"
+            ],
+            "claim_window": {
+              "ended_at": "2026-09-18T06:35:01.552950Z",
+              "started_at": "2026-09-18T06:30:01.552950Z"
+            },
+            "falsifiable_prediction": "If kafka is not the source, then additional 10-second resource samples should not show sustained memory growth or rising latency beyond the current short burst.",
+            "hypothesis_id": null,
+            "mechanism": "Kafka is less likely to be the primary cause because it is healthy with zero error rate and minimal latency, despite a rise in memory usage in the short resource window. The observed memory increase may be incidental or workload-related rather than the cause of the broader issue.",
+            "missing_observations": [
+              "No kafka dependency or consumer-pressure traces are available for the same window.",
+              "No longer-running kafka resource samples are available to confirm whether memory growth persists.",
+              "No error-focused logs are available to show whether kafka emitted warnings that were truncated out of view."
+            ],
+            "prediction_test": {
+              "comparator": "lt",
+              "field": "memory_bytes",
+              "minimum_samples": 5,
+              "operator": "delta",
+              "threshold": 20000000.0,
+              "window_seconds": 10
+            },
+            "support": [
+              "e:a:metrics:kafka:core:0:a98a78a3a93b",
+              "e:a:traces:kafka:0:25ad1b4315a3",
+              "e:a:logs:kafka:0:aa0bea12d3cf"
+            ],
+            "target": "kafka"
+          }
+        ],
+        "kind": "CONCLUDE",
+        "provider_call_index": 4,
+        "rationale": "The evidence points most strongly to fraud-detection: it has materially higher latency and nonzero error rate than checkout and kafka, plus a high queue-lag metric. Checkout remains low-error and low-latency, and kafka shows low latency and zero errors. I am concluding provisionally at the hypothesis level, but the data do not isolate a single causal mechanism; truncated logs/traces leave room for dependency or load explanations.",
+        "result": "UNRESOLVED",
+        "unresolved_alternatives": [
+          "Transient load without a specific failure mode in fraud-detection",
+          "Upstream demand shift causing fraud-detection backlog",
+          "A hidden dependency issue not visible in the truncated traces/logs"
+        ],
+        "validation": "EVIDENCE_WINDOW_MISMATCH"
+      },
+      {
+        "action_id": "read-1cbe2932535389ab36bb2463",
+        "hypotheses": [],
+        "kind": "READ",
+        "provider_call_index": 5,
+        "rationale": "Kafka shows elevated resource use alongside the fraud-detection latency/queue-lag signal, but the current logs/traces are truncated and only diagnostic. Reading kafka traces over the matching recent window could discriminate whether kafka is merely busy or implicated in the downstream slowdown.",
+        "result": null,
+        "unresolved_alternatives": [
+          "fraud-detection is the primary bottleneck",
+          "kafka resource pressure is contributing to the issue",
+          "both services are independently noisy"
+        ],
+        "validation": "ACCEPTED"
+      }
+    ],
+    "end": {
+      "monotonic_ns": 366846666605708,
+      "utc": "2026-09-18T06:36:20.030874+00:00"
+    },
+    "episode": "e01",
+    "episode_id": "ecomsre-v050-27de683624-e01",
+    "fault_activation_count": 1,
+    "formal_diagnosis": "OPEN_WORLD",
+    "healthy_restored": true,
+    "hypotheses": [],
+    "hypothesis_support_observations": [],
+    "incident_id": "inc-f0e3b698b2d30035a1f94525",
+    "lag_after": 0.0,
+    "product_recovery_writes": 0,
+    "provider_calls": 6,
+    "read_count": 5,
+    "session_id": "inv-20d2805d58497348c7eb33a1",
+    "start": {
+      "monotonic_ns": 366728787165375,
+      "utc": "2026-09-18T06:34:22.151399+00:00"
+    },
+    "status": "UNRESOLVED",
+    "stop_reason": "NO_INFORMATION_GAIN",
+    "supplemental_observations": [
+      {
+        "capability_sha256": "cfb0182e725d5d82f71159329b5a29b52e0e94b50470ea307e86373e3b35c009",
+        "catalog_action_id": "read-15dd7b06d4486bbecf0bb323",
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "investigation:d4cfa0aa4551a952c5b31dd82bcba6acfdf75d3499fb781508d22e2a8f3abd57",
+        "object_sha256": "d4cfa0aa4551a952c5b31dd82bcba6acfdf75d3499fb781508d22e2a8f3abd57",
+        "request_sha256": "8e63e0e405c5d4d94e809bc4d2664c5743cba264e1caeb83d62bf9d61f74c984",
+        "resource_dependency": {
+          "query_window_seconds": 30,
+          "sample_count": 5,
+          "sampling_window_seconds": 10,
+          "template": "RESOURCE_USAGE_SAMPLES",
+          "window_offset_seconds": 30
+        },
+        "source": "RESOURCES",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false,
+        "window": {
+          "ended_at": "2026-09-18T06:34:31.552950Z",
+          "started_at": "2026-09-18T06:34:01.552950Z"
+        }
+      },
+      {
+        "capability_sha256": "cfb0182e725d5d82f71159329b5a29b52e0e94b50470ea307e86373e3b35c009",
+        "catalog_action_id": "read-0e37d7bf2f9fac314b20d255",
+        "covered_services": [
+          "kafka"
+        ],
+        "evidence_ref": "investigation:b3667c215aee1724bbabab958e0775c198fe71358dca97c5b7bd311000fd52a1",
+        "object_sha256": "b3667c215aee1724bbabab958e0775c198fe71358dca97c5b7bd311000fd52a1",
+        "request_sha256": "1efecf937ff124248e9088d1ff96ff7a1e0dc7288463c9c3057d109a6976a486",
+        "resource_dependency": {
+          "query_window_seconds": 30,
+          "sample_count": 5,
+          "sampling_window_seconds": 10,
+          "template": "RESOURCE_USAGE_SAMPLES",
+          "window_offset_seconds": 0
+        },
+        "source": "RESOURCES",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "kafka"
+        ],
+        "truncated": false,
+        "window": {
+          "ended_at": "2026-09-18T06:35:01.552950Z",
+          "started_at": "2026-09-18T06:34:31.552950Z"
+        }
+      },
+      {
+        "capability_sha256": "cfb0182e725d5d82f71159329b5a29b52e0e94b50470ea307e86373e3b35c009",
+        "catalog_action_id": "read-0fcd527aee2a404540c96f3a",
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "investigation:ac7e6657d6467f4fb54584aed7bf6884bfcab94e8f4387d39554433c6a9e9341",
+        "object_sha256": "ac7e6657d6467f4fb54584aed7bf6884bfcab94e8f4387d39554433c6a9e9341",
+        "request_sha256": "7748ed4c4ae77a25a22d19a25a121bf9270241dd2786eba0900a324cd58527de",
+        "resource_dependency": null,
+        "source": "METRICS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false,
+        "window": {
+          "ended_at": "2026-09-18T06:34:31.552950Z",
+          "started_at": "2026-09-18T06:34:01.552950Z"
+        }
+      },
+      {
+        "capability_sha256": "cfb0182e725d5d82f71159329b5a29b52e0e94b50470ea307e86373e3b35c009",
+        "catalog_action_id": "read-99562ea103ccb24209644cf1",
+        "covered_services": [
+          "kafka"
+        ],
+        "evidence_ref": "investigation:018364e20a4e6b33b87490fce2f86c9d28b19c36f0d32a2e089b34dd29b06c48",
+        "object_sha256": "018364e20a4e6b33b87490fce2f86c9d28b19c36f0d32a2e089b34dd29b06c48",
+        "request_sha256": "c71b6224ba9998e5da5d0481d44dbff1bf77219ded0a0562f8964b67032f38a6",
+        "resource_dependency": null,
+        "source": "LOGS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "kafka"
+        ],
+        "truncated": false,
+        "window": {
+          "ended_at": "2026-09-18T06:35:01.552950Z",
+          "started_at": "2026-09-18T06:34:31.552950Z"
+        }
+      },
+      {
+        "capability_sha256": "cfb0182e725d5d82f71159329b5a29b52e0e94b50470ea307e86373e3b35c009",
+        "catalog_action_id": "read-1cbe2932535389ab36bb2463",
+        "covered_services": [],
+        "evidence_ref": "investigation:05b3b7f9da4c26c460ef862b769cfbbf4948279cdca380075badfaeb5c5d6753",
+        "object_sha256": "05b3b7f9da4c26c460ef862b769cfbbf4948279cdca380075badfaeb5c5d6753",
+        "request_sha256": "9d97c1a80da632b9b67ced4050c625b48aa445cf2b0fac05ef4b82de5395726b",
+        "resource_dependency": null,
+        "source": "TRACES",
+        "status": "SUCCESS_EMPTY",
+        "targets": [
+          "kafka"
+        ],
+        "truncated": false,
+        "window": {
+          "ended_at": "2026-09-18T06:35:01.552950Z",
+          "started_at": "2026-09-18T06:34:31.552950Z"
+        }
+      }
+    ],
+    "supported_hypothesis_ids": [],
+    "telemetry_mode": "LIVE_PROVIDER_LIVE_TELEMETRY"
+  },
+  {
+    "baseline_restore_count": 1,
+    "call_inputs": [
+      {
+        "call_index": 0,
+        "observed_evidence_refs": [
+          "e:a:logs:checkout:0:df30e41d2bb3",
+          "e:a:logs:fraud-detection:0:6ac273c324c4",
+          "e:a:logs:kafka:0:d66dbaefce81",
+          "e:a:metrics:checkout:core:0:5ea80cc94992",
+          "e:a:metrics:fraud-detection:core:0:7da2bd603ddd",
+          "e:a:metrics:fraud-detection:queue-lag:0:4be594bc32a1",
+          "e:a:metrics:kafka:core:0:f5f8aa9139da",
+          "e:a:resources:checkout:0:e568163dc442",
+          "e:a:resources:fraud-detection:0:b85c45f9da46",
+          "e:a:resources:kafka:0:112a27381d3d",
+          "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed",
+          "e:a:traces:checkout:0:94ee51868102",
+          "e:a:traces:fraud-detection:0:2b41e20cfeb2",
+          "e:a:traces:kafka:0:82139f31ba47",
+          "o:a:changes:checkout:2fc3c41c504d",
+          "o:a:changes:fraud-detection:68804dfd6c2a",
+          "o:a:changes:kafka:4b7144c8d4b6"
+        ],
+        "snapshot_sha256": "0bb1ba30649f7e5a50d74d3567196cc095aa43f68515e29f8fe7e2ab6109c165"
+      },
+      {
+        "call_index": 1,
+        "observed_evidence_refs": [
+          "e:a:logs:checkout:0:df30e41d2bb3",
+          "e:a:logs:fraud-detection:0:6ac273c324c4",
+          "e:a:logs:kafka:0:d66dbaefce81",
+          "e:a:metrics:checkout:core:0:5ea80cc94992",
+          "e:a:metrics:fraud-detection:core:0:7da2bd603ddd",
+          "e:a:metrics:fraud-detection:queue-lag:0:4be594bc32a1",
+          "e:a:metrics:kafka:core:0:f5f8aa9139da",
+          "e:a:resources:checkout:0:e568163dc442",
+          "e:a:resources:fraud-detection:0:b85c45f9da46",
+          "e:a:resources:kafka:0:112a27381d3d",
+          "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed",
+          "e:a:traces:checkout:0:94ee51868102",
+          "e:a:traces:fraud-detection:0:2b41e20cfeb2",
+          "e:a:traces:kafka:0:82139f31ba47",
+          "o:a:changes:checkout:2fc3c41c504d",
+          "o:a:changes:fraud-detection:68804dfd6c2a",
+          "o:a:changes:kafka:4b7144c8d4b6"
+        ],
+        "snapshot_sha256": "ba30a66b5c76140200ad5286d4a09cb845e533306420e58b9aa3483efaeeece4"
+      },
+      {
+        "call_index": 2,
+        "observed_evidence_refs": [
+          "e:a:logs:checkout:0:df30e41d2bb3",
+          "e:a:logs:fraud-detection:0:6ac273c324c4",
+          "e:a:logs:kafka:0:d66dbaefce81",
+          "e:a:metrics:checkout:core:0:5ea80cc94992",
+          "e:a:metrics:fraud-detection:core:0:7da2bd603ddd",
+          "e:a:metrics:fraud-detection:queue-lag:0:4be594bc32a1",
+          "e:a:metrics:kafka:core:0:f5f8aa9139da",
+          "e:a:resources:checkout:0:e568163dc442",
+          "e:a:resources:fraud-detection:0:b85c45f9da46",
+          "e:a:resources:kafka:0:112a27381d3d",
+          "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed",
+          "e:a:traces:checkout:0:94ee51868102",
+          "e:a:traces:fraud-detection:0:2b41e20cfeb2",
+          "e:a:traces:kafka:0:82139f31ba47",
+          "o:a:changes:checkout:2fc3c41c504d",
+          "o:a:changes:fraud-detection:68804dfd6c2a",
+          "o:a:changes:kafka:4b7144c8d4b6",
+          "investigation:cd0424ecbfd1ba1d0483776c27d057b99fc4dc05423e5460a1f6287a2f43a59b"
+        ],
+        "snapshot_sha256": "84a6340a611f3dc4851ba2e4108292fbccc59baba7242524174f946c24a190be"
+      },
+      {
+        "call_index": 3,
+        "observed_evidence_refs": [
+          "e:a:logs:checkout:0:df30e41d2bb3",
+          "e:a:logs:fraud-detection:0:6ac273c324c4",
+          "e:a:logs:kafka:0:d66dbaefce81",
+          "e:a:metrics:checkout:core:0:5ea80cc94992",
+          "e:a:metrics:fraud-detection:core:0:7da2bd603ddd",
+          "e:a:metrics:fraud-detection:queue-lag:0:4be594bc32a1",
+          "e:a:metrics:kafka:core:0:f5f8aa9139da",
+          "e:a:resources:checkout:0:e568163dc442",
+          "e:a:resources:fraud-detection:0:b85c45f9da46",
+          "e:a:resources:kafka:0:112a27381d3d",
+          "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed",
+          "e:a:traces:checkout:0:94ee51868102",
+          "e:a:traces:fraud-detection:0:2b41e20cfeb2",
+          "e:a:traces:kafka:0:82139f31ba47",
+          "o:a:changes:checkout:2fc3c41c504d",
+          "o:a:changes:fraud-detection:68804dfd6c2a",
+          "o:a:changes:kafka:4b7144c8d4b6",
+          "investigation:cd0424ecbfd1ba1d0483776c27d057b99fc4dc05423e5460a1f6287a2f43a59b"
+        ],
+        "snapshot_sha256": "d14aa43428eacd47cc16bfcf8054beed38ffae9f80725533daec1105d028ac6e"
+      }
+    ],
+    "candidate_evidence_catalog": [
+      {
+        "covered_services": [
+          "checkout"
+        ],
+        "evidence_ref": "e:a:logs:checkout:0:df30e41d2bb3",
+        "source": "LOGS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "checkout"
+        ],
+        "truncated": true
+      },
+      {
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "e:a:logs:fraud-detection:0:6ac273c324c4",
+        "source": "LOGS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": true
+      },
+      {
+        "covered_services": [
+          "kafka"
+        ],
+        "evidence_ref": "e:a:logs:kafka:0:d66dbaefce81",
+        "source": "LOGS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "kafka"
+        ],
+        "truncated": true
+      },
+      {
+        "covered_services": [
+          "checkout"
+        ],
+        "evidence_ref": "e:a:metrics:checkout:core:0:5ea80cc94992",
+        "source": "METRICS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "checkout"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "e:a:metrics:fraud-detection:core:0:7da2bd603ddd",
+        "source": "METRICS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "e:a:metrics:fraud-detection:queue-lag:0:4be594bc32a1",
+        "source": "METRICS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "kafka"
+        ],
+        "evidence_ref": "e:a:metrics:kafka:core:0:f5f8aa9139da",
+        "source": "METRICS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "kafka"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "checkout"
+        ],
+        "evidence_ref": "e:a:resources:checkout:0:e568163dc442",
+        "source": "RESOURCES",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "checkout"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "e:a:resources:fraud-detection:0:b85c45f9da46",
+        "source": "RESOURCES",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "kafka"
+        ],
+        "evidence_ref": "e:a:resources:kafka:0:112a27381d3d",
+        "source": "RESOURCES",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "kafka"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "checkout",
+          "fraud-detection",
+          "kafka"
+        ],
+        "evidence_ref": "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed",
+        "source": "RUNTIME",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "checkout",
+          "fraud-detection",
+          "kafka"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "checkout"
+        ],
+        "evidence_ref": "e:a:traces:checkout:0:94ee51868102",
+        "source": "TRACES",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "checkout"
+        ],
+        "truncated": true
+      },
+      {
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "e:a:traces:fraud-detection:0:2b41e20cfeb2",
+        "source": "TRACES",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": true
+      },
+      {
+        "covered_services": [
+          "kafka"
+        ],
+        "evidence_ref": "e:a:traces:kafka:0:82139f31ba47",
+        "source": "TRACES",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "kafka"
+        ],
+        "truncated": true
+      },
+      {
+        "covered_services": [
+          "checkout"
+        ],
+        "evidence_ref": "o:a:changes:checkout:2fc3c41c504d",
+        "source": "CHANGES",
+        "status": "SUCCESS_EMPTY",
+        "targets": [
+          "checkout"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "o:a:changes:fraud-detection:68804dfd6c2a",
+        "source": "CHANGES",
+        "status": "SUCCESS_EMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "kafka"
+        ],
+        "evidence_ref": "o:a:changes:kafka:4b7144c8d4b6",
+        "source": "CHANGES",
+        "status": "SUCCESS_EMPTY",
+        "targets": [
+          "kafka"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "investigation:cd0424ecbfd1ba1d0483776c27d057b99fc4dc05423e5460a1f6287a2f43a59b",
+        "source": "LOGS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": true
+      }
+    ],
+    "checked_predictions": [
+      {
+        "claim_kind": "OBSERVED_NUMERIC_TEST",
+        "evidence_refs": [
+          "e:a:resources:fraud-detection:0:b85c45f9da46"
+        ],
+        "hypothesis_id": "hyp-1b2c5e160dbafd5a91e1845a",
+        "reason": "EVALUATED",
+        "status": "TRUE",
+        "value": 53248.0
+      }
+    ],
+    "decisions": [
+      {
+        "action_id": null,
+        "hypotheses": [
+          {
+            "against": [
+              "e:a:metrics:kafka:core:0:f5f8aa9139da",
+              "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed"
+            ],
+            "claim_window": {
+              "ended_at": "2026-09-18T06:38:05.962804Z",
+              "started_at": "2026-09-18T06:33:05.962804Z"
+            },
+            "falsifiable_prediction": "If the backlog hypothesis is correct, fraud-detection queue lag should remain elevated or rise further over the next short window while latency stays near the current level or worsens.",
+            "hypothesis_id": null,
+            "mechanism": "Fraud-detection is experiencing a processing backlog: its queue lag is high and p95 latency is elevated while the service remains running and healthy, consistent with internal throughput pressure rather than a crash.",
+            "missing_observations": [
+              "A higher-granularity read of fraud-detection logs that includes message or error text.",
+              "A trace read with more spans or upstream/downstream neighborhood around fraud-detection.",
+              "A longer resources series for fraud-detection to confirm whether queue lag tracks CPU or memory changes."
+            ],
+            "prediction_test": {
+              "comparator": "gt",
+              "field": "memory_bytes",
+              "minimum_samples": 5,
+              "operator": "delta",
+              "threshold": 0.0,
+              "window_seconds": 10
+            },
+            "support": [
+              "e:a:metrics:fraud-detection:core:0:7da2bd603ddd",
+              "e:a:metrics:fraud-detection:queue-lag:0:4be594bc32a1",
+              "e:a:traces:fraud-detection:0:2b41e20cfeb2",
+              "e:a:resources:fraud-detection:0:b85c45f9da46"
+            ],
+            "target": "fraud-detection"
+          },
+          {
+            "against": [
+              "e:a:metrics:kafka:core:0:f5f8aa9139da",
+              "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed",
+              "e:a:traces:kafka:0:82139f31ba47"
+            ],
+            "claim_window": {
+              "ended_at": "2026-09-18T06:38:05.962804Z",
+              "started_at": "2026-09-18T06:37:55.962804Z"
+            },
+            "falsifiable_prediction": "If Kafka pressure is material, a follow-up 10-second resource window should show memory remaining above the earlier baseline rather than returning to it.",
+            "hypothesis_id": null,
+            "mechanism": "Kafka is under transient resource pressure, shown by a sharp memory increase and higher CPU in the sampled resource window, but the available metrics and traces do not show an error or latency problem at Kafka itself.",
+            "missing_observations": [
+              "A longer resources series for Kafka to determine whether the memory jump persists.",
+              "Kafka request-path traces with more spans to see whether any downstream effect appears.",
+              "Kafka logs with diagnostic text rather than truncated entries."
+            ],
+            "prediction_test": {
+              "comparator": "gt",
+              "field": "memory_bytes",
+              "minimum_samples": 5,
+              "operator": "delta",
+              "threshold": 0.0,
+              "window_seconds": 10
+            },
+            "support": [
+              "e:a:resources:kafka:0:112a27381d3d"
+            ],
+            "target": "kafka"
+          },
+          {
+            "against": [
+              "e:a:logs:checkout:0:df30e41d2bb3"
+            ],
+            "claim_window": {
+              "ended_at": "2026-09-18T06:38:05.962804Z",
+              "started_at": "2026-09-18T06:33:05.962804Z"
+            },
+            "falsifiable_prediction": "If checkout is actually impacted, a follow-up metrics window should show error_rate above zero or latency materially above the current p95.",
+            "hypothesis_id": null,
+            "mechanism": "Checkout is not the failing service in the observed window: its error rate is zero, p95 latency is low, and runtime health is normal, so the checkout path is consistent with being unaffected or only indirectly related.",
+            "missing_observations": [
+              "Checkout traces with error spans or higher-level request context.",
+              "Checkout logs with message text rather than truncated diagnostic entries."
+            ],
+            "prediction_test": {
+              "comparator": "gt",
+              "field": "cpu_percent",
+              "minimum_samples": 5,
+              "operator": "mean",
+              "threshold": 2.0,
+              "window_seconds": 10
+            },
+            "support": [
+              "e:a:metrics:checkout:core:0:5ea80cc94992",
+              "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed",
+              "e:a:traces:checkout:0:94ee51868102"
+            ],
+            "target": "checkout"
+          }
+        ],
+        "kind": "CONCLUDE",
+        "provider_call_index": 0,
+        "rationale": "The supplied evidence does not identify a single confirmed root cause. Checkout is healthy by metrics and runtime, which argues against it as the incident source. Fraud-detection shows elevated latency and queue lag, but the logs are truncated diagnostics and the service is still healthy, so causality is not established. Kafka shows a short memory increase in resources, yet its metrics and traces do not show a matching failure signal. Overall this is better treated as unresolved with competing explanations rather than a concluded causative diagnosis.",
+        "result": "UNRESOLVED",
+        "unresolved_alternatives": [
+          "fraud-detection internal backlog or throughput pressure",
+          "transient Kafka resource pressure without demonstrated downstream impact",
+          "checkout unrelated/healthy path observed during the window"
+        ],
+        "validation": "EVIDENCE_WINDOW_MISMATCH"
+      },
+      {
+        "action_id": "read-0539a019bcbcf34e02dac428",
+        "hypotheses": [],
+        "kind": "READ",
+        "provider_call_index": 1,
+        "rationale": "Need fraud-detection logs for the recent 30s window to discriminate between application-level errors and queue/backpressure-related slowdown before concluding.",
+        "result": null,
+        "unresolved_alternatives": [],
+        "validation": "ACCEPTED"
+      },
+      {
+        "action_id": null,
+        "hypotheses": [
+          {
+            "against": [
+              "o:a:changes:fraud-detection:68804dfd6c2a"
+            ],
+            "claim_window": {
+              "ended_at": "2026-09-18T06:38:05.962804Z",
+              "started_at": "2026-09-18T06:33:05.962804Z"
+            },
+            "falsifiable_prediction": "If this mechanism is correct, a narrower read over the same window should continue to show sustained high queue lag and ~1s request latency for fraud-detection, with no corresponding restart or unhealthy state changes.",
+            "hypothesis_id": null,
+            "mechanism": "fraud-detection is experiencing an internal processing bottleneck manifested as elevated queue lag and near-1s latency while remaining running and healthy, which fits a degraded but not failed service.",
+            "missing_observations": [
+              "e:a:logs:fraud-detection:0:6ac273c324c4",
+              "e:a:resources:fraud-detection:0:b85c45f9da46"
+            ],
+            "prediction_test": {
+              "comparator": "gt",
+              "field": "memory_bytes",
+              "minimum_samples": 5,
+              "operator": "delta",
+              "threshold": 0.0,
+              "window_seconds": 10
+            },
+            "support": [
+              "e:a:metrics:fraud-detection:core:0:7da2bd603ddd",
+              "e:a:metrics:fraud-detection:queue-lag:0:4be594bc32a1",
+              "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed",
+              "e:a:traces:fraud-detection:0:2b41e20cfeb2"
+            ],
+            "target": "fraud-detection"
+          },
+          {
+            "against": [
+              "e:a:metrics:kafka:core:0:f5f8aa9139da",
+              "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed",
+              "e:a:traces:kafka:0:82139f31ba47"
+            ],
+            "claim_window": {
+              "ended_at": "2026-09-18T06:38:05.962804Z",
+              "started_at": "2026-09-18T06:33:05.962804Z"
+            },
+            "falsifiable_prediction": "If Kafka is causal, a tighter Kafka read should reveal elevated latency or resource pressure in the same interval, matching the fraud-detection lag window.",
+            "hypothesis_id": null,
+            "mechanism": "kafka is the upstream cause of the fraud-detection slowdown through broker or ingestion stress, but the current evidence does not show a corresponding Kafka error or latency spike.",
+            "missing_observations": [
+              "e:a:resources:kafka:0:112a27381d3d",
+              "e:a:logs:kafka:0:d66dbaefce81"
+            ],
+            "prediction_test": {
+              "comparator": "gt",
+              "field": "cpu_percent",
+              "minimum_samples": 5,
+              "operator": "mean",
+              "threshold": 4.5,
+              "window_seconds": 10
+            },
+            "support": [
+              "e:a:metrics:fraud-detection:queue-lag:0:4be594bc32a1",
+              "e:a:metrics:fraud-detection:core:0:7da2bd603ddd"
+            ],
+            "target": "kafka"
+          },
+          {
+            "against": [
+              "e:a:metrics:fraud-detection:core:0:7da2bd603ddd",
+              "e:a:metrics:fraud-detection:queue-lag:0:4be594bc32a1"
+            ],
+            "claim_window": {
+              "ended_at": "2026-09-18T06:38:05.962804Z",
+              "started_at": "2026-09-18T06:33:05.962804Z"
+            },
+            "falsifiable_prediction": "If checkout were affected, a narrow follow-up read would show nonzero error rate, higher latency, or first-error traces within the same window.",
+            "hypothesis_id": null,
+            "mechanism": "checkout is not materially impacted in the observed interval; its error rate is zero, latency is low, and traces show short UNSET spans without first-error localization.",
+            "missing_observations": [
+              "e:a:logs:checkout:0:df30e41d2bb3",
+              "e:a:resources:checkout:0:e568163dc442"
+            ],
+            "prediction_test": {
+              "comparator": "lt",
+              "field": "cpu_percent",
+              "minimum_samples": 5,
+              "operator": "mean",
+              "threshold": 2.0,
+              "window_seconds": 10
+            },
+            "support": [
+              "e:a:metrics:checkout:core:0:5ea80cc94992",
+              "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed",
+              "e:a:traces:checkout:0:94ee51868102"
+            ],
+            "target": "checkout"
+          }
+        ],
+        "kind": "CONCLUDE",
+        "provider_call_index": 2,
+        "rationale": "Observed data point most strongly to fraud-detection degradation rather than checkout or Kafka failure: fraud-detection has elevated error rate, p95 latency, and queue lag, while runtime shows it remains running/healthy; checkout and Kafka metrics are comparatively normal. Evidence is insufficient to prove causality, so I retain Kafka as an alternative and mark checkout as not materially impacted.",
+        "result": "UNRESOLVED",
+        "unresolved_alternatives": [
+          "Fraud-detection internal bottleneck",
+          "Kafka upstream contribution",
+          "Transient non-failing workload spike"
+        ],
+        "validation": "EVIDENCE_WINDOW_MISMATCH"
+      },
+      {
+        "action_id": null,
+        "hypotheses": [
+          {
+            "against": [],
+            "claim_window": {
+              "ended_at": "2026-09-18T06:38:05.962804Z",
+              "started_at": "2026-09-18T06:37:55.962804Z"
+            },
+            "falsifiable_prediction": "On a 10s resource window for fraud-detection with 5 samples, memory_bytes delta will be greater than 0.",
+            "hypothesis_id": null,
+            "mechanism": "fraud-detection shows a small upward memory trend over the sampled 10s interval while remaining healthy and lightly loaded, which is consistent with local resource pressure but not sufficient to prove a causal incident.",
+            "missing_observations": [],
+            "prediction_test": {
+              "comparator": "gt",
+              "field": "memory_bytes",
+              "minimum_samples": 5,
+              "operator": "delta",
+              "threshold": 0.0,
+              "window_seconds": 10
+            },
+            "support": [
+              "e:a:resources:fraud-detection:0:b85c45f9da46"
+            ],
+            "target": "fraud-detection"
+          }
+        ],
+        "kind": "CONCLUDE",
+        "provider_call_index": 3,
+        "rationale": "The only exact-window resource evidence for fraud-detection shows a positive memory slope over 10s with low CPU and no restarts. That supports a provisional resource-trend hypothesis, but it does not establish causality for the broader service symptoms.",
+        "result": "PROVISIONAL_SUPPORTED",
+        "unresolved_alternatives": [
+          "Queue lag and elevated latency on fraud-detection may be unrelated to memory trend.",
+          "checkout and kafka appear healthy in the supplied metrics, so the incident source may be elsewhere.",
+          "The available evidence is truncated and does not include concrete error messages."
+        ],
+        "validation": "ACCEPTED"
+      }
+    ],
+    "end": {
+      "monotonic_ns": 367014926959000,
+      "utc": "2026-09-18T06:39:08.291274+00:00"
+    },
+    "episode": "e02",
+    "episode_id": "ecomsre-v050-27de683624-e02",
+    "fault_activation_count": 1,
+    "formal_diagnosis": "OPEN_WORLD",
+    "healthy_restored": true,
+    "hypotheses": [
+      {
+        "against": [],
+        "claim_window": {
+          "ended_at": "2026-09-18T06:38:05.962804Z",
+          "started_at": "2026-09-18T06:37:55.962804Z"
+        },
+        "falsifiable_prediction": "On a 10s resource window for fraud-detection with 5 samples, memory_bytes delta will be greater than 0.",
+        "hypothesis_id": "hyp-1b2c5e160dbafd5a91e1845a",
+        "mechanism": "fraud-detection shows a small upward memory trend over the sampled 10s interval while remaining healthy and lightly loaded, which is consistent with local resource pressure but not sufficient to prove a causal incident.",
+        "missing_observations": [],
+        "prediction_test": {
+          "comparator": "gt",
+          "field": "memory_bytes",
+          "minimum_samples": 5,
+          "operator": "delta",
+          "threshold": 0.0,
+          "window_seconds": 10
+        },
+        "support": [
+          "e:a:resources:fraud-detection:0:b85c45f9da46"
+        ],
+        "target": "fraud-detection"
+      }
+    ],
+    "hypothesis_support_observations": [
+      {
+        "cached": true,
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "e:a:resources:fraud-detection:0:b85c45f9da46",
+        "object_sha256": "cf04e7ff0a160f89850ab01f7c6a6d58475794d5b3a44ccd5cc0f3c24b0621b8",
+        "records": [
+          {
+            "memory_slope_bytes_per_second": 5324.8,
+            "samples": [
+              {
+                "cpu_percent": 0.6254142312798496,
+                "memory_bytes": 260403200,
+                "offset_ms": 0
+              },
+              {
+                "cpu_percent": 0.6340247245642167,
+                "memory_bytes": 260452352,
+                "offset_ms": 2500
+              },
+              {
+                "cpu_percent": 0.6288295432994844,
+                "memory_bytes": 260452352,
+                "offset_ms": 5000
+              },
+              {
+                "cpu_percent": 0.6327114728094071,
+                "memory_bytes": 260456448,
+                "offset_ms": 7500
+              },
+              {
+                "cpu_percent": 0.6227912269811712,
+                "memory_bytes": 260456448,
+                "offset_ms": 10000
+              }
+            ],
+            "sampling_window_seconds": 10,
+            "service": "fraud-detection"
+          }
+        ],
+        "source": "RESOURCES",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false,
+        "window": {
+          "ended_at": "2026-09-18T06:38:05.962804Z",
+          "started_at": "2026-09-18T06:37:55.962804Z"
+        }
+      }
+    ],
+    "incident_id": "inc-b8b34c4a93927e43596a6016",
+    "lag_after": 0.0,
+    "product_recovery_writes": 0,
+    "provider_calls": 4,
+    "read_count": 1,
+    "session_id": "inv-66b65c86df28a783e5e1c20f",
+    "start": {
+      "monotonic_ns": 366920368469625,
+      "utc": "2026-09-18T06:37:33.732757+00:00"
+    },
+    "status": "PROVISIONAL_SUPPORTED",
+    "stop_reason": "MODEL_TERMINAL",
+    "supplemental_observations": [
+      {
+        "capability_sha256": "cfb0182e725d5d82f71159329b5a29b52e0e94b50470ea307e86373e3b35c009",
+        "catalog_action_id": "read-0539a019bcbcf34e02dac428",
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "investigation:cd0424ecbfd1ba1d0483776c27d057b99fc4dc05423e5460a1f6287a2f43a59b",
+        "object_sha256": "cd0424ecbfd1ba1d0483776c27d057b99fc4dc05423e5460a1f6287a2f43a59b",
+        "request_sha256": "45474cc64396724403e01dbe5a27d53cc1315ac103d92b83b5210663deff330b",
+        "resource_dependency": null,
+        "source": "LOGS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": true,
+        "window": {
+          "ended_at": "2026-09-18T06:38:05.962804Z",
+          "started_at": "2026-09-18T06:37:35.962804Z"
+        }
+      }
+    ],
+    "supported_hypothesis_ids": [
+      "hyp-1b2c5e160dbafd5a91e1845a"
+    ],
+    "telemetry_mode": "LIVE_PROVIDER_LIVE_TELEMETRY"
+  },
+  {
+    "baseline_restore_count": 1,
+    "call_inputs": [
+      {
+        "call_index": 0,
+        "observed_evidence_refs": [
+          "e:a:logs:checkout:0:2506f7188ef9",
+          "e:a:logs:fraud-detection:0:b7165ca3222d",
+          "e:a:logs:kafka:0:20c2ea51af25",
+          "e:a:metrics:checkout:core:0:9c20548fe1df",
+          "e:a:metrics:fraud-detection:core:0:1e50643713ab",
+          "e:a:metrics:fraud-detection:queue-lag:0:cfc71780d03a",
+          "e:a:metrics:kafka:core:0:6ec21b9477b4",
+          "e:a:resources:checkout:0:d55d2db17194",
+          "e:a:resources:fraud-detection:0:5a604274e6b2",
+          "e:a:resources:kafka:0:25fe4d1038d9",
+          "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed",
+          "e:a:traces:checkout:0:dfbef277cbe1",
+          "e:a:traces:fraud-detection:0:0da4d701642f",
+          "e:a:traces:kafka:0:cf89ec43fabf",
+          "o:a:changes:checkout:2fc3c41c504d",
+          "o:a:changes:fraud-detection:68804dfd6c2a",
+          "o:a:changes:kafka:4b7144c8d4b6"
+        ],
+        "snapshot_sha256": "d939abadedec0656f7c2b2c2cdeb6c98c1113265f1e2f988c4291ee574330f98"
+      },
+      {
+        "call_index": 1,
+        "observed_evidence_refs": [
+          "e:a:logs:checkout:0:2506f7188ef9",
+          "e:a:logs:fraud-detection:0:b7165ca3222d",
+          "e:a:logs:kafka:0:20c2ea51af25",
+          "e:a:metrics:checkout:core:0:9c20548fe1df",
+          "e:a:metrics:fraud-detection:core:0:1e50643713ab",
+          "e:a:metrics:fraud-detection:queue-lag:0:cfc71780d03a",
+          "e:a:metrics:kafka:core:0:6ec21b9477b4",
+          "e:a:resources:checkout:0:d55d2db17194",
+          "e:a:resources:fraud-detection:0:5a604274e6b2",
+          "e:a:resources:kafka:0:25fe4d1038d9",
+          "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed",
+          "e:a:traces:checkout:0:dfbef277cbe1",
+          "e:a:traces:fraud-detection:0:0da4d701642f",
+          "e:a:traces:kafka:0:cf89ec43fabf",
+          "o:a:changes:checkout:2fc3c41c504d",
+          "o:a:changes:fraud-detection:68804dfd6c2a",
+          "o:a:changes:kafka:4b7144c8d4b6",
+          "investigation:f798e59585307fdd4a613f4293d02634c237f678d1bc4f48f3bbdcfe955b712d"
+        ],
+        "snapshot_sha256": "939a39be6f75a2794c16c4530b54f3ba63394658708bd353e9409534849463c2"
+      },
+      {
+        "call_index": 2,
+        "observed_evidence_refs": [
+          "e:a:logs:checkout:0:2506f7188ef9",
+          "e:a:logs:fraud-detection:0:b7165ca3222d",
+          "e:a:logs:kafka:0:20c2ea51af25",
+          "e:a:metrics:checkout:core:0:9c20548fe1df",
+          "e:a:metrics:fraud-detection:core:0:1e50643713ab",
+          "e:a:metrics:fraud-detection:queue-lag:0:cfc71780d03a",
+          "e:a:metrics:kafka:core:0:6ec21b9477b4",
+          "e:a:resources:checkout:0:d55d2db17194",
+          "e:a:resources:fraud-detection:0:5a604274e6b2",
+          "e:a:resources:kafka:0:25fe4d1038d9",
+          "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed",
+          "e:a:traces:checkout:0:dfbef277cbe1",
+          "e:a:traces:fraud-detection:0:0da4d701642f",
+          "e:a:traces:kafka:0:cf89ec43fabf",
+          "o:a:changes:checkout:2fc3c41c504d",
+          "o:a:changes:fraud-detection:68804dfd6c2a",
+          "o:a:changes:kafka:4b7144c8d4b6",
+          "investigation:f798e59585307fdd4a613f4293d02634c237f678d1bc4f48f3bbdcfe955b712d",
+          "investigation:6ed33cb952aed54726e32c23422c23ef3e92138f68cbcf59f2e491c2715e613d"
+        ],
+        "snapshot_sha256": "48f5e7750fc5b368dd05f4680205e915abd7a16119f385d0c2b3dafc0414b440"
+      },
+      {
+        "call_index": 3,
+        "observed_evidence_refs": [
+          "e:a:logs:checkout:0:2506f7188ef9",
+          "e:a:logs:fraud-detection:0:b7165ca3222d",
+          "e:a:logs:kafka:0:20c2ea51af25",
+          "e:a:metrics:checkout:core:0:9c20548fe1df",
+          "e:a:metrics:fraud-detection:core:0:1e50643713ab",
+          "e:a:metrics:fraud-detection:queue-lag:0:cfc71780d03a",
+          "e:a:metrics:kafka:core:0:6ec21b9477b4",
+          "e:a:resources:checkout:0:d55d2db17194",
+          "e:a:resources:fraud-detection:0:5a604274e6b2",
+          "e:a:resources:kafka:0:25fe4d1038d9",
+          "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed",
+          "e:a:traces:checkout:0:dfbef277cbe1",
+          "e:a:traces:fraud-detection:0:0da4d701642f",
+          "e:a:traces:kafka:0:cf89ec43fabf",
+          "o:a:changes:checkout:2fc3c41c504d",
+          "o:a:changes:fraud-detection:68804dfd6c2a",
+          "o:a:changes:kafka:4b7144c8d4b6",
+          "investigation:f798e59585307fdd4a613f4293d02634c237f678d1bc4f48f3bbdcfe955b712d",
+          "investigation:6ed33cb952aed54726e32c23422c23ef3e92138f68cbcf59f2e491c2715e613d",
+          "investigation:e26f841d86aadb670ad71790a88acc3ac73a9c196e35985a1b9bb16fd131365f"
+        ],
+        "snapshot_sha256": "53d30d83959fc194b029e50be69eed532d02a76045e48d3b44f0df804955d970"
+      }
+    ],
+    "candidate_evidence_catalog": [
+      {
+        "covered_services": [
+          "checkout"
+        ],
+        "evidence_ref": "e:a:logs:checkout:0:2506f7188ef9",
+        "source": "LOGS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "checkout"
+        ],
+        "truncated": true
+      },
+      {
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "e:a:logs:fraud-detection:0:b7165ca3222d",
+        "source": "LOGS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": true
+      },
+      {
+        "covered_services": [
+          "kafka"
+        ],
+        "evidence_ref": "e:a:logs:kafka:0:20c2ea51af25",
+        "source": "LOGS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "kafka"
+        ],
+        "truncated": true
+      },
+      {
+        "covered_services": [
+          "checkout"
+        ],
+        "evidence_ref": "e:a:metrics:checkout:core:0:9c20548fe1df",
+        "source": "METRICS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "checkout"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "e:a:metrics:fraud-detection:core:0:1e50643713ab",
+        "source": "METRICS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "e:a:metrics:fraud-detection:queue-lag:0:cfc71780d03a",
+        "source": "METRICS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "kafka"
+        ],
+        "evidence_ref": "e:a:metrics:kafka:core:0:6ec21b9477b4",
+        "source": "METRICS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "kafka"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "checkout"
+        ],
+        "evidence_ref": "e:a:resources:checkout:0:d55d2db17194",
+        "source": "RESOURCES",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "checkout"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "e:a:resources:fraud-detection:0:5a604274e6b2",
+        "source": "RESOURCES",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "kafka"
+        ],
+        "evidence_ref": "e:a:resources:kafka:0:25fe4d1038d9",
+        "source": "RESOURCES",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "kafka"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "checkout",
+          "fraud-detection",
+          "kafka"
+        ],
+        "evidence_ref": "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed",
+        "source": "RUNTIME",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "checkout",
+          "fraud-detection",
+          "kafka"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "checkout"
+        ],
+        "evidence_ref": "e:a:traces:checkout:0:dfbef277cbe1",
+        "source": "TRACES",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "checkout"
+        ],
+        "truncated": true
+      },
+      {
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "e:a:traces:fraud-detection:0:0da4d701642f",
+        "source": "TRACES",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": true
+      },
+      {
+        "covered_services": [
+          "kafka"
+        ],
+        "evidence_ref": "e:a:traces:kafka:0:cf89ec43fabf",
+        "source": "TRACES",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "kafka"
+        ],
+        "truncated": true
+      },
+      {
+        "covered_services": [
+          "checkout"
+        ],
+        "evidence_ref": "o:a:changes:checkout:2fc3c41c504d",
+        "source": "CHANGES",
+        "status": "SUCCESS_EMPTY",
+        "targets": [
+          "checkout"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "o:a:changes:fraud-detection:68804dfd6c2a",
+        "source": "CHANGES",
+        "status": "SUCCESS_EMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "kafka"
+        ],
+        "evidence_ref": "o:a:changes:kafka:4b7144c8d4b6",
+        "source": "CHANGES",
+        "status": "SUCCESS_EMPTY",
+        "targets": [
+          "kafka"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "investigation:f798e59585307fdd4a613f4293d02634c237f678d1bc4f48f3bbdcfe955b712d",
+        "source": "LOGS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": true
+      },
+      {
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "investigation:6ed33cb952aed54726e32c23422c23ef3e92138f68cbcf59f2e491c2715e613d",
+        "source": "METRICS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [],
+        "evidence_ref": "investigation:e26f841d86aadb670ad71790a88acc3ac73a9c196e35985a1b9bb16fd131365f",
+        "source": "TRACES",
+        "status": "FAILURE_SCHEMA",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [],
+        "evidence_ref": "investigation:2baf80be2703f14bb589b2a333d4aa655fad15dc471bc0561cdfc0f900c972da",
+        "source": "TRACES",
+        "status": "FAILURE_SCHEMA",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false
+      }
+    ],
+    "checked_predictions": [],
+    "decisions": [
+      {
+        "action_id": "read-dacb1d0572049417c2dac998",
+        "hypotheses": [],
+        "kind": "READ",
+        "provider_call_index": 0,
+        "rationale": "Inspect fraud-detection logs for concrete latency or queueing clues that could distinguish internal processing delay from upstream dependency effects, given elevated latency and queue lag metrics with healthy runtime status.",
+        "result": null,
+        "unresolved_alternatives": [],
+        "validation": "ACCEPTED"
+      },
+      {
+        "action_id": "read-593de08cecbd98d56a4d7c35",
+        "hypotheses": [],
+        "kind": "READ",
+        "provider_call_index": 1,
+        "rationale": "Need a discriminating metric read on fraud-detection queue lag to separate a backlog-driven slowdown from a purely compute or downstream issue before concluding.",
+        "result": null,
+        "unresolved_alternatives": [],
+        "validation": "ACCEPTED"
+      },
+      {
+        "action_id": "read-4cb12262aac83e7f232614b2",
+        "hypotheses": [],
+        "kind": "READ",
+        "provider_call_index": 2,
+        "rationale": "Need a fraud-detection trace read in the current 30s window to discriminate whether the elevated queue lag and high p95 latency come from internal processing versus downstream dependency behavior, before attributing causality.",
+        "result": null,
+        "unresolved_alternatives": [
+          "fraud-detection internal slowdown",
+          "downstream dependency/backpressure",
+          "observability gap in current traces"
+        ],
+        "validation": "ACCEPTED"
+      },
+      {
+        "action_id": "read-8d7c31cbb4d745317445c6bd",
+        "hypotheses": [],
+        "kind": "READ",
+        "provider_call_index": 3,
+        "rationale": "Inspect fraud-detection traces in the last 30s to discriminate whether the observed latency and queue lag originate in its own processing or an upstream dependency.",
+        "result": null,
+        "unresolved_alternatives": [
+          "fraud-detection internal processing bottleneck",
+          "upstream dependency issue affecting fraud-detection",
+          "kafka-related backlog despite healthy service state"
+        ],
+        "validation": "ACCEPTED"
+      }
+    ],
+    "end": {
+      "monotonic_ns": 367106941030041,
+      "utc": "2026-09-18T06:40:40.305371+00:00"
+    },
+    "episode": "e03",
+    "episode_id": "ecomsre-v050-27de683624-e03",
+    "fault_activation_count": 1,
+    "formal_diagnosis": "OPEN_WORLD",
+    "healthy_restored": true,
+    "hypotheses": [],
+    "hypothesis_support_observations": [],
+    "incident_id": "inc-6f02324349fe6fe68f340709",
+    "lag_after": 0.0,
+    "product_recovery_writes": 0,
+    "provider_calls": 4,
+    "read_count": 4,
+    "session_id": "inv-0059afa982d62d62dd1b975a",
+    "start": {
+      "monotonic_ns": 367025791122666,
+      "utc": "2026-09-18T06:39:19.155440+00:00"
+    },
+    "status": "UNRESOLVED",
+    "stop_reason": "NO_INFORMATION_GAIN",
+    "supplemental_observations": [
+      {
+        "capability_sha256": "cfb0182e725d5d82f71159329b5a29b52e0e94b50470ea307e86373e3b35c009",
+        "catalog_action_id": "read-dacb1d0572049417c2dac998",
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "investigation:f798e59585307fdd4a613f4293d02634c237f678d1bc4f48f3bbdcfe955b712d",
+        "object_sha256": "f798e59585307fdd4a613f4293d02634c237f678d1bc4f48f3bbdcfe955b712d",
+        "request_sha256": "45474cc64396724403e01dbe5a27d53cc1315ac103d92b83b5210663deff330b",
+        "resource_dependency": null,
+        "source": "LOGS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": true,
+        "window": {
+          "ended_at": "2026-09-18T06:39:58.745744Z",
+          "started_at": "2026-09-18T06:39:28.745744Z"
+        }
+      },
+      {
+        "capability_sha256": "cfb0182e725d5d82f71159329b5a29b52e0e94b50470ea307e86373e3b35c009",
+        "catalog_action_id": "read-593de08cecbd98d56a4d7c35",
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "investigation:6ed33cb952aed54726e32c23422c23ef3e92138f68cbcf59f2e491c2715e613d",
+        "object_sha256": "6ed33cb952aed54726e32c23422c23ef3e92138f68cbcf59f2e491c2715e613d",
+        "request_sha256": "36988612b4c4a911fc3a0a4acb30193749c471aec6fdb90c2dc087b14ca28e7a",
+        "resource_dependency": null,
+        "source": "METRICS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false,
+        "window": {
+          "ended_at": "2026-09-18T06:39:28.745744Z",
+          "started_at": "2026-09-18T06:38:58.745744Z"
+        }
+      },
+      {
+        "capability_sha256": "cfb0182e725d5d82f71159329b5a29b52e0e94b50470ea307e86373e3b35c009",
+        "catalog_action_id": "read-4cb12262aac83e7f232614b2",
+        "covered_services": [],
+        "evidence_ref": "investigation:e26f841d86aadb670ad71790a88acc3ac73a9c196e35985a1b9bb16fd131365f",
+        "object_sha256": "e26f841d86aadb670ad71790a88acc3ac73a9c196e35985a1b9bb16fd131365f",
+        "request_sha256": "ead9c8d31f04060c2302c63596e7345851e35a78f7a9cf1608b64b7a03da1a0a",
+        "resource_dependency": null,
+        "source": "TRACES",
+        "status": "FAILURE_SCHEMA",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false,
+        "window": {
+          "ended_at": "2026-09-18T06:39:28.745744Z",
+          "started_at": "2026-09-18T06:38:58.745744Z"
+        }
+      },
+      {
+        "capability_sha256": "cfb0182e725d5d82f71159329b5a29b52e0e94b50470ea307e86373e3b35c009",
+        "catalog_action_id": "read-8d7c31cbb4d745317445c6bd",
+        "covered_services": [],
+        "evidence_ref": "investigation:2baf80be2703f14bb589b2a333d4aa655fad15dc471bc0561cdfc0f900c972da",
+        "object_sha256": "2baf80be2703f14bb589b2a333d4aa655fad15dc471bc0561cdfc0f900c972da",
+        "request_sha256": "ead9c8d31f04060c2302c63596e7345851e35a78f7a9cf1608b64b7a03da1a0a",
+        "resource_dependency": null,
+        "source": "TRACES",
+        "status": "FAILURE_SCHEMA",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false,
+        "window": {
+          "ended_at": "2026-09-18T06:39:58.745744Z",
+          "started_at": "2026-09-18T06:39:28.745744Z"
+        }
+      }
+    ],
+    "supported_hypothesis_ids": [],
+    "telemetry_mode": "LIVE_PROVIDER_LIVE_TELEMETRY"
+  },
+  {
+    "baseline_restore_count": 1,
+    "call_inputs": [
+      {
+        "call_index": 0,
+        "observed_evidence_refs": [
+          "e:a:logs:checkout:0:e86ef9aff7b9",
+          "e:a:logs:fraud-detection:0:c67b23d28989",
+          "e:a:logs:kafka:0:476c6327f106",
+          "e:a:metrics:checkout:core:0:7924f76a639d",
+          "e:a:metrics:fraud-detection:core:0:f8cb60485532",
+          "e:a:metrics:fraud-detection:queue-lag:0:cb8770038f55",
+          "e:a:metrics:kafka:core:0:056cf0124326",
+          "e:a:resources:checkout:0:ebc041e8aa52",
+          "e:a:resources:fraud-detection:0:338c1195c7a9",
+          "e:a:resources:kafka:0:fa5938f882d7",
+          "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed",
+          "e:a:traces:checkout:0:30933196ce1f",
+          "e:a:traces:fraud-detection:0:b91d7e019bd6",
+          "e:a:traces:kafka:0:b46f76ee24e4",
+          "o:a:changes:checkout:2fc3c41c504d",
+          "o:a:changes:fraud-detection:68804dfd6c2a",
+          "o:a:changes:kafka:4b7144c8d4b6"
+        ],
+        "snapshot_sha256": "aa18e60f42070fb635a3a3181aa9dea5cc17d93f67efc1d73b6a0c4533f45db7"
+      },
+      {
+        "call_index": 1,
+        "observed_evidence_refs": [
+          "e:a:logs:checkout:0:e86ef9aff7b9",
+          "e:a:logs:fraud-detection:0:c67b23d28989",
+          "e:a:logs:kafka:0:476c6327f106",
+          "e:a:metrics:checkout:core:0:7924f76a639d",
+          "e:a:metrics:fraud-detection:core:0:f8cb60485532",
+          "e:a:metrics:fraud-detection:queue-lag:0:cb8770038f55",
+          "e:a:metrics:kafka:core:0:056cf0124326",
+          "e:a:resources:checkout:0:ebc041e8aa52",
+          "e:a:resources:fraud-detection:0:338c1195c7a9",
+          "e:a:resources:kafka:0:fa5938f882d7",
+          "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed",
+          "e:a:traces:checkout:0:30933196ce1f",
+          "e:a:traces:fraud-detection:0:b91d7e019bd6",
+          "e:a:traces:kafka:0:b46f76ee24e4",
+          "o:a:changes:checkout:2fc3c41c504d",
+          "o:a:changes:fraud-detection:68804dfd6c2a",
+          "o:a:changes:kafka:4b7144c8d4b6"
+        ],
+        "snapshot_sha256": "e8e1024628eabd5bf85823a7da26345c9aecfcbf43531361fa1e915cd4ebad89"
+      }
+    ],
+    "candidate_evidence_catalog": [
+      {
+        "covered_services": [
+          "checkout"
+        ],
+        "evidence_ref": "e:a:logs:checkout:0:e86ef9aff7b9",
+        "source": "LOGS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "checkout"
+        ],
+        "truncated": true
+      },
+      {
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "e:a:logs:fraud-detection:0:c67b23d28989",
+        "source": "LOGS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": true
+      },
+      {
+        "covered_services": [
+          "kafka"
+        ],
+        "evidence_ref": "e:a:logs:kafka:0:476c6327f106",
+        "source": "LOGS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "kafka"
+        ],
+        "truncated": true
+      },
+      {
+        "covered_services": [
+          "checkout"
+        ],
+        "evidence_ref": "e:a:metrics:checkout:core:0:7924f76a639d",
+        "source": "METRICS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "checkout"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "e:a:metrics:fraud-detection:core:0:f8cb60485532",
+        "source": "METRICS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "e:a:metrics:fraud-detection:queue-lag:0:cb8770038f55",
+        "source": "METRICS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "kafka"
+        ],
+        "evidence_ref": "e:a:metrics:kafka:core:0:056cf0124326",
+        "source": "METRICS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "kafka"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "checkout"
+        ],
+        "evidence_ref": "e:a:resources:checkout:0:ebc041e8aa52",
+        "source": "RESOURCES",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "checkout"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "e:a:resources:fraud-detection:0:338c1195c7a9",
+        "source": "RESOURCES",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "kafka"
+        ],
+        "evidence_ref": "e:a:resources:kafka:0:fa5938f882d7",
+        "source": "RESOURCES",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "kafka"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "checkout",
+          "fraud-detection",
+          "kafka"
+        ],
+        "evidence_ref": "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed",
+        "source": "RUNTIME",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "checkout",
+          "fraud-detection",
+          "kafka"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "checkout"
+        ],
+        "evidence_ref": "e:a:traces:checkout:0:30933196ce1f",
+        "source": "TRACES",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "checkout"
+        ],
+        "truncated": true
+      },
+      {
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "e:a:traces:fraud-detection:0:b91d7e019bd6",
+        "source": "TRACES",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": true
+      },
+      {
+        "covered_services": [
+          "kafka"
+        ],
+        "evidence_ref": "e:a:traces:kafka:0:b46f76ee24e4",
+        "source": "TRACES",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "kafka"
+        ],
+        "truncated": true
+      },
+      {
+        "covered_services": [
+          "checkout"
+        ],
+        "evidence_ref": "o:a:changes:checkout:2fc3c41c504d",
+        "source": "CHANGES",
+        "status": "SUCCESS_EMPTY",
+        "targets": [
+          "checkout"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "o:a:changes:fraud-detection:68804dfd6c2a",
+        "source": "CHANGES",
+        "status": "SUCCESS_EMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "kafka"
+        ],
+        "evidence_ref": "o:a:changes:kafka:4b7144c8d4b6",
+        "source": "CHANGES",
+        "status": "SUCCESS_EMPTY",
+        "targets": [
+          "kafka"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [],
+        "evidence_ref": "investigation:d31766256bcab67fb9207de582ce20f859fe35bd1c1a4ba6ebff026b2ef8f197",
+        "source": "TRACES",
+        "status": "FAILURE_SCHEMA",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false
+      }
+    ],
+    "checked_predictions": [],
+    "decisions": [
+      {
+        "action_id": null,
+        "hypotheses": [
+          {
+            "against": [
+              "o:a:changes:fraud-detection:68804dfd6c2a",
+              "o:a:changes:checkout:2fc3c41c504d",
+              "o:a:changes:kafka:4b7144c8d4b6"
+            ],
+            "claim_window": {
+              "ended_at": "2026-09-18T06:48:28.772314Z",
+              "started_at": "2026-09-18T06:43:28.772314Z"
+            },
+            "falsifiable_prediction": "If fraud-detection is the bottleneck, then a short resources window should show sustained nontrivial memory growth or CPU pressure on fraud-detection concurrent with the observed lag, while checkout remains comparatively flat.",
+            "hypothesis_id": null,
+            "mechanism": "fraud-detection is the primary degraded dependency: its error rate and p95 latency are elevated, queue lag is present, and traces show ~1s spans in fraud-detection while checkout remains fast and error-free. This points to an internal slowdown in fraud-detection rather than a checkout or kafka outage.",
+            "missing_observations": [
+              "A direct read of fraud-detection spans with error details beyond UNSET traces.",
+              "A targeted dependency read showing whether fraud-detection calls out to another backend during the slow spans."
+            ],
+            "prediction_test": {
+              "comparator": "gt",
+              "field": "memory_bytes",
+              "minimum_samples": 5,
+              "operator": "delta",
+              "threshold": 1000000.0,
+              "window_seconds": 10
+            },
+            "support": [
+              "e:a:metrics:fraud-detection:core:0:f8cb60485532",
+              "e:a:metrics:fraud-detection:queue-lag:0:cb8770038f55",
+              "e:a:traces:fraud-detection:0:b91d7e019bd6",
+              "e:a:metrics:checkout:core:0:7924f76a639d",
+              "e:a:traces:checkout:0:30933196ce1f",
+              "e:a:metrics:kafka:core:0:056cf0124326",
+              "e:a:traces:kafka:0:b46f76ee24e4",
+              "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed"
+            ],
+            "target": "fraud-detection"
+          }
+        ],
+        "kind": "CONCLUDE",
+        "provider_call_index": 0,
+        "rationale": "The observations discriminate against checkout and kafka as primary causes: checkout has zero error rate and low p95 latency, kafka has zero error rate and ~1 ms p95 latency, while fraud-detection shows high error rate, very high p95 latency, queue lag, and ~1 s trace durations. I therefore conclude fraud-detection is the most likely current bottleneck, with causality still provisional because the available traces are UNSET and the changes views are empty.",
+        "result": "PROVISIONAL_SUPPORTED",
+        "unresolved_alternatives": [
+          "fraud-detection is slow because of an unobserved downstream dependency",
+          "fraud-detection issues are correlated but not causal for the checkout experience",
+          "a transient platform effect not captured in the provided reads"
+        ],
+        "validation": "EVIDENCE_WINDOW_MISMATCH"
+      },
+      {
+        "action_id": "read-a2703700dc749b4119c9fabb",
+        "hypotheses": [],
+        "kind": "READ",
+        "provider_call_index": 1,
+        "rationale": "Request a narrower fraud-detection trace read to discriminate whether the observed latency and error behavior is caused inside the service or by downstream/dependency behavior; the current evidence is insufficient to separate these possibilities.",
+        "result": null,
+        "unresolved_alternatives": [
+          "internal service bottleneck",
+          "downstream dependency issue",
+          "queue/backlog effects"
+        ],
+        "validation": "ACCEPTED"
+      }
+    ],
+    "end": {
+      "monotonic_ns": 367623868728250,
+      "utc": "2026-09-18T06:49:17.249949+00:00"
+    },
+    "episode": "e04",
+    "episode_id": "ecomsre-v050-27de683624-e04",
+    "fault_activation_count": 1,
+    "formal_diagnosis": "OPEN_WORLD",
+    "healthy_restored": true,
+    "hypotheses": [],
+    "hypothesis_support_observations": [],
+    "incident_id": "inc-9707724832184ab0c6bcce92",
+    "lag_after": 0.0,
+    "product_recovery_writes": 0,
+    "provider_calls": 2,
+    "read_count": 1,
+    "session_id": "inv-0b3ee19230690d72784f9967",
+    "start": {
+      "monotonic_ns": 367535271939333,
+      "utc": "2026-09-18T06:47:48.652702+00:00"
+    },
+    "status": "UNRESOLVED",
+    "stop_reason": "NO_INFORMATION_GAIN",
+    "supplemental_observations": [
+      {
+        "capability_sha256": "cfb0182e725d5d82f71159329b5a29b52e0e94b50470ea307e86373e3b35c009",
+        "catalog_action_id": "read-a2703700dc749b4119c9fabb",
+        "covered_services": [],
+        "evidence_ref": "investigation:d31766256bcab67fb9207de582ce20f859fe35bd1c1a4ba6ebff026b2ef8f197",
+        "object_sha256": "d31766256bcab67fb9207de582ce20f859fe35bd1c1a4ba6ebff026b2ef8f197",
+        "request_sha256": "ead9c8d31f04060c2302c63596e7345851e35a78f7a9cf1608b64b7a03da1a0a",
+        "resource_dependency": null,
+        "source": "TRACES",
+        "status": "FAILURE_SCHEMA",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false,
+        "window": {
+          "ended_at": "2026-09-18T06:47:58.772314Z",
+          "started_at": "2026-09-18T06:47:28.772314Z"
+        }
+      }
+    ],
+    "supported_hypothesis_ids": [],
+    "telemetry_mode": "LIVE_PROVIDER_LIVE_TELEMETRY"
+  },
+  {
+    "baseline_restore_count": 1,
+    "call_inputs": [
+      {
+        "call_index": 0,
+        "observed_evidence_refs": [
+          "e:a:logs:checkout:0:bd99d58621e3",
+          "e:a:logs:fraud-detection:0:8846acba9b2a",
+          "e:a:logs:kafka:0:b9613482e38f",
+          "e:a:metrics:checkout:core:0:16daa67d3236",
+          "e:a:metrics:fraud-detection:core:0:117d4458e34f",
+          "e:a:metrics:fraud-detection:queue-lag:0:3d11f54d546d",
+          "e:a:metrics:kafka:core:0:0a317dd5399d",
+          "e:a:resources:checkout:0:1b677c7911c4",
+          "e:a:resources:fraud-detection:0:0e5b68830126",
+          "e:a:resources:kafka:0:c1a669a458c4",
+          "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed",
+          "e:a:traces:checkout:0:aac2b6642ed4",
+          "e:a:traces:fraud-detection:0:82beb8610826",
+          "e:a:traces:kafka:0:6199ef621490",
+          "o:a:changes:checkout:2fc3c41c504d",
+          "o:a:changes:fraud-detection:68804dfd6c2a",
+          "o:a:changes:kafka:4b7144c8d4b6"
+        ],
+        "snapshot_sha256": "16759d7a9277050b316302b5e1423a0f46cac2e44d44fc3f1ead911eb87b4cb7"
+      },
+      {
+        "call_index": 1,
+        "observed_evidence_refs": [
+          "e:a:logs:checkout:0:bd99d58621e3",
+          "e:a:logs:fraud-detection:0:8846acba9b2a",
+          "e:a:logs:kafka:0:b9613482e38f",
+          "e:a:metrics:checkout:core:0:16daa67d3236",
+          "e:a:metrics:fraud-detection:core:0:117d4458e34f",
+          "e:a:metrics:fraud-detection:queue-lag:0:3d11f54d546d",
+          "e:a:metrics:kafka:core:0:0a317dd5399d",
+          "e:a:resources:checkout:0:1b677c7911c4",
+          "e:a:resources:fraud-detection:0:0e5b68830126",
+          "e:a:resources:kafka:0:c1a669a458c4",
+          "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed",
+          "e:a:traces:checkout:0:aac2b6642ed4",
+          "e:a:traces:fraud-detection:0:82beb8610826",
+          "e:a:traces:kafka:0:6199ef621490",
+          "o:a:changes:checkout:2fc3c41c504d",
+          "o:a:changes:fraud-detection:68804dfd6c2a",
+          "o:a:changes:kafka:4b7144c8d4b6",
+          "investigation:eb5a3b795fb78ffffac462e61541bbe152049e2675ca2685eb0fa26ba5c9e3f9"
+        ],
+        "snapshot_sha256": "40c7c53e196d8553b5695c182a17c60295ad5250050dba1681facc25cdd63338"
+      },
+      {
+        "call_index": 2,
+        "observed_evidence_refs": [
+          "e:a:logs:checkout:0:bd99d58621e3",
+          "e:a:logs:fraud-detection:0:8846acba9b2a",
+          "e:a:logs:kafka:0:b9613482e38f",
+          "e:a:metrics:checkout:core:0:16daa67d3236",
+          "e:a:metrics:fraud-detection:core:0:117d4458e34f",
+          "e:a:metrics:fraud-detection:queue-lag:0:3d11f54d546d",
+          "e:a:metrics:kafka:core:0:0a317dd5399d",
+          "e:a:resources:checkout:0:1b677c7911c4",
+          "e:a:resources:fraud-detection:0:0e5b68830126",
+          "e:a:resources:kafka:0:c1a669a458c4",
+          "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed",
+          "e:a:traces:checkout:0:aac2b6642ed4",
+          "e:a:traces:fraud-detection:0:82beb8610826",
+          "e:a:traces:kafka:0:6199ef621490",
+          "o:a:changes:checkout:2fc3c41c504d",
+          "o:a:changes:fraud-detection:68804dfd6c2a",
+          "o:a:changes:kafka:4b7144c8d4b6",
+          "investigation:eb5a3b795fb78ffffac462e61541bbe152049e2675ca2685eb0fa26ba5c9e3f9",
+          "investigation:66c2f91962511453523523a2079d86937a541e99c405c4ed22b67b9f69161784"
+        ],
+        "snapshot_sha256": "4658b5e9efd636acbe3e23bd2d8c054497917ef43f777c7230b956ea65253d0a"
+      },
+      {
+        "call_index": 3,
+        "observed_evidence_refs": [
+          "e:a:logs:checkout:0:bd99d58621e3",
+          "e:a:logs:fraud-detection:0:8846acba9b2a",
+          "e:a:logs:kafka:0:b9613482e38f",
+          "e:a:metrics:checkout:core:0:16daa67d3236",
+          "e:a:metrics:fraud-detection:core:0:117d4458e34f",
+          "e:a:metrics:fraud-detection:queue-lag:0:3d11f54d546d",
+          "e:a:metrics:kafka:core:0:0a317dd5399d",
+          "e:a:resources:checkout:0:1b677c7911c4",
+          "e:a:resources:fraud-detection:0:0e5b68830126",
+          "e:a:resources:kafka:0:c1a669a458c4",
+          "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed",
+          "e:a:traces:checkout:0:aac2b6642ed4",
+          "e:a:traces:fraud-detection:0:82beb8610826",
+          "e:a:traces:kafka:0:6199ef621490",
+          "o:a:changes:checkout:2fc3c41c504d",
+          "o:a:changes:fraud-detection:68804dfd6c2a",
+          "o:a:changes:kafka:4b7144c8d4b6",
+          "investigation:eb5a3b795fb78ffffac462e61541bbe152049e2675ca2685eb0fa26ba5c9e3f9",
+          "investigation:66c2f91962511453523523a2079d86937a541e99c405c4ed22b67b9f69161784",
+          "investigation:acdee32db19913fb14eb4e4cbe8e9bc6578784ed57d579505075b36b1295b11a"
+        ],
+        "snapshot_sha256": "af37a4b29b5b364f3bc59515de374d17efdcef25d54acb734b1a7076c8f48a04"
+      },
+      {
+        "call_index": 4,
+        "observed_evidence_refs": [
+          "e:a:logs:checkout:0:bd99d58621e3",
+          "e:a:logs:fraud-detection:0:8846acba9b2a",
+          "e:a:logs:kafka:0:b9613482e38f",
+          "e:a:metrics:checkout:core:0:16daa67d3236",
+          "e:a:metrics:fraud-detection:core:0:117d4458e34f",
+          "e:a:metrics:fraud-detection:queue-lag:0:3d11f54d546d",
+          "e:a:metrics:kafka:core:0:0a317dd5399d",
+          "e:a:resources:checkout:0:1b677c7911c4",
+          "e:a:resources:fraud-detection:0:0e5b68830126",
+          "e:a:resources:kafka:0:c1a669a458c4",
+          "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed",
+          "e:a:traces:checkout:0:aac2b6642ed4",
+          "e:a:traces:fraud-detection:0:82beb8610826",
+          "e:a:traces:kafka:0:6199ef621490",
+          "o:a:changes:checkout:2fc3c41c504d",
+          "o:a:changes:fraud-detection:68804dfd6c2a",
+          "o:a:changes:kafka:4b7144c8d4b6",
+          "investigation:eb5a3b795fb78ffffac462e61541bbe152049e2675ca2685eb0fa26ba5c9e3f9",
+          "investigation:66c2f91962511453523523a2079d86937a541e99c405c4ed22b67b9f69161784",
+          "investigation:acdee32db19913fb14eb4e4cbe8e9bc6578784ed57d579505075b36b1295b11a",
+          "investigation:e1a623ba62540648f9ccb85bfd1cd34935fce3637358d4dc17935df7afda0f79"
+        ],
+        "snapshot_sha256": "286e8123b093770174be5a50d21a2df4d2a953294c1e4060d7ef7e2b62d2bd53"
+      },
+      {
+        "call_index": 5,
+        "observed_evidence_refs": [
+          "e:a:logs:checkout:0:bd99d58621e3",
+          "e:a:logs:fraud-detection:0:8846acba9b2a",
+          "e:a:logs:kafka:0:b9613482e38f",
+          "e:a:metrics:checkout:core:0:16daa67d3236",
+          "e:a:metrics:fraud-detection:core:0:117d4458e34f",
+          "e:a:metrics:fraud-detection:queue-lag:0:3d11f54d546d",
+          "e:a:metrics:kafka:core:0:0a317dd5399d",
+          "e:a:resources:checkout:0:1b677c7911c4",
+          "e:a:resources:fraud-detection:0:0e5b68830126",
+          "e:a:resources:kafka:0:c1a669a458c4",
+          "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed",
+          "e:a:traces:checkout:0:aac2b6642ed4",
+          "e:a:traces:fraud-detection:0:82beb8610826",
+          "e:a:traces:kafka:0:6199ef621490",
+          "o:a:changes:checkout:2fc3c41c504d",
+          "o:a:changes:fraud-detection:68804dfd6c2a",
+          "o:a:changes:kafka:4b7144c8d4b6",
+          "investigation:eb5a3b795fb78ffffac462e61541bbe152049e2675ca2685eb0fa26ba5c9e3f9",
+          "investigation:66c2f91962511453523523a2079d86937a541e99c405c4ed22b67b9f69161784",
+          "investigation:acdee32db19913fb14eb4e4cbe8e9bc6578784ed57d579505075b36b1295b11a",
+          "investigation:e1a623ba62540648f9ccb85bfd1cd34935fce3637358d4dc17935df7afda0f79",
+          "investigation:673caff84d87ffa62d232d09d53da217b3a4b6ad2cea591a10066d5ba99e6b92"
+        ],
+        "snapshot_sha256": "ec462c61af663f97d85392d8d0ddf83ed629191b480dd8ffb325681407f0e879"
+      },
+      {
+        "call_index": 6,
+        "observed_evidence_refs": [
+          "e:a:logs:checkout:0:bd99d58621e3",
+          "e:a:logs:fraud-detection:0:8846acba9b2a",
+          "e:a:logs:kafka:0:b9613482e38f",
+          "e:a:metrics:checkout:core:0:16daa67d3236",
+          "e:a:metrics:fraud-detection:core:0:117d4458e34f",
+          "e:a:metrics:fraud-detection:queue-lag:0:3d11f54d546d",
+          "e:a:metrics:kafka:core:0:0a317dd5399d",
+          "e:a:resources:checkout:0:1b677c7911c4",
+          "e:a:resources:fraud-detection:0:0e5b68830126",
+          "e:a:resources:kafka:0:c1a669a458c4",
+          "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed",
+          "e:a:traces:checkout:0:aac2b6642ed4",
+          "e:a:traces:fraud-detection:0:82beb8610826",
+          "e:a:traces:kafka:0:6199ef621490",
+          "o:a:changes:checkout:2fc3c41c504d",
+          "o:a:changes:fraud-detection:68804dfd6c2a",
+          "o:a:changes:kafka:4b7144c8d4b6",
+          "investigation:eb5a3b795fb78ffffac462e61541bbe152049e2675ca2685eb0fa26ba5c9e3f9",
+          "investigation:66c2f91962511453523523a2079d86937a541e99c405c4ed22b67b9f69161784",
+          "investigation:acdee32db19913fb14eb4e4cbe8e9bc6578784ed57d579505075b36b1295b11a",
+          "investigation:e1a623ba62540648f9ccb85bfd1cd34935fce3637358d4dc17935df7afda0f79",
+          "investigation:673caff84d87ffa62d232d09d53da217b3a4b6ad2cea591a10066d5ba99e6b92"
+        ],
+        "snapshot_sha256": "e67360ea3fd03c01abb0691c6b87bc51c176d1fdd4e4a10ca738e9ae5f9aa3d7"
+      },
+      {
+        "call_index": 7,
+        "observed_evidence_refs": [
+          "e:a:logs:checkout:0:bd99d58621e3",
+          "e:a:logs:fraud-detection:0:8846acba9b2a",
+          "e:a:logs:kafka:0:b9613482e38f",
+          "e:a:metrics:checkout:core:0:16daa67d3236",
+          "e:a:metrics:fraud-detection:core:0:117d4458e34f",
+          "e:a:metrics:fraud-detection:queue-lag:0:3d11f54d546d",
+          "e:a:metrics:kafka:core:0:0a317dd5399d",
+          "e:a:resources:checkout:0:1b677c7911c4",
+          "e:a:resources:fraud-detection:0:0e5b68830126",
+          "e:a:resources:kafka:0:c1a669a458c4",
+          "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed",
+          "e:a:traces:checkout:0:aac2b6642ed4",
+          "e:a:traces:fraud-detection:0:82beb8610826",
+          "e:a:traces:kafka:0:6199ef621490",
+          "o:a:changes:checkout:2fc3c41c504d",
+          "o:a:changes:fraud-detection:68804dfd6c2a",
+          "o:a:changes:kafka:4b7144c8d4b6",
+          "investigation:eb5a3b795fb78ffffac462e61541bbe152049e2675ca2685eb0fa26ba5c9e3f9",
+          "investigation:66c2f91962511453523523a2079d86937a541e99c405c4ed22b67b9f69161784",
+          "investigation:acdee32db19913fb14eb4e4cbe8e9bc6578784ed57d579505075b36b1295b11a",
+          "investigation:e1a623ba62540648f9ccb85bfd1cd34935fce3637358d4dc17935df7afda0f79",
+          "investigation:673caff84d87ffa62d232d09d53da217b3a4b6ad2cea591a10066d5ba99e6b92",
+          "investigation:c9c05cc8b116a0b980891e2879d2428f571628078d8b755486a997207d237a51"
+        ],
+        "snapshot_sha256": "e2dc54621c18ce60d3b7a93d91780c47cc5caf0c8c34d576c37262ff47fd2842"
+      }
+    ],
+    "candidate_evidence_catalog": [
+      {
+        "covered_services": [
+          "checkout"
+        ],
+        "evidence_ref": "e:a:logs:checkout:0:bd99d58621e3",
+        "source": "LOGS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "checkout"
+        ],
+        "truncated": true
+      },
+      {
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "e:a:logs:fraud-detection:0:8846acba9b2a",
+        "source": "LOGS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": true
+      },
+      {
+        "covered_services": [
+          "kafka"
+        ],
+        "evidence_ref": "e:a:logs:kafka:0:b9613482e38f",
+        "source": "LOGS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "kafka"
+        ],
+        "truncated": true
+      },
+      {
+        "covered_services": [
+          "checkout"
+        ],
+        "evidence_ref": "e:a:metrics:checkout:core:0:16daa67d3236",
+        "source": "METRICS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "checkout"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "e:a:metrics:fraud-detection:core:0:117d4458e34f",
+        "source": "METRICS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "e:a:metrics:fraud-detection:queue-lag:0:3d11f54d546d",
+        "source": "METRICS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "kafka"
+        ],
+        "evidence_ref": "e:a:metrics:kafka:core:0:0a317dd5399d",
+        "source": "METRICS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "kafka"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "checkout"
+        ],
+        "evidence_ref": "e:a:resources:checkout:0:1b677c7911c4",
+        "source": "RESOURCES",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "checkout"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "e:a:resources:fraud-detection:0:0e5b68830126",
+        "source": "RESOURCES",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "kafka"
+        ],
+        "evidence_ref": "e:a:resources:kafka:0:c1a669a458c4",
+        "source": "RESOURCES",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "kafka"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "checkout",
+          "fraud-detection",
+          "kafka"
+        ],
+        "evidence_ref": "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed",
+        "source": "RUNTIME",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "checkout",
+          "fraud-detection",
+          "kafka"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "checkout"
+        ],
+        "evidence_ref": "e:a:traces:checkout:0:aac2b6642ed4",
+        "source": "TRACES",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "checkout"
+        ],
+        "truncated": true
+      },
+      {
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "e:a:traces:fraud-detection:0:82beb8610826",
+        "source": "TRACES",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": true
+      },
+      {
+        "covered_services": [
+          "kafka"
+        ],
+        "evidence_ref": "e:a:traces:kafka:0:6199ef621490",
+        "source": "TRACES",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "kafka"
+        ],
+        "truncated": true
+      },
+      {
+        "covered_services": [
+          "checkout"
+        ],
+        "evidence_ref": "o:a:changes:checkout:2fc3c41c504d",
+        "source": "CHANGES",
+        "status": "SUCCESS_EMPTY",
+        "targets": [
+          "checkout"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "o:a:changes:fraud-detection:68804dfd6c2a",
+        "source": "CHANGES",
+        "status": "SUCCESS_EMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "kafka"
+        ],
+        "evidence_ref": "o:a:changes:kafka:4b7144c8d4b6",
+        "source": "CHANGES",
+        "status": "SUCCESS_EMPTY",
+        "targets": [
+          "kafka"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [],
+        "evidence_ref": "investigation:eb5a3b795fb78ffffac462e61541bbe152049e2675ca2685eb0fa26ba5c9e3f9",
+        "source": "TRACES",
+        "status": "FAILURE_SCHEMA",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "investigation:66c2f91962511453523523a2079d86937a541e99c405c4ed22b67b9f69161784",
+        "source": "LOGS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [],
+        "evidence_ref": "investigation:acdee32db19913fb14eb4e4cbe8e9bc6578784ed57d579505075b36b1295b11a",
+        "source": "TRACES",
+        "status": "FAILURE_SCHEMA",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "investigation:e1a623ba62540648f9ccb85bfd1cd34935fce3637358d4dc17935df7afda0f79",
+        "source": "RESOURCES",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false
+      },
+      {
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "investigation:673caff84d87ffa62d232d09d53da217b3a4b6ad2cea591a10066d5ba99e6b92",
+        "source": "LOGS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": true
+      },
+      {
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "investigation:c9c05cc8b116a0b980891e2879d2428f571628078d8b755486a997207d237a51",
+        "source": "METRICS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false
+      }
+    ],
+    "checked_predictions": [],
+    "decisions": [
+      {
+        "action_id": "read-031432728a581db86ab3b30d",
+        "hypotheses": [],
+        "kind": "READ",
+        "provider_call_index": 0,
+        "rationale": "Inspect fraud-detection trace neighborhood over the recent 30s window to determine whether the elevated latency/error pattern is caused by an upstream/downstream dependency or is localized within fraud-detection.",
+        "result": null,
+        "unresolved_alternatives": [],
+        "validation": "ACCEPTED"
+      },
+      {
+        "action_id": "read-6a01159e12106d3a393ba3a8",
+        "hypotheses": [],
+        "kind": "READ",
+        "provider_call_index": 1,
+        "rationale": "Need one more fraud-detection log slice in the active window to discriminate whether the high error/latency is tied to explicit application errors versus silent queueing/backpressure; current evidence shows the service is running and the metrics are abnormal, but the causal mechanism is still ambiguous.",
+        "result": null,
+        "unresolved_alternatives": [],
+        "validation": "ACCEPTED"
+      },
+      {
+        "action_id": "read-ff55adc3266c21dcaa7f3932",
+        "hypotheses": [],
+        "kind": "READ",
+        "provider_call_index": 2,
+        "rationale": "Need fuller fraud-detection trace spans to distinguish internal slowdown from downstream backpressure before concluding.",
+        "result": null,
+        "unresolved_alternatives": [
+          "Internal fraud-detection processing slowdown",
+          "Downstream dependency backpressure",
+          "Telemetry gap in truncated traces"
+        ],
+        "validation": "ACCEPTED"
+      },
+      {
+        "action_id": "read-0fb657475cae543cc0524183",
+        "hypotheses": [],
+        "kind": "READ",
+        "provider_call_index": 3,
+        "rationale": "Need direct fraud-detection resource sampling to discriminate whether the elevated latency/error-rate is load-related or due to a non-resource cause before concluding.",
+        "result": null,
+        "unresolved_alternatives": [
+          "fraud-detection resource pressure",
+          "fraud-detection internal processing fault",
+          "kafka-related upstream issue"
+        ],
+        "validation": "ACCEPTED"
+      },
+      {
+        "action_id": "read-ba3a7f849e3877ec592da496",
+        "hypotheses": [],
+        "kind": "READ",
+        "provider_call_index": 4,
+        "rationale": "Selecting a discriminating log read for fraud-detection because current evidence shows severe errors, latency, and queue lag there while checkout and kafka appear healthy; logs may separate local processing failure from downstream or workload-related causes.",
+        "result": null,
+        "unresolved_alternatives": [],
+        "validation": "ACCEPTED"
+      },
+      {
+        "action_id": null,
+        "hypotheses": [
+          {
+            "against": [
+              "o:a:changes:fraud-detection:68804dfd6c2a",
+              "investigation:acdee32db19913fb14eb4e4cbe8e9bc6578784ed57d579505075b36b1295b11a"
+            ],
+            "claim_window": {
+              "ended_at": "2026-09-18T06:50:07.820172Z",
+              "started_at": "2026-09-18T06:45:07.820172Z"
+            },
+            "falsifiable_prediction": "If fraud-detection backlog is driving the incident, a fresh 10-second resource sample should continue to show low CPU utilization without a sharp memory increase while queue lag remains elevated.",
+            "hypothesis_id": null,
+            "mechanism": "fraud-detection is the degraded service, with high error rate, very high p95 latency, and elevated queue lag consistent with an internal processing backlog while runtime remains healthy.",
+            "missing_observations": [
+              "root-cause spans for fraud-detection",
+              "deeper fraud-detection logs with error text",
+              "upstream/downstream dependency metrics"
+            ],
+            "prediction_test": {
+              "comparator": "lt",
+              "field": "cpu_percent",
+              "minimum_samples": 5,
+              "operator": "mean",
+              "threshold": 1.0,
+              "window_seconds": 10
+            },
+            "support": [
+              "e:a:metrics:fraud-detection:core:0:117d4458e34f",
+              "e:a:metrics:fraud-detection:queue-lag:0:3d11f54d546d",
+              "e:a:traces:fraud-detection:0:82beb8610826",
+              "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed"
+            ],
+            "target": "fraud-detection"
+          }
+        ],
+        "kind": "CONCLUDE",
+        "provider_call_index": 5,
+        "rationale": "The strongest evidence is concentrated on fraud-detection: high error rate, high p95 latency, and elevated queue lag, while runtime reports the service healthy and unchanged. I cannot identify a causal upstream from the supplied records, so this is a service-local degradation hypothesis rather than a confirmed root cause.",
+        "result": "UNRESOLVED",
+        "unresolved_alternatives": [
+          "checkout involvement is not supported by the supplied metrics",
+          "kafka is not showing errors or latency spikes in the supplied metrics",
+          "the cause could be unobserved within fraud-detection logs/traces due to truncation"
+        ],
+        "validation": "EVIDENCE_WINDOW_MISMATCH"
+      },
+      {
+        "action_id": "read-99957e96073a0721aee3fe12",
+        "hypotheses": [],
+        "kind": "READ",
+        "provider_call_index": 6,
+        "rationale": "Request the fraud-detection metrics read to discriminate whether the elevated error rate and p95 latency reflect a service-local degradation versus downstream backpressure, using the exact read window before forming a terminal diagnosis.",
+        "result": null,
+        "unresolved_alternatives": [],
+        "validation": "ACCEPTED"
+      }
+    ],
+    "end": {
+      "monotonic_ns": 367767056257500,
+      "utc": "2026-09-18T06:51:40.438186+00:00"
+    },
+    "episode": "e05",
+    "episode_id": "ecomsre-v050-27de683624-e05",
+    "fault_activation_count": 1,
+    "formal_diagnosis": "OPEN_WORLD",
+    "healthy_restored": true,
+    "hypotheses": [],
+    "hypothesis_support_observations": [],
+    "incident_id": "inc-b7a9bc21170f5c7c4b1591bb",
+    "lag_after": 0.0,
+    "product_recovery_writes": 0,
+    "provider_calls": 8,
+    "read_count": 6,
+    "session_id": "inv-6a1f9ba09733273acd763f21",
+    "start": {
+      "monotonic_ns": 367634727043041,
+      "utc": "2026-09-18T06:49:28.108317+00:00"
+    },
+    "status": "PROVIDER_FAILED",
+    "stop_reason": "PROVIDER_TRUNCATED",
+    "supplemental_observations": [
+      {
+        "capability_sha256": "cfb0182e725d5d82f71159329b5a29b52e0e94b50470ea307e86373e3b35c009",
+        "catalog_action_id": "read-031432728a581db86ab3b30d",
+        "covered_services": [],
+        "evidence_ref": "investigation:eb5a3b795fb78ffffac462e61541bbe152049e2675ca2685eb0fa26ba5c9e3f9",
+        "object_sha256": "eb5a3b795fb78ffffac462e61541bbe152049e2675ca2685eb0fa26ba5c9e3f9",
+        "request_sha256": "ead9c8d31f04060c2302c63596e7345851e35a78f7a9cf1608b64b7a03da1a0a",
+        "resource_dependency": null,
+        "source": "TRACES",
+        "status": "FAILURE_SCHEMA",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false,
+        "window": {
+          "ended_at": "2026-09-18T06:50:07.820172Z",
+          "started_at": "2026-09-18T06:49:37.820172Z"
+        }
+      },
+      {
+        "capability_sha256": "cfb0182e725d5d82f71159329b5a29b52e0e94b50470ea307e86373e3b35c009",
+        "catalog_action_id": "read-6a01159e12106d3a393ba3a8",
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "investigation:66c2f91962511453523523a2079d86937a541e99c405c4ed22b67b9f69161784",
+        "object_sha256": "66c2f91962511453523523a2079d86937a541e99c405c4ed22b67b9f69161784",
+        "request_sha256": "45474cc64396724403e01dbe5a27d53cc1315ac103d92b83b5210663deff330b",
+        "resource_dependency": null,
+        "source": "LOGS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false,
+        "window": {
+          "ended_at": "2026-09-18T06:49:37.820172Z",
+          "started_at": "2026-09-18T06:49:07.820172Z"
+        }
+      },
+      {
+        "capability_sha256": "cfb0182e725d5d82f71159329b5a29b52e0e94b50470ea307e86373e3b35c009",
+        "catalog_action_id": "read-ff55adc3266c21dcaa7f3932",
+        "covered_services": [],
+        "evidence_ref": "investigation:acdee32db19913fb14eb4e4cbe8e9bc6578784ed57d579505075b36b1295b11a",
+        "object_sha256": "acdee32db19913fb14eb4e4cbe8e9bc6578784ed57d579505075b36b1295b11a",
+        "request_sha256": "ead9c8d31f04060c2302c63596e7345851e35a78f7a9cf1608b64b7a03da1a0a",
+        "resource_dependency": null,
+        "source": "TRACES",
+        "status": "FAILURE_SCHEMA",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false,
+        "window": {
+          "ended_at": "2026-09-18T06:49:37.820172Z",
+          "started_at": "2026-09-18T06:49:07.820172Z"
+        }
+      },
+      {
+        "capability_sha256": "cfb0182e725d5d82f71159329b5a29b52e0e94b50470ea307e86373e3b35c009",
+        "catalog_action_id": "read-0fb657475cae543cc0524183",
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "investigation:e1a623ba62540648f9ccb85bfd1cd34935fce3637358d4dc17935df7afda0f79",
+        "object_sha256": "e1a623ba62540648f9ccb85bfd1cd34935fce3637358d4dc17935df7afda0f79",
+        "request_sha256": "8e63e0e405c5d4d94e809bc4d2664c5743cba264e1caeb83d62bf9d61f74c984",
+        "resource_dependency": {
+          "query_window_seconds": 30,
+          "sample_count": 5,
+          "sampling_window_seconds": 10,
+          "template": "RESOURCE_USAGE_SAMPLES",
+          "window_offset_seconds": 30
+        },
+        "source": "RESOURCES",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false,
+        "window": {
+          "ended_at": "2026-09-18T06:49:37.820172Z",
+          "started_at": "2026-09-18T06:49:07.820172Z"
+        }
+      },
+      {
+        "capability_sha256": "cfb0182e725d5d82f71159329b5a29b52e0e94b50470ea307e86373e3b35c009",
+        "catalog_action_id": "read-ba3a7f849e3877ec592da496",
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "investigation:673caff84d87ffa62d232d09d53da217b3a4b6ad2cea591a10066d5ba99e6b92",
+        "object_sha256": "673caff84d87ffa62d232d09d53da217b3a4b6ad2cea591a10066d5ba99e6b92",
+        "request_sha256": "45474cc64396724403e01dbe5a27d53cc1315ac103d92b83b5210663deff330b",
+        "resource_dependency": null,
+        "source": "LOGS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": true,
+        "window": {
+          "ended_at": "2026-09-18T06:50:07.820172Z",
+          "started_at": "2026-09-18T06:49:37.820172Z"
+        }
+      },
+      {
+        "capability_sha256": "cfb0182e725d5d82f71159329b5a29b52e0e94b50470ea307e86373e3b35c009",
+        "catalog_action_id": "read-99957e96073a0721aee3fe12",
+        "covered_services": [
+          "fraud-detection"
+        ],
+        "evidence_ref": "investigation:c9c05cc8b116a0b980891e2879d2428f571628078d8b755486a997207d237a51",
+        "object_sha256": "c9c05cc8b116a0b980891e2879d2428f571628078d8b755486a997207d237a51",
+        "request_sha256": "7748ed4c4ae77a25a22d19a25a121bf9270241dd2786eba0900a324cd58527de",
+        "resource_dependency": null,
+        "source": "METRICS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "fraud-detection"
+        ],
+        "truncated": false,
+        "window": {
+          "ended_at": "2026-09-18T06:50:07.820172Z",
+          "started_at": "2026-09-18T06:49:37.820172Z"
+        }
+      }
+    ],
+    "supported_hypothesis_ids": [],
+    "telemetry_mode": "LIVE_PROVIDER_LIVE_TELEMETRY"
+  }
+]

@@ -1,0 +1,13 @@
+{
+  "actual_requests": 439,
+  "accounted_microusd": 5456302,
+  "input_tokens": 4159855,
+  "output_tokens": 519166,
+  "reasoning_tokens": 276468,
+  "pending": 0,
+  "unknown_usage_calls": 0,
+  "limit_microusd": 20000000,
+  "limit_requests": 1600,
+  "remaining_microusd": 14543698,
+  "remaining_requests": 1161
+}

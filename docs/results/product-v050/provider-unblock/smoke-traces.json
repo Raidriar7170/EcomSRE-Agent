@@ -1,0 +1,921 @@
+[
+  {
+    "attempt": 4,
+    "call_inputs": [
+      {
+        "call_index": 0,
+        "observed_evidence_refs": [
+          "e:a:logs:payment:0:53c551214810",
+          "e:a:metrics:payment:core:0:31f146a6dfee",
+          "e:a:resources:payment:0:7349f1d16ca0",
+          "e:a:runtime:payment:0:f978e8a100b9",
+          "e:a:traces:payment:0:2385609f0269",
+          "o:a:changes:payment:906f68e64507"
+        ],
+        "snapshot_sha256": "1ac79563f6d3b96cdd71ad64c4f98cd9995562611ad7156eacbbb82f8e5dac70"
+      },
+      {
+        "call_index": 1,
+        "observed_evidence_refs": [
+          "e:a:logs:payment:0:53c551214810",
+          "e:a:metrics:payment:core:0:31f146a6dfee",
+          "e:a:resources:payment:0:7349f1d16ca0",
+          "e:a:runtime:payment:0:f978e8a100b9",
+          "e:a:traces:payment:0:2385609f0269",
+          "o:a:changes:payment:906f68e64507"
+        ],
+        "snapshot_sha256": "3bf07588eafa9cf334fe471cbd87435006331a0538c9e6453a6bcf4c739242f7"
+      }
+    ],
+    "decisions": [
+      {
+        "action_id": null,
+        "hypotheses": [
+          {
+            "against": [
+              "There is at least one ERROR log entry, so the service is not entirely error-free."
+            ],
+            "claim_window": {
+              "ended_at": "2026-09-17T23:38:35.136358Z",
+              "started_at": "2026-09-17T23:33:35.136358Z"
+            },
+            "falsifiable_prediction": "If this is only isolated noise, additional near-term samples should continue to show healthy runtime, low latency, and low error rate without repeated ERROR traces.",
+            "hypothesis_id": null,
+            "mechanism": "An isolated error log in payment did not correspond to a service-wide failure; the service remained healthy, with normal latency, low error rate, successful traces, and no recent changes or resource pressure.",
+            "missing_observations": [
+              "Error log message and stack trace details.",
+              "Broader trace sample around the error time.",
+              "Upstream/downstream service metrics to confirm whether the issue was isolated."
+            ],
+            "prediction_test": {
+              "comparator": "lt",
+              "field": "cpu_percent",
+              "minimum_samples": 3,
+              "operator": "mean",
+              "threshold": 25.0,
+              "window_seconds": 10
+            },
+            "support": [
+              "Logs contain a single payment ERROR record in the 5-minute window.",
+              "Metrics show error_rate 0.01, latency_p95 10 ms, and request_support 100.",
+              "Runtime reports payment as RUNNING, healthy:true, restart_count:0.",
+              "Trace for payment is OK with duration 10 ms and no first error location.",
+              "Resource samples show modest CPU and flat memory usage.",
+              "Changes query returned empty, so no recent deployment/change explains a regression."
+            ],
+            "target": "payment"
+          }
+        ],
+        "kind": "CONCLUDE",
+        "provider_call_index": 0,
+        "rationale": "Available evidence does not show an active payment outage or degradation: runtime is healthy, traces are OK, latency is low, and resources are stable. The only anomaly is a lone ERROR log plus a low error-rate metric, which is consistent with an isolated handled failure or logging noise rather than a systemic incident.",
+        "result": "PROVISIONAL_SUPPORTED",
+        "unresolved_alternatives": [
+          "A transient application exception occurred but was successfully handled.",
+          "The ERROR log may reflect benign log noise or a non-user-facing error path.",
+          "A brief issue may have been missed outside the available 5-minute trace/log slice."
+        ],
+        "validation": "EVIDENCE_TARGET_MISMATCH"
+      },
+      {
+        "action_id": null,
+        "hypotheses": [
+          {
+            "against": [
+              "A log severity of ERROR indicates at least one failure occurred.",
+              "No detailed error payload or upstream/downstream span neighborhood was provided."
+            ],
+            "claim_window": {
+              "ended_at": "2026-09-17T23:38:35.136358Z",
+              "started_at": "2026-09-17T23:33:35.136358Z"
+            },
+            "falsifiable_prediction": "If this is a transient non-impacting error, subsequent short-window metrics will remain near current levels, traces will continue to be OK, and no restart or latency spike will appear in payment.",
+            "hypothesis_id": null,
+            "mechanism": "Payment shows only an isolated ERROR log with otherwise normal metrics, healthy runtime state, and OK traces. The most likely explanation is a transient, non-propagating application-level error rather than an active service degradation.",
+            "missing_observations": [
+              "Error log message/body around the ERROR record.",
+              "Neighboring traces or logs for the same timestamp to identify the failing code path."
+            ],
+            "prediction_test": {
+              "comparator": "lt",
+              "field": "cpu_percent",
+              "minimum_samples": 2,
+              "operator": "mean",
+              "threshold": 50.0,
+              "window_seconds": 10
+            },
+            "support": [
+              "LOGS show one ERROR record for payment in the 5-minute window.",
+              "METRICS show low ERROR_RATE (0.01) with low LATENCY_P95_MS (10.0) and REQUEST_SUPPORT 100.0.",
+              "RUNTIME reports payment RUNNING, healthy:true, restart_count:0.",
+              "TRACES show payment span status OK with duration_ms 10.0 and no first_error_location."
+            ],
+            "target": "payment"
+          }
+        ],
+        "kind": "CONCLUDE",
+        "provider_call_index": 1,
+        "rationale": "Observed evidence does not support an active payment incident: metrics, runtime, and traces are normal, with only a single error log and no change record. The remaining uncertainty is the cause of that isolated error, which is not discriminated by the supplied data.",
+        "result": "PROVISIONAL_SUPPORTED",
+        "unresolved_alternatives": [
+          "Transient application error with no user impact",
+          "Logging-only or non-critical validation failure",
+          "Issue outside payment that did not propagate into payment traces"
+        ],
+        "validation": "EVIDENCE_TARGET_MISMATCH"
+      }
+    ],
+    "incident_id": "inc-99b4a7bc33dae8ef55032cae",
+    "provider_calls": 2,
+    "read_count": 0,
+    "session_id": "inv-a70240f673672fad60cc3d33",
+    "status": "UNRESOLVED",
+    "stop_reason": "INVALID_DECISION_LIMIT",
+    "supplemental_observations": [],
+    "telemetry_mode": "LIVE_PROVIDER_REPLAY_TELEMETRY"
+  },
+  {
+    "attempt": 4,
+    "call_inputs": [
+      {
+        "call_index": 0,
+        "observed_evidence_refs": [
+          "e:a:logs:payment:0:3b8f0400a662",
+          "e:a:metrics:payment:core:0:e589ea02f97c",
+          "e:a:resources:payment:0:7349f1d16ca0",
+          "e:a:runtime:payment:0:f978e8a100b9",
+          "e:a:traces:payment:0:a76423027536",
+          "o:a:changes:payment:906f68e64507"
+        ],
+        "snapshot_sha256": "a6c4e2f3bfba5e03fe3468c6dce21e463eeb14545a3d18edc6716cc22fe06efa"
+      },
+      {
+        "call_index": 1,
+        "observed_evidence_refs": [
+          "e:a:logs:payment:0:3b8f0400a662",
+          "e:a:metrics:payment:core:0:e589ea02f97c",
+          "e:a:resources:payment:0:7349f1d16ca0",
+          "e:a:runtime:payment:0:f978e8a100b9",
+          "e:a:traces:payment:0:a76423027536",
+          "o:a:changes:payment:906f68e64507"
+        ],
+        "snapshot_sha256": "47d95a74039a6561ef64522faf49a0556cb611889eb43acfe0e48765a07558df"
+      },
+      {
+        "call_index": 2,
+        "observed_evidence_refs": [
+          "e:a:logs:payment:0:3b8f0400a662",
+          "e:a:metrics:payment:core:0:e589ea02f97c",
+          "e:a:resources:payment:0:7349f1d16ca0",
+          "e:a:runtime:payment:0:f978e8a100b9",
+          "e:a:traces:payment:0:a76423027536",
+          "o:a:changes:payment:906f68e64507"
+        ],
+        "snapshot_sha256": "c70963a840ee2ff84f5ea1d6d6ef2eed751d496f4609d9c08b7dc2b5f195b0a2"
+      }
+    ],
+    "decisions": [
+      {
+        "action_id": null,
+        "hypotheses": [
+          {
+            "against": [
+              "At least one ERROR-severity log record exists in the payment service window."
+            ],
+            "claim_window": {
+              "ended_at": "2026-09-17T23:38:49.430373Z",
+              "started_at": "2026-09-17T23:33:49.430373Z"
+            },
+            "falsifiable_prediction": "If the ERROR log reflects a real incident, additional traces or metrics within the same window should show elevated error rate, latency, restarts, or downstream failures; otherwise they should remain normal.",
+            "hypothesis_id": null,
+            "mechanism": "The payment service is operating normally; the single ERROR log is likely a transient or non-user-impacting application log entry rather than an active incident.",
+            "missing_observations": [
+              "No detailed log message content or stack trace was provided.",
+              "No downstream dependency traces/metrics were provided to check for hidden external failures."
+            ],
+            "prediction_test": {
+              "comparator": "lt",
+              "field": "cpu_percent",
+              "minimum_samples": 5,
+              "operator": "mean",
+              "threshold": 50.0,
+              "window_seconds": 10
+            },
+            "support": [
+              "Metrics show low error rate (0.01) with normal p95 latency (10 ms) and full request support.",
+              "Runtime reports the payment service as RUNNING, healthy, with restart_count 0.",
+              "Trace data shows an OK span for payment with 10 ms duration and no first error location.",
+              "Resource samples are stable and low (CPU 10-14%, memory flat at 1000 bytes), with no memory growth.",
+              "No configuration or code changes were recorded in the changes window."
+            ],
+            "target": "payment"
+          }
+        ],
+        "kind": "CONCLUDE",
+        "provider_call_index": 1,
+        "rationale": "Available evidence is internally consistent with a healthy payment service and does not show customer-impacting degradation. The lone ERROR log is not corroborated by metrics, runtime state, traces, or recent changes, so the incident is best treated as a non-impacting log anomaly unless further evidence appears.",
+        "result": "PROVISIONAL_SUPPORTED",
+        "unresolved_alternatives": [
+          "A transient application-level error occurred but was too brief to affect metrics.",
+          "A downstream dependency failure is hidden from the supplied payment-only evidence.",
+          "The ERROR log may represent a benign expected error path rather than a fault."
+        ],
+        "validation": "EVIDENCE_TARGET_MISMATCH"
+      },
+      {
+        "action_id": null,
+        "hypotheses": [
+          {
+            "against": [
+              "Logs contain an ERROR severity record for payment.",
+              "Any nonzero error rate means some failures are present."
+            ],
+            "claim_window": {
+              "ended_at": "2026-09-17T23:38:49.430373Z",
+              "started_at": "2026-09-17T23:33:49.430373Z"
+            },
+            "falsifiable_prediction": "Additional payment logs in the same window will show only sparse errors, and expanded traces will continue to show mostly OK spans without rising latency or restarts.",
+            "hypothesis_id": null,
+            "mechanism": "Payment is experiencing isolated request-level errors that do not materially affect service health or latency; available signals show the service remains running and responsive despite a small error rate and an error log entry.",
+            "missing_observations": [
+              "The actual error message or code from payment logs.",
+              "Whether errors correlate with specific request types or downstream calls."
+            ],
+            "prediction_test": {
+              "comparator": "lt",
+              "field": "cpu_percent",
+              "minimum_samples": 2,
+              "operator": "mean",
+              "threshold": 30.0,
+              "window_seconds": 10
+            },
+            "support": [
+              "Metrics show ERROR_RATE 0.01 with 100 requests sampled.",
+              "Metrics show LATENCY_P95_MS 10.0 ms, suggesting no latency degradation.",
+              "Runtime reports payment as RUNNING, healthy=true, restart_count=0.",
+              "Trace for payment is OK with duration_ms 10.0 and no first error location.",
+              "Changes window is empty, so there is no observed recent deployment/change signal."
+            ],
+            "target": "payment"
+          }
+        ],
+        "kind": "CONCLUDE",
+        "provider_call_index": 2,
+        "rationale": "The evidence does not show an active service degradation: health is normal, latency is low, traces are OK, resources are steady, and no recent changes are present. The only anomaly is a small error rate plus one error log, which is more consistent with isolated request failures than a broad incident.",
+        "result": "PROVISIONAL_SUPPORTED",
+        "unresolved_alternatives": [
+          "Transient request validation or input-related errors.",
+          "A narrow downstream dependency issue not visible in the provided traces.",
+          "Logging noise or a single non-representative error event."
+        ],
+        "validation": "EVIDENCE_TARGET_MISMATCH"
+      }
+    ],
+    "incident_id": "inc-a247a6367af7840737b3bede",
+    "provider_calls": 3,
+    "read_count": 0,
+    "session_id": "inv-b1f41d4d1a3f68bcc9b0ba88",
+    "status": "UNRESOLVED",
+    "stop_reason": "INVALID_DECISION_LIMIT",
+    "supplemental_observations": [],
+    "telemetry_mode": "LIVE_PROVIDER_REPLAY_TELEMETRY"
+  },
+  {
+    "attempt": 5,
+    "call_inputs": [
+      {
+        "call_index": 0,
+        "observed_evidence_refs": [
+          "e:a:logs:payment:0:ea2b481bcdb1",
+          "e:a:metrics:payment:core:0:18f64c878d43",
+          "e:a:resources:payment:0:7349f1d16ca0",
+          "e:a:runtime:payment:0:f978e8a100b9",
+          "e:a:traces:payment:0:3ff2dcfc0f4d",
+          "o:a:changes:payment:906f68e64507"
+        ],
+        "snapshot_sha256": "ea49cc49737c3a8b7486b508dc926872fca8d36d9ba78f59fc88211732cc4401"
+      },
+      {
+        "call_index": 1,
+        "observed_evidence_refs": [
+          "e:a:logs:payment:0:ea2b481bcdb1",
+          "e:a:metrics:payment:core:0:18f64c878d43",
+          "e:a:resources:payment:0:7349f1d16ca0",
+          "e:a:runtime:payment:0:f978e8a100b9",
+          "e:a:traces:payment:0:3ff2dcfc0f4d",
+          "o:a:changes:payment:906f68e64507"
+        ],
+        "snapshot_sha256": "f234fb3593b8009722600bea855bdde5668fbcc8bd3e3a209a49ef63d4611a1a"
+      }
+    ],
+    "decisions": [
+      {
+        "action_id": "read-bc558416d99cf06fd1305696",
+        "hypotheses": [
+          {
+            "against": [
+              "e:a:resources:payment:0:7349f1d16ca0",
+              "e:a:runtime:payment:0:f978e8a100b9"
+            ],
+            "claim_window": {
+              "ended_at": "2026-09-17T23:42:05.933577Z",
+              "started_at": "2026-09-17T23:37:05.933577Z"
+            },
+            "falsifiable_prediction": "If the next log batch is inspected, it will show a small number of error entries without corresponding elevated latency or resource saturation in the same window.",
+            "hypothesis_id": null,
+            "mechanism": "The payment service is emitting isolated error log entries while remaining healthy and low-latency, suggesting a non-impairing application-level fault or transient request error rather than a broader outage.",
+            "missing_observations": [
+              "log message content",
+              "upstream/downstream dependency traces",
+              "error-rate trend over a longer window"
+            ],
+            "prediction_test": {
+              "comparator": "lt",
+              "field": "cpu_percent",
+              "minimum_samples": 5,
+              "operator": "mean",
+              "threshold": 20.0,
+              "window_seconds": 10
+            },
+            "support": [
+              "e:a:logs:payment:0:ea2b481bcdb1",
+              "e:a:metrics:payment:core:0:18f64c878d43",
+              "e:a:traces:payment:0:3ff2dcfc0f4d"
+            ],
+            "target": "payment"
+          }
+        ],
+        "kind": "READ",
+        "provider_call_index": 0,
+        "rationale": "Current evidence is mixed: logs show at least one ERROR, but metrics, runtime, traces, and resources are all normal. A logs read can discriminate whether the error is isolated noise or a specific failure pattern.",
+        "result": null,
+        "unresolved_alternatives": [
+          "Transient application error with no user impact",
+          "Missing log context or redacted error details",
+          "Short-lived upstream dependency issue not visible in current traces"
+        ],
+        "validation": "EVIDENCE_WINDOW_MISMATCH"
+      },
+      {
+        "action_id": "read-6bb1f43289f3b58062ad200e",
+        "hypotheses": [
+          {
+            "against": [],
+            "claim_window": {
+              "ended_at": "2026-09-17T23:42:05.933577Z",
+              "started_at": "2026-09-17T23:37:05.933577Z"
+            },
+            "falsifiable_prediction": "If the issue is transient, a new metrics read over the current 30s window will show low error rate and stable latency with adequate request support.",
+            "hypothesis_id": null,
+            "mechanism": "The observed payment error is a brief, low-impact transient while service health and traces remain normal; a short follow-up metrics read can test whether the error rate persists without signs of latency or resource stress.",
+            "missing_observations": [
+              "fresh METRICS read over the most recent 30s",
+              "fresh TRACES read over the most recent 30s"
+            ],
+            "prediction_test": {
+              "comparator": "lt",
+              "field": "cpu_percent",
+              "minimum_samples": 5,
+              "operator": "mean",
+              "threshold": 20.0,
+              "window_seconds": 10
+            },
+            "support": [
+              "e:a:logs:payment:0:ea2b481bcdb1",
+              "e:a:metrics:payment:core:0:18f64c878d43",
+              "e:a:resources:payment:0:7349f1d16ca0",
+              "e:a:runtime:payment:0:f978e8a100b9",
+              "e:a:traces:payment:0:3ff2dcfc0f4d"
+            ],
+            "target": "payment"
+          },
+          {
+            "against": [
+              "e:a:logs:payment:0:ea2b481bcdb1"
+            ],
+            "claim_window": {
+              "ended_at": "2026-09-17T23:42:05.933577Z",
+              "started_at": "2026-09-17T23:37:05.933577Z"
+            },
+            "falsifiable_prediction": "If this explanation is wrong, a new metrics read over the current 30s window will show elevated error rate or latency beyond the current baseline.",
+            "hypothesis_id": null,
+            "mechanism": "The payment service is healthy and the single error log is not accompanied by degraded latency, resource usage, or trace failures; a metrics reread can discriminate whether the log reflects an isolated event versus an emerging problem.",
+            "missing_observations": [
+              "fresh METRICS read over the most recent 30s",
+              "fresh LOGS read over the most recent 30s"
+            ],
+            "prediction_test": {
+              "comparator": "lt",
+              "field": "cpu_percent",
+              "minimum_samples": 5,
+              "operator": "max",
+              "threshold": 20.0,
+              "window_seconds": 10
+            },
+            "support": [
+              "e:a:metrics:payment:core:0:18f64c878d43",
+              "e:a:resources:payment:0:7349f1d16ca0",
+              "e:a:runtime:payment:0:f978e8a100b9",
+              "e:a:traces:payment:0:3ff2dcfc0f4d"
+            ],
+            "target": "payment"
+          }
+        ],
+        "kind": "READ",
+        "provider_call_index": 1,
+        "rationale": "Existing evidence is mixed but mostly normal: runtime, traces, resources, and metrics do not show degradation, while logs show one error record. A fresh metrics read over the latest window is the best available discriminator before concluding.",
+        "result": null,
+        "unresolved_alternatives": [
+          "isolated transient log error",
+          "incipient payment degradation",
+          "log noise or non-impacting application error"
+        ],
+        "validation": "EVIDENCE_WINDOW_MISMATCH"
+      }
+    ],
+    "incident_id": "inc-c8d4aac34d2f84e8fbe02eee",
+    "provider_calls": 2,
+    "read_count": 0,
+    "session_id": "inv-5a76f7667b8cf544d4a5c571",
+    "status": "UNRESOLVED",
+    "stop_reason": "INVALID_DECISION_LIMIT",
+    "supplemental_observations": [],
+    "telemetry_mode": "LIVE_PROVIDER_REPLAY_TELEMETRY"
+  },
+  {
+    "attempt": 5,
+    "call_inputs": [
+      {
+        "call_index": 0,
+        "observed_evidence_refs": [
+          "e:a:logs:payment:0:7c122003ad1a",
+          "e:a:metrics:payment:core:0:f2b6489f47ec",
+          "e:a:resources:payment:0:7349f1d16ca0",
+          "e:a:runtime:payment:0:f978e8a100b9",
+          "e:a:traces:payment:0:65f482cc66fe",
+          "o:a:changes:payment:906f68e64507"
+        ],
+        "snapshot_sha256": "3f49f649f6a9438af6fb93c12b121b398febe67c884ed35954e29527e3d94304"
+      },
+      {
+        "call_index": 1,
+        "observed_evidence_refs": [
+          "e:a:logs:payment:0:7c122003ad1a",
+          "e:a:metrics:payment:core:0:f2b6489f47ec",
+          "e:a:resources:payment:0:7349f1d16ca0",
+          "e:a:runtime:payment:0:f978e8a100b9",
+          "e:a:traces:payment:0:65f482cc66fe",
+          "o:a:changes:payment:906f68e64507"
+        ],
+        "snapshot_sha256": "6b2ff1d239cf83464ae1840810d8abea0601402803543e248b6ef4a1233d8a88"
+      }
+    ],
+    "decisions": [
+      {
+        "action_id": "read-348de93045a57811ba39a9da",
+        "hypotheses": [
+          {
+            "against": [
+              "e:a:runtime:payment:0:f978e8a100b9",
+              "e:a:traces:payment:0:65f482cc66fe"
+            ],
+            "claim_window": {
+              "ended_at": "2026-09-17T23:42:19.898812Z",
+              "started_at": "2026-09-17T23:37:19.898812Z"
+            },
+            "falsifiable_prediction": "If the issue is transient and non-impacting, a short recent log read will show at most isolated ERROR entries with no cluster of repeated failures in the last 5 minutes.",
+            "hypothesis_id": null,
+            "mechanism": "A brief payment-side fault produced isolated log errors without sustained service impact; current telemetry suggests the system remained operational.",
+            "missing_observations": [
+              "Recent payment logs to see whether errors persist beyond a single record.",
+              "Trace spans around the error timestamp to determine whether any failing request path exists."
+            ],
+            "prediction_test": null,
+            "support": [
+              "e:a:logs:payment:0:7c122003ad1a",
+              "e:a:metrics:payment:core:0:f2b6489f47ec"
+            ],
+            "target": "payment"
+          },
+          {
+            "against": [
+              "e:a:metrics:payment:core:0:f2b6489f47ec",
+              "e:a:runtime:payment:0:f978e8a100b9",
+              "e:a:traces:payment:0:65f482cc66fe"
+            ],
+            "claim_window": {
+              "ended_at": "2026-09-17T23:42:19.898812Z",
+              "started_at": "2026-09-17T23:37:19.898812Z"
+            },
+            "falsifiable_prediction": "If this is developing degradation, a recent log read should reveal multiple ERROR records or a worsening pattern in the same window.",
+            "hypothesis_id": null,
+            "mechanism": "The observed error log is an early sign of a developing payment problem that has not yet manifested in runtime health or traces.",
+            "missing_observations": [
+              "Logs from the last 5 minutes with more than one record.",
+              "Trace neighborhood around the error timestamp."
+            ],
+            "prediction_test": null,
+            "support": [
+              "e:a:logs:payment:0:7c122003ad1a"
+            ],
+            "target": "payment"
+          }
+        ],
+        "kind": "READ",
+        "provider_call_index": 0,
+        "rationale": "Current evidence is mixed: one recent ERROR log exists, but metrics, runtime, and traces are all healthy. A recent log read is the most discriminating legal read before concluding.",
+        "result": null,
+        "unresolved_alternatives": [
+          "Isolated transient error with no user impact",
+          "Emerging payment degradation not yet reflected in runtime or traces"
+        ],
+        "validation": "EVIDENCE_WINDOW_MISMATCH"
+      },
+      {
+        "action_id": null,
+        "hypotheses": [
+          {
+            "against": [
+              "o:a:changes:payment:906f68e64507"
+            ],
+            "claim_window": {
+              "ended_at": "2026-09-17T23:42:19.898812Z",
+              "started_at": "2026-09-17T23:37:19.898812Z"
+            },
+            "falsifiable_prediction": "If the issue is transient, additional log samples in the same window should continue to show isolated errors while latency and trace status remain near current levels.",
+            "hypothesis_id": null,
+            "mechanism": "The payment service shows a small error signal but no corresponding latency, trace, or runtime degradation in the reported window, suggesting a transient or non-impacting issue rather than an active outage.",
+            "missing_observations": [
+              "read-a079dd03e1dcded19da05db4"
+            ],
+            "prediction_test": {
+              "comparator": "lt",
+              "field": "cpu_percent",
+              "minimum_samples": 5,
+              "operator": "mean",
+              "threshold": 20.0,
+              "window_seconds": 10
+            },
+            "support": [
+              "e:a:logs:payment:0:7c122003ad1a",
+              "e:a:metrics:payment:core:0:f2b6489f47ec",
+              "e:a:traces:payment:0:65f482cc66fe"
+            ],
+            "target": "payment"
+          },
+          {
+            "against": [
+              "e:a:logs:payment:0:7c122003ad1a"
+            ],
+            "claim_window": {
+              "ended_at": "2026-09-17T23:42:19.898812Z",
+              "started_at": "2026-09-17T23:41:19.898812Z"
+            },
+            "falsifiable_prediction": "If payment is genuinely healthy, more recent resource samples should keep CPU low and memory flat while runtime remains healthy.",
+            "hypothesis_id": null,
+            "mechanism": "Payment is currently healthy and the observed error signal is not accompanied by operational stress, so the available evidence is insufficient to attribute an active service incident to payment itself.",
+            "missing_observations": [
+              "read-4b77a55b144eda33b184a9a6",
+              "read-dfc265d9ba32382809479e75"
+            ],
+            "prediction_test": {
+              "comparator": "lt",
+              "field": "cpu_percent",
+              "minimum_samples": 5,
+              "operator": "mean",
+              "threshold": 20.0,
+              "window_seconds": 10
+            },
+            "support": [
+              "e:a:metrics:payment:core:0:f2b6489f47ec",
+              "e:a:runtime:payment:0:f978e8a100b9",
+              "e:a:traces:payment:0:65f482cc66fe"
+            ],
+            "target": "payment"
+          }
+        ],
+        "kind": "CONCLUDE",
+        "provider_call_index": 1,
+        "rationale": "The supplied evidence is internally mixed: one log shows an ERROR, while metrics, traces, runtime, and resources are all non-degraded. I\u2019m concluding that there is no clear active payment incident from the available windowed data, but the evidence does not isolate a root cause.",
+        "result": "UNRESOLVED",
+        "unresolved_alternatives": [
+          "A brief payment-side error occurred without material impact.",
+          "The error signal may reflect a downstream or intermittent issue not visible in the current reads.",
+          "The incident may have already resolved before the runtime and trace samples were taken."
+        ],
+        "validation": "EVIDENCE_INCOMPLETE"
+      }
+    ],
+    "incident_id": "inc-5249a8c4d2711e267e4975f2",
+    "provider_calls": 2,
+    "read_count": 0,
+    "session_id": "inv-7e9ce825f13f242ddaf40d88",
+    "status": "UNRESOLVED",
+    "stop_reason": "INVALID_DECISION_LIMIT",
+    "supplemental_observations": [],
+    "telemetry_mode": "LIVE_PROVIDER_REPLAY_TELEMETRY"
+  },
+  {
+    "attempt": 6,
+    "call_inputs": [
+      {
+        "call_index": 0,
+        "observed_evidence_refs": [
+          "e:a:logs:payment:0:d482db9ff9ea",
+          "e:a:metrics:payment:core:0:c2132cb81f0a",
+          "e:a:resources:payment:0:7349f1d16ca0",
+          "e:a:runtime:payment:0:f978e8a100b9",
+          "e:a:traces:payment:0:5a75e71b960a",
+          "o:a:changes:payment:906f68e64507"
+        ],
+        "snapshot_sha256": "3b610cda228bf39518968e91cf9fa710ea9db1dd4b7b317ed05d581e2649b18d"
+      },
+      {
+        "call_index": 1,
+        "observed_evidence_refs": [
+          "e:a:logs:payment:0:d482db9ff9ea",
+          "e:a:metrics:payment:core:0:c2132cb81f0a",
+          "e:a:resources:payment:0:7349f1d16ca0",
+          "e:a:runtime:payment:0:f978e8a100b9",
+          "e:a:traces:payment:0:5a75e71b960a",
+          "o:a:changes:payment:906f68e64507",
+          "investigation:97f51564054b0c72d454c1ed91b9ec55eb3be36dc0207f3b7ea6ae6fcc82029e"
+        ],
+        "snapshot_sha256": "e0cbbf2e0073e7b14ca851e74e22d9935fa3f99281c8640298f74cb5415f1dbb"
+      },
+      {
+        "call_index": 2,
+        "observed_evidence_refs": [
+          "e:a:logs:payment:0:d482db9ff9ea",
+          "e:a:metrics:payment:core:0:c2132cb81f0a",
+          "e:a:resources:payment:0:7349f1d16ca0",
+          "e:a:runtime:payment:0:f978e8a100b9",
+          "e:a:traces:payment:0:5a75e71b960a",
+          "o:a:changes:payment:906f68e64507",
+          "investigation:97f51564054b0c72d454c1ed91b9ec55eb3be36dc0207f3b7ea6ae6fcc82029e",
+          "investigation:bbd13e0b3175617c30094f843de77c3075aec22805127ea3f8484ddce754d0a1"
+        ],
+        "snapshot_sha256": "90f47d4f59b7342c02d1bd3814278951b975840f9692d06b83cc5c9d7f240311"
+      }
+    ],
+    "decisions": [
+      {
+        "action_id": "read-07c846688724455254c36548",
+        "hypotheses": [],
+        "kind": "READ",
+        "provider_call_index": 0,
+        "rationale": "Read recent payment logs to determine whether the observed error was isolated or part of a continuing pattern before choosing a terminal diagnosis.",
+        "result": null,
+        "unresolved_alternatives": [
+          "Transient payment log error without user impact",
+          "Ongoing payment fault not yet reflected in metrics or traces"
+        ],
+        "validation": "ACCEPTED"
+      },
+      {
+        "action_id": "read-a4a9fddc0ea46f91f99b88b6",
+        "hypotheses": [],
+        "kind": "READ",
+        "provider_call_index": 1,
+        "rationale": "Need a focused metrics read over the latest 30-second window to discriminate between a transient payment-side error spike and a non-impactful isolated log error, since current 5-minute aggregates are low and traces/runtime are healthy.",
+        "result": null,
+        "unresolved_alternatives": [
+          "Transient isolated error with no customer impact",
+          "Brief recent payment degradation not yet reflected in 5-minute aggregates"
+        ],
+        "validation": "ACCEPTED"
+      },
+      {
+        "action_id": "read-7a96886bf582a94a983ff1f2",
+        "hypotheses": [],
+        "kind": "READ",
+        "provider_call_index": 2,
+        "rationale": "Need recent log context for payment to determine whether the observed error is isolated or part of a continuing failure pattern, since current evidence shows an error record but healthy runtime, normal latency, and low error rate.",
+        "result": null,
+        "unresolved_alternatives": [],
+        "validation": "ACCEPTED"
+      }
+    ],
+    "incident_id": "inc-b2f3ea8fda5c3d6a90fd9295",
+    "provider_calls": 3,
+    "read_count": 3,
+    "session_id": "inv-41ee22038f81ac39668d6640",
+    "status": "BUDGET_EXHAUSTED",
+    "stop_reason": "SESSION_CALL_CAP",
+    "supplemental_observations": [
+      {
+        "capability_sha256": "eaafe76f9bf0ef9594474ba4ed256511260a34a764ee2aa399676086dc300838",
+        "catalog_action_id": "read-07c846688724455254c36548",
+        "covered_services": [
+          "payment"
+        ],
+        "evidence_ref": "investigation:97f51564054b0c72d454c1ed91b9ec55eb3be36dc0207f3b7ea6ae6fcc82029e",
+        "object_sha256": "97f51564054b0c72d454c1ed91b9ec55eb3be36dc0207f3b7ea6ae6fcc82029e",
+        "request_sha256": "57631ccf6aa41c9ea6ee2fefcca2b34fe278e626fdec65fc898faed5f7268e48",
+        "source": "LOGS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "payment"
+        ],
+        "truncated": false,
+        "window": {
+          "ended_at": "2026-09-17T23:43:57.324995Z",
+          "started_at": "2026-09-17T23:43:27.324995Z"
+        }
+      },
+      {
+        "capability_sha256": "eaafe76f9bf0ef9594474ba4ed256511260a34a764ee2aa399676086dc300838",
+        "catalog_action_id": "read-a4a9fddc0ea46f91f99b88b6",
+        "covered_services": [
+          "payment"
+        ],
+        "evidence_ref": "investigation:bbd13e0b3175617c30094f843de77c3075aec22805127ea3f8484ddce754d0a1",
+        "object_sha256": "bbd13e0b3175617c30094f843de77c3075aec22805127ea3f8484ddce754d0a1",
+        "request_sha256": "4d62d7c48fd70a1ef5da25130adec5c6d897e193574dc2089f0970587c37311f",
+        "source": "METRICS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "payment"
+        ],
+        "truncated": false,
+        "window": {
+          "ended_at": "2026-09-17T23:43:27.324995Z",
+          "started_at": "2026-09-17T23:42:57.324995Z"
+        }
+      },
+      {
+        "capability_sha256": "eaafe76f9bf0ef9594474ba4ed256511260a34a764ee2aa399676086dc300838",
+        "catalog_action_id": "read-7a96886bf582a94a983ff1f2",
+        "covered_services": [
+          "payment"
+        ],
+        "evidence_ref": "investigation:e68209fdce26a28569b1ed7c5d4063c3e7d5027849fcf1bd5993e1a338d6c21f",
+        "object_sha256": "e68209fdce26a28569b1ed7c5d4063c3e7d5027849fcf1bd5993e1a338d6c21f",
+        "request_sha256": "57631ccf6aa41c9ea6ee2fefcca2b34fe278e626fdec65fc898faed5f7268e48",
+        "source": "LOGS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "payment"
+        ],
+        "truncated": false,
+        "window": {
+          "ended_at": "2026-09-17T23:43:27.324995Z",
+          "started_at": "2026-09-17T23:42:57.324995Z"
+        }
+      }
+    ],
+    "telemetry_mode": "LIVE_PROVIDER_REPLAY_TELEMETRY"
+  },
+  {
+    "attempt": 6,
+    "call_inputs": [
+      {
+        "call_index": 0,
+        "observed_evidence_refs": [
+          "e:a:logs:payment:0:0e84a4bd1a90",
+          "e:a:metrics:payment:core:0:b7b366d26e64",
+          "e:a:resources:payment:0:7349f1d16ca0",
+          "e:a:runtime:payment:0:f978e8a100b9",
+          "e:a:traces:payment:0:ad7805de143a",
+          "o:a:changes:payment:906f68e64507"
+        ],
+        "snapshot_sha256": "92f5c9372b8850b2b07564a1ebdf2dfc374322e44f1772b87d2317fd7dd8eebb"
+      },
+      {
+        "call_index": 1,
+        "observed_evidence_refs": [
+          "e:a:logs:payment:0:0e84a4bd1a90",
+          "e:a:metrics:payment:core:0:b7b366d26e64",
+          "e:a:resources:payment:0:7349f1d16ca0",
+          "e:a:runtime:payment:0:f978e8a100b9",
+          "e:a:traces:payment:0:ad7805de143a",
+          "o:a:changes:payment:906f68e64507",
+          "investigation:e1b0807b25e9dcb219de683c2d4d5f9cba09d8f2eace2d870fdb11fab8ec5e4c"
+        ],
+        "snapshot_sha256": "30d2855f7ae327c8886b31d327dd003cf093569ce6a60163c496b4c5755dc224"
+      },
+      {
+        "call_index": 2,
+        "observed_evidence_refs": [
+          "e:a:logs:payment:0:0e84a4bd1a90",
+          "e:a:metrics:payment:core:0:b7b366d26e64",
+          "e:a:resources:payment:0:7349f1d16ca0",
+          "e:a:runtime:payment:0:f978e8a100b9",
+          "e:a:traces:payment:0:ad7805de143a",
+          "o:a:changes:payment:906f68e64507",
+          "investigation:e1b0807b25e9dcb219de683c2d4d5f9cba09d8f2eace2d870fdb11fab8ec5e4c",
+          "investigation:bae6867a33693a8555eeae056fd40c8544eb825e2a721d09b4fb55c53168374f"
+        ],
+        "snapshot_sha256": "f659e9672560e112d2db665515d3287364b3e27e765bea2ee18d1bef20a10f6a"
+      }
+    ],
+    "decisions": [
+      {
+        "action_id": "read-004189a4c8b5cf61e352ec96",
+        "hypotheses": [],
+        "kind": "READ",
+        "provider_call_index": 0,
+        "rationale": "Need recent payment logs for the last 30s to discriminate whether the observed error reflects an isolated transient issue, a recurring application fault, or benign noise before concluding.",
+        "result": null,
+        "unresolved_alternatives": [
+          "transient isolated error",
+          "recurring application fault",
+          "benign isolated noise"
+        ],
+        "validation": "ACCEPTED"
+      },
+      {
+        "action_id": "read-34d7618008f5fa3c4bc4d42d",
+        "hypotheses": [],
+        "kind": "READ",
+        "provider_call_index": 1,
+        "rationale": "Request the earlier payment logs window to check whether the observed error was isolated or part of a recurring pattern. Current metrics, runtime, and traces look healthy, so the read may discriminate between transient logging noise and a real service incident.",
+        "result": null,
+        "unresolved_alternatives": [
+          "Transient isolated error with no impact",
+          "Recurring payment service fault not captured by current metrics/traces"
+        ],
+        "validation": "ACCEPTED"
+      },
+      {
+        "action_id": "read-23c80eee14f2bf8e999bbbed",
+        "hypotheses": [],
+        "kind": "READ",
+        "provider_call_index": 2,
+        "rationale": "Recent logs show ERROR severity while runtime, traces, and coarse metrics are otherwise normal. A metrics read over the same recent window could discriminate between a real transient payment issue and isolated log noise before concluding.",
+        "result": null,
+        "unresolved_alternatives": [],
+        "validation": "ACCEPTED"
+      }
+    ],
+    "incident_id": "inc-89e7602c3ecc28b3baf96b9e",
+    "provider_calls": 3,
+    "read_count": 3,
+    "session_id": "inv-913e1cff60902997bd997618",
+    "status": "BUDGET_EXHAUSTED",
+    "stop_reason": "SESSION_CALL_CAP",
+    "supplemental_observations": [
+      {
+        "capability_sha256": "eaafe76f9bf0ef9594474ba4ed256511260a34a764ee2aa399676086dc300838",
+        "catalog_action_id": "read-004189a4c8b5cf61e352ec96",
+        "covered_services": [
+          "payment"
+        ],
+        "evidence_ref": "investigation:e1b0807b25e9dcb219de683c2d4d5f9cba09d8f2eace2d870fdb11fab8ec5e4c",
+        "object_sha256": "e1b0807b25e9dcb219de683c2d4d5f9cba09d8f2eace2d870fdb11fab8ec5e4c",
+        "request_sha256": "57631ccf6aa41c9ea6ee2fefcca2b34fe278e626fdec65fc898faed5f7268e48",
+        "source": "LOGS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "payment"
+        ],
+        "truncated": false,
+        "window": {
+          "ended_at": "2026-09-17T23:44:11.926616Z",
+          "started_at": "2026-09-17T23:43:41.926616Z"
+        }
+      },
+      {
+        "capability_sha256": "eaafe76f9bf0ef9594474ba4ed256511260a34a764ee2aa399676086dc300838",
+        "catalog_action_id": "read-34d7618008f5fa3c4bc4d42d",
+        "covered_services": [
+          "payment"
+        ],
+        "evidence_ref": "investigation:bae6867a33693a8555eeae056fd40c8544eb825e2a721d09b4fb55c53168374f",
+        "object_sha256": "bae6867a33693a8555eeae056fd40c8544eb825e2a721d09b4fb55c53168374f",
+        "request_sha256": "57631ccf6aa41c9ea6ee2fefcca2b34fe278e626fdec65fc898faed5f7268e48",
+        "source": "LOGS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "payment"
+        ],
+        "truncated": false,
+        "window": {
+          "ended_at": "2026-09-17T23:43:41.926616Z",
+          "started_at": "2026-09-17T23:43:11.926616Z"
+        }
+      },
+      {
+        "capability_sha256": "eaafe76f9bf0ef9594474ba4ed256511260a34a764ee2aa399676086dc300838",
+        "catalog_action_id": "read-23c80eee14f2bf8e999bbbed",
+        "covered_services": [
+          "payment"
+        ],
+        "evidence_ref": "investigation:3bfb770f1abcfb4eec448e8b2376720ed4ed6a5306bc1c1724d0544b493d4932",
+        "object_sha256": "3bfb770f1abcfb4eec448e8b2376720ed4ed6a5306bc1c1724d0544b493d4932",
+        "request_sha256": "4d62d7c48fd70a1ef5da25130adec5c6d897e193574dc2089f0970587c37311f",
+        "source": "METRICS",
+        "status": "SUCCESS_NONEMPTY",
+        "targets": [
+          "payment"
+        ],
+        "truncated": false,
+        "window": {
+          "ended_at": "2026-09-17T23:43:41.926616Z",
+          "started_at": "2026-09-17T23:43:11.926616Z"
+        }
+      }
+    ],
+    "telemetry_mode": "LIVE_PROVIDER_REPLAY_TELEMETRY"
+  }
+]

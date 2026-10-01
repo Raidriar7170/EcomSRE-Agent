@@ -1,0 +1,60 @@
+{
+  "accepted_candidates": 0,
+  "accepted_model_selected_reads": 6,
+  "accounting": {
+    "committed_upper_microusd": 232264,
+    "reported_upper_microusd": 136815,
+    "request_count": 24,
+    "unknown_usage_requests": 4
+  },
+  "actual_invoice_usd": null,
+  "cleanup": "NOT_REQUIRED_NO_RUNTIME_CREATED",
+  "confirmed_product_protocol_issues": [
+    "prose used instead of evidence references",
+    "mixed observation windows in READ-attached hypotheses",
+    "knowledge expression schema validation"
+  ],
+  "current_generation_access": "CONFIRMED_SAME_CONFIGURED_MODEL; P1 succeeded before task prompt changes",
+  "docker_started": false,
+  "followup_gate": "Clarify whether Unblock section 2 no-Docker prohibition ends after entry smoke; no running containers observed",
+  "governance_rejections": [
+    {
+      "created_at": "2026-09-17T23:42:43.051037+00:00",
+      "discovery_sha256": "62c0be5410c84855496fa8ebf77a8b7fcd37996de4ec5c37738806b12de3302a",
+      "environment_id": "env-7c3157e9cec2f37bf987a8c5",
+      "reason": "candidate has no verified deployable observation dependency",
+      "source_request_key": "knowledge:env-7c3157e9cec2f37bf987a8c5:job-66f2573d94853a76a0e35c37"
+    }
+  ],
+  "historical_404_root_cause": "UNDETERMINED_OLD_RESPONSE_METADATA_NOT_RETAINED",
+  "historical_records": "Original zero-call package, continuation-01, attempts1-3, sessions and reservations unchanged",
+  "independent_holdout": "NOT_ATTEMPTED",
+  "independent_live_incidents": 0,
+  "knowledge_proposal_calls": 3,
+  "learned_reuse": "NOT_ATTEMPTED",
+  "level_b": "MODEL_PROPOSED_CPU_MEAN_EXPRESSION_IN_REJECTED_CANDIDATE; NOT_INDEPENDENTLY_EVALUATED",
+  "live_episode_count": 0,
+  "minimal_function": "PASS",
+  "minimal_text": "PASS",
+  "new_product_external_writes": 0,
+  "new_requests": 20,
+  "product_smoke_terminal": "BOUNDED_PROTOCOL_EXERCISE_NOT_LEARNING_ACCEPTANCE",
+  "product_tool_roundtrip": "PASS_REPLAY_ATTEMPT_6",
+  "promotion": "NOT_ATTEMPTED",
+  "read_contract_fix": "Provider instructions clarify existing contracts; Runtime R1-R4 unchanged",
+  "remaining_requests": 176,
+  "remaining_upper_microusd": 19767736,
+  "schema_valid_model_proposals": 1,
+  "schema_version": "ecomsre.product.provider-unblock.v050.1",
+  "starting_head": "fe57dee4895d966e6d9c270c4e6ec6cc00a57d72",
+  "sub_budget": {
+    "commitment_cap_microusd": 1000000,
+    "gross_reservations_microusd": 11244,
+    "new_requests": 2,
+    "reported_upper_microusd": 205,
+    "request_cap": 6
+  },
+  "terminal": "ECOMSRE_PRODUCT_V050_ENGINEERING_COMPLETE_WITH_LIMITATIONS",
+  "user_action": "Clarify the no-Docker scope before any independent live campaign; no key/account/network change requested",
+  "verification": "Current source-bound offline checks; final fixed-head full regression and CI required before closure"
+}

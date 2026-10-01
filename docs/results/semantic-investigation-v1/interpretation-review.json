@@ -1,0 +1,23 @@
+{
+  "rubric_frozen_in": "config/semantic-investigation-v1/experiment.json",
+  "reported_final_reports": 6,
+  "structured_false_affirmations": 0,
+  "claim_boundary": "Counts apply to final-report flags and predeclared root/business-exclusion/whole-system-health assertions; not an absence-of-hallucination claim.",
+  "qualitative_findings": [
+    {
+      "case_id": "case-002",
+      "method": "C",
+      "repeat": 0,
+      "issue": "Uses error-free in explanation although relevant trace status is unknown; report later limits the bounded sample.",
+      "metric_disposition": "Scope overstatement retained separately; no explicit whole-business-fault exclusion assertion."
+    },
+    {
+      "case_id": "case-001",
+      "method": "D",
+      "repeat": 0,
+      "issue": "Describes queue-lag as part of retained consumer-path traces; queue-lag came from typed metrics.",
+      "metric_disposition": "Source conflation; not a confirmed causal-root assertion."
+    }
+  ],
+  "numeric_check": "35 saved tool analyses independently rerun against frozen inputs; all match excluding compute_ms. Model prose remains interpretation, not a certified fact table."
+}

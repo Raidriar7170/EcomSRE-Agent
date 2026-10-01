@@ -1,0 +1,1001 @@
+{
+  "scope": "VALIDATION_ONLY; original observed state per turn; no counterfactual continuation or revised accuracy",
+  "provider_requests": 0,
+  "summary": {
+    "C": {
+      "retained_decisions": 20,
+      "old_rejections": {
+        "INVALID_EXPECTATION_PAIR": 11,
+        "HYPOTHESIS_SCOPE_OR_REFERENCE": 1
+      },
+      "new_rejections": {
+        "HYPOTHESIS_SCOPE_OR_REFERENCE": 1
+      },
+      "newly_legal": 11
+    },
+    "D": {
+      "retained_decisions": 32,
+      "old_rejections": {
+        "INVALID_EXPECTATION_PAIR": 6,
+        "PREDICTION_NOT_PRECOMMITTED": 5,
+        "DUPLICATE_HYPOTHESIS_ID": 1,
+        "HYPOTHESIS_SCOPE_OR_REFERENCE": 3
+      },
+      "new_rejections": {
+        "DUPLICATE_HYPOTHESIS_ID": 1,
+        "HYPOTHESIS_SCOPE_OR_REFERENCE": 3
+      },
+      "newly_legal": 11
+    }
+  },
+  "decisions": [
+    {
+      "case_id": "rcase-003",
+      "method": "C",
+      "repeat": 0,
+      "turn": 0,
+      "old_rejection": "INVALID_EXPECTATION_PAIR",
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "REACT",
+        "reason": "ORDINARY_REACT",
+        "disagreement": 0,
+        "selection_score": 0.0,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 2.8,
+        "prediction_admitted": true
+      },
+      "previously_executed": false,
+      "historical_completion_unchanged": "FORMAT_FAILED"
+    },
+    {
+      "case_id": "rcase-003",
+      "method": "C",
+      "repeat": 0,
+      "turn": 1,
+      "old_rejection": "INVALID_EXPECTATION_PAIR",
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "REACT",
+        "reason": "ORDINARY_REACT",
+        "disagreement": 0,
+        "selection_score": 0.0,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 2.8,
+        "prediction_admitted": true
+      },
+      "previously_executed": false,
+      "historical_completion_unchanged": "FORMAT_FAILED"
+    },
+    {
+      "case_id": "rcase-002",
+      "method": "D",
+      "repeat": 0,
+      "turn": 0,
+      "old_rejection": "INVALID_EXPECTATION_PAIR",
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "REACT_FALLBACK",
+        "reason": "NO_VALID_OPPOSITE_PAIR",
+        "disagreement": 0,
+        "selection_score": 0.0,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 5.6,
+        "prediction_admitted": false
+      },
+      "previously_executed": false,
+      "historical_completion_unchanged": "COMPLETED"
+    },
+    {
+      "case_id": "rcase-002",
+      "method": "D",
+      "repeat": 0,
+      "turn": 1,
+      "old_rejection": null,
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "REACT_FALLBACK",
+        "reason": "NO_VALID_OPPOSITE_PAIR",
+        "disagreement": 0,
+        "selection_score": 0.0,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 27.4,
+        "prediction_admitted": false
+      },
+      "previously_executed": true,
+      "historical_completion_unchanged": "COMPLETED"
+    },
+    {
+      "case_id": "rcase-002",
+      "method": "D",
+      "repeat": 0,
+      "turn": 2,
+      "old_rejection": null,
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "REACT_FALLBACK",
+        "reason": "OBSERVATION_ALREADY_EXPOSED",
+        "disagreement": 0,
+        "selection_score": 0.0,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 27.4,
+        "prediction_admitted": false
+      },
+      "previously_executed": false,
+      "historical_completion_unchanged": "COMPLETED"
+    },
+    {
+      "case_id": "rcase-002",
+      "method": "D",
+      "repeat": 0,
+      "turn": 3,
+      "old_rejection": null,
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "REACT_FALLBACK",
+        "reason": "OBSERVATION_ALREADY_EXPOSED",
+        "disagreement": 0,
+        "selection_score": 0.0,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 27.4,
+        "prediction_admitted": false
+      },
+      "previously_executed": false,
+      "historical_completion_unchanged": "COMPLETED"
+    },
+    {
+      "case_id": "rcase-002",
+      "method": "D",
+      "repeat": 0,
+      "turn": 4,
+      "old_rejection": null,
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": null,
+      "previously_executed": false,
+      "historical_completion_unchanged": "COMPLETED"
+    },
+    {
+      "case_id": "rcase-001",
+      "method": "C",
+      "repeat": 1,
+      "turn": 0,
+      "old_rejection": "INVALID_EXPECTATION_PAIR",
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "REACT",
+        "reason": "ORDINARY_REACT",
+        "disagreement": 0,
+        "selection_score": 0.0,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 2.8,
+        "prediction_admitted": true
+      },
+      "previously_executed": false,
+      "historical_completion_unchanged": "FORMAT_FAILED"
+    },
+    {
+      "case_id": "rcase-001",
+      "method": "C",
+      "repeat": 1,
+      "turn": 1,
+      "old_rejection": null,
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "REACT",
+        "reason": "ORDINARY_REACT",
+        "disagreement": 0,
+        "selection_score": 0.0,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 2.8,
+        "prediction_admitted": false
+      },
+      "previously_executed": true,
+      "historical_completion_unchanged": "FORMAT_FAILED"
+    },
+    {
+      "case_id": "rcase-001",
+      "method": "C",
+      "repeat": 1,
+      "turn": 2,
+      "old_rejection": "INVALID_EXPECTATION_PAIR",
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "REACT",
+        "reason": "ORDINARY_REACT",
+        "disagreement": 0,
+        "selection_score": 0.0,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 5.6,
+        "prediction_admitted": true
+      },
+      "previously_executed": false,
+      "historical_completion_unchanged": "FORMAT_FAILED"
+    },
+    {
+      "case_id": "rcase-004",
+      "method": "D",
+      "repeat": 1,
+      "turn": 0,
+      "old_rejection": "INVALID_EXPECTATION_PAIR",
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "REACT_FALLBACK",
+        "reason": "NO_VALID_OPPOSITE_PAIR",
+        "disagreement": 0,
+        "selection_score": 0.0,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 2.8,
+        "prediction_admitted": false
+      },
+      "previously_executed": false,
+      "historical_completion_unchanged": "FORMAT_FAILED"
+    },
+    {
+      "case_id": "rcase-004",
+      "method": "D",
+      "repeat": 1,
+      "turn": 1,
+      "old_rejection": null,
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "CONTRAST",
+        "reason": "UNEXPOSED_OPPOSITE_PAIR",
+        "disagreement": 1,
+        "selection_score": 0.2631578947368421,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 2.8,
+        "prediction_admitted": true
+      },
+      "previously_executed": true,
+      "historical_completion_unchanged": "FORMAT_FAILED"
+    },
+    {
+      "case_id": "rcase-004",
+      "method": "D",
+      "repeat": 1,
+      "turn": 2,
+      "old_rejection": null,
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "CONTRAST",
+        "reason": "UNEXPOSED_OPPOSITE_PAIR",
+        "disagreement": 1,
+        "selection_score": 0.15151515151515152,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 5.6,
+        "prediction_admitted": true
+      },
+      "previously_executed": true,
+      "historical_completion_unchanged": "FORMAT_FAILED"
+    },
+    {
+      "case_id": "rcase-004",
+      "method": "D",
+      "repeat": 1,
+      "turn": 3,
+      "old_rejection": "INVALID_EXPECTATION_PAIR",
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "REACT_FALLBACK",
+        "reason": "OBSERVATION_ALREADY_EXPOSED",
+        "disagreement": 0,
+        "selection_score": 0.0,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 5.6,
+        "prediction_admitted": false
+      },
+      "previously_executed": false,
+      "historical_completion_unchanged": "FORMAT_FAILED"
+    },
+    {
+      "case_id": "rcase-003",
+      "method": "D",
+      "repeat": 0,
+      "turn": 0,
+      "old_rejection": null,
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "CONTRAST",
+        "reason": "UNEXPOSED_OPPOSITE_PAIR",
+        "disagreement": 1,
+        "selection_score": 0.2631578947368421,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 2.8,
+        "prediction_admitted": true
+      },
+      "previously_executed": true,
+      "historical_completion_unchanged": "FORMAT_FAILED"
+    },
+    {
+      "case_id": "rcase-003",
+      "method": "D",
+      "repeat": 0,
+      "turn": 1,
+      "old_rejection": "PREDICTION_NOT_PRECOMMITTED",
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "REACT_FALLBACK",
+        "reason": "OBSERVATION_ALREADY_EXPOSED",
+        "disagreement": 1,
+        "selection_score": 0.0,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 2.8,
+        "prediction_admitted": false
+      },
+      "previously_executed": false,
+      "historical_completion_unchanged": "FORMAT_FAILED"
+    },
+    {
+      "case_id": "rcase-003",
+      "method": "D",
+      "repeat": 0,
+      "turn": 2,
+      "old_rejection": "DUPLICATE_HYPOTHESIS_ID",
+      "new_common_valid": false,
+      "remaining_error": "DUPLICATE_HYPOTHESIS_ID",
+      "selection": null,
+      "previously_executed": false,
+      "historical_completion_unchanged": "FORMAT_FAILED"
+    },
+    {
+      "case_id": "rcase-003",
+      "method": "C",
+      "repeat": 1,
+      "turn": 0,
+      "old_rejection": "INVALID_EXPECTATION_PAIR",
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "REACT",
+        "reason": "ORDINARY_REACT",
+        "disagreement": 0,
+        "selection_score": 0.0,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 2.8,
+        "prediction_admitted": true
+      },
+      "previously_executed": false,
+      "historical_completion_unchanged": "FORMAT_FAILED"
+    },
+    {
+      "case_id": "rcase-003",
+      "method": "C",
+      "repeat": 1,
+      "turn": 1,
+      "old_rejection": "INVALID_EXPECTATION_PAIR",
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "REACT",
+        "reason": "ORDINARY_REACT",
+        "disagreement": 0,
+        "selection_score": 0.0,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 2.8,
+        "prediction_admitted": true
+      },
+      "previously_executed": false,
+      "historical_completion_unchanged": "FORMAT_FAILED"
+    },
+    {
+      "case_id": "rcase-002",
+      "method": "C",
+      "repeat": 0,
+      "turn": 0,
+      "old_rejection": "INVALID_EXPECTATION_PAIR",
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "REACT",
+        "reason": "ORDINARY_REACT",
+        "disagreement": 0,
+        "selection_score": 0.0,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 2.8,
+        "prediction_admitted": true
+      },
+      "previously_executed": false,
+      "historical_completion_unchanged": "COMPLETED"
+    },
+    {
+      "case_id": "rcase-002",
+      "method": "C",
+      "repeat": 0,
+      "turn": 1,
+      "old_rejection": null,
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "REACT",
+        "reason": "ORDINARY_REACT",
+        "disagreement": 0,
+        "selection_score": 0.0,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 2.8,
+        "prediction_admitted": false
+      },
+      "previously_executed": true,
+      "historical_completion_unchanged": "COMPLETED"
+    },
+    {
+      "case_id": "rcase-002",
+      "method": "C",
+      "repeat": 0,
+      "turn": 2,
+      "old_rejection": null,
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": null,
+      "previously_executed": false,
+      "historical_completion_unchanged": "COMPLETED"
+    },
+    {
+      "case_id": "rcase-001",
+      "method": "D",
+      "repeat": 0,
+      "turn": 0,
+      "old_rejection": null,
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "CONTRAST",
+        "reason": "UNEXPOSED_OPPOSITE_PAIR",
+        "disagreement": 1,
+        "selection_score": 0.0308641975308642,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 31.4,
+        "prediction_admitted": true
+      },
+      "previously_executed": true,
+      "historical_completion_unchanged": "FORMAT_FAILED"
+    },
+    {
+      "case_id": "rcase-001",
+      "method": "D",
+      "repeat": 0,
+      "turn": 1,
+      "old_rejection": "PREDICTION_NOT_PRECOMMITTED",
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "REACT_FALLBACK",
+        "reason": "OBSERVATION_ALREADY_EXPOSED",
+        "disagreement": 1,
+        "selection_score": 0.0,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 31.4,
+        "prediction_admitted": false
+      },
+      "previously_executed": false,
+      "historical_completion_unchanged": "FORMAT_FAILED"
+    },
+    {
+      "case_id": "rcase-001",
+      "method": "D",
+      "repeat": 0,
+      "turn": 2,
+      "old_rejection": "PREDICTION_NOT_PRECOMMITTED",
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "REACT_FALLBACK",
+        "reason": "OBSERVATION_ALREADY_EXPOSED",
+        "disagreement": 1,
+        "selection_score": 0.0,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 31.4,
+        "prediction_admitted": false
+      },
+      "previously_executed": false,
+      "historical_completion_unchanged": "FORMAT_FAILED"
+    },
+    {
+      "case_id": "rcase-001",
+      "method": "C",
+      "repeat": 0,
+      "turn": 0,
+      "old_rejection": null,
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "REACT",
+        "reason": "ORDINARY_REACT",
+        "disagreement": 1,
+        "selection_score": 0.0,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 5.6,
+        "prediction_admitted": true
+      },
+      "previously_executed": true,
+      "historical_completion_unchanged": "COMPLETED"
+    },
+    {
+      "case_id": "rcase-001",
+      "method": "C",
+      "repeat": 0,
+      "turn": 1,
+      "old_rejection": "HYPOTHESIS_SCOPE_OR_REFERENCE",
+      "new_common_valid": false,
+      "remaining_error": "HYPOTHESIS_SCOPE_OR_REFERENCE",
+      "selection": null,
+      "previously_executed": false,
+      "historical_completion_unchanged": "COMPLETED"
+    },
+    {
+      "case_id": "rcase-001",
+      "method": "C",
+      "repeat": 0,
+      "turn": 2,
+      "old_rejection": null,
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": null,
+      "previously_executed": false,
+      "historical_completion_unchanged": "COMPLETED"
+    },
+    {
+      "case_id": "rcase-002",
+      "method": "D",
+      "repeat": 1,
+      "turn": 0,
+      "old_rejection": null,
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "REACT_FALLBACK",
+        "reason": "NO_VALID_OPPOSITE_PAIR",
+        "disagreement": 0,
+        "selection_score": 0.0,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 27.4,
+        "prediction_admitted": false
+      },
+      "previously_executed": true,
+      "historical_completion_unchanged": "FORMAT_FAILED"
+    },
+    {
+      "case_id": "rcase-002",
+      "method": "D",
+      "repeat": 1,
+      "turn": 1,
+      "old_rejection": null,
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "REACT_FALLBACK",
+        "reason": "NO_VALID_OPPOSITE_PAIR",
+        "disagreement": 0,
+        "selection_score": 0.0,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 5.6,
+        "prediction_admitted": false
+      },
+      "previously_executed": true,
+      "historical_completion_unchanged": "FORMAT_FAILED"
+    },
+    {
+      "case_id": "rcase-002",
+      "method": "D",
+      "repeat": 1,
+      "turn": 2,
+      "old_rejection": null,
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "REACT_FALLBACK",
+        "reason": "NO_VALID_OPPOSITE_PAIR",
+        "disagreement": 0,
+        "selection_score": 0.0,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 2.8,
+        "prediction_admitted": false
+      },
+      "previously_executed": true,
+      "historical_completion_unchanged": "FORMAT_FAILED"
+    },
+    {
+      "case_id": "rcase-002",
+      "method": "D",
+      "repeat": 1,
+      "turn": 3,
+      "old_rejection": null,
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "REACT_FALLBACK",
+        "reason": "NO_VALID_OPPOSITE_PAIR",
+        "disagreement": 0,
+        "selection_score": 0.0,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 5.6,
+        "prediction_admitted": false
+      },
+      "previously_executed": true,
+      "historical_completion_unchanged": "FORMAT_FAILED"
+    },
+    {
+      "case_id": "rcase-002",
+      "method": "D",
+      "repeat": 1,
+      "turn": 4,
+      "old_rejection": "PREDICTION_NOT_PRECOMMITTED",
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "REACT_FALLBACK",
+        "reason": "OBSERVATION_ALREADY_EXPOSED",
+        "disagreement": 1,
+        "selection_score": 0.0,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 5.6,
+        "prediction_admitted": false
+      },
+      "previously_executed": false,
+      "historical_completion_unchanged": "FORMAT_FAILED"
+    },
+    {
+      "case_id": "rcase-002",
+      "method": "D",
+      "repeat": 1,
+      "turn": 5,
+      "old_rejection": null,
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "REACT_FALLBACK",
+        "reason": "NO_VALID_OPPOSITE_PAIR",
+        "disagreement": 0,
+        "selection_score": 0.0,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 5.6,
+        "prediction_admitted": false
+      },
+      "previously_executed": true,
+      "historical_completion_unchanged": "FORMAT_FAILED"
+    },
+    {
+      "case_id": "rcase-002",
+      "method": "D",
+      "repeat": 1,
+      "turn": 6,
+      "old_rejection": "INVALID_EXPECTATION_PAIR",
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "REACT_FALLBACK",
+        "reason": "NO_VALID_OPPOSITE_PAIR",
+        "disagreement": 0,
+        "selection_score": 0.0,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 2.8,
+        "prediction_admitted": false
+      },
+      "previously_executed": false,
+      "historical_completion_unchanged": "FORMAT_FAILED"
+    },
+    {
+      "case_id": "rcase-001",
+      "method": "D",
+      "repeat": 1,
+      "turn": 0,
+      "old_rejection": "HYPOTHESIS_SCOPE_OR_REFERENCE",
+      "new_common_valid": false,
+      "remaining_error": "HYPOTHESIS_SCOPE_OR_REFERENCE",
+      "selection": null,
+      "previously_executed": false,
+      "historical_completion_unchanged": "FORMAT_FAILED"
+    },
+    {
+      "case_id": "rcase-001",
+      "method": "D",
+      "repeat": 1,
+      "turn": 1,
+      "old_rejection": "HYPOTHESIS_SCOPE_OR_REFERENCE",
+      "new_common_valid": false,
+      "remaining_error": "HYPOTHESIS_SCOPE_OR_REFERENCE",
+      "selection": null,
+      "previously_executed": false,
+      "historical_completion_unchanged": "FORMAT_FAILED"
+    },
+    {
+      "case_id": "rcase-003",
+      "method": "D",
+      "repeat": 1,
+      "turn": 0,
+      "old_rejection": "HYPOTHESIS_SCOPE_OR_REFERENCE",
+      "new_common_valid": false,
+      "remaining_error": "HYPOTHESIS_SCOPE_OR_REFERENCE",
+      "selection": null,
+      "previously_executed": false,
+      "historical_completion_unchanged": "FORMAT_FAILED"
+    },
+    {
+      "case_id": "rcase-003",
+      "method": "D",
+      "repeat": 1,
+      "turn": 1,
+      "old_rejection": null,
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "CONTRAST",
+        "reason": "UNEXPOSED_OPPOSITE_PAIR",
+        "disagreement": 1,
+        "selection_score": 0.2631578947368421,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 2.8,
+        "prediction_admitted": true
+      },
+      "previously_executed": true,
+      "historical_completion_unchanged": "FORMAT_FAILED"
+    },
+    {
+      "case_id": "rcase-003",
+      "method": "D",
+      "repeat": 1,
+      "turn": 2,
+      "old_rejection": null,
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "CONTRAST",
+        "reason": "UNEXPOSED_OPPOSITE_PAIR",
+        "disagreement": 1,
+        "selection_score": 0.15151515151515152,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 5.6,
+        "prediction_admitted": true
+      },
+      "previously_executed": true,
+      "historical_completion_unchanged": "FORMAT_FAILED"
+    },
+    {
+      "case_id": "rcase-003",
+      "method": "D",
+      "repeat": 1,
+      "turn": 3,
+      "old_rejection": "INVALID_EXPECTATION_PAIR",
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "REACT_FALLBACK",
+        "reason": "OBSERVATION_ALREADY_EXPOSED",
+        "disagreement": 0,
+        "selection_score": 0.0,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 2.8,
+        "prediction_admitted": false
+      },
+      "previously_executed": false,
+      "historical_completion_unchanged": "FORMAT_FAILED"
+    },
+    {
+      "case_id": "rcase-004",
+      "method": "D",
+      "repeat": 0,
+      "turn": 0,
+      "old_rejection": null,
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "CONTRAST",
+        "reason": "UNEXPOSED_OPPOSITE_PAIR",
+        "disagreement": 1,
+        "selection_score": 0.035211267605633804,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 27.4,
+        "prediction_admitted": true
+      },
+      "previously_executed": true,
+      "historical_completion_unchanged": "FORMAT_FAILED"
+    },
+    {
+      "case_id": "rcase-004",
+      "method": "D",
+      "repeat": 0,
+      "turn": 1,
+      "old_rejection": "PREDICTION_NOT_PRECOMMITTED",
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "REACT_FALLBACK",
+        "reason": "OBSERVATION_ALREADY_EXPOSED",
+        "disagreement": 1,
+        "selection_score": 0.0,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 27.4,
+        "prediction_admitted": false
+      },
+      "previously_executed": false,
+      "historical_completion_unchanged": "FORMAT_FAILED"
+    },
+    {
+      "case_id": "rcase-004",
+      "method": "D",
+      "repeat": 0,
+      "turn": 2,
+      "old_rejection": null,
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "REACT_FALLBACK",
+        "reason": "OBSERVATION_ALREADY_EXPOSED",
+        "disagreement": 0,
+        "selection_score": 0.0,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 27.4,
+        "prediction_admitted": false
+      },
+      "previously_executed": false,
+      "historical_completion_unchanged": "FORMAT_FAILED"
+    },
+    {
+      "case_id": "rcase-004",
+      "method": "D",
+      "repeat": 0,
+      "turn": 3,
+      "old_rejection": "INVALID_EXPECTATION_PAIR",
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "REACT_FALLBACK",
+        "reason": "NO_VALID_OPPOSITE_PAIR",
+        "disagreement": 0,
+        "selection_score": 0.0,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 31.4,
+        "prediction_admitted": false
+      },
+      "previously_executed": false,
+      "historical_completion_unchanged": "FORMAT_FAILED"
+    },
+    {
+      "case_id": "rcase-004",
+      "method": "C",
+      "repeat": 1,
+      "turn": 0,
+      "old_rejection": "INVALID_EXPECTATION_PAIR",
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "REACT",
+        "reason": "ORDINARY_REACT",
+        "disagreement": 0,
+        "selection_score": 0.0,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 2.8,
+        "prediction_admitted": true
+      },
+      "previously_executed": false,
+      "historical_completion_unchanged": "FORMAT_FAILED"
+    },
+    {
+      "case_id": "rcase-004",
+      "method": "C",
+      "repeat": 1,
+      "turn": 1,
+      "old_rejection": "INVALID_EXPECTATION_PAIR",
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "REACT",
+        "reason": "ORDINARY_REACT",
+        "disagreement": 0,
+        "selection_score": 0.0,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 2.8,
+        "prediction_admitted": true
+      },
+      "previously_executed": false,
+      "historical_completion_unchanged": "FORMAT_FAILED"
+    },
+    {
+      "case_id": "rcase-004",
+      "method": "C",
+      "repeat": 0,
+      "turn": 0,
+      "old_rejection": null,
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "REACT",
+        "reason": "ORDINARY_REACT",
+        "disagreement": 1,
+        "selection_score": 0.0,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 2.8,
+        "prediction_admitted": true
+      },
+      "previously_executed": true,
+      "historical_completion_unchanged": "COMPLETED"
+    },
+    {
+      "case_id": "rcase-004",
+      "method": "C",
+      "repeat": 0,
+      "turn": 1,
+      "old_rejection": null,
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": null,
+      "previously_executed": false,
+      "historical_completion_unchanged": "COMPLETED"
+    },
+    {
+      "case_id": "rcase-002",
+      "method": "C",
+      "repeat": 1,
+      "turn": 0,
+      "old_rejection": "INVALID_EXPECTATION_PAIR",
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "REACT",
+        "reason": "ORDINARY_REACT",
+        "disagreement": 0,
+        "selection_score": 0.0,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 5.6,
+        "prediction_admitted": true
+      },
+      "previously_executed": false,
+      "historical_completion_unchanged": "FORMAT_FAILED"
+    },
+    {
+      "case_id": "rcase-002",
+      "method": "C",
+      "repeat": 1,
+      "turn": 1,
+      "old_rejection": null,
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "REACT",
+        "reason": "ORDINARY_REACT",
+        "disagreement": 0,
+        "selection_score": 0.0,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 2.8,
+        "prediction_admitted": false
+      },
+      "previously_executed": true,
+      "historical_completion_unchanged": "FORMAT_FAILED"
+    },
+    {
+      "case_id": "rcase-002",
+      "method": "C",
+      "repeat": 1,
+      "turn": 2,
+      "old_rejection": "INVALID_EXPECTATION_PAIR",
+      "new_common_valid": true,
+      "remaining_error": null,
+      "selection": {
+        "branch": "REACT",
+        "reason": "ORDINARY_REACT",
+        "disagreement": 0,
+        "selection_score": 0.0,
+        "score_scope": "SINGLE_PROPOSED_QUESTION_ADMISSION",
+        "estimated_cost": 5.6,
+        "prediction_admitted": true
+      },
+      "previously_executed": false,
+      "historical_completion_unchanged": "FORMAT_FAILED"
+    }
+  ]
+}
